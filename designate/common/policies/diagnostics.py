@@ -12,29 +12,62 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
 
 
+deprecated_diagnostics_ping = policy.DeprecatedRule(
+    name="diagnostics_ping",
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=base.DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
+deprecated_diagnostics_sync_zones = policy.DeprecatedRule(
+    name="diagnostics_sync_zones",
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=base.DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
+deprecated_diagnostics_sync_zone = policy.DeprecatedRule(
+    name="diagnostics_sync_zone",
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=base.DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
+deprecated_diagnostics_sync_record = policy.DeprecatedRule(
+    name="diagnostics_sync_record",
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=base.DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
+
 rules = [
     policy.RuleDefault(
         name="diagnostics_ping",
-        check_str=base.RULE_ADMIN,
-        description='Diagnose ping.'),
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        description='Diagnose ping.',
+        deprecated_rule=deprecated_diagnostics_ping),
     policy.RuleDefault(
         name="diagnostics_sync_zones",
-        check_str=base.RULE_ADMIN,
-        description='Diagnose sync zones.'),
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        description='Diagnose sync zones.',
+        deprecated_rule=deprecated_diagnostics_sync_zones),
     policy.RuleDefault(
         name="diagnostics_sync_zone",
-        check_str=base.RULE_ADMIN,
-        description='Diagnose sync zone.'),
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        description='Diagnose sync zone.',
+        deprecated_rule=deprecated_diagnostics_sync_zone),
     policy.RuleDefault(
         name="diagnostics_sync_record",
-        check_str=base.RULE_ADMIN,
-        description='Diagnose sync record.')
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        description='Diagnose sync record.',
+        deprecated_rule=deprecated_diagnostics_sync_record)
 ]
 
 

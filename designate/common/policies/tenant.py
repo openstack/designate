@@ -24,15 +24,21 @@ The tenant API now supports system scope and default roles.
 
 deprecated_find_tenants = policy.DeprecatedRule(
     name="find_tenants",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_tenant = policy.DeprecatedRule(
     name="get_tenant",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_count_tenants = policy.DeprecatedRule(
     name="count_tenants",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -42,27 +48,21 @@ rules = [
         check_str=base.SYSTEM_READER,
         scope_types=['system'],
         description="Find all Tenants.",
-        deprecated_rule=deprecated_find_tenants,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_tenants
     ),
     policy.RuleDefault(
         name="get_tenant",
         check_str=base.SYSTEM_READER,
         scope_types=['system'],
         description="Get all Tenants.",
-        deprecated_rule=deprecated_get_tenant,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_tenant
     ),
     policy.RuleDefault(
         name="count_tenants",
         check_str=base.SYSTEM_READER,
         scope_types=['system'],
         description="Count tenants",
-        deprecated_rule=deprecated_count_tenants,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_count_tenants
     )
 ]
 

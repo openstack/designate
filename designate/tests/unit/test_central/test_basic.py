@@ -256,6 +256,7 @@ class CentralBasic(TestCase):
             'set_rules',
             'init',
             'check',
+            'enforce_new_defaults',
         ])
 
         designate.central.service.quota = mock.NonCallableMock(spec_set=[
@@ -932,7 +933,7 @@ class CentralZoneTestCase(CentralBasic):
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual(CentralZoneTestCase.zone__id, target['zone_id'])
         self.assertEqual('foo', target['zone_name'])
-        self.assertEqual('2', target['tenant_id'])
+        self.assertEqual('2', target['project_id'])
 
     def test_get_zone_servers(self):
         self.service.storage.get_zone.return_value = RoObject(
@@ -995,6 +996,7 @@ class CentralZoneTestCase(CentralBasic):
             'set_rules',
             'init',
             'check',
+            'enforce_new_defaults',
         ])
         self.context.abandon = True
         self.service.storage.count_zones.return_value = 0
@@ -1187,7 +1189,7 @@ class CentralZoneTestCase(CentralBasic):
             'zone_id': CentralZoneTestCase.zone__id_2,
             'zone_name': 'example.org.',
             'recordset_id': CentralZoneTestCase.recordset__id,
-            'tenant_id': '2'}, target)
+            'project_id': '2'}, target)
 
     def test_find_recordsets(self):
         self.context = mock.Mock()
@@ -1196,7 +1198,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertTrue(self.service.storage.find_recordsets.called)
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('find_recordsets', n)
-        self.assertEqual({'tenant_id': 't'}, target)
+        self.assertEqual({'project_id': 't'}, target)
 
     def test_find_recordset(self):
         self.context = mock.Mock()
@@ -1205,7 +1207,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertTrue(self.service.storage.find_recordset.called)
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('find_recordset', n)
-        self.assertEqual({'tenant_id': 't'}, target)
+        self.assertEqual({'project_id': 't'}, target)
 
     def test_update_recordset_fail_on_changes(self):
         self.service.storage.get_zone.return_value = RoObject()
@@ -1298,7 +1300,7 @@ class CentralZoneTestCase(CentralBasic):
             'zone_name': 'example.org.',
             'zone_type': 'foo',
             'recordset_id': '9c85d9b0-1e9d-4e99-aede-a06664f1af2e',
-            'tenant_id': '2'}, target)
+            'project_id': '2'}, target)
 
     def test__update_recordset_in_storage(self):
         recordset = mock.Mock()
@@ -1532,7 +1534,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service.count_recordsets(self.context)
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('count_recordsets', n)
-        self.assertEqual({'tenant_id': None}, target)
+        self.assertEqual({'project_id': None}, target)
         self.assertEqual(
             {},
             self.service.storage.count_recordsets.call_args[0][1]
@@ -1587,7 +1589,7 @@ class CentralZoneTestCase(CentralBasic):
             'zone_type': 'foo',
             'recordset_id': CentralZoneTestCase.recordset__id,
             'recordset_name': 'rs',
-            'tenant_id': '2'}, target)
+            'project_id': '2'}, target)
 
     def test_create_record_worker(self):
         self._test_create_record()
@@ -1689,7 +1691,7 @@ class CentralZoneTestCase(CentralBasic):
             'record_id': CentralZoneTestCase.record__id,
             'recordset_id': CentralZoneTestCase.recordset__id_2,
             'recordset_name': 'foo',
-            'tenant_id': 2}, target)
+            'project_id': 2}, target)
 
     def test_update_record_fail_on_changes(self):
         self.service.storage.get_zone.return_value = RoObject(
@@ -1789,7 +1791,7 @@ class CentralZoneTestCase(CentralBasic):
             'record_id': 'abc12a-1e9d-4e99-aede-a06664f1af2e',
             'recordset_id': 'abc12a-1e9d-4e99-aede-a06664f1af2e',
             'recordset_name': 'rsn',
-            'tenant_id': 'tid'}, target)
+            'project_id': 'tid'}, target)
 
     def test__update_record_in_storage(self):
         self.service._update_zone_in_storage = mock.Mock()
@@ -1893,7 +1895,7 @@ class CentralZoneTestCase(CentralBasic):
             'record_id': CentralZoneTestCase.record__id_2,
             'recordset_id': CentralZoneTestCase.recordset__id_2,
             'recordset_name': 'rsn',
-            'tenant_id': 'tid'}, target)
+            'project_id': 'tid'}, target)
 
     def test_delete_record_in_storage(self):
         self.service._delete_record_in_storage(
@@ -1911,7 +1913,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service.count_records(self.context)
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('count_records', t)
-        self.assertEqual({'tenant_id': None}, target)
+        self.assertEqual({'project_id': None}, target)
 
     def test_sync_zones(self):
         self.service._sync_zone = mock.Mock()
@@ -1938,7 +1940,7 @@ class CentralZoneTestCase(CentralBasic):
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('diagnostics_sync_zone', t)
-        self.assertEqual({'tenant_id': 'tid',
+        self.assertEqual({'project_id': 'tid',
                           'zone_id': CentralZoneTestCase.zone__id,
                           'zone_name': 'n'}, target)
 
@@ -1965,7 +1967,7 @@ class CentralZoneTestCase(CentralBasic):
             'record_id': CentralZoneTestCase.record__id,
             'recordset_id': CentralZoneTestCase.recordset__id,
             'recordset_name': 'n',
-            'tenant_id': 'tid'}, target)
+            'project_id': 'tid'}, target)
 
     def test_ping(self):
         self.service.storage.ping.return_value = True
@@ -2118,7 +2120,7 @@ class CentralZoneExportTests(CentralBasic):
         n, ctx, target = designate.central.service.policy.check.call_args[0]
 
         # Check arguments to policy
-        self.assertEqual('t', target['tenant_id'])
+        self.assertEqual('t', target['project_id'])
 
         # Check output
         self.assertEqual(CentralZoneTestCase.zone__id, out.zone_id)

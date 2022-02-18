@@ -24,31 +24,45 @@ The blacklist API now supports system scope and default roles.
 
 deprecated_create_blacklist = policy.DeprecatedRule(
     name="create_blacklist",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_blacklist = policy.DeprecatedRule(
     name="find_blacklist",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_blacklists = policy.DeprecatedRule(
     name="find_blacklists",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_blacklist = policy.DeprecatedRule(
     name="get_blacklist",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_update_blacklist = policy.DeprecatedRule(
     name="update_blacklist",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_delete_blacklist = policy.DeprecatedRule(
     name="delete_blacklist",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_use_blacklisted_zone = policy.DeprecatedRule(
     name="use_blacklisted_zone",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -64,9 +78,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_create_blacklist,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_create_blacklist
     ),
     policy.DocumentedRuleDefault(
         name="find_blacklist",
@@ -79,9 +91,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_blacklist,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_blacklist
     ),
     policy.DocumentedRuleDefault(
         name="find_blacklists",
@@ -94,9 +104,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_blacklists,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_blacklists
     ),
     policy.DocumentedRuleDefault(
         name="get_blacklist",
@@ -109,9 +117,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_get_blacklist,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_blacklist
     ),
     policy.DocumentedRuleDefault(
         name="update_blacklist",
@@ -124,9 +130,7 @@ rules = [
                 'method': 'PATCH'
             }
         ],
-        deprecated_rule=deprecated_get_blacklist,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_blacklist
     ),
     policy.DocumentedRuleDefault(
         name="delete_blacklist",
@@ -139,9 +143,7 @@ rules = [
                 'method': 'DELETE'
             }
         ],
-        deprecated_rule=deprecated_delete_blacklist,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_delete_blacklist
     ),
     policy.DocumentedRuleDefault(
         name="use_blacklisted_zone",
@@ -154,9 +156,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_use_blacklisted_zone,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_use_blacklisted_zone
     )
 ]
 
