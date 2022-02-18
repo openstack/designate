@@ -29,6 +29,9 @@ source $GRENADE_DIR/grenaderc
 # Import common functions
 source $GRENADE_DIR/functions
 
+# Get the Apache functions
+source ${TARGET_DEVSTACK_DIR}/lib/apache
+
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occurred.
 set -o errexit
@@ -82,6 +85,7 @@ run_process designate-worker "$DESIGNATE_BIN_DIR/designate-worker --config-file 
 run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
 run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
 run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
+restart_apache_server
 
 # Start proxies if enabled
 if is_service_enabled designate-api && is_service_enabled tls-proxy; then
