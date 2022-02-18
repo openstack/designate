@@ -1,0 +1,14 @@
+{
+  "id": "c0bcb136-5f5c-4427-9f89-99d457819917",
+  "hostname": "dns-2.example.com",
+  "service_name": "central",
+  "status": "UP",
+  "stats": {},
+  "capabilities": {},
+  "heartbeated_at": "2021-03-24T23:51:12.000000",
+  "created_at": "2021-03-22T20:59:24.000000",
+  "updated_at": "2021-03-24T23:51:12.000000",
+  "links": {
+    "self": "http://10.21.21.88/v2/service_statuses/c0bcb136-5f5c-4427-9f89-99d457819917"
+  }
+}
