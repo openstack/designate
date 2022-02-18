@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# Designate moved from using mod_wsgi to running uwsgi with an Apache proxy
+# pass-through for devstack in the yoga release cycle.
+# This upgrade script updates the Apache configuration to switch the wsgi
+# approach during a xena->yoga grenade test.
+# Since this is a from-* script, it will run after installing the new code
+# but before the upgraded code is started.
+
+function configure_designate_upgrade {
+    source $GRENADE_DIR/functions
+    source ${TARGET_DEVSTACK_DIR}/lib/apache
+    DESIGNATE_DEVSTACK_DIR=$(dirname $(dirname $0))
+    source $DESIGNATE_DEVSTACK_DIR/lib/wsgi
+
+    # Disable the old site using mod_wsgi
+    disable_apache_site designate-api
+
+    # Setup the apache uswgi site "designate-api-wsgi"
+    designate_configure_uwsgi
+    enable_apache_site designate-api-wsgi
+    restart_apache_server
+
+    # Switch designate-api to run under uwsgi
+    stop_process designate-api
+    run_process "designate-api" "$(which uwsgi) --procname-prefix designate-api --ini $DESIGNATE_UWSGI_CONF"
+}

@@ -4,6 +4,10 @@
 XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
+LIBDIR=$DEST/designate/devstack/lib
+
+source $LIBDIR/wsgi
+
 # Get backend configuration
 # -------------------------
 if is_service_enabled designate && [[ -r $DESIGNATE_PLUGINS/backend-$DESIGNATE_BACKEND_DRIVER ]]; then
@@ -121,41 +125,10 @@ function configure_designate {
     configure_designate_backend
 
     if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
-        write_uwsgi_config "$DESIGNATE_UWSGI_CONF" "$DESIGNATE_UWSGI" "/dns"
-        # We are using the http transport to work around an issue with
-        # broken connections when using the uwsgi protocol of a local socket
-        # See bug: https://github.com/unbit/uwsgi/issues/2368
-        wsgi_conf=$(apache_site_config_for designate-api-wsgi)
-        echo 'ProxyPass "/dns" "http://127.0.0.1:60053" retry=0' | sudo tee $wsgi_conf
-        iniset $DESIGNATE_UWSGI_CONF uwsgi http-socket 127.0.0.1:60053
+        designate_configure_uwsgi
     else
-        _config_designate_apache_wsgi
+        designate_configure_mod_wsgi
     fi
-}
-
-function _config_designate_apache_wsgi {
-    local designate_api_apache_conf
-    local venv_path=""
-    local designate_bin_dir=""
-    designate_bin_dir=$(get_python_exec_prefix)
-    designate_api_apache_conf=$(apache_site_config_for designate-api)
-
-    if [[ ${USE_VENV} = True ]]; then
-        venv_path="python-path=${PROJECT_VENV["designate"]}/lib/$(python_version)/site-packages"
-        designate_bin_dir=${PROJECT_VENV["designate"]}/bin
-    fi
-
-    sudo cp $DESIGNATE_DIR/devstack/files/apache-designate-api.template $designate_api_apache_conf
-    sudo sed -e "
-        s|%APACHE_NAME%|$APACHE_NAME|g;
-        s|%DESIGNATE_BIN_DIR%|$designate_bin_dir|g;
-        s|%SSLENGINE%|$designate_ssl|g;
-        s|%SSLCERTFILE%|$designate_certfile|g;
-        s|%SSLKEYFILE%|$designate_keyfile|g;
-        s|%USER%|$STACK_USER|g;
-        s|%VIRTUALENV%|$venv_path|g;
-        s|%APIWORKERS%|$API_WORKERS|g;
-    " -i $designate_api_apache_conf
 }
 
 function configure_designatedashboard {
@@ -311,6 +284,8 @@ function start_designate {
 
     if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
         run_process "designate-api" "$(which uwsgi) --procname-prefix designate-api --ini $DESIGNATE_UWSGI_CONF"
+        enable_apache_site designate-api-wsgi
+        restart_apache_server
     else
         enable_apache_site designate-api
         restart_apache_server
@@ -326,6 +301,8 @@ function start_designate {
 function stop_designate {
     if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
         stop_process "designate-api"
+        disable_apache_site designate-api-wsgi
+        restart_apache_server
     else
         disable_apache_site designate-api
         restart_apache_server
