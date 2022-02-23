@@ -41,8 +41,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(fip['address'], fip_record['address'])
         self.assertIsNone(fip_record['description'])
         self.assertIsNone(fip_record['ptrdname'])
-        self.assertIsNone(fip_record['action'])
-        self.assertEqual('ACTIVE', fip_record['status'])
+        self.assertEqual('NONE', fip_record['action'])
+        self.assertEqual('INACTIVE', fip_record['status'])
 
     def test_get_floatingip_with_record(self):
         fixture = self.get_ptr_fixture()
@@ -71,6 +71,61 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(fixture['ptrdname'], fip_record['ptrdname'])
         self.assertEqual('CREATE', fip_record['action'])
         self.assertEqual('PENDING', fip_record['status'])
+
+    def test_get_floatingip_after_unset(self):
+        fixture = self.get_ptr_fixture()
+        context = self.get_context(project_id='a')
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
+
+        # Unsetting via "None"
+        self.central_service.update_floatingip(
+            context, fip['region'], fip['id'], fixture)
+
+        criterion = {
+            'managed_resource_id': fip['id'],
+            'managed_tenant_id': context.project_id
+        }
+        zone_id = self.central_service.find_record(
+            elevated_context, criterion=criterion).zone_id
+
+        # Simulate the unset on the backend
+        zone_serial = self.central_service.get_zone(
+            elevated_context, zone_id).serial
+        self.central_service.update_status(
+            elevated_context, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
+
+        # Unset PTR ('ptrdname' is None aka null in JSON)
+        response = self.client.patch_json(
+            '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
+            {'ptrdname': None},
+            headers={'X-Test-Tenant-Id': context.project_id})
+        self.assertIsNone(response.json)
+        self.assertEqual(202, response.status_int)
+
+        # Simulate the unset on the backend
+        zone_serial = self.central_service.get_zone(
+            elevated_context, zone_id).serial
+        self.central_service.update_status(
+            elevated_context, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
+
+        response = self.client.get(
+            '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
+            headers={'X-Test-Tenant-Id': context.project_id})
+
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        fip_record = response.json
+        self.assertEqual(":".join([fip['region'], fip['id']]),
+                         fip_record['id'])
+        self.assertEqual(fip['address'], fip_record['address'])
+        self.assertIsNone(fip_record['description'])
+        self.assertIsNone(fip_record['ptrdname'])
+        self.assertEqual('NONE', fip_record['action'])
+        self.assertEqual('INACTIVE', fip_record['status'])
 
     def test_get_floatingip_not_allocated(self):
         url = '/reverse/floatingips/foo:04580c52-b253-4eb7-8791-fbb9de9f856f'
@@ -108,8 +163,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
                          fip_record['id'])
         self.assertEqual(fip['address'], fip_record['address'])
         self.assertIsNone(fip_record['description'])
-        self.assertIsNone(fip_record['action'])
-        self.assertEqual('ACTIVE', fip_record['status'])
+        self.assertEqual('NONE', fip_record['action'])
+        self.assertEqual('INACTIVE', fip_record['status'])
 
     def test_list_floatingip_with_record(self):
         fixture = self.get_ptr_fixture()
@@ -197,6 +252,19 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
 
+        criterion = {
+            'managed_resource_id': fip['id'],
+            'managed_tenant_id': context.project_id
+        }
+        zone_id = self.central_service.find_record(
+            elevated_context, criterion=criterion).zone_id
+
+        # Simulate the unset on the backend
+        zone_serial = self.central_service.get_zone(
+            elevated_context, zone_id).serial
+        self.central_service.update_status(
+            elevated_context, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
+
         # Unset PTR ('ptrdname' is None aka null in JSON)
         response = self.client.patch_json(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
@@ -204,6 +272,12 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
             headers={'X-Test-Tenant-Id': context.project_id})
         self.assertIsNone(response.json)
         self.assertEqual(202, response.status_int)
+
+        # Simulate the unset on the backend
+        zone_serial = self.central_service.get_zone(
+            elevated_context, zone_id).serial
+        self.central_service.update_status(
+            elevated_context, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
 
         fip = self.central_service.get_floatingip(
             context, fip['region'], fip['id'])

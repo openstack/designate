@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    Added new state ``INACTIVE`` to the Floating IP status to indicate that
+    it is not currently associated to a DNS record.

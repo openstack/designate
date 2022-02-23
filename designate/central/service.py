@@ -1993,31 +1993,55 @@ class Service(service.RPCService):
             'ptrdname': None,
             'ttl': None,
             'description': None,
-            'action': None,
-            'status': 'ACTIVE'
+            'action': constants.NONE,
+            'status': constants.INACTIVE
         })
+
         # TTL population requires a present record in order to find the
-        # RS or Zone.
-        if record and record.action != 'DELETE':
-            if not recordset:
-                recordset = self.storage.get_recordset(
-                    elevated_context, record.recordset_id)
-
-            fip_ptr['action'] = recordset.action
-            fip_ptr['status'] = recordset.status
-
-            if recordset.ttl is not None:
-                fip_ptr['ttl'] = recordset.ttl
-            else:
-                if not zone:
-                    zone = self.get_zone(elevated_context,
-                                         record.zone_id)
-                fip_ptr['ttl'] = zone.ttl
-
-            fip_ptr['ptrdname'] = record.data
-            fip_ptr['description'] = record.description
-        else:
+        # Recordset or Zone.
+        if not record:
             LOG.debug('No record information found for %s', fip['id'])
+            return fip_ptr
+
+        if not recordset:
+            try:
+                recordset = self.storage.get_recordset(
+                    elevated_context, record.recordset_id
+                )
+            except exceptions.RecordSetNotFound:
+                LOG.debug('No recordset found for %s', fip['id'])
+                return fip_ptr
+
+        if recordset.ttl is not None:
+            fip_ptr['ttl'] = recordset.ttl
+        else:
+            if not zone:
+                try:
+                    zone = self.get_zone(
+                        elevated_context, record.zone_id
+                    )
+                except exceptions.ZoneNotFound:
+                    LOG.debug('No zone found for %s', fip['id'])
+                    return fip_ptr
+
+            fip_ptr['ttl'] = zone.ttl
+
+        if recordset.action in constants.FLOATING_IP_ACTIONS:
+            fip_ptr['action'] = recordset.action
+        else:
+            LOG.debug(
+                'Action %s not valid for floating ip action', recordset.action
+            )
+
+        if recordset.status in constants.FLOATING_IP_STATUSES:
+            fip_ptr['status'] = recordset.status
+        else:
+            LOG.debug(
+                'Status %s not valid for floating ip status', recordset.status
+            )
+
+        fip_ptr['ptrdname'] = record.data
+        fip_ptr['description'] = record.description
 
         return fip_ptr
 

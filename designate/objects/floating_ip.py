@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from designate.common import constants
 from designate.objects import base
 from designate.objects import fields
 
@@ -27,10 +28,10 @@ class FloatingIP(base.DictObjectMixin, base.PersistentObjectMixin,
         "ttl": fields.IntegerFields(nullable=True,
                                     minimum=1, maximum=2147483647),
         "region": fields.StringFields(nullable=True),
-        "action": fields.EnumField(['CREATE', 'DELETE',
-                                    'UPDATE', 'NONE'], nullable=True),
-        "status": fields.EnumField(['ACTIVE',
-                                    'PENDING', 'ERROR'], nullable=True)
+        "action": fields.EnumField(constants.FLOATING_IP_ACTIONS,
+                                   nullable=True),
+        "status": fields.EnumField(constants.FLOATING_IP_STATUSES,
+                                   nullable=True)
     }
 
     STRING_KEYS = [

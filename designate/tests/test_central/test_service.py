@@ -2222,6 +2222,8 @@ class CentralServiceTest(CentralTestCase):
         criterion = {
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context_a.project_id}
+        zone_id = self.central_service.find_record(
+            elevated_a, criterion).zone_id
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
@@ -2243,9 +2245,15 @@ class CentralServiceTest(CentralTestCase):
             context_b, fip['region'], fip['id'])
         self.assertIsNone(fip_ptr['ptrdname'])
 
+        # Simulate the invalidation on the backend
+        zone_serial = self.central_service.get_zone(
+            elevated_a, zone_id).serial
+        self.central_service.update_status(
+            elevated_a, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
+
         record = self.central_service.find_record(elevated_a, criterion)
-        self.assertEqual('DELETE', record.action)
-        self.assertEqual('PENDING', record.status)
+        self.assertEqual('NONE', record.action)
+        self.assertEqual('DELETED', record.status)
 
     def test_list_floatingips_no_allocations(self):
         context = self.get_context(project_id='a')
@@ -2331,9 +2339,15 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(1, len(fips))
         self.assertIsNone(fips[0]['ptrdname'])
 
+        # Simulate the invalidation on the backend
+        zone_serial = self.central_service.get_zone(
+            elevated_a, zone_id).serial
+        self.central_service.update_status(
+            elevated_a, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
+
         record = self.central_service.find_record(elevated_a, criterion)
-        self.assertEqual('DELETE', record.action)
-        self.assertEqual('PENDING', record.status)
+        self.assertEqual('NONE', record.action)
+        self.assertEqual('DELETED', record.status)
 
     def test_set_floatingip(self):
         context = self.get_context(project_id='a')
