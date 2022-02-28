@@ -177,7 +177,8 @@
         - designate-bind9
         - designate-bind9-centos8stream-fips:
             voting: false
-        - designate-bind9-centos-9-stream
+        - designate-bind9-centos-9-stream:
+            voting: false
         - designate-bind9-scoped-tokens
         - designate-pdns4
         - designate-grenade-pdns4
@@ -188,7 +189,6 @@
       queue: designate
       jobs:
         - designate-bind9
-        - designate-bind9-centos-9-stream
         - designate-bind9-scoped-tokens
         - designate-pdns4
         - designate-grenade-pdns4
