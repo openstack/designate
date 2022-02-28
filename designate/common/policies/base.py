@@ -77,7 +77,7 @@ RULE_ZONE_TRANSFER = (
 RULE_ADMIN = 'rule:admin'
 RULE_ADMIN_OR_OWNER = 'rule:admin_or_owner'
 LEGACY_RULE_ZONE_TRANSFER = "rule:admin_or_owner OR " \
-                            "tenant:%(target_tenant_id)s " \
+                            "project_id:%(target_tenant_id)s " \
                             "OR None:%(target_tenant_id)s"
 
 deprecated_default = policy.DeprecatedRule(
@@ -95,7 +95,7 @@ rules = [
     # TODO(johnsom) remove when the deprecated RBAC rules are removed.
     policy.RuleDefault(
         name="owner",
-        check_str="tenant:%(tenant_id)s"),
+        check_str="project_id:%(tenant_id)s"),
     # TODO(johnsom) remove when the deprecated RBAC rules are removed.
     policy.RuleDefault(
         name="admin_or_owner",
