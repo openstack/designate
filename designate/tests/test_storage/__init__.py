@@ -3179,7 +3179,7 @@ class StorageTestCase(object):
 
         # Update storage
         zone_import = self.storage.update_zone_import(self.admin_context,
-                                                  zone_import)
+                                                      zone_import)
 
         # Verify the new value
         self.assertEqual('COMPLETE', zone_import.status)

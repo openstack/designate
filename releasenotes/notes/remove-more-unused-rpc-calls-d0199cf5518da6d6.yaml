@@ -1,0 +1,21 @@
+---
+upgrade:
+  - |
+    Removed the following unused central rpc calls. This should not impact
+    normal installations, but if these are used in any custom written backends
+    or plugins that you are using, you will need to update your code before
+    upgrading.
+
+    - ``count_records``
+    - ``count_recordsets``
+    - ``count_zones``
+    - ``count_tenants``
+    - ``delete_zone_transfer_accept``
+    - ``find_blacklist``
+    - ``find_record``
+    - ``find_zone``
+    - ``find_zone_transfer_accept``
+    - ``find_zone_transfer_request``
+    - ``get_record``
+    - ``get_quota``
+    - ``update_zone_transfer_accept``

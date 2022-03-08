@@ -843,22 +843,6 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertGreater(len(servers), 0)
 
-    def test_find_zone(self):
-        # Create a zone
-        zone_name = '%d.example.com.' % random.randint(10, 1000)
-        expected_zone = self.create_zone(name=zone_name)
-
-        # Retrieve it, and ensure it's the same
-        criterion = {'name': zone_name}
-
-        zone = self.central_service.find_zone(
-            self.admin_context, criterion)
-
-        self.assertEqual(expected_zone['id'], zone['id'])
-        self.assertEqual(expected_zone['name'], zone['name'])
-        self.assertEqual(expected_zone['email'], zone['email'])
-        self.assertIn('status', zone)
-
     @mock.patch.object(notifier.Notifier, "info")
     def test_update_zone(self, mock_notifier):
         # Create a zone
@@ -2022,48 +2006,6 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
-    def test_get_record(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        expected = recordset.records[0]
-
-        # Retrieve it, and ensure it's the same
-        record = self.central_service.get_record(
-            self.admin_context, zone['id'], recordset['id'], expected['id'])
-
-        self.assertEqual(expected['id'], record['id'])
-        self.assertEqual(expected['data'], record['data'])
-        self.assertIn('status', record)
-
-    def test_get_record_incorrect_zone_id(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        other_zone = self.create_zone(fixture=1)
-        expected = recordset.records[0]
-
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.get_record,
-                                self.admin_context, other_zone['id'],
-                                recordset['id'],
-                                expected['id'])
-
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
-
-    def test_get_record_incorrect_recordset_id(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        other_recordset = self.create_recordset(zone, fixture=1)
-        expected = recordset.records[0]
-
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.get_record,
-                                self.admin_context, zone['id'],
-                                other_recordset['id'],
-                                expected['id'])
-
-        # Ensure we get a 404 if we use the incorrect recordset_id
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
-
     def test_find_records(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone, records=[])
@@ -2104,25 +2046,6 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, criterion)
 
         self.assertEqual(2, len(records))
-
-    def test_find_record(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        expected = recordset.records[0]
-
-        # Retrieve it, and ensure it's the same
-        criterion = {
-            'zone_id': zone['id'],
-            'recordset_id': recordset['id'],
-            'data': expected['data']
-        }
-
-        record = self.central_service.find_record(
-            self.admin_context, criterion)
-
-        self.assertEqual(expected['id'], record['id'])
-        self.assertEqual(expected['data'], record['data'])
-        self.assertIn('status', record)
 
     def test_count_records(self):
         # in the beginning, there should be nothing
@@ -2222,8 +2145,8 @@ class CentralServiceTest(CentralTestCase):
         criterion = {
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context_a.project_id}
-        zone_id = self.central_service.find_record(
-            elevated_a, criterion).zone_id
+        zone_id = self.central_service.find_records(
+            elevated_a, criterion)[0].zone_id
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
@@ -2234,7 +2157,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
         # Ensure that the record is still in DB (No invalidation)
-        self.central_service.find_record(elevated_a, criterion)
+        self.central_service.find_records(elevated_a, criterion)
 
         # Now give the fip id to tenant 'b' and see that it get's deleted
         self.network_api.fake.allocate_floatingip(
@@ -2251,7 +2174,7 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.update_status(
             elevated_a, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
 
-        record = self.central_service.find_record(elevated_a, criterion)
+        record = self.central_service.find_records(elevated_a, criterion)[0]
         self.assertEqual('NONE', record.action)
         self.assertEqual('DELETED', record.status)
 
@@ -2313,8 +2236,8 @@ class CentralServiceTest(CentralTestCase):
         criterion = {
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context_a.project_id}
-        zone_id = self.central_service.find_record(
-            elevated_a, criterion).zone_id
+        zone_id = self.central_service.find_records(
+            elevated_a, criterion)[0].zone_id
 
         # Simulate the update on the backend
         zone_serial = self.central_service.get_zone(
@@ -2328,7 +2251,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(fips), 0)
 
         # Ensure that the record is still in DB (No invalidation)
-        self.central_service.find_record(elevated_a, criterion)
+        self.central_service.find_records(elevated_a, criterion)
 
         # Now give the fip id to tenant 'b' and see that it get's deleted
         self.network_api.fake.allocate_floatingip(
@@ -2345,7 +2268,7 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.update_status(
             elevated_a, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
 
-        record = self.central_service.find_record(elevated_a, criterion)
+        record = self.central_service.find_records(elevated_a, criterion)[0]
         self.assertEqual('NONE', record.action)
         self.assertEqual('DELETED', record.status)
 
@@ -2402,10 +2325,10 @@ class CentralServiceTest(CentralTestCase):
         elevated_context.all_tenants = True
 
         # The zone created should have the default 0's uuid as owner
-        zone = self.central_service.find_zone(
+        zones = self.central_service.find_zones(
             elevated_context,
             {"tenant_id": tenant_id})
-        self.assertEqual(tenant_id, zone.tenant_id)
+        self.assertEqual(tenant_id, zones[0].tenant_id)
 
     def test_set_floatingip_removes_old_record(self):
         context_a = self.get_context(project_id='a')
@@ -2426,8 +2349,8 @@ class CentralServiceTest(CentralTestCase):
         criterion = {
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context_a.project_id}
-        zone_id = self.central_service.find_record(
-            elevated_a, criterion).zone_id
+        zone_id = self.central_service.find_records(
+            elevated_a, criterion)[0].zone_id
 
         fixture2 = self.get_ptr_fixture(fixture=1)
         self.central_service.update_floatingip(
@@ -2555,17 +2478,6 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(2, len(blacklists))
         self.assertEqual(values1['pattern'], blacklists[0]['pattern'])
         self.assertEqual(values2['pattern'], blacklists[1]['pattern'])
-
-    def test_find_blacklist(self):
-        # Create a blacklisted zone
-        expected = self.create_blacklist(fixture=0)
-
-        # Retrieve the newly created blacklist
-        blacklist = self.central_service.find_blacklist(
-            self.admin_context, {'id': expected['id']})
-
-        self.assertEqual(expected['pattern'], blacklist['pattern'])
-        self.assertEqual(expected['description'], blacklist['description'])
 
     def test_update_blacklist(self):
         # Create a blacklisted zone
@@ -2912,30 +2824,6 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertEqual(exceptions.ZoneNotFound, exc.exc_info[0])
 
-    def test_update_status_delete_last_record(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        record = recordset.records[0]
-
-        # Delete the record
-        recordset.records = []
-        self.central_service.update_recordset(self.admin_context, recordset)
-
-        # Simulate the record having been deleted on the backend
-        zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id']).serial
-        self.central_service.update_status(
-            self.admin_context, zone['id'], 'SUCCESS', zone_serial, 'UPDATE')
-
-        # Fetch the record again, ensuring an exception is raised
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.get_record,
-                                self.admin_context, zone['id'],
-                                recordset['id'],
-                                record['id'])
-
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
-
     def test_update_status_create_zone(self):
         zone = self.create_zone()
 
@@ -3244,7 +3132,6 @@ class CentralServiceTest(CentralTestCase):
 
         zone = self.create_zone(context=tenant_1_context)
         recordset = self.create_recordset(zone, context=tenant_1_context)
-        record = recordset.records[0]
 
         zone_transfer_request = self.create_zone_transfer_request(
             zone, context=tenant_1_context)
@@ -3264,11 +3151,12 @@ class CentralServiceTest(CentralTestCase):
         result['zone'] = self.central_service.get_zone(
             admin_context, zone.id)
 
-        result['recordset'] = self.central_service.get_recordset(
+        recordset = self.central_service.get_recordset(
             admin_context, zone.id, recordset.id)
 
-        result['record'] = self.central_service.get_record(
-            admin_context, zone.id, recordset.id, record.id)
+        result['recordset'] = recordset
+
+        result['record'] = recordset.records[0]
 
         result['zt_accept'] = self.central_service.get_zone_transfer_accept(
             admin_context, zone_transfer_accept.id)
@@ -3294,7 +3182,6 @@ class CentralServiceTest(CentralTestCase):
 
         zone = self.create_zone(context=tenant_1_context)
         recordset = self.create_recordset(zone, context=tenant_1_context)
-        record = recordset.records[0]
 
         zone_transfer_request = self.create_zone_transfer_request(
             zone,
@@ -3316,11 +3203,12 @@ class CentralServiceTest(CentralTestCase):
         result['zone'] = self.central_service.get_zone(
             admin_context, zone.id)
 
-        result['recordset'] = self.central_service.get_recordset(
+        recordset = self.central_service.get_recordset(
             admin_context, zone.id, recordset.id)
 
-        result['record'] = self.central_service.get_record(
-            admin_context, zone.id, recordset.id, record.id)
+        result['recordset'] = recordset
+
+        result['record'] = recordset.records[0]
 
         result['zt_accept'] = self.central_service.get_zone_transfer_accept(
             admin_context, zone_transfer_accept.id)
@@ -3612,7 +3500,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Perform the update
         zone_import = self.central_service.update_zone_import(
-                self.admin_context_all_tenants, zone_import)
+            self.admin_context_all_tenants, zone_import)
 
         # Fetch the zone_import again
         zone_import = self.central_service.get_zone_import(context,

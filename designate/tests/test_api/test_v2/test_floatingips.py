@@ -88,8 +88,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context.project_id
         }
-        zone_id = self.central_service.find_record(
-            elevated_context, criterion=criterion).zone_id
+        zone_id = self.central_service.find_records(
+            elevated_context, criterion=criterion)[0].zone_id
 
         # Simulate the unset on the backend
         zone_serial = self.central_service.get_zone(
@@ -256,8 +256,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context.project_id
         }
-        zone_id = self.central_service.find_record(
-            elevated_context, criterion=criterion).zone_id
+        zone_id = self.central_service.find_records(
+            elevated_context, criterion=criterion)[0].zone_id
 
         # Simulate the unset on the backend
         zone_serial = self.central_service.get_zone(

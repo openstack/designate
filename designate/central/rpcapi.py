@@ -66,8 +66,9 @@ class CentralAPI(object):
         6.2 - Changed 'find_recordsets' method args
         6.3 - Changed 'update_status' method args
         6.4 - Removed unused record and diagnostic methods
+        6.5 - Removed additional unused methods
     """
-    RPC_API_VERSION = '6.4'
+    RPC_API_VERSION = '6.5'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -80,7 +81,7 @@ class CentralAPI(object):
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.4')
+        self.client = rpc.get_client(target, version_cap='6.5')
 
     @classmethod
     def get_instance(cls):
@@ -103,10 +104,6 @@ class CentralAPI(object):
     # Quota Methods
     def get_quotas(self, context, tenant_id):
         return self.client.call(context, 'get_quotas', tenant_id=tenant_id)
-
-    def get_quota(self, context, tenant_id, resource):
-        return self.client.call(context, 'get_quota', tenant_id=tenant_id,
-                                resource=resource)
 
     def set_quota(self, context, tenant_id, resource, hard_limit):
         return self.client.call(context, 'set_quota', tenant_id=tenant_id,
@@ -142,9 +139,6 @@ class CentralAPI(object):
     def get_tenant(self, context, tenant_id):
         return self.client.call(context, 'get_tenant', tenant_id=tenant_id)
 
-    def count_tenants(self, context):
-        return self.client.call(context, 'count_tenants')
-
     # Zone Methods
     def create_zone(self, context, zone):
         return self.client.call(context, 'create_zone', zone=zone)
@@ -162,9 +156,6 @@ class CentralAPI(object):
                                 marker=marker, limit=limit, sort_key=sort_key,
                                 sort_dir=sort_dir)
 
-    def find_zone(self, context, criterion=None):
-        return self.client.call(context, 'find_zone', criterion=criterion)
-
     def update_zone(self, context, zone, increment_serial=True):
         return self.client.call(context, 'update_zone', zone=zone,
                                 increment_serial=increment_serial)
@@ -175,9 +166,6 @@ class CentralAPI(object):
     def purge_zones(self, context, criterion, limit=None):
         return self.client.call(context, 'purge_zones',
                                 criterion=criterion, limit=limit)
-
-    def count_zones(self, context, criterion=None):
-        return self.client.call(context, 'count_zones', criterion=criterion)
 
     # TLD Methods
     def create_tld(self, context, tld):
@@ -232,28 +220,12 @@ class CentralAPI(object):
                                 recordset_id=recordset_id,
                                 increment_serial=increment_serial)
 
-    def count_recordsets(self, context, criterion=None):
-        return self.client.call(context, 'count_recordsets',
-                                criterion=criterion)
-
     # Record Methods
-    def get_record(self, context, zone_id, recordset_id, record_id):
-        return self.client.call(context, 'get_record',
-                                zone_id=zone_id,
-                                recordset_id=recordset_id,
-                                record_id=record_id)
-
     def find_records(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
         return self.client.call(context, 'find_records', criterion=criterion,
                                 marker=marker, limit=limit, sort_key=sort_key,
                                 sort_dir=sort_dir)
-
-    def find_record(self, context, criterion=None):
-        return self.client.call(context, 'find_record', criterion=criterion)
-
-    def count_records(self, context, criterion=None):
-        return self.client.call(context, 'count_records', criterion=criterion)
 
     # Misc. Report combining counts for tenants, zones and records
     def count_report(self, context, criterion=None):
@@ -284,9 +256,6 @@ class CentralAPI(object):
         return self.client.call(
             context, 'find_blacklists', criterion=criterion, marker=marker,
             limit=limit, sort_key=sort_key, sort_dir=sort_dir)
-
-    def find_blacklist(self, context, criterion):
-        return self.client.call(context, 'find_blacklist', criterion=criterion)
 
     def update_blacklist(self, context, blacklist):
         return self.client.call(context, 'update_blacklist',
@@ -340,11 +309,6 @@ class CentralAPI(object):
             context, 'find_zone_transfer_requests', criterion=criterion,
             marker=marker, limit=limit, sort_key=sort_key, sort_dir=sort_dir)
 
-    def find_zone_transfer_request(self, context, zone_transfer_request):
-        return self.client.call(
-            context, 'find_zone_transfer_request',
-            zone_transfer_request=zone_transfer_request)
-
     def update_zone_transfer_request(self, context, zone_transfer_request):
         return self.client.call(
             context, 'update_zone_transfer_request',
@@ -372,22 +336,6 @@ class CentralAPI(object):
         return self.client.call(
             context, 'find_zone_transfer_accepts', criterion=criterion,
             marker=marker, limit=limit, sort_key=sort_key, sort_dir=sort_dir)
-
-    def find_zone_transfer_accept(self, context, zone_transfer_accept):
-        return self.client.call(
-            context, 'find_zone_transfer_accept',
-            zone_transfer_accept=zone_transfer_accept)
-
-    def update_zone_transfer_accept(self, context, zone_transfer_accept):
-        return self.client.call(
-            context, 'update_zone_transfer_accept',
-            zone_transfer_accept=zone_transfer_accept)
-
-    def delete_zone_transfer_accept(self, context, zone_transfer_accept_id):
-        return self.client.call(
-            context,
-            'delete_zone_transfer_accept',
-            zone_transfer_accept_id=zone_transfer_accept_id)
 
     def xfr_zone(self, context, zone_id):
         return self.client.call(context, 'xfr_zone', zone_id=zone_id)

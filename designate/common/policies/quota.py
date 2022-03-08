@@ -28,12 +28,6 @@ deprecated_get_quotas = policy.DeprecatedRule(
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
-deprecated_get_quota = policy.DeprecatedRule(
-    name="get_quota",
-    check_str=base.RULE_ADMIN_OR_OWNER,
-    deprecated_reason=DEPRECATED_REASON,
-    deprecated_since=versionutils.deprecated.WALLABY
-)
 deprecated_set_quota = policy.DeprecatedRule(
     name="set_quota",
     check_str=base.RULE_ADMIN,
@@ -60,12 +54,6 @@ rules = [
             }
         ],
         deprecated_rule=deprecated_get_quotas
-    ),
-    policy.RuleDefault(
-        name="get_quota",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
-        scope_types=['system', 'project'],
-        deprecated_rule=deprecated_get_quota
     ),
     policy.DocumentedRuleDefault(
         name="set_quota",

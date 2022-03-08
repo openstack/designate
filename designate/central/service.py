@@ -184,7 +184,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.4'
+    RPC_API_VERSION = '6.5'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -682,19 +682,6 @@ class Service(service.RPCService):
         return self.quota.get_quotas(context, tenant_id)
 
     @rpc.expected_exceptions()
-    def get_quota(self, context, tenant_id, resource):
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: tenant_id,
-                'resource': resource
-            }
-        else:
-            target = {'tenant_id': tenant_id, 'resource': resource}
-        policy.check('get_quota', context, target)
-
-        return self.quota.get_quota(context, tenant_id, resource)
-
-    @rpc.expected_exceptions()
     @transaction
     def set_quota(self, context, tenant_id, resource, hard_limit):
         if policy.enforce_new_defaults():
@@ -1076,17 +1063,6 @@ class Service(service.RPCService):
 
         return self.storage.find_zones(context, criterion, marker, limit,
                                        sort_key, sort_dir)
-
-    @rpc.expected_exceptions()
-    def find_zone(self, context, criterion=None):
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
-
-        policy.check('find_zone', context, target)
-
-        return self.storage.find_zone(context, criterion)
 
     @rpc.expected_exceptions()
     @notification('dns.domain.update')
@@ -1665,43 +1641,6 @@ class Service(service.RPCService):
 
     # Record Methods
     @rpc.expected_exceptions()
-    def get_record(self, context, zone_id, recordset_id, record_id):
-        zone = self.storage.get_zone(context, zone_id)
-        recordset = self.storage.get_recordset(context, recordset_id)
-        record = self.storage.get_record(context, record_id)
-
-        # Ensure the zone_id matches the record's zone_id
-        if zone.id != record.zone_id:
-            raise exceptions.RecordNotFound()
-
-        # Ensure the recordset_id matches the record's recordset_id
-        if recordset.id != record.recordset_id:
-            raise exceptions.RecordNotFound()
-
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'recordset_id': recordset_id,
-                'recordset_name': recordset.name,
-                'record_id': record.id,
-                constants.RBAC_PROJECT_ID: zone.tenant_id
-            }
-        else:
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'recordset_id': recordset_id,
-                'recordset_name': recordset.name,
-                'record_id': record.id,
-                'tenant_id': zone.tenant_id
-            }
-
-        policy.check('get_record', context, target)
-
-        return record
-
-    @rpc.expected_exceptions()
     def find_records(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
 
@@ -1713,17 +1652,6 @@ class Service(service.RPCService):
 
         return self.storage.find_records(context, criterion, marker, limit,
                                          sort_key, sort_dir)
-
-    @rpc.expected_exceptions()
-    def find_record(self, context, criterion=None):
-
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
-        policy.check('find_record', context, target)
-
-        return self.storage.find_record(context, criterion)
 
     @rpc.expected_exceptions()
     def count_records(self, context, criterion=None):
@@ -2155,14 +2083,6 @@ class Service(service.RPCService):
         return blacklists
 
     @rpc.expected_exceptions()
-    def find_blacklist(self, context, criterion):
-        policy.check('find_blacklist', context)
-
-        blacklist = self.storage.find_blacklist(context, criterion)
-
-        return blacklist
-
-    @rpc.expected_exceptions()
     @notification('dns.blacklist.update')
     @transaction
     def update_blacklist(self, context, blacklist):
@@ -2512,20 +2432,6 @@ class Service(service.RPCService):
         return requests
 
     @rpc.expected_exceptions()
-    def find_zone_transfer_request(self, context, criterion):
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: context.project_id,
-            }
-        else:
-            target = {
-                'tenant_id': context.project_id,
-            }
-
-        policy.check('find_zone_transfer_request', context, target)
-        return self.storage.find_zone_transfer_requests(context, criterion)
-
-    @rpc.expected_exceptions()
     @notification('dns.zone_transfer_request.update')
     @transaction
     def update_zone_transfer_request(self, context, zone_transfer_request):
@@ -2668,51 +2574,6 @@ class Service(service.RPCService):
                                                        marker, limit,
                                                        sort_key, sort_dir)
 
-    @rpc.expected_exceptions()
-    def find_zone_transfer_accept(self, context, criterion):
-        policy.check('find_zone_transfer_accept', context)
-        return self.storage.find_zone_transfer_accept(context, criterion)
-
-    @rpc.expected_exceptions()
-    @notification('dns.zone_transfer_accept.update')
-    @transaction
-    def update_zone_transfer_accept(self, context, zone_transfer_accept):
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: zone_transfer_accept.tenant_id
-            }
-        else:
-            target = {
-                'tenant_id': zone_transfer_accept.tenant_id
-            }
-        policy.check('update_zone_transfer_accept', context, target)
-        accept = self.storage.update_zone_transfer_accept(
-            context, zone_transfer_accept)
-
-        return accept
-
-    @rpc.expected_exceptions()
-    @notification('dns.zone_transfer_accept.delete')
-    @transaction
-    def delete_zone_transfer_accept(self, context, zone_transfer_accept_id):
-        # Get zone transfer accept
-        zt_accept = self.storage.get_zone_transfer_accept(
-            context, zone_transfer_accept_id)
-
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: zt_accept.tenant_id
-            }
-        else:
-            target = {
-                'tenant_id': zt_accept.tenant_id
-            }
-
-        policy.check('delete_zone_transfer_accept', context, target)
-        return self.storage.delete_zone_transfer_accept(
-            context,
-            zone_transfer_accept_id)
-
     # Zone Import Methods
     @rpc.expected_exceptions()
     @notification('dns.zone_import.create')
@@ -2811,6 +2672,17 @@ class Service(service.RPCService):
         self.update_zone_import(context, zone_import)
 
     @rpc.expected_exceptions()
+    @notification('dns.zone_import.update')
+    def update_zone_import(self, context, zone_import):
+        if policy.enforce_new_defaults():
+            target = {constants.RBAC_PROJECT_ID: zone_import.tenant_id}
+        else:
+            target = {'tenant_id': zone_import.tenant_id}
+        policy.check('update_zone_import', context, target)
+
+        return self.storage.update_zone_import(context, zone_import)
+
+    @rpc.expected_exceptions()
     def find_zone_imports(self, context, criterion=None, marker=None,
                           limit=None, sort_key=None, sort_dir=None):
 
@@ -2841,17 +2713,6 @@ class Service(service.RPCService):
 
         policy.check('get_zone_import', context, target)
         return self.storage.get_zone_import(context, zone_import_id)
-
-    @rpc.expected_exceptions()
-    @notification('dns.zone_import.update')
-    def update_zone_import(self, context, zone_import):
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: zone_import.tenant_id}
-        else:
-            target = {'tenant_id': zone_import.tenant_id}
-        policy.check('update_zone_import', context, target)
-
-        return self.storage.update_zone_import(context, zone_import)
 
     @rpc.expected_exceptions()
     @notification('dns.zone_import.delete')

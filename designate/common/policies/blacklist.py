@@ -28,12 +28,6 @@ deprecated_create_blacklist = policy.DeprecatedRule(
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
-deprecated_find_blacklist = policy.DeprecatedRule(
-    name="find_blacklist",
-    check_str=base.RULE_ADMIN,
-    deprecated_reason=DEPRECATED_REASON,
-    deprecated_since=versionutils.deprecated.WALLABY
-)
 deprecated_find_blacklists = policy.DeprecatedRule(
     name="find_blacklists",
     check_str=base.RULE_ADMIN,
@@ -79,19 +73,6 @@ rules = [
             }
         ],
         deprecated_rule=deprecated_create_blacklist
-    ),
-    policy.DocumentedRuleDefault(
-        name="find_blacklist",
-        check_str=base.SYSTEM_READER,
-        scope_types=['system'],
-        description='Find blacklist.',
-        operations=[
-            {
-                'path': '/v2/blacklists',
-                'method': 'GET'
-            }
-        ],
-        deprecated_rule=deprecated_find_blacklist
     ),
     policy.DocumentedRuleDefault(
         name="find_blacklists",

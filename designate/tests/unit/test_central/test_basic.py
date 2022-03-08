@@ -935,15 +935,6 @@ class CentralZoneTestCase(CentralBasic):
             designate.central.service.policy.check.call_args[0]
         self.assertEqual('find_zones', pcheck)
 
-    def test_find_zone(self):
-        self.context = RoObject(project_id='t')
-        self.service.storage.find_zone = mock.Mock()
-        self.service.find_zone(self.context)
-        self.assertTrue(self.service.storage.find_zone.called)
-        pcheck, ctx, target = \
-            designate.central.service.policy.check.call_args[0]
-        self.assertEqual('find_zone', pcheck)
-
     def test_delete_zone_has_subzone(self):
         self.context.abandon = False
         self.service.storage.get_zone.return_value = RoObject(
@@ -1499,83 +1490,6 @@ class CentralZoneTestCase(CentralBasic):
             {},
             self.service.storage.count_recordsets.call_args[0][1]
         )
-
-    def test_get_record_not_found(self):
-        self.service.storage.get_zone.return_value = RoObject(
-            id=CentralZoneTestCase.zone__id_2,
-        )
-        self.service.storage.get_recordset.return_value = RoObject(
-            zone_id=CentralZoneTestCase.recordset__id
-        )
-
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.service.get_record,
-                                self.context,
-                                CentralZoneTestCase.zone__id_2,
-                                CentralZoneTestCase.recordset__id,
-                                CentralZoneTestCase.record__id)
-
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
-
-    def test_get_record_not_found_2(self):
-        self.service.storage.get_zone.return_value = RoObject(
-            id=CentralZoneTestCase.zone__id_2,
-            name='example.org.',
-            tenant_id=2,
-        )
-        self.service.storage.get_recordset.return_value = RoObject(
-            zone_id=CentralZoneTestCase.zone__id_2,
-            id=999,  # not matching record.recordset_id
-            name='foo'
-        )
-        self.service.storage.get_record.return_value = RoObject(
-            id=CentralZoneTestCase.record__id,
-            zone_id=CentralZoneTestCase.zone__id_2,
-            recordset_id=CentralZoneTestCase.recordset__id
-        )
-
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.service.get_record,
-                                self.context,
-                                CentralZoneTestCase.zone__id_2,
-                                CentralZoneTestCase.recordset__id,
-                                CentralZoneTestCase.record__id)
-
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
-
-    def test_get_record(self):
-        self.service.storage.get_zone.return_value = RoObject(
-            id=CentralZoneTestCase.zone__id,
-            name='example.org.',
-            tenant_id=2,
-        )
-        self.service.storage.get_recordset.return_value = RoObject(
-            zone_id=CentralZoneTestCase.zone__id,
-            id=CentralZoneTestCase.recordset__id,
-            name='foo'
-        )
-        self.service.storage.get_record.return_value = RoObject(
-            id=CentralZoneTestCase.record__id,
-            zone_id=CentralZoneTestCase.zone__id,
-            recordset_id=CentralZoneTestCase.recordset__id
-        )
-        self.service.get_record(self.context,
-                                CentralZoneTestCase.zone__id_2,
-                                CentralZoneTestCase.recordset__id_2,
-                                CentralZoneTestCase.record__id_2)
-        self.assertEqual(
-            'get_record',
-            designate.central.service.policy.check.call_args[0][0]
-        )
-        t, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual('get_record', t)
-        self.assertEqual({
-            'zone_id': CentralZoneTestCase.zone__id_2,
-            'zone_name': 'example.org.',
-            'record_id': CentralZoneTestCase.record__id,
-            'recordset_id': CentralZoneTestCase.recordset__id_2,
-            'recordset_name': 'foo',
-            'project_id': 2}, target)
 
     def test_count_records(self):
         self.service.count_records(self.context)

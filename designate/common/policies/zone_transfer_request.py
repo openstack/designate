@@ -98,10 +98,6 @@ rules = [
             }
         ],
     ),
-    policy.RuleDefault(
-        name="find_zone_transfer_request",
-        check_str=base.RULE_ANY
-    ),
     policy.DocumentedRuleDefault(
         name="update_zone_transfer_request",
         check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
