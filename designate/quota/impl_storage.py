@@ -59,31 +59,30 @@ class StorageQuota(base.Quota):
         context = context.deepcopy()
         context.all_tenants = True
 
-        def create_quota():
-            quota = objects.Quota(
-                tenant_id=tenant_id, resource=resource, hard_limit=hard_limit)
-
-            self.storage.create_quota(context, quota)
-
-        def update_quota(quota):
-            quota.hard_limit = hard_limit
-
-            self.storage.update_quota(context, quota)
-
         if resource not in list(self.get_default_quotas(context).keys()):
             raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
                                                   "resource", resource)
 
         try:
-            create_quota()
+            self._create_quota(context, tenant_id, resource, hard_limit)
         except exceptions.Duplicate:
             quota = self.storage.find_quota(context, {
                 'tenant_id': tenant_id,
                 'resource': resource,
             })
-            update_quota(quota)
+            self._update_quota(context, quota, hard_limit)
 
         return {resource: hard_limit}
+
+    def _create_quota(self, context, project_id, resource, hard_limit):
+        quota = objects.Quota(
+            tenant_id=project_id, resource=resource, hard_limit=hard_limit
+        )
+        self.storage.create_quota(context, quota)
+
+    def _update_quota(self, context, quota, hard_limit):
+        quota.hard_limit = hard_limit
+        self.storage.update_quota(context, quota)
 
     @transaction
     def reset_quotas(self, context, tenant_id):
