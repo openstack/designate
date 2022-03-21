@@ -60,7 +60,3 @@ def upgrade(migrate_engine):
 
     for fk in fks:
         fk.create()
-
-
-def downgrade(migration_engine):
-    pass

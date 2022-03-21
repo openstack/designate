@@ -117,7 +117,3 @@ def upgrade(migrate_engine):
 
     # Zone Tasks
     zt_table.c.domain_id.alter(name='zone_id')
-
-
-def downgrade(migration_engine):
-    pass
