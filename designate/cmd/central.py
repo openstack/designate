@@ -21,7 +21,6 @@ from oslo_reports import guru_meditation_report as gmr
 from designate.central import service as central_service
 import designate.conf
 from designate import heartbeat_emitter
-from designate import hookpoints
 from designate import service
 from designate import utils
 from designate import version
@@ -35,8 +34,6 @@ def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
     gmr.TextGuruMeditation.setup_autorun(version)
-
-    hookpoints.log_hook_setup()
 
     server = central_service.Service()
     heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name,

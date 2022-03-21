@@ -24,7 +24,6 @@ from oslo_reports import guru_meditation_report as gmr
 from stevedore.extension import ExtensionManager
 
 import designate.conf
-from designate import hookpoints
 from designate import utils
 from designate import version
 
@@ -114,8 +113,6 @@ def main():
     logging.setup(CONF, 'designate')
 
     gmr.TextGuruMeditation.setup_autorun(version)
-
-    hookpoints.log_hook_setup()
 
     fn = CONF.category.action_fn
 
