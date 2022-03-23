@@ -19,6 +19,7 @@ from oslo_log import log as logging
 
 from designate.api.v2.controllers import rest
 from designate.common import keystone
+from designate import exceptions
 from designate.objects.adapters import DesignateAdapter
 from designate.objects import QuotaList
 
@@ -62,6 +63,15 @@ class QuotasController(rest.RestController):
             keystone.verify_project_id(context, tenant_id)
 
         quotas = DesignateAdapter.parse('API_v2', body, QuotaList())
+
+        # The get_quotas lookup will always return the default quotas
+        # if the context does not have a project_id (system scoped token) and
+        # the all_tenants boolean is false. Let's require all_tenants for
+        # contexts with no project ID.
+        if context.project_id is None and not context.all_tenants:
+            raise exceptions.MissingProjectID(
+                "The all-projects flag must be used when using non-project "
+                "scoped tokens.")
 
         for quota in quotas:
             self.central_api.set_quota(context, tenant_id, quota.resource,
