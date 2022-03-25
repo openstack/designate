@@ -48,5 +48,5 @@ class AgentBackend(DriverPlugin):
         """Zone is a DNSPython Zone object"""
 
     @abc.abstractmethod
-    def delete_zone(self, zone_name):
+    def delete_zone(self, zone_name, zone_params):
         """Delete a DNS zone"""

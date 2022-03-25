@@ -71,7 +71,7 @@ class Backend(DriverPlugin):
         LOG.debug('Update Zone')
 
     @abc.abstractmethod
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, zone_params):
         """
         Delete a DNS zone.
 

@@ -141,11 +141,11 @@ class Service(service.RPCService):
     def stop(self, graceful=True):
         super(Service, self).stop(graceful)
 
-    def _do_zone_action(self, context, zone):
+    def _do_zone_action(self, context, zone, zone_params=None):
         pool = self.get_pool(zone.pool_id)
         all_tasks = [
             zonetasks.ZoneAction(self.executor, context, pool, zone,
-                                 zone.action)
+                                 zone.action, zone_params)
         ]
 
         # Send a NOTIFY to each also-notifies
@@ -177,13 +177,17 @@ class Service(service.RPCService):
         self._do_zone_action(context, zone)
 
     @rpc.expected_exceptions()
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, hard_delete=False):
         """
         :param context: Security context information.
         :param zone: Zone to be deleted
+        :param hard_delete: Zone resources (files) to be deleted or not
         :return: None
         """
-        self._do_zone_action(context, zone)
+        zone_params = {}
+        if hard_delete:
+            zone_params.update({'hard_delete': True})
+        self._do_zone_action(context, zone, zone_params)
 
     @rpc.expected_exceptions()
     def recover_shard(self, context, begin, end):

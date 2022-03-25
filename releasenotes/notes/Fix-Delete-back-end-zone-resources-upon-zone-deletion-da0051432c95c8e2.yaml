@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Currently designate does not provide zone specific option to delete the
+    zone resources (such as files) on the back-end (e.g. bind9) when the zone
+    is deleted. To fix this add a header ``x-designate-hard-delete`` which will
+    be used in the zone delete API to delete zone files on the back-end. This
+    is in addition to the existing per-pool configration option that will
+    override this new header option. This option is restricted for admin.

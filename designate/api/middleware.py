@@ -89,6 +89,14 @@ class ContextMiddleware(base.Middleware):
             )
 
     @staticmethod
+    def _extract_hard_delete(ctxt, request):
+        ctxt.hard_delete = False
+        if request.headers.get('X-Designate-Hard-Delete'):
+            ctxt.hard_delete = strutils.bool_from_string(
+                request.headers.get('X-Designate-Hard-Delete')
+            )
+
+    @staticmethod
     def _extract_client_addr(ctxt, request):
         if hasattr(request, 'client_addr'):
             ctxt.client_addr = request.client_addr
@@ -103,6 +111,7 @@ class ContextMiddleware(base.Middleware):
             self._extract_sudo(ctxt, request)
             self._extract_all_projects(ctxt, request)
             self._extract_edit_managed_records(ctxt, request)
+            self._extract_hard_delete(ctxt, request)
             self._extract_dns_hide_counts(ctxt, request)
             self._extract_client_addr(ctxt, request)
         finally:

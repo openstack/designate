@@ -394,6 +394,7 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - x-designate-hard-delete: x-designate-hard-delete
    - zone_id: path_zone_id
 
 

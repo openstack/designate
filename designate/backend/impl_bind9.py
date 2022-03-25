@@ -126,7 +126,7 @@ class Bind9Backend(base.Backend):
 
         return True
 
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, zone_params=None):
         """Delete a new Zone by executin rndc
         Do not raise exceptions if the zone does not exist.
         """
@@ -138,7 +138,8 @@ class Bind9Backend(base.Backend):
             'delzone',
             '%s %s' % (zone['name'].rstrip('.'), view),
         ]
-        if self._clean_zonefile:
+        if (self._clean_zonefile or (zone_params and
+                zone_params.get('hard_delete'))):
             rndc_op.insert(1, '-clean')
 
         try:

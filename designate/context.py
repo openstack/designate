@@ -32,16 +32,19 @@ class DesignateContext(context.RequestContext):
     _abandon = None
     original_project_id = None
     _edit_managed_records = False
+    _hard_delete = False
     _client_addr = None
     FROM_DICT_EXTRA_KEYS = [
         'original_project_id', 'service_catalog', 'all_tenants', 'abandon',
         'edit_managed_records', 'tsigkey_id', 'hide_counts', 'client_addr',
+        'hard_delete'
     ]
 
     def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
                  tsigkey_id=None, original_project_id=None,
                  edit_managed_records=False, hide_counts=False,
-                 client_addr=None, user_auth_plugin=None, **kwargs):
+                 client_addr=None, user_auth_plugin=None,
+                 hard_delete=False, **kwargs):
         super(DesignateContext, self).__init__(**kwargs)
 
         self.user_auth_plugin = user_auth_plugin
@@ -53,6 +56,7 @@ class DesignateContext(context.RequestContext):
         self.all_tenants = all_tenants
         self.abandon = abandon
         self.edit_managed_records = edit_managed_records
+        self.hard_delete = hard_delete
         self.hide_counts = hide_counts
         self.client_addr = client_addr
 
@@ -95,6 +99,7 @@ class DesignateContext(context.RequestContext):
             'all_tenants': self.all_tenants,
             'abandon': self.abandon,
             'edit_managed_records': self.edit_managed_records,
+            'hard_delete': self.hard_delete,
             'tsigkey_id': self.tsigkey_id,
             'hide_counts': self.hide_counts,
             'client_addr': self.client_addr,
@@ -103,7 +108,7 @@ class DesignateContext(context.RequestContext):
         return copy.deepcopy(d)
 
     def elevated(self, show_deleted=None, all_tenants=False,
-                 edit_managed_records=False):
+                 edit_managed_records=False, hard_delete=False):
         """Return a version of this context with admin flag set.
         Optionally set all_tenants and edit_managed_records
         """
@@ -123,6 +128,9 @@ class DesignateContext(context.RequestContext):
 
         if edit_managed_records:
             context.edit_managed_records = True
+
+        if hard_delete:
+            context.hard_delete = True
 
         return context
 
@@ -181,6 +189,16 @@ class DesignateContext(context.RequestContext):
         if value:
             policy.check('edit_managed_records', self)
         self._edit_managed_records = value
+
+    @property
+    def hard_delete(self):
+        return self._hard_delete
+
+    @hard_delete.setter
+    def hard_delete(self, value):
+        if value:
+            policy.check('hard_delete', self)
+        self._hard_delete = value
 
     @property
     def client_addr(self):

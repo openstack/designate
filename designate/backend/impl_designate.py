@@ -80,7 +80,7 @@ class DesignateBackend(base.Backend):
         self.client.zones.create(
             zone.name, 'SECONDARY', masters=masters)
 
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, zone_params=None):
         LOG.info('Deleting zone %(d_id)s / %(d_name)s',
                  {'d_id': zone['id'], 'd_name': zone['name']})
 
