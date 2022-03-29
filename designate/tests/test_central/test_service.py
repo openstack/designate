@@ -3570,6 +3570,117 @@ class CentralServiceTest(CentralTestCase):
                          zone_import.message)
         self.assertEqual('ERROR', zone_import.status)
 
+    def test_create_zone_import_duplicate_threading(self):
+        context = self.get_context(project_id=utils.generate_uuid())
+        request_body = self.get_zonefile_fixture()
+        zone_import = self.central_service.create_zone_import(context,
+                                                              request_body)
+        self.wait_for_import(zone_import.id)
+
+        def create_zone_import():
+            context = self.get_context(project_id=utils.generate_uuid())
+            request_body = self.get_zonefile_fixture()
+            zone_import = self.central_service.create_zone_import(context,
+                                                            request_body)
+            return self.wait_for_import(zone_import.id, error_is_ok=True)
+
+        with futurist.GreenThreadPoolExecutor() as executor:
+            results = []
+            for fixture in [0, 2, 3, 4, 5]:
+                results.append(executor.submit(create_zone_import,))
+            for future in futures.as_completed(results):
+                result = future.result()
+                self.assertEqual('Duplicate zone.', result.message)
+
+    @mock.patch('dns.zone.from_text')
+    @mock.patch('designate.central.service.Service.update_zone_import')
+    def test_create_zone_import_from_text_exceptions(
+            self, mock_update_zone_import, mock_dnszone_from_text):
+
+        # the second set of exceptions for the create_zone
+        context = self.get_context(project_id=utils.generate_uuid())
+        request_body = self.get_zonefile_fixture()
+        values = {
+            'status': 'PENDING',
+            'message': None,
+            'zone_id': None,
+            'tenant_id': context.project_id,
+            'task_type': 'IMPORT'
+        }
+        zone_import = objects.ZoneImport(**values)
+
+        mock_dnszone_from_text.side_effect = [exceptions.BadRequest(),
+                                              Exception('boom')]
+
+        LOG.debug("Testing zone import exceptions: BadRequest")
+        zone_import = objects.ZoneImport(**values)
+        self.central_service._import_zone(context, zone_import, request_body)
+        self.assertEqual('ERROR', zone_import.status)
+        self.assertIsNotNone(zone_import.message)
+        self.assertEqual('An SOA record is required.', zone_import.message)
+
+        LOG.debug("Testing zone import exceptions: Undefined")
+        zone_import = objects.ZoneImport(**values)
+        self.central_service._import_zone(context, zone_import, request_body)
+        self.assertEqual('ERROR', zone_import.status)
+        self.assertIsNotNone(zone_import.message)
+        self.assertEqual('An undefined error occurred. boom',
+                         zone_import.message)
+
+    @mock.patch('designate.central.service.Service.create_zone')
+    @mock.patch('designate.central.service.Service.update_zone_import')
+    def test_create_zone_import_create_import_exceptions(
+            self, mock_update_zone_import, mock_create_zone):
+
+        # setup to test the create_zone exceptions from _import_zone method
+        context = self.get_context(project_id=utils.generate_uuid())
+        request_body = self.get_zonefile_fixture()
+        values = {
+            'status': 'PENDING',
+            'message': None,
+            'zone_id': None,
+            'tenant_id': context.project_id,
+            'task_type': 'IMPORT'
+        }
+        zone_import = objects.ZoneImport(**values)
+
+        mock_create_zone.side_effect = [mock.DEFAULT,
+                                        exceptions.DuplicateZone(),
+                                        exceptions.InvalidTTL(),
+                                        exceptions.OverQuota(),
+                                        Exception('boom')]
+
+        LOG.debug("Testing zone import exceptions: No exception case")
+        self.central_service._import_zone(context, zone_import, request_body)
+        self.assertEqual('COMPLETE', zone_import.status)
+        self.assertIn('imported', zone_import.message)
+
+        LOG.debug("Testing zone import exceptions: DuplicateZone")
+        zone_import = objects.ZoneImport(**values)
+        self.central_service._import_zone(context, zone_import, request_body)
+        self.assertEqual('ERROR', zone_import.status)
+        self.assertEqual('Duplicate zone.', zone_import.message)
+
+        LOG.debug("Testing zone import exceptions: InvalidTTL")
+        zone_import = objects.ZoneImport(**values)
+        self.central_service._import_zone(context, zone_import, request_body)
+        self.assertEqual('ERROR', zone_import.status)
+        self.assertIsNotNone(zone_import.message)
+
+        LOG.debug("Testing zone import exceptions: OverQuota")
+        zone_import = objects.ZoneImport(**values)
+        self.central_service._import_zone(context, zone_import, request_body)
+        self.assertEqual('ERROR', zone_import.status)
+        self.assertEqual('Quota exceeded during zone import.',
+                         zone_import.message)
+
+        LOG.debug("Testing zone import exceptions: Undefined")
+        zone_import = objects.ZoneImport(**values)
+        self.central_service._import_zone(context, zone_import, request_body)
+        self.assertEqual('ERROR', zone_import.status)
+        self.assertEqual('An undefined error occurred. boom',
+                         zone_import.message)
+
     def test_find_zone_imports(self):
         context = self.get_context(project_id=utils.generate_uuid())
 
