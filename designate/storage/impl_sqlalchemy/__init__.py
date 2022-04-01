@@ -1492,6 +1492,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             # all_tenants was not used, we don't know what records to return,
             # so return an empty list.
             if not context.project_id:
+                if one:
+                    return objects.ZoneTransferRequest()
                 return objects.ZoneTransferRequestList()
 
             query = query.where(or_(
