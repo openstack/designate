@@ -40,9 +40,7 @@ class QuotaList(base.ListObjectMixin, base.DesignateObject):
 
     @classmethod
     def from_dict(cls, _dict):
-
         instance = cls()
-
         for field, value in _dict.items():
             item = cls.LIST_ITEM_TYPE()
             item.resource = field
@@ -52,10 +50,7 @@ class QuotaList(base.ListObjectMixin, base.DesignateObject):
         return instance
 
     def to_dict(self):
-
         _dict = {}
-
         for quota in self.objects:
             _dict[quota.resource] = quota.hard_limit
-
         return _dict
