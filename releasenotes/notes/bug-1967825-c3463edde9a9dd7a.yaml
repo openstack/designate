@@ -1,0 +1,7 @@
+---
+deprecations:
+  - |
+    The ``[service:api] max_header_line`` parameter has been deprecated. This
+    parameter has hd no effect since the Train release. Use
+    the ``[DEFAULT] max_header_line`` parameter of the ``oslo.service`` library
+    instead.
