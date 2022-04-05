@@ -126,7 +126,8 @@
       jobs:
         - designate-bind9
         - designate-pdns4
-        - designate-grenade-pdns4
+        - designate-grenade-pdns4:
+            voting: false
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
 
@@ -135,7 +136,6 @@
       jobs:
         - designate-bind9
         - designate-pdns4
-        - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
 
