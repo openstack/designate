@@ -47,10 +47,6 @@ class PeriodicTask(plugin.ExtensionPlugin):
     def worker_api(self):
         return worker_rpcapi.WorkerAPI.get_instance()
 
-    @property
-    def zone_api(self):
-        return self.worker_api
-
     def on_partition_change(self, my_partitions, members, event):
         """Refresh partitions attribute
         """
@@ -250,7 +246,7 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
         )
 
         for zone in zones:
-            self.zone_api.update_zone(ctxt, zone)
+            self.worker_api.update_zone(ctxt, zone)
             zone.delayed_notify = False
             self.central_api.update_zone(ctxt, zone)
             LOG.debug(

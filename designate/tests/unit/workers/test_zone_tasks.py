@@ -318,7 +318,7 @@ class TestZoneActor(oslotest.base.BaseTestCase):
 
         self.assertEqual(
             cfg.CONF['service:worker'].threshold_percentage,
-            actor.threshold
+            actor.threshold_percentage
         )
 
     def test_execute(self):
@@ -375,7 +375,7 @@ class TestZonePoller(oslotest.base.BaseTestCase):
         self.context = mock.Mock()
         self.pool = mock.Mock()
         self.zone = mock.Mock(name='example.com.', serial=1)
-        self.threshold = 80
+        self.threshold_percentage = 80
         self.executor = mock.Mock()
         self.poller = zone.ZonePoller(
             self.executor,
@@ -383,11 +383,13 @@ class TestZonePoller(oslotest.base.BaseTestCase):
             self.pool,
             self.zone,
         )
-        self.poller._threshold = self.threshold
+        self.poller._threshold = self.threshold_percentage
 
     def test_constructor(self):
         self.assertTrue(self.poller)
-        self.assertEqual(self.threshold, self.poller.threshold)
+        self.assertEqual(
+            self.threshold_percentage, self.poller.threshold_percentage
+        )
 
     def test_call_on_success(self):
         ns_results = [2] * 8 + [0] * 2
@@ -529,7 +531,7 @@ class TestZonePollerPolling(oslotest.base.BaseTestCase):
         self.context = mock.Mock()
         self.zone = mock.Mock(name='example.com.', action='UPDATE', serial=10)
         self.pool = mock.Mock(nameservers=['ns1', 'ns2'])
-        self.threshold = 80
+        self.threshold_percentage = 80
 
         self.poller = zone.ZonePoller(
             self.executor,
@@ -593,6 +595,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
     def test_call_on_delete(self):
         self.task.zone.action = 'DELETE'
         self.task.zone.status = 'SUCCESS'
+        self.task.zone.serial = 0
 
         self.task()
 
@@ -603,6 +606,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
     def test_call_on_success(self):
         self.task.zone.action = 'UPDATE'
         self.task.zone.status = 'SUCCESS'
+        self.task.zone.serial = 0
 
         self.task()
 
@@ -611,6 +615,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
 
     def test_call_central_call(self):
         self.task.zone.status = 'SUCCESS'
+        self.task.zone.serial = 0
 
         self.task()
 
@@ -625,6 +630,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
     def test_call_on_delete_error(self):
         self.task.zone.action = 'DELETE'
         self.task.zone.status = 'ERROR'
+        self.task.zone.serial = 0
 
         self.task()
 
@@ -635,6 +641,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
     def test_call_on_create_error(self):
         self.task.zone.action = 'CREATE'
         self.task.zone.status = 'ERROR'
+        self.task.zone.serial = 0
 
         self.task()
 
@@ -645,6 +652,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
     def test_call_on_update_error(self):
         self.task.zone.action = 'UPDATE'
         self.task.zone.status = 'ERROR'
+        self.task.zone.serial = 0
 
         self.task()
 

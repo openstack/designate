@@ -979,7 +979,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service.delete_zone(self.context,
                                  CentralZoneTestCase.zone__id)
         self.assertTrue(self.service.storage.delete_zone.called)
-        self.assertFalse(self.service.zone_api.delete_zone.called)
+        self.assertFalse(self.service.worker_api.delete_zone.called)
         pcheck, _, _ = designate.central.service.policy.check.call_args[0]
         self.assertEqual('abandon_zone', pcheck)
 
@@ -998,10 +998,10 @@ class CentralZoneTestCase(CentralBasic):
         out = self.service.delete_zone(self.context,
                                        CentralZoneTestCase.zone__id)
         self.assertFalse(self.service.storage.delete_zone.called)
-        self.assertTrue(self.service.zone_api.delete_zone.called)
+        self.assertTrue(self.service.worker_api.delete_zone.called)
         self.assertTrue(designate.central.service.policy.check.called)
         ctx, deleted_dom = \
-            self.service.zone_api.delete_zone.call_args[0]
+            self.service.worker_api.delete_zone.call_args[0]
 
         self.assertEqual('foo', deleted_dom.name)
         self.assertEqual('foo', out.name)
@@ -1444,7 +1444,7 @@ class CentralZoneTestCase(CentralBasic):
                 CentralZoneTestCase.zone__id_2,
                 CentralZoneTestCase.recordset__id)
             self.assertTrue(
-                self.service.zone_api.update_zone.called)
+                self.service.worker_api.update_zone.called)
 
         self.assertTrue(
             self.service._delete_recordset_in_storage.called)
@@ -1689,7 +1689,7 @@ class CentralZoneExportTests(CentralBasic):
             )
         )
 
-        self.service.zone_api.start_zone_export = mock.Mock()
+        self.service.worker_api.start_zone_export = mock.Mock()
 
         out = self.service.create_zone_export(
             self.context,

@@ -27,6 +27,12 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
+def percentage(part, whole):
+    if whole == 0:
+        return 0
+    return 100 * float(part) / float(whole)
+
+
 class TaskConfig(object):
     """
     Configuration mixin for the various configuration settings that
@@ -107,6 +113,7 @@ class Task(TaskConfig):
         self._quota = None
         self._central_api = None
         self._worker_api = None
+        self._threshold = None
 
         self.executor = executor
         self.task_name = self.__class__.__name__
@@ -138,6 +145,15 @@ class Task(TaskConfig):
         if not self._worker_api:
             self._worker_api = worker_rpcapi.WorkerAPI.get_instance()
         return self._worker_api
+
+    @property
+    def threshold_percentage(self):
+        if self._threshold is None:
+            self._threshold = CONF['service:worker'].threshold_percentage
+        return self._threshold
+
+    def compare_threshold(self, successes, total):
+        return percentage(successes, total) >= self.threshold_percentage
 
     def __call__(self):
         raise NotImplementedError
