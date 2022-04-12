@@ -88,17 +88,21 @@ class ZoneActionOnTarget(base.Task):
                           self.action, self.zone.name, self.target)
                 return True
             except Exception as e:
-                LOG.info('Failed to %(action)s zone %(zone)s on '
-                         'target %(target)s on attempt %(attempt)d, '
-                         'Error: %(error)s.',
-                         {
-                             'action': self.action,
-                             'zone': self.zone.name,
-                             'target': self.target.id,
-                             'attempt': retry + 1,
-                             'error': str(e)
-                         })
-                time.sleep(self.retry_interval)
+                LOG.info(
+                    'Failed to %(action)s zone_name=%(zone_name)s '
+                    'zone_id=%(zone_id)s on target=%(target)s on '
+                    'attempt=%(attempt)d Error=%(error)s',
+                    {
+                        'action': self.action,
+                        'zone_name': self.zone.name,
+                        'zone_id': self.zone.id,
+                        'target': self.target,
+                        'attempt': retry + 1,
+                        'error': str(e),
+                    }
+                )
+
+            time.sleep(self.retry_interval)
 
         return False
 
@@ -398,6 +402,10 @@ class ZonePoller(base.Task, ThresholdMixin):
             LOG.debug('Unsuccessful poll for %(zone)s on attempt %(n)d',
                       {'zone': self.zone.name, 'n': retry + 1})
             time.sleep(retry_interval)
+
+            if not self.is_current_action_valid(self.context, self.zone.action,
+                                                self.zone):
+                break
 
         return query_result
 
