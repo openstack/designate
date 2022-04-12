@@ -18,6 +18,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.central import rpcapi as central_rpcapi
+from designate import exceptions
 from designate import quota
 from designate import storage
 from designate import utils
@@ -154,6 +155,53 @@ class Task(TaskConfig):
 
     def compare_threshold(self, successes, total):
         return percentage(successes, total) >= self.threshold_percentage
+
+    def is_current_action_valid(self, context, action, zone):
+        """Is our current action still valid?"""
+
+        # We always allow for DELETE operations.
+        if action == 'DELETE':
+            return True
+
+        try:
+            zone = self.storage.get_zone(context, zone.id)
+
+            # If the zone is either in a DELETE or NONE state,
+            # we don't need to continue with the current action.
+            if zone.action in ['DELETE', 'NONE']:
+                LOG.info(
+                    'Failed to %(action)s zone_name=%(zone_name)s '
+                    'zone_id=%(zone_id)s action state has changed '
+                    'to %(current_action)s, not retrying action',
+                    {
+                        'action': action,
+                        'zone_name': zone.name,
+                        'zone_id': zone.id,
+                        'current_action': zone.action,
+                    }
+                )
+                return False
+        except exceptions.ZoneNotFound:
+            if action != 'CREATE':
+                LOG.info(
+                    'Failed to %(action)s zone_name=%(zone_name)s '
+                    'zone_id=%(zone_id)s Error=ZoneNotFound',
+                    {
+                        'action': action,
+                        'zone_name': zone.name,
+                        'zone_id': zone.id,
+                    }
+                )
+                return False
+        except Exception as e:
+            LOG.warning(
+                'Error trying to get zone action. Error=%(error)s',
+                {
+                    'error': str(e),
+                }
+            )
+
+        return True
 
     def __call__(self):
         raise NotImplementedError
