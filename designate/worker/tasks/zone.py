@@ -28,28 +28,10 @@ from designate.worker.tasks import base
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
-
-def percentage(part, whole):
-    if whole == 0:
-        return 0
-    return 100 * float(part) / float(whole)
-
-
-class ThresholdMixin(object):
-    @property
-    def threshold(self):
-        if not hasattr(self, '_threshold') or self._threshold is None:
-            self._threshold = CONF['service:worker'].threshold_percentage
-        return self._threshold
-
-    def _compare_threshold(self, successes, total):
-        p = percentage(successes, total)
-        return p >= self.threshold
-
-
 ######################
 # CRUD Zone Operations
 ######################
+
 
 class ZoneActionOnTarget(base.Task):
     """
@@ -57,6 +39,7 @@ class ZoneActionOnTarget(base.Task):
 
     :return: Success/Failure of the target action (bool)
     """
+
     def __init__(self, executor, context, zone, target):
         super(ZoneActionOnTarget, self).__init__(executor)
         self.zone = zone
@@ -66,12 +49,16 @@ class ZoneActionOnTarget(base.Task):
         self.task_name = 'ZoneActionOnTarget-%s' % self.action.title()
 
     def __call__(self):
-        LOG.debug("Attempting %(action)s zone %(zone)s on %(target)s",
-                  {
-                      'action': self.action,
-                      'zone': self.zone.name,
-                      'target': self.target
-                  })
+        LOG.debug(
+            'Attempting to %(action)s zone_name=%(zone_name)s '
+            'zone_id=%(zone_id)s on target=%(target)s',
+            {
+                'action': self.action,
+                'zone_name': self.zone.name,
+                'zone_id': self.zone.id,
+                'target': self.target,
+            }
+        )
 
         for retry in range(0, self.max_retries):
             try:
@@ -84,20 +71,33 @@ class ZoneActionOnTarget(base.Task):
                     self.target.backend.update_zone(self.context, self.zone)
                     SendNotify(self.executor, self.zone, self.target)()
 
-                LOG.debug("Successful %s zone %s on %s",
-                          self.action, self.zone.name, self.target)
+                LOG.debug(
+                    'Successfully performed %(action)s for '
+                    'zone_name=%(zone_name)s zone_id=%(zone_id)s '
+                    'on target=%(target)s',
+                    {
+                        'action': self.action,
+                        'zone_name': self.zone.name,
+                        'zone_id': self.zone.id,
+                        'target': self.target,
+                    }
+                )
                 return True
             except Exception as e:
-                LOG.info('Failed to %(action)s zone %(zone)s on '
-                         'target %(target)s on attempt %(attempt)d, '
-                         'Error: %(error)s.',
-                         {
-                             'action': self.action,
-                             'zone': self.zone.name,
-                             'target': self.target.id,
-                             'attempt': retry + 1,
-                             'error': str(e)
-                         })
+                LOG.info(
+                    'Failed to %(action)s zone_name=%(zone_name)s '
+                    'zone_id=%(zone_id)s on target=%(target)s on '
+                    'attempt=%(attempt)d Error=%(error)s',
+                    {
+                        'action': self.action,
+                        'zone_name': self.zone.name,
+                        'zone_id': self.zone.id,
+                        'target': self.target,
+                        'attempt': retry + 1,
+                        'error': str(e)
+                    }
+                )
+
                 time.sleep(self.retry_interval)
 
         return False
@@ -110,6 +110,7 @@ class SendNotify(base.Task):
     :raises: Various exceptions from dnspython
     :return: Success/Failure delivering the notify (bool)
     """
+
     def __init__(self, executor, zone, target):
         super(SendNotify, self).__init__(executor)
         self.zone = zone
@@ -125,26 +126,35 @@ class SendNotify(base.Task):
 
         try:
             dnsutils.notify(self.zone.name, host, port=port)
-            LOG.debug('Sent NOTIFY to %(host)s:%(port)s for zone %(zone)s',
-                      {
-                          'host': host,
-                          'port': port,
-                          'zone': self.zone.name
-                      })
+            LOG.debug(
+                'Sent NOTIFY to host=%(host)s:%(port)s for '
+                'zone_name=%(zone_name)s zone_id=%(zone_id)s',
+                {
+                    'host': host,
+                    'port': port,
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                }
+            )
+
             return True
         except dns.exception.Timeout as e:
-            LOG.info('Timeout on NOTIFY to %(host)s:%(port)s for zone '
-                     '%(zone)s', {
-                         'host': host,
-                         'port': port,
-                         'zone': self.zone.name
-                     })
+            LOG.info(
+                'Timeout on NOTIFY to host=%(host)s:%(port)s for '
+                'zone_name=%(zone_name)s zone_id=%(zone_id)s',
+                {
+                    'host': host,
+                    'port': port,
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                }
+            )
             raise e
 
         return False
 
 
-class ZoneActor(base.Task, ThresholdMixin):
+class ZoneActor(base.Task):
     """
     Orchestrate the Create/Update/Delete action on targets and update status
     if it fails. We would only update status here on an error to perform the
@@ -154,6 +164,7 @@ class ZoneActor(base.Task, ThresholdMixin):
     :return: Whether the ActionOnTarget got to a satisfactory number
              of targets (bool)
     """
+
     def __init__(self, executor, context, pool, zone):
         super(ZoneActor, self).__init__(executor)
         self.context = context
@@ -173,16 +184,23 @@ class ZoneActor(base.Task, ThresholdMixin):
 
     def _threshold_met(self, results):
         # If we don't meet threshold for action, update status
-        met_action_threshold = self._compare_threshold(
-            results.count(True), len(results))
+        success = results.count(True)
+        total = len(results)
+        met_action_threshold = self.compare_threshold(success, total)
 
         if not met_action_threshold:
-            LOG.info('Could not %(action)s %(zone)s on enough targets. '
-                     'Updating status to ERROR',
-                     {
-                         'action': self.zone.action,
-                         'zone': self.zone.name
-                     })
+            LOG.info(
+                'Could not %(action)s zone_name=%(zone_name)s '
+                'zone_id=%(zone_id)s success=%(success)s '
+                'total=%(total)s on enough targets. Updating status to ERROR',
+                {
+                    'action': self.zone.action,
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                    'success': success,
+                    'total': total,
+                }
+            )
             self.zone.status = 'ERROR'
             self._update_status()
             return False
@@ -201,6 +219,7 @@ class ZoneAction(base.Task):
     :return: Success/Failure of the change propagating to a satisfactory
              number of nameservers (bool)
     """
+
     def __init__(self, executor, context, pool, zone, action):
         super(ZoneAction, self).__init__(executor)
         self.context = context
@@ -226,8 +245,15 @@ class ZoneAction(base.Task):
         return poller()
 
     def __call__(self):
-        LOG.info('Attempting %(action)s on zone %(name)s',
-                 {'action': self.action, 'name': self.zone.name})
+        LOG.info(
+            'Attempting to %(action)s zone_name=%(zone_name)s '
+            'zone_id=%(zone_id)s',
+            {
+                'action': self.action,
+                'zone_name': self.zone.name,
+                'zone_id': self.zone.id,
+            }
+        )
 
         if not self._zone_action_on_targets():
             return False
@@ -287,8 +313,17 @@ def parse_query_results(results, zone):
                     no_zones += 1
 
     result = DNSQueryResult(positives, no_zones, low_serial, results)
-    LOG.debug('Results for polling %(zone)s-%(serial)d: %(tup)s',
-              {'zone': zone.name, 'serial': zone.serial, 'tup': result})
+    LOG.debug(
+        'Results for polling zone_name=%(zone_name)s zone_id=%(zone_id)s '
+        'action=%(action)s serial=%(serial)d query=%(query)s',
+        {
+            'zone_name': zone.name,
+            'zone_id': zone.id,
+            'action': zone.action,
+            'serial': zone.serial,
+            'query': result,
+        }
+    )
     return result
 
 
@@ -300,6 +335,7 @@ class PollForZone(base.Task):
     :return: A serial number if the zone exists (int), None if the zone
     does not exist
     """
+
     def __init__(self, executor, zone, ns):
         super(PollForZone, self).__init__(executor)
         self.zone = zone
@@ -313,45 +349,67 @@ class PollForZone(base.Task):
         )
 
     def __call__(self):
-        LOG.debug('Polling for zone %(zone)s serial %(serial)s on %(ns)s',
-                  {
-                      'zone': self.zone.name,
-                      'serial': self.zone.serial,
-                      'ns': self.ns
-                  })
+        LOG.debug(
+            'Polling serial=%(serial)d for zone_name=%(zone_name)s '
+            'zone_id=%(zone_id)s action=%(action)s on ns=%(ns)s',
+            {
+                'serial': self.zone.serial,
+                'zone_name': self.zone.name,
+                'zone_id': self.zone.id,
+                'action': self.zone.action,
+                'ns': self.ns,
+            }
+        )
 
         try:
             serial = self._get_serial()
-            LOG.debug('Found serial %(serial)d on %(host)s for zone %(zone)s',
-                      {
-                          'serial': serial,
-                          'host': self.ns.host,
-                          'zone': self.zone.name
-                      })
+
+            LOG.debug(
+                'Found serial=%(serial)d for zone_name=%(zone_name)s '
+                'zone_id=%(zone_id)s action=%(action)s on ns=%(ns)s',
+                {
+                    'serial': serial,
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                    'action': self.zone.action,
+                    'ns': self.ns,
+                }
+            )
             return serial
             # TODO(timsim): cache if it's higher than cache
         except dns.exception.Timeout:
-            LOG.info('Timeout polling for serial %(serial)d '
-                     '%(host)s for zone %(zone)s',
-                     {
-                         'serial': self.zone.serial,
-                         'host': self.ns.host,
-                         'zone': self.zone.name
-                     })
+            LOG.info(
+                'Timeout polling serial=%(serial)d for '
+                'zone_name=%(zone_name)s zone_id=%(zone_id)s '
+                'action=%(action)s on ns=%(ns)s',
+                {
+                    'serial': self.zone.serial,
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                    'action': self.zone.action,
+                    'ns': self.ns,
+                }
+            )
+
         except Exception as e:
-            LOG.warning('Unexpected failure polling for serial %(serial)d '
-                        '%(host)s for zone %(zone)s. Error: %(error)s',
-                        {
-                            'serial': self.zone.serial,
-                            'host': self.ns.host,
-                            'zone': self.zone.name,
-                            'error': str(e)
-                        })
+            LOG.warning(
+                'Unexpected failure polling serial=%(serial)d for '
+                'zone_name=%(zone_name)s zone_id=%(zone_id)s '
+                'action=%(action)s on ns=%(ns)s Error=%(error)s',
+                {
+                    'serial': self.zone.serial,
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                    'action': self.zone.action,
+                    'ns': self.ns,
+                    'error': str(e),
+                }
+            )
 
         return None
 
 
-class ZonePoller(base.Task, ThresholdMixin):
+class ZonePoller(base.Task):
     """
     Orchestrate polling for a change across the nameservers in a pool
     and compute the proper zone status, and update it.
@@ -359,6 +417,7 @@ class ZonePoller(base.Task, ThresholdMixin):
     :return: Whether the change was successfully polled for on a satisfactory
              number of nameservers in the pool
     """
+
     def __init__(self, executor, context, pool, zone):
         super(ZonePoller, self).__init__(executor)
         self.context = context
@@ -381,7 +440,6 @@ class ZonePoller(base.Task, ThresholdMixin):
 
         retry_interval = self.retry_interval
         query_result = DNSQueryResult(0, 0, 0, 0)
-        results = []
         for retry in range(0, self.max_retries):
             results = self.executor.run([
                 PollForZone(self.executor, self.zone, ns)
@@ -390,24 +448,43 @@ class ZonePoller(base.Task, ThresholdMixin):
 
             query_result = parse_query_results(results, self.zone)
 
-            if self._compare_threshold(query_result.positives, len(results)):
-                LOG.debug('Successful poll for %(zone)s',
-                         {'zone': self.zone.name})
+            if self.compare_threshold(query_result.positives, len(results)):
+                LOG.debug(
+                    'Successful poll for zone_name=%(zone_name)s '
+                    'zone_id=%(zone_id)s action=%(action)s',
+                    {
+                        'zone_name': self.zone.name,
+                        'zone_id': self.zone.id,
+                        'action': self.zone.action,
+                    }
+                )
                 break
+            LOG.debug(
+                'Unsuccessful poll for zone_name=%(zone_name)s '
+                'zone_id=%(zone_id)s action=%(action)s on attempt=%(attempt)d',
+                {
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                    'action': self.zone.action,
+                    'attempt': retry + 1,
+                }
+            )
 
-            LOG.debug('Unsuccessful poll for %(zone)s on attempt %(n)d',
-                      {'zone': self.zone.name, 'n': retry + 1})
             time.sleep(retry_interval)
 
         return query_result
 
     def _on_failure(self, error_status):
-        LOG.info('Could not find %(serial)s for %(zone)s on enough '
-                 'nameservers.',
-                 {
-                     'serial': self.zone.serial,
-                     'zone': self.zone.name
-                 })
+        LOG.info(
+            'Could not find serial=%(serial)d for zone_name=%(zone_name)s '
+            'zone_id=%(zone_id)s action=%(action)s on enough nameservers',
+            {
+                'serial': self.zone.serial,
+                'zone_name': self.zone.name,
+                'zone_id': self.zone.id,
+                'action': self.zone.action,
+            }
+        )
 
         self.zone.status = error_status
 
@@ -419,8 +496,16 @@ class ZonePoller(base.Task, ThresholdMixin):
     def _on_success(self, query_result, status):
         # TODO(timsim): Change this back to active, so dumb central
         self.zone.status = status
-        LOG.debug('Found success for %(zone)s at serial %(serial)d',
-                  {'zone': self.zone.name, 'serial': self.zone.serial})
+        LOG.debug(
+            'Found success for zone_name=%(zone_name)s '
+            'zone_id=%(zone_id)s action=%(action)s at serial=%(serial)d',
+            {
+                'zone_name': self.zone.name,
+                'zone_id': self.zone.id,
+                'action': self.zone.action,
+                'serial': self.zone.serial,
+            }
+        )
 
         self.zone.serial = query_result.consensus_serial
         return True
@@ -444,7 +529,7 @@ class ZonePoller(base.Task, ThresholdMixin):
 
         # Ensure if we don't have too many nameservers that
         # don't have the zone.
-        over_no_zone_threshold = self._compare_threshold(
+        over_no_zone_threshold = self.compare_threshold(
             (total - query_result.no_zones), total
         )
 
@@ -453,7 +538,7 @@ class ZonePoller(base.Task, ThresholdMixin):
 
         # The action should have been pushed out to a minimum
         # number of nameservers.
-        if not self._compare_threshold(query_result.positives, total):
+        if not self.compare_threshold(query_result.positives, total):
             return False, 'ERROR'
 
         # We have success of the action on the nameservers and enough
@@ -485,6 +570,7 @@ class UpdateStatus(base.Task):
 
     :return: No return value
     """
+
     def __init__(self, executor, context, zone):
         super(UpdateStatus, self).__init__(executor)
         self.zone = zone
@@ -492,10 +578,13 @@ class UpdateStatus(base.Task):
 
     def __call__(self):
         LOG.debug(
-            'Updating status for %(zone)s to %(status)s:%(action)s', {
-                'zone': self.zone.name,
-                'status': self.zone.status,
+            'Updating status for zone_name=%(zone_name)s '
+            'zone_id=%(zone_id)s to action=%(action)s serial=%(serial)d',
+            {
+                'zone_name': self.zone.name,
+                'zone_id': self.zone.id,
                 'action': self.zone.action,
+                'serial': self.zone.serial,
             }
         )
 
@@ -519,6 +608,7 @@ class RecoverShard(base.Task):
 
     :return: No return value
     """
+
     def __init__(self, executor, context, begin, end):
         super(RecoverShard, self).__init__(executor)
         self.context = context
@@ -555,8 +645,18 @@ class RecoverShard(base.Task):
 
     def __call__(self):
         zones = self._get_zones()
-
         for zone in zones:
+            LOG.debug(
+                'Trying to recover zone_name=%(zone_name)s '
+                'zone_id=%(zone_id)s action=%(action)s status=%(status)s',
+                {
+                    'zone_name': zone.name,
+                    'zone_id': zone.id,
+                    'action': zone.action,
+                    'status': zone.status,
+                }
+            )
+
             if zone.action == 'CREATE':
                 self.worker_api.create_zone(self.context, zone)
             elif zone.action == 'UPDATE':
@@ -575,6 +675,7 @@ class ExportZone(base.Task):
     perform the necessary actions to Export the zone, and update the
     export row in storage via central.
     """
+
     def __init__(self, executor, context, zone, export):
         super(ExportZone, self).__init__(executor)
         self.context = context
@@ -604,16 +705,17 @@ class ExportZone(base.Task):
         if synchronous:
             try:
                 self.quota.limit_check(
-                        context, context.project_id, api_export_size=size)
+                    context, context.project_id, api_export_size=size)
             except exceptions.OverQuota:
                 LOG.debug('Zone Export too large to perform synchronously')
                 export.status = 'ERROR'
                 export.message = 'Zone is too large to export'
                 return export
 
-            export.location = \
-                'designate://v2/zones/tasks/exports/%(eid)s/export' % \
-                {'eid': export.id}
+            export.location = (
+                    'designate://v2/zones/tasks/exports/%(eid)s/export' %
+                    {'eid': export.id}
+            )
 
             export.status = 'COMPLETE'
         else:

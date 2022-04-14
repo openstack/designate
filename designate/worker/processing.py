@@ -73,17 +73,19 @@ class Executor(object):
 
         If a single task is pass
         """
-        start_time = time.time()
-
         if callable(tasks):
             tasks = [tasks]
+
+        start_time = time.time()
         results = [r for r in self._executor.map(self.do, tasks)]
+        elapsed_time = time.time() - start_time
 
-        end_time = time.time()
-        task_time = end_time - start_time
-
-        task_names = [self.task_name(t) for t in tasks]
-        LOG.debug("Finished Tasks %(tasks)s in %(time)fs",
-                  {'tasks': task_names, 'time': task_time})
+        LOG.debug(
+            'Finished Task(s): %(tasks)s in %(time)fs',
+            {
+                'tasks': ', '.join([self.task_name(t) for t in tasks]),
+                'time': elapsed_time
+            }
+        )
 
         return results

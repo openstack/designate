@@ -91,12 +91,12 @@ class Service(service.RPCService):
                 if len(pool.targets) > 0:
                     has_targets = True
                 else:
-                    LOG.error("No targets for %s found.", pool)
+                    LOG.error('No targets for %s found.', pool)
                     time.sleep(5)
 
             # Pool data may not have migrated to the DB yet
             except exceptions.PoolNotFound:
-                LOG.error("Pool ID %s not found.", pool_id)
+                LOG.error('Pool ID %s not found.', pool_id)
                 time.sleep(5)
             # designate-central service may not have started yet
             except messaging.exceptions.MessagingTimeout:
@@ -130,7 +130,7 @@ class Service(service.RPCService):
 
     def get_pool(self, pool_id):
         if pool_id not in self.pools_map:
-            LOG.info("Lazily loading pool %s", pool_id)
+            LOG.info('Lazily loading pool %s', pool_id)
             self.pools_map[pool_id] = self.load_pool(pool_id)
         return self.pools_map[pool_id]
 

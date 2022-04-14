@@ -251,10 +251,6 @@ class Service(service.RPCService):
     def worker_api(self):
         return worker_rpcapi.WorkerAPI.get_instance()
 
-    @property
-    def zone_api(self):
-        return self.worker_api
-
     def _is_valid_zone_name(self, context, zone_name):
         # Validate zone name length
         if zone_name is None:
@@ -971,7 +967,7 @@ class Service(service.RPCService):
 
         zone = self._create_zone_in_storage(context, zone)
 
-        self.zone_api.create_zone(context, zone)
+        self.worker_api.create_zone(context, zone)
 
         if zone.type == 'SECONDARY':
             self.mdns_api.perform_zone_xfr(context, zone)
@@ -1146,7 +1142,7 @@ class Service(service.RPCService):
         if 'masters' in changes:
             self.mdns_api.perform_zone_xfr(context, zone)
 
-        self.zone_api.update_zone(context, zone)
+        self.worker_api.update_zone(context, zone)
 
         return zone
 
@@ -1211,7 +1207,7 @@ class Service(service.RPCService):
             zone = self.storage.delete_zone(context, zone.id)
         else:
             zone = self._delete_zone_in_storage(context, zone)
-            self.zone_api.delete_zone(context, zone)
+            self.worker_api.delete_zone(context, zone)
 
         return zone
 
@@ -1359,7 +1355,7 @@ class Service(service.RPCService):
         recordset, zone = self._create_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
 
-        self.zone_api.update_zone(context, zone)
+        self.worker_api.update_zone(context, zone)
 
         recordset.zone_name = zone.name
         recordset.obj_reset_changes(['zone_name'])
@@ -1550,7 +1546,7 @@ class Service(service.RPCService):
         recordset, zone = self._update_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
 
-        self.zone_api.update_zone(context, zone)
+        self.worker_api.update_zone(context, zone)
 
         return recordset
 
@@ -1623,7 +1619,7 @@ class Service(service.RPCService):
         recordset, zone = self._delete_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
 
-        self.zone_api.update_zone(context, zone)
+        self.worker_api.update_zone(context, zone)
 
         recordset.zone_name = zone.name
         recordset.obj_reset_changes(['zone_name'])
