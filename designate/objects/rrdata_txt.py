@@ -25,32 +25,14 @@ class TXT(Record):
     Defined in: RFC1035
     """
     fields = {
-        'txt_data': fields.TxtField()
+        'txt_data': fields.TxtField(maxLength=255)
     }
 
-    @staticmethod
-    def _is_wrapped_in_double_quotes(value):
-        return value.startswith('"') and value.endswith('"')
+    def _to_string(self):
+        return self.txt_data
 
-    @staticmethod
-    def _is_missing_double_quote(value):
-        return ((value.startswith('"') and not value.endswith('"')) or
-                (not value.startswith('"') and value.endswith('"')))
-
-    def _validate_record_single_string(self, value):
-        if len(value) > 255:
-            raise ValueError(
-                'Any TXT record string exceeding 255 characters has to be '
-                'split.'
-            )
-
-        if self._is_missing_double_quote(value):
-            raise ValueError(
-                'TXT record is missing a double quote either at beginning '
-                'or at end.'
-            )
-
-        if not self._is_wrapped_in_double_quotes(value):
+    def from_string(self, value):
+        if (not value.startswith('"') and not value.endswith('"')):
             # value with spaces should be quoted as per RFC1035 5.1
             for element in value:
                 if element.isspace():
@@ -67,29 +49,6 @@ class TXT(Record):
                         raise ValueError(
                             'Quotation marks should be escaped with backslash.'
                         )
-
-    def from_string(self, value):
-        if len(value) > 255:
-            # expecting record containing multiple strings as
-            # per rfc7208 3.3 and rfc1035 3.3.14
-            stripped_value = value.strip('"')
-            if (not self._is_wrapped_in_double_quotes(value) and
-                    '" "' not in stripped_value):
-                raise ValueError(
-                    'TXT record strings over 255 characters have to be split '
-                    'into multiple strings wrapped in double quotes.'
-                )
-
-            record_strings = stripped_value.split('" "')
-            for record_string in record_strings:
-                # add back the delimiting quotes after
-                # strip and split for each string
-                record_string = f'"{record_string}"'
-                # further validate each string individually
-                self._validate_record_single_string(value=record_string)
-        else:
-            # validate single TXT record string
-            self._validate_record_single_string(value=value)
 
         self.txt_data = value
 

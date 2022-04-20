@@ -149,22 +149,6 @@ because it is the default:
    $ dig @ns1.example.net www.example.org. +short
    192.0.2.1
 
-If you want to construct a ``TXT`` record that exceeds the 255-octet
-maximum length of a character-string, it has to be split into
-multiple strings as defined in RFC7208 section 3.3. For example,
-``"v=DKIM1; .... firstsecond string..."`` can become
-``"v=DKIM1; .... first" "second string..."``. If you provide a record
-data with less than 255 characters, it will be treated as a
-single character-string and validated for empty spaces outside quotes
-and unescaped double quotation marks as in RFC1035 section 5.1.
-
-For example, to create a ``TXT`` record made of one string of 410
-characters you can split it into 2 to like this:
-
-.. code-block:: console
-
-   $ openstack recordset create --type TXT --record '"210 characters string" "200 characters string"' example.org. _domainkey
-
 Updating a recordset
 --------------------
 

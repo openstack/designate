@@ -671,18 +671,6 @@ class ApiV2RecordSetsTest(v2.ApiV2TestCase):
                                self.client.put_json, url, body,
                                headers={'X-Test-Role': 'member'})
 
-    def test_create_txt_record_multiple_strings(self):
-        # create TXT record with string split in 2
-        new_zone = self.create_zone(name='example.net.')
-        recordset = self.create_recordset(new_zone, 'TXT')
-        record = '"{}" "{}"'.format('a' * 250, 'a' * 250)
-        body = {'description': 'Tester', 'records': [record]}
-        url = '/zones/{}/recordsets/{}'.format(
-            recordset['zone_id'], recordset['id']
-        )
-        self.client.put_json(url, body, status=202,
-                             headers={'X-Test-Role': 'member'})
-
     def test_update_recordset_with_record_clear(self):
         # Create a recordset with one record
         recordset = self.create_recordset(self.zone, 'A')
