@@ -2743,6 +2743,7 @@ class Service(service.RPCService):
 
         return created_zone_import
 
+    @rpc.expected_exceptions()
     def _import_zone(self, context, zone_import, request_body):
         zone = None
         try:
