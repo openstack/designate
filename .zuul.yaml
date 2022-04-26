@@ -118,7 +118,7 @@
         DESIGNATE_BACKEND_DRIVER: pdns4
 
 - job:
-    name: designate-grenade-pdns4
+    name: designate-grenade-common
     parent: grenade
     required-projects:
       - opendev.org/openstack/horizon
@@ -126,7 +126,6 @@
       - opendev.org/openstack/designate-dashboard
       - opendev.org/openstack/designate-tempest-plugin
       - opendev.org/openstack/python-designateclient
-    post-run: playbooks/designate-pdns4/post.yaml
     vars:
       devstack_plugins:
         designate: https://opendev.org/openstack/designate
@@ -145,10 +144,6 @@
         s-object: false
         s-proxy: false
         c-bak: false
-      grenade_devstack_localrc:
-        shared:
-          DESIGNATE_BACKEND_DRIVER: pdns4
-          DESIGNATE_SERVICE_PORT_DNS: 5322
       grenade_localrc:
         BASE_RUN_SMOKE: False
       tox_envlist: all
@@ -161,6 +156,22 @@
       - ^doc/.*$
       - ^etc/.*$
       - ^releasenotes/.*$
+
+- job:
+    name: designate-grenade-pdns4
+    parent: designate-grenade-common
+    post-run: playbooks/designate-pdns4/post.yaml
+    vars:
+      grenade_devstack_localrc:
+        shared:
+          DESIGNATE_BACKEND_DRIVER: pdns4
+          DESIGNATE_SERVICE_PORT_DNS: 5322
+
+- job:
+    name: designate-grenade-bind9
+    parent: designate-grenade-common
+    post-run: playbooks/designate-bind9/post.yaml
+    voting: false
 
 - job:
     name: designate-tox-dnspython-latest
@@ -181,6 +192,7 @@
             voting: false
         - designate-bind9-scoped-tokens
         - designate-pdns4
+        - designate-grenade-bind9
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
