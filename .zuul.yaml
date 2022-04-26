@@ -46,12 +46,14 @@
     parent: designate-base
 
 - job:
-    name: designate-bind9-centos8stream-fips
+    name: designate-bind9-centos9stream-fips
     parent: designate-bind9
-    nodeset: devstack-single-node-centos-8-stream
+    nodeset: devstack-single-node-centos-9-stream
     description: |
-      Functional testing for a FIPS enabled Centos 8 stream system
+      Functional testing for a FIPS enabled Centos 9 stream system
     pre-run: playbooks/enable-fips.yaml
+    vars:
+      nslookup_target: 'opendev.org'
 
 - job:
     name: designate-bind9-scoped-tokens
@@ -70,6 +72,11 @@
               designate: True
             dns_feature_enabled:
               enforce_new_defaults: True
+
+- job:
+    name: designate-bind9-centos-9-stream
+    parent: designate-bind9
+    nodeset: devstack-single-node-centos-9-stream
 
 - job:
     name: designate-pdns4
@@ -152,7 +159,7 @@
     check:
       jobs:
         - designate-bind9
-        - designate-bind9-centos8stream-fips:
+        - designate-bind9-centos9stream-fips:
             voting: false
         - designate-bind9-scoped-tokens
         - designate-pdns4
