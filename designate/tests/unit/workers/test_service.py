@@ -21,9 +21,11 @@ import oslo_messaging as messaging
 import oslotest.base
 
 from designate import backend
+from designate.central import rpcapi as central_rpcapi
 from designate import exceptions
 from designate import objects
 import designate.service
+from designate import storage
 import designate.tests
 from designate.tests import fixtures
 from designate.worker import processing
@@ -67,12 +69,19 @@ class TestService(oslotest.base.BaseTestCase):
         self.assertEqual('worker', self.service.service_name)
 
     def test_central_api(self):
-        self.service._central_api = 'foo'
-        self.assertEqual(self.service.central_api, 'foo')
+        self.assertIsNone(self.service._central_api)
+        self.assertIsInstance(self.service.central_api,
+                              central_rpcapi.CentralAPI)
+        self.assertIsNotNone(self.service._central_api)
+        self.assertIsInstance(self.service.central_api,
+                              central_rpcapi.CentralAPI)
 
+    @mock.patch.object(storage, 'get_storage', mock.Mock())
     def test_storage(self):
-        self.service._storage = 'foo'
-        self.assertEqual(self.service.storage, 'foo')
+        self.assertIsNone(self.service._storage)
+        self.assertIsInstance(self.service.storage, mock.Mock)
+        self.assertIsNotNone(self.service._storage)
+        self.assertIsInstance(self.service.storage, mock.Mock)
 
     @mock.patch.object(backend, 'get_backend', mock.Mock())
     def test_setup_target_backends(self):
