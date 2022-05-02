@@ -139,8 +139,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         fixture = self.get_zone_fixture(fixture=0)
         fixture['ttl'] = 0
         body = fixture
-        self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+        response = self.client.post_json('/zones', body)
+        self.assertEqual(202, response.status_int)
 
     def test_create_zone_ttl_is_greater_than_max(self):
         fixture = self.get_zone_fixture(fixture=0)
