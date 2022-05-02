@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    Allows for a minimum TTL value of zero to be used instead of 1. As stated
+    in RFC https://datatracker.ietf.org/doc/html/rfc2181#section-8.
+
+    .. _bug 1926429: https://bugs.launchpad.net/designate/+bug/1926429
+
