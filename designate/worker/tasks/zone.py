@@ -94,11 +94,11 @@ class ZoneActionOnTarget(base.Task):
                         'zone_id': self.zone.id,
                         'target': self.target,
                         'attempt': retry + 1,
-                        'error': str(e)
+                        'error': str(e),
                     }
                 )
 
-                time.sleep(self.retry_interval)
+            time.sleep(self.retry_interval)
 
         return False
 
@@ -471,6 +471,10 @@ class ZonePoller(base.Task):
             )
 
             time.sleep(retry_interval)
+
+            if not self.is_current_action_valid(self.context, self.zone.action,
+                                                self.zone):
+                break
 
         return query_result
 
