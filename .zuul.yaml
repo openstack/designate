@@ -178,6 +178,7 @@
     parent: openstack-tox
     description: |
       Run the Designate unit tests with the latest release of dnspython.
+    irrelevant-files: *base_irrelevant_files
     vars:
       tox_envlist: dnspython-latest
 
