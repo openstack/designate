@@ -71,7 +71,7 @@ class DeletedZonePurgeTest(TestCase):
         # Create a number of deleted zones in the past days.
         now = timeutils.utcnow()
         for index in range(self.number_of_zones):
-            age = index * (self.time_threshold // self.number_of_zones * 2)
+            age = index * (self.time_threshold // self.number_of_zones * 2) - 1
             delta = datetime.timedelta(seconds=age)
             deletion_time = now - delta
             name = "example%d.org." % index
@@ -83,14 +83,8 @@ class DeletedZonePurgeTest(TestCase):
         self.config(quota_zones=self.number_of_zones)
         self._create_deleted_zones()
 
-        for remaining in reversed(range(self.number_of_zones // 2,
-                                        self.number_of_zones,
-                                        self.batch_size)):
+        for remaining in range(5):
             self.purge_task_fixture.task()
-
-            zones = self._fetch_all_zones()
-            LOG.info("Number of zones: %d", len(zones))
-            self.assertEqual(remaining, len(zones))
 
         remaning_zones = self._fetch_all_zones()
         self.assertEqual(len(remaning_zones), self.number_of_zones // 2)
