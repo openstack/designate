@@ -15,17 +15,29 @@
 # under the License.mport threading
 from unittest import mock
 
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
+
 from designate import exceptions
 from designate.tests import fixtures
 from designate.tests import TestCase
 from designate.worker import processing
 
 
+CONF = cfg.CONF
+
+
 class TestProcessingExecutor(TestCase):
     def setUp(self):
         super(TestProcessingExecutor, self).setUp()
         self.stdlog = fixtures.StandardLogging()
+        self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)
+
+    def test_default_executor(self):
+        CONF.set_override('threads', 100, 'service:worker')
+        executor = processing.default_executor()
+        self.assertEqual(100, executor._max_workers)
 
     def test_execute_multiple_tasks(self):
         def t1():
