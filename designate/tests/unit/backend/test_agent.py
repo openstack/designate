@@ -65,7 +65,8 @@ class AgentBackendTestCase(tests.TestCase):
     @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
     def test_create_zone(self, mock_get_instance):
         self.backend._make_and_send_dns_message = mock.Mock(
-            return_value=(1, 2))
+            return_value=1
+        )
 
         out = self.backend.create_zone(self.context, self.zone)
 
@@ -76,10 +77,11 @@ class AgentBackendTestCase(tests.TestCase):
     @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
     def test_create_zone_exception(self, mock_get_instance):
         self.backend._make_and_send_dns_message = mock.Mock(
-            return_value=(None, 2))
+            return_value=None
+        )
 
         self.assertRaisesRegex(
-            exceptions.Backend, 'create_zone.* failed',
+            exceptions.Backend, 'Failed create_zone()',
             self.backend.create_zone, self.context, self.zone,
         )
 
@@ -110,48 +112,54 @@ class AgentBackendTestCase(tests.TestCase):
     @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
     def test_delete_zone_exception(self, mock_get_instance):
         self.backend._make_and_send_dns_message = mock.Mock(
-            return_value=(None, 2))
+            return_value=None
+        )
 
         self.assertRaisesRegex(
-            exceptions.Backend, 'failed delete_zone',
+            exceptions.Backend, 'Failed delete_zone()',
             self.backend.delete_zone, self.context, self.zone,
         )
 
         self.backend._make_and_send_dns_message.assert_called_with(
             self.zone.name, 1, 14, pcodes.DELETE, pcodes.SUCCESS, 2, 3)
 
-    def test_make_and_send_dns_message_timeout(self):
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_make_and_send_dns_message_timeout(self, mock_send_dns_message):
         self.backend._make_dns_message = mock.Mock(return_value='')
-        self.backend._send_dns_message = mock.Mock(
-            return_value=dns.exception.Timeout())
+        mock_send_dns_message.side_effect = dns.exception.Timeout()
 
-        out = self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        self.assertIsNone(
+            self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        )
 
-        self.assertEqual((None, 0), out)
-
-    def test_make_and_send_dns_message_bad_response(self):
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_make_and_send_dns_message_bad_response(self,
+                                                    mock_send_dns_message):
         self.backend._make_dns_message = mock.Mock(return_value='')
-        self.backend._send_dns_message = mock.Mock(
-            return_value=dns.query.BadResponse())
+        mock_send_dns_message.side_effect = dns.query.BadResponse()
 
-        out = self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        self.assertIsNone(
+            self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        )
 
-        self.assertEqual((None, 0), out)
-
-    def test_make_and_send_dns_message_missing_AA_flags(self):
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_make_and_send_dns_message_missing_AA_flags(self,
+                                                        mock_send_dns_message):
         self.backend._make_dns_message = mock.Mock(return_value='')
         response = RoObject(
             rcode=mock.Mock(return_value=dns.rcode.NOERROR),
             # rcode is NOERROR but (flags & dns.flags.AA) gives 0
             flags=0,
         )
-        self.backend._send_dns_message = mock.Mock(return_value=response)
+        mock_send_dns_message.return_value = response
 
-        out = self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        self.assertIsNone(
+            self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        )
 
-        self.assertEqual((None, 0), out)
-
-    def test_make_and_send_dns_message_error_flags(self):
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_make_and_send_dns_message_error_flags(self,
+                                                   mock_send_dns_message):
         self.backend._make_dns_message = mock.Mock(return_value='')
         response = RoObject(
             rcode=mock.Mock(return_value=dns.rcode.NOERROR),
@@ -159,35 +167,23 @@ class AgentBackendTestCase(tests.TestCase):
             flags=123,
             ednsflags=321
         )
-        self.backend._send_dns_message = mock.Mock(return_value=response)
+        mock_send_dns_message.return_value = response
 
-        out = self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        self.assertIsNone(
+            self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        )
 
-        self.assertEqual((None, 0), out)
-
-    def test_make_and_send_dns_message(self):
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_make_and_send_dns_message(self, mock_send_dns_message):
         self.backend._make_dns_message = mock.Mock(return_value='')
         response = RoObject(
             rcode=mock.Mock(return_value=dns.rcode.NOERROR),
             flags=agent.dns.flags.AA,
             ednsflags=321
         )
-        self.backend._send_dns_message = mock.Mock(return_value=response)
+        mock_send_dns_message.return_value = response
 
-        out = self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
-
-        self.assertEqual((response, 0), out)
-
-    @mock.patch.object(dnsutils, 'get_ip_address')
-    @mock.patch.object(dns.query, 'tcp')
-    @mock.patch.object(dns.query, 'udp')
-    def test_send_dns_message(self, mock_udp, mock_tcp, mock_get_ip_address):
-        mock_udp.return_value = 'mock udp resp'
-        mock_get_ip_address.return_value = '10.0.1.39'
-
-        out = self.backend._send_dns_message('msg', '10.0.1.39', 123, 1)
-
-        self.assertFalse(mock_tcp.called)
-        mock_udp.assert_called_with('msg', '10.0.1.39', port=123,
-                                    timeout=1)
-        self.assertEqual('mock udp resp', out)
+        self.assertEqual(
+            response,
+            self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
+        )
