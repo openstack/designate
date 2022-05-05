@@ -22,7 +22,6 @@ import designate.backend.agent as agent
 import designate.backend.private_codes as pcodes
 from designate import dnsutils
 from designate import exceptions
-from designate.mdns import rpcapi as mdns_api
 from designate import objects
 from designate import tests
 from designate.tests.unit import RoObject
@@ -58,12 +57,7 @@ class AgentBackendTestCase(tests.TestCase):
             objects.PoolTarget.from_dict(self.target)
         )
 
-    @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
-    def test_mdns_api(self, mock_get_instance):
-        self.assertIsInstance(self.backend.mdns_api, mock.Mock)
-
-    @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
-    def test_create_zone(self, mock_get_instance):
+    def test_create_zone(self):
         self.backend._make_and_send_dns_message = mock.Mock(
             return_value=1
         )
@@ -74,8 +68,7 @@ class AgentBackendTestCase(tests.TestCase):
             self.zone.name, 1, 14, pcodes.CREATE, pcodes.SUCCESS, 2, 3)
         self.assertIsNone(out)
 
-    @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
-    def test_create_zone_exception(self, mock_get_instance):
+    def test_create_zone_exception(self):
         self.backend._make_and_send_dns_message = mock.Mock(
             return_value=None
         )
@@ -88,18 +81,10 @@ class AgentBackendTestCase(tests.TestCase):
         self.backend._make_and_send_dns_message.assert_called_with(
             self.zone.name, 1, 14, pcodes.CREATE, pcodes.SUCCESS, 2, 3)
 
-    @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
-    def test_update_zone(self, mock_get_instance):
-        self.backend.mdns_api.notify_zone_changed = mock.Mock()
+    def test_update_zone(self):
+        self.assertIsNone(self.backend.update_zone(self.context, self.zone))
 
-        out = self.backend.update_zone(self.context, self.zone)
-
-        self.backend.mdns_api.notify_zone_changed.assert_called_with(
-            self.context, self.zone, 2, 3, 1, 4, 5, 6)
-        self.assertIsNone(out)
-
-    @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
-    def test_delete_zone(self, mock_get_instance):
+    def test_delete_zone(self):
         self.backend._make_and_send_dns_message = mock.Mock(
             return_value=(1, 2))
 
@@ -109,8 +94,7 @@ class AgentBackendTestCase(tests.TestCase):
             self.zone.name, 1, 14, pcodes.DELETE, pcodes.SUCCESS, 2, 3)
         self.assertIsNone(out)
 
-    @mock.patch.object(mdns_api.MdnsAPI, 'get_instance')
-    def test_delete_zone_exception(self, mock_get_instance):
+    def test_delete_zone_exception(self):
         self.backend._make_and_send_dns_message = mock.Mock(
             return_value=None
         )

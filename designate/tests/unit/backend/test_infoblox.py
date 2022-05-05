@@ -12,14 +12,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest import mock
-
 import requests_mock
 
 from designate.backend import impl_infoblox
 from designate.backend.impl_infoblox import ibexceptions
 from designate import exceptions
-from designate.mdns import rpcapi as mdns_rpcapi
 from designate import objects
 import designate.tests
 
@@ -68,12 +65,8 @@ class InfobloxBackendTestCase(designate.tests.TestCase):
 
         self.backend.create_zone(self.context, self.zone)
 
-    @mock.patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
-    def test_update_zone(self, mock_notify_zone_changed):
+    def test_update_zone(self):
         self.backend.update_zone(self.context, self.zone)
-
-        mock_notify_zone_changed.assert_called_with(
-            self.context, self.zone, '127.0.0.1', 53, 30, 15, 10, 5)
 
     @requests_mock.mock()
     def test_delete_zone(self, req_mock):

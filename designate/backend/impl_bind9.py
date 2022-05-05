@@ -104,10 +104,6 @@ class Bind9Backend(base.Backend):
                 LOG.warning('RNDC call failure: %s', e)
                 raise
 
-        self.mdns_api.notify_zone_changed(
-            context, zone, self._host, self._port, self.timeout,
-            self.retry_interval, self.max_retries, self.delay)
-
     def get_zone(self, context, zone):
         """Returns True if zone exists and False if not"""
         LOG.debug('Get Zone')

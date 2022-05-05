@@ -117,10 +117,6 @@ class SendNotify(base.Task):
         self.target = target
 
     def __call__(self):
-        if not CONF['service:worker'].notify:
-            # TODO(timsim): Remove this someday
-            return True
-
         host = self.target.options.get('host')
         port = int(self.target.options.get('port'))
 

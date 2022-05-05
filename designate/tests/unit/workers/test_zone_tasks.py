@@ -282,21 +282,6 @@ class TestSendNotify(oslotest.base.BaseTestCase):
             self.actor
         )
 
-    @mock.patch.object(dnsutils, 'notify')
-    def test_call_dont_notify(self, mock_notify):
-        CONF.set_override('notify', False, 'service:worker')
-
-        self.zone = objects.Zone(name='example.org.')
-        self.actor = zone.SendNotify(
-            self.executor,
-            self.zone,
-            self.target,
-        )
-
-        self.assertTrue(self.actor())
-
-        mock_notify.assert_not_called()
-
 
 class TestZoneActor(oslotest.base.BaseTestCase):
     def setUp(self):

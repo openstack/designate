@@ -33,16 +33,6 @@ class MdnsNotifyTest(designate.tests.TestCase):
         self.notify = notify.NotifyEndpoint(mock.Mock())
 
     @mock.patch('time.sleep')
-    def test_notify_zone_changed(self, mock_sleep):
-        self.notify._make_and_send_dns_message = mock.Mock()
-
-        self.notify.notify_zone_changed(*range(8))
-
-        self.notify._make_and_send_dns_message.assert_called_with(
-            1, 2, 3, 4, 5, 6, notify=True
-        )
-
-    @mock.patch('time.sleep')
     def test_get_serial_number_nxdomain(self, mock_sleep):
         # The zone is not found but it was supposed to be there
         response = RoObject(
@@ -58,7 +48,7 @@ class MdnsNotifyTest(designate.tests.TestCase):
         )
 
         out = self.notify.get_serial_number(
-            'c', zone, 'h', 1234, 1, 2, 3, 4
+            zone, 'h', 1234, 1, 2, 3, 4
         )
 
         self.assertEqual(('NO_ZONE', None, 0), out)
@@ -79,7 +69,7 @@ class MdnsNotifyTest(designate.tests.TestCase):
         )
 
         out = self.notify.get_serial_number(
-            'c', zone, 'h', 1234, 1, 2, 3, 4
+            zone, 'h', 1234, 1, 2, 3, 4
         )
 
         self.assertEqual(('NO_ZONE', 0, 3), out)
@@ -102,7 +92,7 @@ class MdnsNotifyTest(designate.tests.TestCase):
         )
 
         out = self.notify.get_serial_number(
-            'c', zone, 'h', 1234, 1, 2, 3, 4
+            zone, 'h', 1234, 1, 2, 3, 4
         )
 
         self.assertEqual(('SUCCESS', 314, 3), out)
@@ -125,7 +115,7 @@ class MdnsNotifyTest(designate.tests.TestCase):
         )
 
         out = self.notify.get_serial_number(
-            'c', zone, 'h', 1234, 1, 2, 3, 4
+            zone, 'h', 1234, 1, 2, 3, 4
         )
 
         self.assertEqual(('ERROR', 310, 0), out)

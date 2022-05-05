@@ -9,13 +9,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest import mock
-
 import requests_mock
 
 from designate.backend import impl_pdns4
 from designate import exceptions
-from designate.mdns import rpcapi as mdns_rpcapi
 from designate import objects
 import designate.tests
 from designate.tests import fixtures
@@ -53,8 +50,7 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
         )
 
     @requests_mock.mock()
-    @mock.patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
-    def test_create_zone_success(self, req_mock, mock_notify_zone_changed):
+    def test_create_zone_success(self, req_mock):
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
         )
@@ -78,12 +74,8 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
             req_mock.last_request.headers.get('X-API-Key'), 'api_key'
         )
 
-        mock_notify_zone_changed.assert_called_with(
-            self.context, self.zone, '127.0.0.1', 53, 30, 15, 10, 5)
-
     @requests_mock.mock()
-    @mock.patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
-    def test_create_zone_ipv6(self, req_mock, mock_notify_zone_changed):
+    def test_create_zone_ipv6(self, req_mock):
         self.target['masters'] = [
             {'host': '2001:db8::9abc', 'port': 53},
         ]
@@ -114,9 +106,6 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
         self.assertEqual(
             req_mock.last_request.headers.get('X-API-Key'), 'api_key'
         )
-
-        mock_notify_zone_changed.assert_called_with(
-            self.context, self.zone, '127.0.0.1', 53, 30, 15, 10, 5)
 
     @requests_mock.mock()
     def test_create_zone_already_exists(self, req_mock):

@@ -30,7 +30,6 @@ from oslo_log import log as logging
 
 from designate import dnsutils
 from designate.mdns import base
-from designate.metrics import metrics
 
 dns_query = eventlet.import_patched('dns.query')
 
@@ -39,48 +38,14 @@ CONF = cfg.CONF
 
 
 class NotifyEndpoint(base.BaseEndpoint):
-    RPC_API_VERSION = '2.0'
+    RPC_API_VERSION = '2.1'
     RPC_API_NAMESPACE = 'notify'
 
-    def notify_zone_changed(self, context, zone, host, port, timeout,
-                            retry_interval, max_retries, delay):
-        """
-        :param context: The user context.
-        :param zone: The designate zone object.  This contains the zone
-            name.
-        :param host: A notify is sent to this host.
-        :param port: A notify is sent to this port.
-        :param timeout: The time (in seconds) to wait for a NOTIFY response
-            from server.
-        :param retry_interval: The time (in seconds) between retries.
-        :param max_retries: The maximum number of retries mindns would do for
-            sending a NOTIFY message. After this many retries, mindns gives up.
-        :param delay: The time to wait before sending the first NOTIFY request.
-        :return: a tuple of (response, current_retry) where
-            response is the response on success or None on failure.
-            current_retry is the current retry number.
-            The return value is just used for testing and not by pool manager.
-        """
-        start_time = time.time()
-        try:
-            time.sleep(delay)
-            return self._make_and_send_dns_message(
-                zone, host, port, timeout, retry_interval, max_retries,
-                notify=True)
-        finally:
-            metrics.timing('mdns.notify_zone_changed',
-                           time.time() - start_time)
-
-    def poll_for_serial_number(self, context, zone, nameserver, timeout,
-                               retry_interval, max_retries, delay):
-        return
-
-    def get_serial_number(self, context, zone, host, port, timeout,
+    def get_serial_number(self, zone, host, port, timeout,
                           retry_interval, max_retries, delay):
         """
         Get zone serial number from a resolver using retries.
 
-        :param context: The user context.
         :param zone: The designate zone object.  This contains the zone
             name. zone.serial = expected_serial
         :param host: A notify is sent to this host.

@@ -114,10 +114,6 @@ class NS1Backend(base.Backend):
             LOG.info("Can't create zone %s because it already exists",
                 zone.name)
 
-        self.mdns_api.notify_zone_changed(
-            context, zone, self.host, self.port, self.timeout,
-            self.retry_interval, self.max_retries, self.delay)
-
     def delete_zone(self, context, zone):
         """Delete a DNS zone"""
 

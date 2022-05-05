@@ -79,16 +79,6 @@ class AgentPoolBackend(base.Backend):
 
     def update_zone(self, context, zone):
         LOG.debug('Update Zone')
-        self.mdns_api.notify_zone_changed(
-            context,
-            zone,
-            self.host,
-            self.port,
-            self.timeout,
-            self.retry_interval,
-            self.max_retries,
-            self.delay
-        )
 
     def delete_zone(self, context, zone):
         LOG.debug('Delete Zone')

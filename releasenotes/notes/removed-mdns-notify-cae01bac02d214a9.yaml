@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    Removed previously deprecated ``[service:mdns]`` option ``notify``. All
+    DNS notifications now happens using the worker service.

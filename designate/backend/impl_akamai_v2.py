@@ -189,10 +189,6 @@ class AkamaiBackend(base.Backend):
             zone, self.masters, contract_id, gid, project_id, self.target)
         self.client.create_zone(payload)
 
-        self.mdns_api.notify_zone_changed(
-            context, zone, self._host, self._port, self.timeout,
-            self.retry_interval, self.max_retries, self.delay)
-
     def delete_zone(self, context, zone):
         """Delete a DNS zone"""
         LOG.debug('Delete Zone')
