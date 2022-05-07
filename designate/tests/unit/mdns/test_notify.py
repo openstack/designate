@@ -48,7 +48,7 @@ class MdnsNotifyTest(designate.tests.TestCase):
         )
 
         out = self.notify.get_serial_number(
-            zone, 'h', 1234, 1, 2, 3, 4
+            'context', zone, 'h', 1234, 1, 2, 3, 4
         )
 
         self.assertEqual(('NO_ZONE', None, 0), out)
@@ -69,7 +69,7 @@ class MdnsNotifyTest(designate.tests.TestCase):
         )
 
         out = self.notify.get_serial_number(
-            zone, 'h', 1234, 1, 2, 3, 4
+            'context', zone, 'h', 1234, 1, 2, 3, 4
         )
 
         self.assertEqual(('NO_ZONE', 0, 3), out)
@@ -92,7 +92,7 @@ class MdnsNotifyTest(designate.tests.TestCase):
         )
 
         out = self.notify.get_serial_number(
-            zone, 'h', 1234, 1, 2, 3, 4
+            'context', zone, 'h', 1234, 1, 2, 3, 4
         )
 
         self.assertEqual(('SUCCESS', 314, 3), out)
@@ -115,7 +115,7 @@ class MdnsNotifyTest(designate.tests.TestCase):
         )
 
         out = self.notify.get_serial_number(
-            zone, 'h', 1234, 1, 2, 3, 4
+            'context', zone, 'h', 1234, 1, 2, 3, 4
         )
 
         self.assertEqual(('ERROR', 310, 0), out)

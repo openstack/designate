@@ -38,14 +38,15 @@ CONF = cfg.CONF
 
 
 class NotifyEndpoint(base.BaseEndpoint):
-    RPC_API_VERSION = '2.1'
+    RPC_API_VERSION = '2.2'
     RPC_API_NAMESPACE = 'notify'
 
-    def get_serial_number(self, zone, host, port, timeout,
+    def get_serial_number(self, context, zone, host, port, timeout,
                           retry_interval, max_retries, delay):
         """
         Get zone serial number from a resolver using retries.
 
+        :param context: The user context.
         :param zone: The designate zone object.  This contains the zone
             name. zone.serial = expected_serial
         :param host: A notify is sent to this host.

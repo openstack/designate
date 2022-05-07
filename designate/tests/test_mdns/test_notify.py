@@ -63,7 +63,7 @@ class MdnsNotifyTest(MdnsTestCase):
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.get_serial_number(
-                objects.Zone.from_dict(self.test_zone),
+                'context', objects.Zone.from_dict(self.test_zone),
                 self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
             self.assertEqual(status, 'SUCCESS')
             self.assertEqual(serial, self.test_zone['serial'])
@@ -88,7 +88,7 @@ class MdnsNotifyTest(MdnsTestCase):
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.get_serial_number(
-                objects.Zone.from_dict(self.test_zone),
+                'context', objects.Zone.from_dict(self.test_zone),
                 self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
             self.assertEqual(status, 'ERROR')
             self.assertEqual(serial, 99)
@@ -113,7 +113,7 @@ class MdnsNotifyTest(MdnsTestCase):
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.get_serial_number(
-                objects.Zone.from_dict(self.test_zone),
+                'context', objects.Zone.from_dict(self.test_zone),
                 self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
             self.assertEqual(status, 'SUCCESS')
             self.assertEqual(serial, 101)
@@ -122,7 +122,7 @@ class MdnsNotifyTest(MdnsTestCase):
     @patch.object(dns.query, 'udp', side_effect=dns.exception.Timeout)
     def test_poll_for_serial_number_timeout(self, _):
         status, serial, retries = self.notify.get_serial_number(
-            objects.Zone.from_dict(self.test_zone),
+            'context', objects.Zone.from_dict(self.test_zone),
             self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
         self.assertEqual(status, 'ERROR')
         self.assertIsNone(serial)

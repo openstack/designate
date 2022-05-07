@@ -44,11 +44,12 @@ class MdnsAPI(object):
         1.1 - Added get_serial_number.
         2.0 - Changed method signatures.
         2.1 - Removed unused functions.
+        2.2 - Changed get_serial_number signature to make upgrade safer.
 
     XFR API version history:
         1.0 - Added perform_zone_xfr.
     """
-    RPC_NOTIFY_API_VERSION = '2.1'
+    RPC_NOTIFY_API_VERSION = '2.2'
     RPC_XFR_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
@@ -57,7 +58,7 @@ class MdnsAPI(object):
         notify_target = messaging.Target(topic=self.topic,
                                          namespace='notify',
                                          version=self.RPC_NOTIFY_API_VERSION)
-        self.notify_client = rpc.get_client(notify_target, version_cap='2.0')
+        self.notify_client = rpc.get_client(notify_target, version_cap='2.2')
 
         xfr_target = messaging.Target(topic=self.topic,
                                       namespace='xfr',
@@ -78,7 +79,7 @@ class MdnsAPI(object):
             MDNS_API = cls()
         return MDNS_API
 
-    def get_serial_number(self, zone, host, port, timeout,
+    def get_serial_number(self, context, zone, host, port, timeout,
                           retry_interval, max_retries, delay):
         LOG.info(
             "get_serial_number: Calling mdns for zone '%(zone)s', serial "
@@ -91,7 +92,7 @@ class MdnsAPI(object):
             })
         cctxt = self.notify_client.prepare()
         return cctxt.call(
-            'get_serial_number', zone=zone,
+            context, 'get_serial_number', zone=zone,
             host=host, port=port, timeout=timeout,
             retry_interval=retry_interval, max_retries=max_retries,
             delay=delay
