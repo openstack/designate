@@ -79,6 +79,7 @@ function configure_designate_backend {
         port: $DESIGNATE_SERVICE_PORT_DNS
         api_endpoint: http://$DESIGNATE_SERVICE_HOST:8081
         api_token: changeme
+        api_ca_cert: changeme
 EOF
 
     # Generate PowerDNS pdns.conf file

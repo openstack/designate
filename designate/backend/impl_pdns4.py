@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import os.path
 import urllib
 
 import netaddr
@@ -36,6 +37,7 @@ class PDNS4Backend(base.Backend):
         self.api_endpoint = self.options.get('api_endpoint')
         self.api_token = self.options.get('api_token')
         self.tsigkey_name = self.options.get('tsigkey_name', None)
+        self.api_ca_cert = self.options.get('api_ca_cert')
 
         self.headers = {
             "X-API-Key": self.api_token
@@ -52,6 +54,28 @@ class PDNS4Backend(base.Backend):
             headers=self.headers,
         )
         return zone.status_code == 200
+
+    def _verify_ssl(self):
+        """
+        Function to check if variable has been declared.
+
+        If the api_ca_cert is None, left blank or the default value 'changeme',
+        returns False to disable ssl verification for the request.
+
+        If api_ca_cert is defined, check if the file actually exists. If it
+        does exist, return its value (should be the location of a CA
+        certificate)
+        """
+        ca_cert = self.api_ca_cert
+
+        if ca_cert is None or ca_cert == 'changeme' or ca_cert == '':
+            return False
+        if not os.path.exists(ca_cert):
+            LOG.error("Could not find %s CA certificate."
+                      "No such file or directory",
+                      ca_cert)
+            return False
+        return ca_cert
 
     def create_zone(self, context, zone):
         """Create a DNS zone"""
@@ -87,7 +111,8 @@ class PDNS4Backend(base.Backend):
             requests.post(
                 self._build_url(),
                 json=data,
-                headers=self.headers
+                headers=self.headers,
+                verify=self._verify_ssl()
             ).raise_for_status()
         except requests.HTTPError as e:
             # check if the zone was actually created - even with errors pdns
