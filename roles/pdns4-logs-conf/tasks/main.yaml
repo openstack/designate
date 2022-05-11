@@ -35,4 +35,4 @@
   become: true
   shell:
     cmd: |
-      journalctl -o short-precise --unit pdns | gzip - > {{ stage_dir }}/logs/pdns.txt.gz
+      journalctl -o short-precise --unit pdns > {{ stage_dir }}/logs/pdns.txt.gz
