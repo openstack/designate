@@ -35,4 +35,4 @@
   become: true
   shell:
     cmd: |
-      journalctl -o short-precise --unit bind9 | gzip - > {{ stage_dir }}/logs/bind9.txt.gz
+      journalctl -o short-precise --unit named > {{ stage_dir }}/logs/bind9.txt
