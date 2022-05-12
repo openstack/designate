@@ -110,21 +110,6 @@ def render_template(template, **template_context):
     return template.render(**template_context)
 
 
-def render_template_to_file(template_name, output_path, makedirs=True,
-                            **template_context):
-    output_folder = os.path.dirname(output_path)
-
-    # Create the output folder tree if necessary
-    if makedirs and not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    # Render the template
-    content = render_template(template_name, **template_context)
-
-    with open(output_path, 'w') as output_fh:
-        output_fh.write(content)
-
-
 def execute(*cmd, **kw):
     """Execute a command in a subprocess, blocking.
     """

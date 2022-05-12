@@ -213,44 +213,6 @@ class TestUtils(oslotest.base.BaseTestCase):
 
         self.assertEqual('Hello World', result)
 
-    @mock.patch('builtins.open', new_callable=mock.mock_open)
-    @mock.patch('os.path.exists')
-    def test_render_template_to_file(self, mock_exists, mock_open):
-        mock_exists.return_value = True
-
-        output_path = '/tmp/designate/resources/templates/hello.jinja2'
-
-        template = jinja2.Template('Hello {{name}}')
-
-        utils.render_template_to_file(
-            template, makedirs=False, output_path=output_path, name='World'
-        )
-
-        mock_open.assert_called_once_with(output_path, 'w')
-        mock_open().write.assert_called_once_with('Hello World')
-
-    @mock.patch('builtins.open', new_callable=mock.mock_open)
-    @mock.patch('os.path.exists')
-    @mock.patch('os.makedirs')
-    def test_render_template_to_file_with_makedirs(self, mock_makedirs,
-                                                   mock_exists,
-                                                   mock_open):
-        mock_exists.return_value = False
-
-        output_path = '/tmp/designate/resources/templates/hello.jinja2'
-
-        template = jinja2.Template('Hello {{name}}')
-
-        utils.render_template_to_file(
-            template, makedirs=True, output_path=output_path, name='World'
-        )
-
-        mock_makedirs.assert_called_once_with(
-            '/tmp/designate/resources/templates'
-        )
-        mock_open.assert_called_once_with(output_path, 'w')
-        mock_open().write.assert_called_once_with('Hello World')
-
     @mock.patch.object(timeutils, 'utcnow_ts')
     def test_increment_serial_lower_than_ts(self, mock_utcnow_ts):
         mock_utcnow_ts.return_value = 1561698354
