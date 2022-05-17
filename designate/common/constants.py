@@ -15,3 +15,14 @@
 # RBAC related constants
 RBAC_PROJECT_ID = 'project_id'
 RBAC_TARGET_PROJECT_ID = 'target_project_id'
+
+# Quotas
+MIN_QUOTA = -1
+MAX_QUOTA = 2147483647
+QUOTA_API_EXPORT_SIZE = 'api_export_size'
+QUOTA_RECORDSET_RECORDS = 'recordset_records'
+QUOTA_ZONE_RECORDS = 'zone_records'
+QUOTA_ZONE_RECORDSETS = 'zone_recordsets'
+QUOTA_ZONES = 'zones'
+VALID_QUOTAS = [QUOTA_API_EXPORT_SIZE, QUOTA_RECORDSET_RECORDS,
+                QUOTA_ZONE_RECORDS, QUOTA_ZONE_RECORDSETS, QUOTA_ZONES]

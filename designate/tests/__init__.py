@@ -28,6 +28,7 @@ from oslo_messaging import conffixture as messaging_fixture
 from oslotest import base
 from testtools import testcase
 
+from designate.common import constants
 import designate.conf
 from designate import exceptions
 from designate import objects
@@ -81,10 +82,10 @@ class TestCase(base.BaseTestCase):
     }]
 
     quota_fixtures = [{
-        'resource': 'zones',
+        'resource': constants.QUOTA_ZONES,
         'hard_limit': 5,
     }, {
-        'resource': 'records',
+        'resource': constants.QUOTA_ZONE_RECORDS,
         'hard_limit': 50,
     }]
 
