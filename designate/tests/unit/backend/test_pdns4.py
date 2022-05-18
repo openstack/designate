@@ -42,6 +42,7 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
             'options': [
                 {'key': 'api_endpoint', 'value': 'http://localhost:8081'},
                 {'key': 'api_token', 'value': 'api_key'},
+                {'key': 'api_ca_cert', 'value': ''}
             ],
         }
 

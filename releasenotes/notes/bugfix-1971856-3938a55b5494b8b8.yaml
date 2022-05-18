@@ -1,0 +1,11 @@
+---
+fixes:
+  - |
+    Fixes bug where requests to powerDNS fail if the dns is configured for TLS
+    traffic.
+
+    It does so by adding a configuration variable, `api_ca_cert`, users can
+    use to declare the location of the CA cert needed to verify TLS
+    traffic.
+
+    `LP#1971856 <https://bugs.launchpad.net/designate/+bug/1971856>`__
