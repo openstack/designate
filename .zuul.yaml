@@ -184,9 +184,8 @@
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
-
+    queue: designate
     gate:
-      queue: designate
       jobs:
         - designate-bind9
         - designate-bind9-scoped-tokens
@@ -210,8 +209,8 @@
         - neutron-tempest-plugin-designate-scenario
         - designate-tox-dnspython-latest:
             voting: false
+    queue: designate
     gate:
-      queue: designate
       jobs:
         - neutron-tempest-plugin-designate-scenario
     experimental:
