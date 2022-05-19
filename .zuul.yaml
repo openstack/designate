@@ -132,9 +132,8 @@
             voting: false
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
-
+    queue: designate
     gate:
-      queue: designate
       jobs:
         - designate-bind9
         - designate-pdns4
@@ -150,11 +149,10 @@
       - periodic-stable-jobs
       - check-requirements
       - release-notes-jobs-python3
+    queue: designate
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario-victoria
-    gate:
-      queue: designate
     experimental:
       jobs:
         - designate-pdns4-postgres
