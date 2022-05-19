@@ -157,9 +157,8 @@
         - designate-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
-
+    queue: designate
     gate:
-      queue: designate
       jobs:
         - designate-bind9
         - designate-bind9-scoped-tokens
@@ -179,8 +178,7 @@
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario-wallaby
-    gate:
-      queue: designate
+    queue: designate
     experimental:
       jobs:
         - designate-pdns4-postgres
