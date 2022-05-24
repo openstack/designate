@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from designate.common import constants
 from designate.objects import base
 from designate.objects import fields
 
@@ -21,8 +22,11 @@ class Quota(base.DictObjectMixin, base.PersistentObjectMixin,
             base.DesignateObject):
     fields = {
         'tenant_id': fields.AnyField(nullable=True),
-        'resource': fields.AnyField(nullable=True),
-        'hard_limit': fields.AnyField(nullable=True)
+        'resource': fields.EnumField(nullable=True,
+                                     valid_values=constants.VALID_QUOTAS),
+        'hard_limit': fields.IntegerFields(nullable=True,
+                                           minimum=constants.MIN_QUOTA,
+                                           maximum=constants.MAX_QUOTA)
     }
 
     STRING_KEYS = [
