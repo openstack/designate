@@ -13,6 +13,5 @@ Contents:
    manage-zones
    importexport
    manage-recordsets
-   rest
    manage-ptr-records
    secondary-zones
