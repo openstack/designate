@@ -3,15 +3,16 @@
 # Andi Chandler <andi@gowling.com>, 2019. #zanata
 # Andi Chandler <andi@gowling.com>, 2020. #zanata
 # Andi Chandler <andi@gowling.com>, 2021. #zanata
+# Andi Chandler <andi@gowling.com>, 2022. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: Designate Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-17 22:37+0000\n"
+"POT-Creation-Date: 2022-05-25 00:18+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2021-09-18 07:36+0000\n"
+"PO-Revision-Date: 2022-05-25 08:48+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -30,8 +31,29 @@ msgstr "10.0.0"
 msgid "11.0.0"
 msgstr "11.0.0"
 
+msgid "11.0.2"
+msgstr "11.0.2"
+
 msgid "12.0.0"
 msgstr "12.0.0"
+
+msgid "12.0.1-7"
+msgstr "12.0.1-7"
+
+msgid "13.0.0"
+msgstr "13.0.0"
+
+msgid "13.0.0-9"
+msgstr "13.0.0-9"
+
+msgid "14.0.0"
+msgstr "14.0.0"
+
+msgid "14.0.0-31"
+msgstr "14.0.0-31"
+
+msgid "14.0.0-5"
+msgstr "14.0.0-5"
 
 msgid "2.0.0"
 msgstr "2.0.0"
@@ -139,6 +161,13 @@ msgstr ""
 msgid "Added new backend driver to support the Akamai FastDNS V2 API"
 msgstr "Added new backend driver to support the Akamai FastDNS V2 API"
 
+msgid ""
+"Added new state ``INACTIVE`` to the Floating IP status to indicate that it "
+"is not currently associated to a DNS record."
+msgstr ""
+"Added new state ``INACTIVE`` to the Floating IP status to indicate that it "
+"is not currently associated with a DNS record."
+
 msgid "Added zone_name in zone trasfer request response. Closed bug#1580014"
 msgstr "Added zone_name in zone transfer request response. Closed bug#1580014"
 
@@ -165,6 +194,9 @@ msgstr ""
 "use for AFXR requests. This key name is the name used to create the key in "
 "powerdns, not the Designate UUID based ID for the key."
 
+msgid "Adds support for keystone default roles and scoped tokens."
+msgstr "Adds support for Keystone default roles and scoped tokens."
+
 msgid ""
 "All designate services will now report to designate-central when they are "
 "running. This is implmented as a heartbeat reporting system. There is also a "
@@ -186,6 +218,13 @@ msgid ""
 msgstr ""
 "Allow the user to set resource quota to unlimited by assigning a negative "
 "value to the resource quota value."
+
+msgid ""
+"Allows for a minimum TTL value of zero to be used instead of 1. As stated in "
+"RFC https://datatracker.ietf.org/doc/html/rfc2181#section-8."
+msgstr ""
+"Allows for a minimum TTL value of zero to be used instead of 1. As stated in "
+"RFC https://datatracker.ietf.org/doc/html/rfc2181#section-8."
 
 msgid "An experimental agent backend to support Knot DNS 2"
 msgstr "An experimental agent backend to support Knot DNS 2"
@@ -229,6 +268,26 @@ msgstr ""
 "use these types  from the API and openstack client. These can be disabled "
 "(like other record types) by  setting the `[DEFAULT].supported-record-type` "
 "config variable in all designate services."
+
+msgid ""
+"CAA records now allow the use of `+` prefixed subadresses like `security"
+"+caa@example.net` within mail urls. (https://www.rfc-editor.org/rfc/rfc5233."
+"html#section-1)"
+msgstr ""
+"CAA records now allow the use of `+` prefixed subadresses like `security"
+"+caa@example.net` within mail URLs. (https://www.rfc-editor.org/rfc/rfc5233."
+"html#section-1)"
+
+msgid ""
+"CERT recordset type have been added. All users should be able to use this "
+"type from the API and openstack client. This can be disabled (like other "
+"record types) by setting the `[DEFAULT].supported-record-type` config "
+"variable in all designate services."
+msgstr ""
+"CERT recordset types have been added. All users should be able to use this "
+"type from the API and OpenStack client. This can be disabled (like other "
+"record types) by setting the `[DEFAULT].supported-record-type` config "
+"variable in all Designate services."
 
 msgid "Ceilometer \"exists\" periodic event per domain"
 msgstr "Ceilometer \"exists\" periodic event per domain"
@@ -342,6 +401,13 @@ msgstr ""
 "Designate services were configured with multiple workers."
 
 msgid ""
+"Fixed a bug where deleting a zone transfer request may fail when using a "
+"system scoped token."
+msgstr ""
+"Fixed a bug where deleting a zone transfer request may fail when using a "
+"system scoped token."
+
+msgid ""
 "Fixed a bug with the recordset status implementation to make it report its "
 "status more accurately."
 msgstr ""
@@ -357,8 +423,50 @@ msgstr ""
 "different types) and _update_partitions() attempts to sort types of 'str' "
 "and 'bytes', causing designate-producer to crash."
 
+msgid ""
+"Fixed an issue that caused the recordset_records quota to not be enforced."
+msgstr ""
+"Fixed an issue that caused the recordset_records quota to not be enforced."
+
+msgid "Fixed an issue where new BIND9 pool instances may fail on zone update."
+msgstr "Fixed an issue where new BIND9 pool instances may fail on zone update."
+
+msgid ""
+"Fixed an issue where set-quotas will always return the default quotas if it "
+"was called with a non-project scoped token and the all-projects flag was not "
+"set."
+msgstr ""
+"Fixed an issue where set-quotas will always return the default quotas if it "
+"was called with a non-project scoped token and the all-projects flag was not "
+"set."
+
+msgid ""
+"Fixed an issue with the API reference using the wrong path for list service "
+"statuses. In addition a compatibility workaround was added for the "
+"incorrect /v2/service_status path."
+msgstr ""
+"Fixed an issue with the API reference using the wrong path for listing "
+"service statuses. In addition, a compatibility workaround was added for the "
+"incorrect /v2/service_status path."
+
 msgid "Fixes `bug 1871332`_"
 msgstr "Fixes `bug 1871332`_"
+
+msgid ""
+"Fixes `bug 1934252`_ which ignored invalid denylist patterns. The fix "
+"entailed checking the pattern string via regular expression compiler and "
+"testing for zero length."
+msgstr ""
+"Fixes `bug 1934252`_ which ignored invalid denylist patterns. The fix "
+"entailed checking the pattern string via a regular expression compiler and "
+"testing for zero length."
+
+msgid ""
+"Fixes bug where requests to powerDNS fail if the dns is configured for TLS "
+"traffic."
+msgstr ""
+"Fixes bug where requests to powerDNS fail if the DNS is configured for TLS "
+"traffic."
 
 msgid "Horizon Plugin moved out of tree"
 msgstr "Horizon Plugin moved out of tree"
@@ -376,6 +484,20 @@ msgid ""
 msgstr ""
 "Import of release notes from https://wiki.openstack.org/wiki/ReleaseNotes/"
 "Liberty#OpenStack_DNS_.28Designate.29"
+
+msgid ""
+"In addition, the server will return a 400 BadRequest response to an invalid "
+"pattern."
+msgstr ""
+"In addition, the server will return a 400 BadRequest response to an invalid "
+"pattern."
+
+msgid ""
+"It does so by adding a configuration variable, `api_ca_cert`, users can use "
+"to declare the location of the CA cert needed to verify TLS traffic."
+msgstr ""
+"It does so by adding a configuration variable, `api_ca_cert`, which users "
+"can use to declare the location of the CA cert needed to verify TLS traffic."
 
 msgid ""
 "It was previously not possible to override the topics for various serivces "
@@ -419,6 +541,30 @@ msgstr "New service designate-zone-manager"
 
 msgid "Newton Series Release Notes"
 msgstr "Newton Series Release Notes"
+
+msgid ""
+"OSprofiler support requires passing of trace information between various "
+"OpenStack services. This information is securely signed by one of HMAC keys, "
+"defined in designate.conf configuration file. To allow cross-project tracing "
+"user should use the key, that is common among all OpenStack services they "
+"want to trace."
+msgstr ""
+"OSprofiler support requires passing of trace information between various "
+"OpenStack services. This information is securely signed by one of HMAC keys, "
+"defined in designate.conf configuration file. To allow cross-project tracing "
+"user should use the key, that is common among all OpenStack services they "
+"want to trace."
+
+msgid ""
+"OSprofiler support was introduced. To allow its usage, the api-paste.ini "
+"file needs to be modified to contain osprofiler middleware. Also "
+"`[profiler]` section needs to be added to the designate.conf file with "
+"`enabled`, `hmac_keys` and `trace_sqlalchemy` flags defined."
+msgstr ""
+"OSprofiler support was introduced. To allow its usage, the api-paste.ini "
+"file needs to be modified to contain osprofiler middleware. Also "
+"`[profiler]` section needs to be added to the designate.conf file with "
+"`enabled`, `hmac_keys` and `trace_sqlalchemy` flags defined."
 
 msgid "Ocata Series Release Notes"
 msgstr "Ocata Series Release Notes"
@@ -488,6 +634,15 @@ msgstr ""
 "Previously we only checked for the last label of a TLD which does not work "
 "for `co.uk` or custom internal TLDs that deployers may use"
 
+msgid ""
+"Previously you could create blacklist/denylist using string that cannot be "
+"used either as a regex or as a zone name, for example: patterns = ['', "
+"``'#(*&^%$%$#@$']``"
+msgstr ""
+"Previously you could create blacklist/denylist using string that cannot be "
+"used either as a regex or as a zone name, for example: patterns = ['', "
+"``'#(*&^%$%$#@$']``"
+
 msgid "Purging deleted domains"
 msgstr "Purging deleted domains"
 
@@ -519,6 +674,24 @@ msgstr ""
 "resolvers. Introduce the new configuration parameters default-soa-refresh-"
 "min and default-soa-refresh-max"
 
+msgid ""
+"Removed previously deprecated ``[service:mdns]`` option ``notify``. All DNS "
+"notifications now happens using the worker service."
+msgstr ""
+"Removed previously deprecated ``[service:mdns]`` option ``notify``. All DNS "
+"notifications now happen using the worker service."
+
+msgid ""
+"Removed the following unused central rpc calls. This should not impact "
+"normal installations, but if these are used in any custom written backends "
+"or plugins that you are using, you will need to update your code before "
+"upgrading."
+msgstr ""
+"Removed the following unused central RPC calls. This should not impact "
+"normal installations, but if these are used in any custom written backends "
+"or plugins that you are using, you will need to update your code before "
+"upgrading."
+
 msgid "Rocky Series Release Notes"
 msgstr "Rocky Series Release Notes"
 
@@ -528,6 +701,9 @@ msgid ""
 msgstr ""
 "Schedule across pools. See http://doc.openstack.org/developer/designate/"
 "pools/scheduler.html#default-provided-filters for the built in filters"
+
+msgid "Security Issues"
+msgstr "Security Issues"
 
 msgid "See `bug 1755788`_ for more information."
 msgstr "See `bug 1755788`_ for more information."
@@ -540,6 +716,9 @@ msgstr "See `bug 1828534`_ for more information."
 
 msgid "See `bug 1842994`_ for more information."
 msgstr "See `bug 1842994`_ for more information."
+
+msgid "See `bug 1958533`_ for more information."
+msgstr "See `bug 1958533`_ for more information."
 
 msgid "See `designate/notification_handler/base.py` for more details."
 msgstr "See `designate/notification_handler/base.py` for more details."
@@ -569,6 +748,24 @@ msgstr ""
 "Akamai v2 driver for the FastDNS V2 API."
 
 msgid ""
+"The Akamai eDNS backend has reached it's end of life and has been removed. "
+"Please upgrade to the Akamai v2 backend."
+msgstr ""
+"The Akamai eDNS backend has reached its end of life and has been removed. "
+"Please upgrade to the Akamai v2 backend."
+
+msgid ""
+"The Designate Central RPC API version was updated and may not be backwards "
+"compatible with an older version of the Designate RPC API. When upgrading a "
+"multi-controller deployment make sure that all designate-central services "
+"are upgraded before starting the designate-worker service."
+msgstr ""
+"The Designate Central RPC API version was updated and may not be backwards "
+"compatible with an older version of the Designate RPC API. When upgrading a "
+"multi-controller deployment make sure that all designate-central services "
+"are upgraded before starting the designate-worker service."
+
+msgid ""
 "The Designate ``sink`` service will now use the heartbeat reporting system "
 "to report its status. This was already the case for all other Designate "
 "services."
@@ -583,6 +780,15 @@ msgid ""
 msgstr ""
 "The PowerDNS MySQL based backend has been deprecated since the introduction "
 "of the PowerDNS 4 driver and is now being removed."
+
+msgid ""
+"The ``[service:api] max_header_line`` parameter has been deprecated. This "
+"parameter has hd no effect since the Train release. Use the ``[DEFAULT] "
+"max_header_line`` parameter of the ``oslo.service`` library instead."
+msgstr ""
+"The ``[service:api] max_header_line`` parameter has been deprecated. This "
+"parameter has had no effect since the Train release. Use the ``[DEFAULT] "
+"max_header_line`` parameter of the ``oslo.service`` library instead."
 
 msgid ""
 "The ``[service:api]`` option ``enable_host_header`` is now enabled by "
@@ -676,6 +882,13 @@ msgstr ""
 "The fix for MiniDNS's issues TCP can cause MiniDNS to fail to send some "
 "messages. This manifests itself with eventlet not being able to send all the "
 "data before socket is closed."
+
+msgid ""
+"The following parameters have been deprecated. These parameters have had no "
+"effect since SSLMiddleware was removed during Ussuri cycle."
+msgstr ""
+"The following parameters have been deprecated. These parameters have had no "
+"effect since SSLMiddleware was removed during the Ussuri cycle."
 
 msgid ""
 "The pool-manager has been removed and can no longer be used. Instead the "
@@ -825,6 +1038,81 @@ msgid ""
 msgstr ""
 "We fixed this by introducing a new unique constraint to the service_statuses "
 "table."
+
+msgid "Xena Series Release Notes"
+msgstr "Xena Series Release Notes"
+
+msgid "Yoga Series Release Notes"
+msgstr "Yoga Series Release Notes"
+
+msgid "`LP#1971856 <https://bugs.launchpad.net/designate/+bug/1971856>`__"
+msgstr "`LP#1971856 <https://bugs.launchpad.net/designate/+bug/1971856>`__"
+
+msgid "``[service:api] override_proto``"
+msgstr "``[service:api] override_proto``"
+
+msgid "``[service:api] secure_proxy_ssl_header``"
+msgstr "``[service:api] secure_proxy_ssl_header``"
+
+msgid "``count_records``"
+msgstr "``count_records``"
+
+msgid "``count_recordsets``"
+msgstr "``count_recordsets``"
+
+msgid "``count_tenants``"
+msgstr "``count_tenants``"
+
+msgid "``count_zones``"
+msgstr "``count_zones``"
+
+msgid "``create_record``"
+msgstr "``create_record``"
+
+msgid "``delete_record``"
+msgstr "``delete_record``"
+
+msgid "``delete_zone_transfer_accept``"
+msgstr "``delete_zone_transfer_accept``"
+
+msgid "``find_blacklist``"
+msgstr "``find_blacklist``"
+
+msgid "``find_record``"
+msgstr "``find_record``"
+
+msgid "``find_zone_transfer_accept``"
+msgstr "``find_zone_transfer_accept``"
+
+msgid "``find_zone_transfer_request``"
+msgstr "``find_zone_transfer_request``"
+
+msgid "``find_zone``"
+msgstr "``find_zone``"
+
+msgid "``get_quota``"
+msgstr "``get_quota``"
+
+msgid "``get_record``"
+msgstr "``get_record``"
+
+msgid "``sync_record``"
+msgstr "``sync_record``"
+
+msgid "``sync_zone``"
+msgstr "``sync_zone``"
+
+msgid "``sync_zones``"
+msgstr "``sync_zones``"
+
+msgid "``touch_zone``"
+msgstr "``touch_zone``"
+
+msgid "``update_record``"
+msgstr "``update_record``"
+
+msgid "``update_zone_transfer_accept``"
+msgstr "``update_zone_transfer_accept``"
 
 msgid "default-soa-refresh configuration option"
 msgstr "default-soa-refresh configuration option"
