@@ -7,11 +7,23 @@ Designate.
 
 Contents:
 
+Managing Zones
+--------------
+
 .. toctree::
    :maxdepth: 2
 
    manage-zones
    importexport
+   zone-transfer
+   secondary-zones
+
+Working with Recordsets
+-----------------------
+
+.. toctree::
+   :maxdepth: 2
+
    manage-recordsets
    manage-ptr-records
-   secondary-zones
+
