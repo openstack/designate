@@ -64,7 +64,7 @@ class Quota(DriverPlugin, metaclass=abc.ABCMeta):
 
         if resource not in quotas:
             raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
-                                                  "resource", resource)
+                                                  "resource" % resource)
 
         return quotas[resource]
 

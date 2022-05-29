@@ -72,7 +72,7 @@ class StorageQuota(base.Quota):
 
         if resource not in list(self.get_default_quotas(context).keys()):
             raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
-                                                  "resource", resource)
+                                                  "resource" % resource)
 
         try:
             create_quota()
