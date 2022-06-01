@@ -1,0 +1,16 @@
+---
+fixes:
+  - |
+    Fixes `bug 1934252`_ which ignored invalid denylist patterns. The fix
+    entailed checking the pattern string via regular expression compiler and
+    testing for zero length.
+
+    Previously you could create blacklist/denylist using string that cannot
+    be used either as a regex or as a zone name, for example:
+    patterns = ['', ``'#(*&^%$%$#@$']``
+
+    In addition, the server will return a 400 BadRequest response to an
+    invalid pattern.
+
+    .. _Bug 1934252: https://bugs.launchpad.net/designate/+bug/1934252
+
