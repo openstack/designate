@@ -12,10 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from designate.objects.adapters.api_v2 import base
-from designate import objects
-from designate import policy
+from designate.common import constants
 from designate import exceptions
+from designate import objects
+from designate.objects.adapters.api_v2 import base
+from designate import policy
 
 
 class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
@@ -66,9 +67,10 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
             object, *args, **kwargs)
 
         try:
-            target = {
-                'tenant_id': object.tenant_id,
-            }
+            if policy.enforce_new_defaults():
+                target = {constants.RBAC_PROJECT_ID: object.tenant_id}
+            else:
+                target = {'tenant_id': object.tenant_id}
 
             policy.check(
                 'get_zone_transfer_request_detailed',

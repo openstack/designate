@@ -89,9 +89,6 @@ rules = [
         operations=[
             {
                 'path': '/v2/tsigkeys/{tsigkey_id}',
-                'method': 'PATCH'
-            }, {
-                'path': '/v2/tsigkeys/{tsigkey_id}',
                 'method': 'GET'
             }
         ],

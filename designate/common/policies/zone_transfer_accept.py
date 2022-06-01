@@ -24,7 +24,7 @@ The zone transfer accept API now supports system scope and default roles.
 
 deprecated_create_zone_transfer_accept = policy.DeprecatedRule(
     name="create_zone_transfer_accept",
-    check_str=base.RULE_ZONE_TRANSFER,
+    check_str=base.LEGACY_RULE_ZONE_TRANSFER,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
@@ -64,13 +64,15 @@ rules = [
     policy.DocumentedRuleDefault(
         name="create_zone_transfer_accept",
         check_str=base.RULE_ZONE_TRANSFER,
+        scope_types=['system', 'project'],
         description="Create Zone Transfer Accept",
         operations=[
             {
                 'path': '/v2/zones/tasks/transfer_accepts',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_create_zone_transfer_accept
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_transfer_accept",

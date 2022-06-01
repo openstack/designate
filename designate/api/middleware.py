@@ -128,14 +128,13 @@ class KeystoneContextMiddleware(ContextMiddleware):
             pass
 
         tenant_id = headers.get('X-Tenant-ID')
-        if tenant_id is None:
-            return flask.Response(status=401)
 
         catalog = None
         if headers.get('X-Service-Catalog'):
             catalog = jsonutils.loads(headers.get('X-Service-Catalog'))
 
         roles = headers.get('X-Roles').split(',')
+        system_scope = headers.get('Openstack-System-Scope')
 
         try:
             self.make_context(
@@ -144,7 +143,8 @@ class KeystoneContextMiddleware(ContextMiddleware):
                 user_id=headers.get('X-User-ID'),
                 project_id=tenant_id,
                 roles=roles,
-                service_catalog=catalog
+                service_catalog=catalog,
+                system_scope=system_scope
             )
         except exceptions.Forbidden:
             return flask.Response(status=403)

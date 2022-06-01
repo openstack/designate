@@ -22,9 +22,15 @@ DEPRECATED_REASON = """
 The record set API now supports system scope and default roles.
 """
 
+# Deprecated in Wallaby as part of the "secure RBAC" work.
+# TODO(johnsom) remove when the deprecated RBAC rules are removed.
+RULE_ZONE_PRIMARY_OR_ADMIN = (
+    "('PRIMARY':%(zone_type)s and rule:admin_or_owner) "
+    "OR ('SECONDARY':%(zone_type)s AND is_admin:True)")
+
 deprecated_create_recordset = policy.DeprecatedRule(
     name="create_recordset",
-    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN,
+    check_str=RULE_ZONE_PRIMARY_OR_ADMIN,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
@@ -40,15 +46,27 @@ deprecated_get_recordset = policy.DeprecatedRule(
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
+deprecated_find_recordset = policy.DeprecatedRule(
+    name="find_recordset",
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
+deprecated_find_recordsets = policy.DeprecatedRule(
+    name="find_recordsets",
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
 deprecated_update_recordset = policy.DeprecatedRule(
     name="update_recordset",
-    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN,
+    check_str=RULE_ZONE_PRIMARY_OR_ADMIN,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_delete_recordset = policy.DeprecatedRule(
     name="delete_recordset",
-    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN,
+    check_str=RULE_ZONE_PRIMARY_OR_ADMIN,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
@@ -69,7 +87,7 @@ SYSTEM_ADMIN_AND_SECONDARY_ZONE = (
     '(' + base.SYSTEM_ADMIN + ') and (\'SECONDARY\':%(zone_type)s)'
 )
 
-SYSTEM_ADMIN_OR_PROJECT_MEMBER = ''.join(
+SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE = ' or '.join(
     [PROJECT_MEMBER_AND_PRIMARY_ZONE,
      SYSTEM_ADMIN_AND_PRIMARY_ZONE,
      SYSTEM_ADMIN_AND_SECONDARY_ZONE]
@@ -79,16 +97,13 @@ SYSTEM_ADMIN_OR_PROJECT_MEMBER = ''.join(
 rules = [
     policy.DocumentedRuleDefault(
         name="create_recordset",
-        check_str=SYSTEM_ADMIN_AND_SECONDARY_ZONE,
+        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
         scope_types=['system', 'project'],
         description="Create Recordset",
         operations=[
             {
                 'path': '/v2/zones/{zone_id}/recordsets',
                 'method': 'POST'
-            }, {
-                'path': '/v2/reverse/floatingips/{region}:{floatingip_id}',
-                'method': 'PATCH'
             }
         ],
         deprecated_rule=deprecated_create_recordset
@@ -108,35 +123,46 @@ rules = [
             {
                 'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
                 'method': 'GET'
-            }, {
-                'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
-                'method': 'DELETE'
-            }, {
-                'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
-                'method': 'PUT'
             }
         ],
         deprecated_rule=deprecated_get_recordset
     ),
+    policy.RuleDefault(
+        name="find_recordset",
+        check_str=base.SYSTEM_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
+        description="List a Recordset in a Zone",
+        deprecated_rule=deprecated_find_recordset
+    ),
+    policy.DocumentedRuleDefault(
+        name="find_recordsets",
+        check_str=base.SYSTEM_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
+        description="List Recordsets in a Zone",
+        operations=[
+            {
+                'path': '/v2/zones/{zone_id}/recordsets',
+                'method': 'GET'
+            },
+        ],
+        deprecated_rule=deprecated_find_recordsets
+    ),
     policy.DocumentedRuleDefault(
         name="update_recordset",
-        check_str=SYSTEM_ADMIN_AND_SECONDARY_ZONE,
+        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
         scope_types=['system', 'project'],
         description="Update recordset",
         operations=[
             {
                 'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
                 'method': 'PUT'
-            }, {
-                'path': '/v2/reverse/floatingips/{region}:{floatingip_id}',
-                'method': 'PATCH'
             }
         ],
         deprecated_rule=deprecated_update_recordset
     ),
     policy.DocumentedRuleDefault(
         name="delete_recordset",
-        check_str=SYSTEM_ADMIN_AND_SECONDARY_ZONE,
+        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
         scope_types=['system', 'project'],
         description="Delete RecordSet",
         operations=[

@@ -115,7 +115,7 @@ rules = [
         operations=[
             {
                 'path': '/v2/zones/tasks/imports/{zone_import_id}',
-                'method': 'GET'
+                'method': 'DELETE'
             }
         ],
         deprecated_rule=deprecated_delete_zone_import
