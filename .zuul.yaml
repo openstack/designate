@@ -155,7 +155,6 @@
             voting: false
         - designate-bind9-scoped-tokens
         - designate-pdns4
-        - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
 
@@ -165,7 +164,6 @@
         - designate-bind9
         - designate-bind9-scoped-tokens
         - designate-pdns4
-        - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
 
