@@ -29,7 +29,7 @@ class SendNotify(base.Task):
         port = int(self.target.options.get('port'))
 
         try:
-            wutils.notify(self.zone.name, host, port=port)
+            dnsutils.notify(self.zone.name, host, port=port)
             return True
         except Exception:
             return False
