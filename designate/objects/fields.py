@@ -100,7 +100,7 @@ class StringFields(ovoo_fields.StringField):
     RE_NAPTR_SERVICE = r'^([A-Za-z]([A-Za-z0-9]*)(\+[A-Za-z]([A-Za-z0-9]{0,31}))*)?'  # noqa
     RE_NAPTR_REGEXP = r'^([^0-9i\\])(.*)\1((.+)|(\\[1-9]))\1(i?)'
     RE_KVP = r'^\s[A-Za-z0-9]+=[A-Za-z0-9]+'
-    RE_URL_MAIL = r'^mailto:[A-Za-z0-9_\-]+@.*'
+    RE_URL_MAIL = r'^mailto:[A-Za-z0-9_\-]+(\+[A-Za-z0-9_\-]+)?@.*'
     RE_URL_HTTP = r'^http(s)?://.*/'
     RE_CERT_TYPE = r'(^[A-Z]+$)|(^[0-9]+$)'
     RE_CERT_ALGO = r'(^[A-Z]+[A-Z0-9\-]+[A-Z0-9]$)|(^[0-9]+$)'
