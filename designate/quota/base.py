@@ -29,6 +29,7 @@ class Quota(DriverPlugin):
     __plugin_type__ = 'quota'
 
     def limit_check(self, context, tenant_id, **values):
+        resources_exceeded = []
         quotas = self.get_quotas(context, tenant_id)
 
         for resource, value in values.items():
@@ -36,10 +37,18 @@ class Quota(DriverPlugin):
                 # Setting the resource quota to a negative value will make
                 # the resource unlimited
                 if quotas[resource] >= 0 and value > quotas[resource]:
-                    raise exceptions.OverQuota()
+                    resources_exceeded.append(resource)
             else:
-                raise exceptions.QuotaResourceUnknown("%s is not a valid quota"
-                                                      " resource", resource)
+                raise exceptions.QuotaResourceUnknown(
+                    "'%s' is not a valid quota resource." % resource
+                )
+
+        if resources_exceeded:
+            resources_exceeded.sort(key=len)
+            raise exceptions.OverQuota(
+                'Quota exceeded for %s.' %
+                ', '.join(resources_exceeded)
+            )
 
     def get_quotas(self, context, tenant_id):
         quotas = self.get_default_quotas(context)
