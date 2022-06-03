@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Fixed a bug where deleting a zone transfer request may fail when using
+    a system scoped token.
