@@ -1,0 +1,10 @@
+---
+fixes:
+  - |
+    CAA records now allow the use of `+` prefixed subadresses like
+    `security+caa@example.net` within mail urls.
+    (https://www.rfc-editor.org/rfc/rfc5233.html#section-1)
+
+    See `bug 1958533`_ for more information.
+
+    .. _bug 1958533: https://bugs.launchpad.net/designate/+bug/1958533
