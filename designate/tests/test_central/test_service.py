@@ -2422,8 +2422,10 @@ class CentralServiceTest(CentralTestCase):
 
         actual = self.central_service.get_floatingip(
             context, fip['region'], fip['id'])
-        self.assertEqual(expected, actual)
 
+        self.assertEqual(expected.address, actual.address)
+        self.assertEqual(expected.ptrdname, actual.ptrdname)
+        self.assertEqual(expected.ttl, actual.ttl)
         self.assertEqual(expected, actual)
 
     def test_get_floatingip_not_allocated(self):
@@ -2456,14 +2458,6 @@ class CentralServiceTest(CentralTestCase):
         criterion = {
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context_a.project_id}
-        zone_id = self.central_service.find_record(
-            elevated_a, criterion).zone_id
-
-        # Simulate the update on the backend
-        zone_serial = self.central_service.get_zone(
-            elevated_a, zone_id).serial
-        self.central_service.update_status(
-            elevated_a, zone_id, "SUCCESS", zone_serial)
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
@@ -2485,19 +2479,9 @@ class CentralServiceTest(CentralTestCase):
             context_b, fip['region'], fip['id'])
         self.assertIsNone(fip_ptr['ptrdname'])
 
-        # Simulate the invalidation on the backend
-        zone_serial = self.central_service.get_zone(
-            elevated_a, zone_id).serial
-        self.central_service.update_status(
-            elevated_a, zone_id, "SUCCESS", zone_serial)
-
-        # Ensure that the old record for tenant a for the fip now owned by
-        # tenant b is gone
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.find_record,
-                                elevated_a, criterion)
-
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
+        record = self.central_service.find_record(elevated_a, criterion)
+        self.assertEqual('DELETE', record.action)
+        self.assertEqual('PENDING', record.status)
 
     def test_list_floatingips_no_allocations(self):
         context = self.get_context(project_id='a')
@@ -2583,19 +2567,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(1, len(fips))
         self.assertIsNone(fips[0]['ptrdname'])
 
-        # Simulate the invalidation on the backend
-        zone_serial = self.central_service.get_zone(
-            elevated_a, zone_id).serial
-        self.central_service.update_status(
-            elevated_a, zone_id, "SUCCESS", zone_serial)
-
-        # Ensure that the old record for tenant a for the fip now owned by
-        # tenant b is gone
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.find_record,
-                                elevated_a, criterion)
-
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
+        record = self.central_service.find_record(elevated_a, criterion)
+        self.assertEqual('DELETE', record.action)
+        self.assertEqual('PENDING', record.status)
 
     def test_set_floatingip(self):
         context = self.get_context(project_id='a')
