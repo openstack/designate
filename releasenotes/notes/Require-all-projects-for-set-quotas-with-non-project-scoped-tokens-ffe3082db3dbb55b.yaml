@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Fixed an issue where set-quotas will always return the default quotas if
+    it was called with a non-project scoped token and the all-projects flag
+    was not set.
