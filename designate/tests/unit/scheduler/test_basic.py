@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest.mock import Mock
+from unittest import mock
 
 from designate import exceptions
 from designate import objects
@@ -35,7 +35,7 @@ class SchedulerTest(tests.TestCase):
             'find_pools.return_value': objects.PoolList.from_list(
                 [{"id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"}])
         }
-        mock_storage = Mock(**attrs)
+        mock_storage = mock.Mock(**attrs)
 
         test_scheduler = scheduler.get_scheduler(storage=mock_storage)
 
@@ -55,7 +55,7 @@ class SchedulerTest(tests.TestCase):
             )
         }
 
-        mock_storage = Mock(**attrs)
+        mock_storage = mock.Mock(**attrs)
 
         test_scheduler = scheduler.get_scheduler(storage=mock_storage)
 
@@ -74,7 +74,7 @@ class SchedulerTest(tests.TestCase):
         attrs = {
             'find_pools.return_value': objects.PoolList()
         }
-        mock_storage = Mock(**attrs)
+        mock_storage = mock.Mock(**attrs)
 
         self.CONF.set_override(
             'scheduler_filters', ['random'], 'service:central'
@@ -96,7 +96,7 @@ class SchedulerTest(tests.TestCase):
         attrs = {
             'find_pools.return_value': objects.PoolList()
         }
-        mock_storage = Mock(**attrs)
+        mock_storage = mock.Mock(**attrs)
 
         self.assertRaisesRegex(
             exceptions.NoFiltersConfigured,

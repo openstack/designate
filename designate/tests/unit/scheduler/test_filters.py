@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest.mock import Mock
+from unittest import mock
 
 import fixtures
 
@@ -41,7 +41,7 @@ class SchedulerFilterTest(tests.TestCase):
                 id="6c346011-e581-429b-a7a2-6cdf0aba91c3")
         }
 
-        mock_storage = Mock(**attrs)
+        mock_storage = mock.Mock(**attrs)
         self.test_filter = self.FILTER(storage=mock_storage)
 
 

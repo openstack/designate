@@ -27,28 +27,29 @@ class Scheduler(object):
 
     :raises: NoFiltersConfigured
     """
-
     filters = []
     """The list of filters enabled on this scheduler"""
 
     def __init__(self, storage):
-
         enabled_filters = cfg.CONF['service:central'].scheduler_filters
-        # Get a storage connection
+        self.filters = list()
         self.storage = storage
-        if len(enabled_filters) > 0:
-            filters = named.NamedExtensionManager(
-                namespace='designate.scheduler.filters',
-                names=enabled_filters,
-                name_order=True)
 
-            self.filters = [x.plugin(storage=self.storage) for x in filters]
-            for filter in self.filters:
-                LOG.info("Loaded Scheduler Filter: %s", filter.name)
+        if not enabled_filters:
+            raise exceptions.NoFiltersConfigured(
+                'There are no scheduling filters configured'
+            )
 
-        else:
-            raise exceptions.NoFiltersConfigured('There are no scheduling '
-                                                 'filters configured')
+        extensions = named.NamedExtensionManager(
+            namespace='designate.scheduler.filters',
+            names=enabled_filters,
+            name_order=True,
+        )
+
+        for extension in extensions:
+            plugin = extension.plugin(storage=self.storage)
+            LOG.info('Loaded Scheduler Filter: %s', plugin.name)
+            self.filters.append(plugin)
 
     def schedule_zone(self, context, zone):
         """Get a pool to create the new zone in.
@@ -61,21 +62,24 @@ class Scheduler(object):
         """
         pools = self.storage.find_pools(context)
 
-        if len(self.filters) == 0:
+        if not self.filters:
             raise exceptions.NoFiltersConfigured('There are no scheduling '
                                                  'filters configured')
 
-        for f in self.filters:
-            LOG.debug("Running %s filter with %d pools", f.name, len(pools))
-            pools = f.filter(context, pools, zone)
+        for plugin in self.filters:
             LOG.debug(
-                "%d candidate pools remaining after %s filter",
-                len(pools),
-                f.name)
+                'Running %s filter with %d pools', plugin.name, len(pools)
+            )
+            pools = plugin.filter(context, pools, zone)
+            LOG.debug(
+                '%d candidate pools remaining after %s filter',
+                len(pools), plugin.name
+            )
 
         if len(pools) > 1:
             raise exceptions.MultiplePoolsFound()
-        if len(pools) == 0:
-            raise exceptions.NoValidPoolFound('There are no pools that '
-                                              'matched your request')
+        if not pools:
+            raise exceptions.NoValidPoolFound(
+                'There are no pools that matched your request'
+            )
         return pools[0].id

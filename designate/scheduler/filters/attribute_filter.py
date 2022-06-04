@@ -74,7 +74,7 @@ class AttributeFilter(base.Filter):
             # fine, we should just continue.
             pool_attributes.pop('pool_id', None)
 
-            if pool_attributes == {}:
+            if not pool_attributes:
                 # If we did not send any attribute to filter on, we should
                 # not filter the pools based on an empty set, as this will
                 # return no pools.
@@ -83,12 +83,10 @@ class AttributeFilter(base.Filter):
             # Check if the keys requested exist in this pool
             if not {key for key in six.iterkeys(pool_attributes)}.issuperset(
                     zone_attributes):
-                msg = "%(pool)s did not match list of requested attribute "\
-                      "keys - removing from list. Requested: %(r_key)s. Pool:"\
-                      "%(p_key)s"
-
                 LOG.debug(
-                    msg,
+                    '%(pool)s did not match list of requested attribute '
+                    'keys - removing from list. Requested: %(r_key)s. Pool:'
+                    '%(p_key)s',
                     {
                         'pool': pool,
                         'r_key': zone_attributes,
@@ -98,8 +96,8 @@ class AttributeFilter(base.Filter):
                 # Missing required keys - remove from the list
                 return False
 
-            for key in six.iterkeys(zone_attributes):
-                LOG.debug("Checking value of %s for %s", key, pool)
+            for key in zone_attributes.keys():
+                LOG.debug('Checking value of %s for %s', key, pool)
 
                 pool_attr = bool_from_string(pool_attributes[key],
                                              default=pool_attributes[key])
@@ -108,8 +106,8 @@ class AttributeFilter(base.Filter):
 
                 if not pool_attr == zone_attr:
                     LOG.debug(
-                        "%(pool)s did not match requested value of %(key)s. "
-                        "Requested: %(r_val)s. Pool: %(p_val)s",
+                        '%(pool)s did not match requested value of %(key)s. '
+                        'Requested: %(r_val)s. Pool: %(p_val)s',
                         {
                             'pool': pool,
                             'key': key,
@@ -123,7 +121,5 @@ class AttributeFilter(base.Filter):
             return True
 
         pool_list = [pool for pool in pools if evaluate_pool(pool)]
-
         pools = PoolList(objects=pool_list)
-
         return pools
