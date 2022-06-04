@@ -426,3 +426,25 @@ class IPOrHost(IPV4AndV6AddressField):
             if not re.match(StringFields.RE_ZONENAME, value):
                 raise ValueError("%s is not IP address or host name" % value)
         return value
+
+
+class DenylistFields(StringFields):
+    def __init__(self, **kwargs):
+        super(DenylistFields, self).__init__(**kwargs)
+
+    def coerce(self, obj, attr, value):
+        value = super(DenylistFields, self).coerce(obj, attr, value)
+
+        if value is None:
+            return self._null(obj, attr)
+
+        # determine the validity if a regex expression filter has been used.
+        msg = ("%s is not a valid regular expression" % value)
+        if not len(value):
+            raise ValueError(msg)
+        try:
+            re.compile(value)
+        except Exception:
+            raise ValueError(msg)
+
+        return value

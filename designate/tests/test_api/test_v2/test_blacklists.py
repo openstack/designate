@@ -165,3 +165,48 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         url = '/blacklists?description=test'
         self.policy({'find_blacklists': '@'})
         self._assert_exception('bad_request', 400, self.client.get, url)
+
+    def test_create_invalid_denylist_pattern(self):
+        self.policy({'create_blacklist': '@'})
+        body = {
+            'description': u'This is the description.'
+        }
+
+        url = '/blacklists/'
+
+        # doing each pattern individually so upon error one can trace
+        # back to the exact line number
+        body['pattern'] = ''
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+        body['pattern'] = '#(*&^%$%$#@$'
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+        body['pattern'] = 'a' * 1000
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_update_invalid_denylist_pattern(self):
+        blacklist = self.create_blacklist(fixture=0)
+        self.policy({'update_blacklist': '@'})
+
+        url = ('/blacklists/%s' % blacklist['id'])
+
+        # doing each pattern individually so upon error one can trace
+        # back to the exact line number
+        body = {'pattern': ''}
+        self._assert_exception(
+            'invalid_object', 400, self.client.patch_json, url, body,
+            status=400)
+
+        body = {'pattern': '#(*&^%$%$#@$'}
+        self._assert_exception(
+            'invalid_object', 400, self.client.patch_json, url, body,
+            status=400)
+
+        body = {'pattern': 'a' * 1000}
+        self._assert_exception(
+            'invalid_object', 400, self.client.patch_json, url, body,
+            status=400)
