@@ -15,10 +15,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
-import copy
-import random
 from collections import namedtuple
+from concurrent import futures
+import copy
+import datetime
+import futurist
+import random
 from unittest import mock
 
 import testtools
@@ -2585,6 +2587,28 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(fip['address'], fip_ptr['address'])
         self.assertIsNone(fip_ptr['description'])
         self.assertIsNotNone(fip_ptr['ttl'])
+
+    def test_set_floatingip_multiple_requests(self):
+        context = self.get_context()
+
+        def update_floatingip(fixture):
+            fip = self.network_api.fake.allocate_floatingip(context.project_id)
+            return self.central_service.update_floatingip(
+                context, fip['region'], fip['id'], fixture
+            )
+
+        with futurist.GreenThreadPoolExecutor() as executor:
+            results = []
+            for fixture in [0, 2, 3, 4, 5]:
+                results.append(executor.submit(
+                    update_floatingip, fixture=self.get_ptr_fixture(fixture)
+                ))
+            for future in futures.as_completed(results):
+                self.assertTrue(future.result())
+
+        fips = self.central_service.list_floatingips(context)
+
+        self.assertEqual(5, len(fips))
 
     def test_set_floatingip_no_managed_resource_tenant_id(self):
         context = self.get_context(project_id='a')
