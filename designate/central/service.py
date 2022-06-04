@@ -2336,8 +2336,12 @@ class Service(service.RPCService):
         # RS or Zone.
         if record and record.action != 'DELETE':
             if not recordset:
-                recordset = self.storage.get_recordset(
-                    elevated_context, record.recordset_id)
+                try:
+                    recordset = self.storage.get_recordset(
+                        elevated_context, record.recordset_id)
+                except exceptions.RecordSetNotFound:
+                    LOG.debug('No recordset found for %s', fip['id'])
+                    return fip_ptr
 
             fip_ptr['action'] = recordset.action
             fip_ptr['status'] = recordset.status
