@@ -53,7 +53,7 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
                         headers={'Content-type': 'text/dns'})
 
         import_id = response.json_body['id']
-        self.wait_for_import(import_id, errorok=True)
+        self.wait_for_import(import_id, error_is_ok=True)
 
         url = '/zones/tasks/imports/%s' % import_id
 
@@ -70,7 +70,7 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
                         headers={'Content-type': 'text/dns'})
 
         import_id = response.json_body['id']
-        self.wait_for_import(import_id, errorok=True)
+        self.wait_for_import(import_id, error_is_ok=True)
 
         url = '/zones/tasks/imports/%s' % import_id
 
@@ -86,7 +86,7 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
                         headers={'Content-type': 'text/dns'})
 
         import_id = response.json_body['id']
-        self.wait_for_import(import_id, errorok=True)
+        self.wait_for_import(import_id, error_is_ok=True)
 
         url = '/zones/tasks/imports/%s' % import_id
 

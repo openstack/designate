@@ -26,7 +26,6 @@ import random
 from random import SystemRandom
 import time
 
-import six
 from dns import exception as dnsexception
 from dns import zone as dnszone
 from oslo_config import cfg
@@ -3114,7 +3113,10 @@ class Service(service.RPCService):
                 zone_import.message = 'Duplicate zone.'
             except exceptions.InvalidTTL as e:
                 zone_import.status = 'ERROR'
-                zone_import.message = six.text_type(e)
+                zone_import.message = str(e)
+            except exceptions.OverQuota:
+                zone_import.status = 'ERROR'
+                zone_import.message = 'Quota exceeded during zone import.'
             except Exception as e:
                 LOG.exception(
                     'An undefined error occurred during zone import creation'
