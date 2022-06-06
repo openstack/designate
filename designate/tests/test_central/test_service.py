@@ -718,18 +718,18 @@ class CentralServiceTest(CentralTestCase):
         self.policy({'use_low_ttl': '!'})
         self.config(min_ttl=100,
                     group='service:central')
-        context = self.get_context()
+        context = self.get_context(project_id=1)
 
         values = self.get_zone_fixture(fixture=1)
-        values['ttl'] = 0
+        values['ttl'] = 5
 
-        with testtools.ExpectedException(ValueError):
+        with testtools.ExpectedException(exceptions.InvalidTTL):
             self.central_service.create_zone(
                 context, objects.Zone.from_dict(values))
 
     def test_create_zone_below_zero_ttl(self):
         self.policy({'use_low_ttl': '!'})
-        self.config(min_ttl=1,
+        self.config(min_ttl=0,
                     group='service:central')
         context = self.get_context()
 
