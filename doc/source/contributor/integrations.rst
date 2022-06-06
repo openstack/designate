@@ -79,7 +79,7 @@ Neutron Designate direct integration
 Neutron supports creating DNS Recordsets as neutron ports are created, and
 pushing that information into designate.
 
-The configuration for this is in the `Networking Guide <https://docs.openstack.org/ocata/networking-guide/config-dns-int.html>`_
+The configuration for this is in the `Networking Guide <https://docs.openstack.org/neutron/latest/admin/config-dns-int.html>`_
 
 Designate Sink
 ==============
