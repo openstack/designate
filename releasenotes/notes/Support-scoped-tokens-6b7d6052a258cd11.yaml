@@ -1,4 +1,4 @@
 ---
-features:
+fixes:
   - |
-    Adds support for keystone default roles and scoped tokens.
+    Fixes support for keystone default roles and scoped tokens.
