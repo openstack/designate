@@ -44,6 +44,12 @@ class NeutronFloatingHandler(base.BaseAddressHandler):
                   self.get_canonical_name(), event_type)
 
         zone_id = cfg.CONF[self.name].zone_id
+
+        if not zone_id:
+            LOG.error('NeutronFloatingHandler: zone_id is None, '
+                      'ignore the event.')
+            return
+
         if event_type.startswith('floatingip.delete'):
             self._delete(zone_id=zone_id,
                          resource_id=payload['floatingip_id'],
