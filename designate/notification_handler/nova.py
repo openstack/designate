@@ -48,6 +48,11 @@ class NovaFixedHandler(BaseAddressHandler):
         LOG.debug('NovaFixedHandler received notification - %s', event_type)
 
         zone_id = cfg.CONF[self.name].zone_id
+
+        if not zone_id:
+            LOG.error('NovaFixedHandler: zone_id is None, ignore the event.')
+            return
+
         if event_type == 'compute.instance.create.end':
             payload['project'] = context.get("project_name", None)
             self._create(addresses=payload['fixed_ips'],
