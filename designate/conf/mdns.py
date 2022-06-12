@@ -33,8 +33,12 @@ MDNS_OPTS = [
                help='mDNS TCP Backlog'),
     cfg.FloatOpt('tcp_recv_timeout', default=0.5,
                  help='mDNS TCP Receive Timeout'),
-    cfg.BoolOpt('all_tcp', default=False,
-                help='Send all traffic over TCP'),
+    cfg.IntOpt('all_tcp', help='Send all traffic over TCP',
+               default=None,
+               deprecated_for_removal=True,
+               deprecated_reason='This parameter should now be configured in'
+                                 'service:worker instead',
+               deprecated_since='Zed'),
     cfg.BoolOpt('query_enforce_tsig', default=False,
                 help='Enforce all incoming queries (including AXFR) are TSIG '
                      'signed'),
@@ -45,7 +49,11 @@ MDNS_OPTS = [
     cfg.StrOpt('topic', default='mdns',
                help='RPC topic name for mdns'),
     cfg.IntOpt('xfr_timeout', help="Timeout in seconds for XFR's.",
-               default=10),
+               default=None,
+               deprecated_for_removal=True,
+               deprecated_reason='This parameter should now be configured in'
+                                 'service:worker instead',
+               deprecated_since='Zed'),
 ]
 
 

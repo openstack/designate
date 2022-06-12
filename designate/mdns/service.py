@@ -19,8 +19,6 @@ from oslo_log import log as logging
 from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate import dnsutils
 from designate.mdns import handler
-from designate.mdns import notify
-from designate.mdns import xfr
 from designate import service
 from designate import storage
 from designate import utils
@@ -29,20 +27,15 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class Service(service.RPCService):
+class Service(service.Service):
     _dns_default_port = DEFAULT_MDNS_PORT
 
     def __init__(self):
         self._storage = None
 
         super(Service, self).__init__(
-            self.service_name, cfg.CONF['service:mdns'].topic,
-            threads=cfg.CONF['service:mdns'].threads,
+            self.service_name, threads=cfg.CONF['service:mdns'].threads,
         )
-        self.override_endpoints(
-            [notify.NotifyEndpoint(self.tg), xfr.XfrEndpoint(self.tg)]
-        )
-
         self.dns_service = service.DNSService(
             self.dns_application, self.tg,
             cfg.CONF['service:mdns'].listen,

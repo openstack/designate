@@ -24,6 +24,7 @@ import dns.rdatatype
 import dns.zone
 import eventlet
 from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 from designate import dnsutils
@@ -212,10 +213,52 @@ class TestUtils(designate.tests.TestCase):
         # This needs to be a one item tuple for the serialization middleware
         self.assertEqual(middleware.process_request(notify), (response,))
 
+    def test_all_tcp_default(self):
+        self.assertEqual(False, dnsutils.use_all_tcp())
+
+    def test_all_tcp_using_mdns(self):
+        CONF.set_override('all_tcp', True, 'service:mdns')
+        self.assertEqual(True, dnsutils.use_all_tcp())
+
+    def test_all_tcp_using_worker(self):
+        CONF.set_override('all_tcp', True, 'service:worker')
+        self.assertEqual(True, dnsutils.use_all_tcp())
+
+    @mock.patch.object(dns.query, 'udp')
+    def test_send_soa_message(self, mock_udp):
+        dnsutils.soa('zone_name', '192.0.2.1', 1234, 1)
+        msg = mock_udp.call_args[0][0]
+        mock_udp.assert_called_with(
+            mock.ANY, '192.0.2.1', port=1234, timeout=1
+        )
+        txt = msg.to_text().split('\n')[1:]
+        self.assertEqual([
+            'opcode QUERY',
+            'rcode NOERROR',
+            'flags RD',
+            ';QUESTION',
+            'zone_name. IN SOA',
+            ';ANSWER',
+            ';AUTHORITY',
+            ';ADDITIONAL'
+        ], txt)
+
 
 class TestDoAfxr(oslotest.base.BaseTestCase):
     def setUp(self):
         super(TestDoAfxr, self).setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+
+    def test_xfr_default(self):
+        self.assertEqual(10, dnsutils.xfr_timeout())
+
+    def test_xfr_timeout_set_using_mdns(self):
+        CONF.set_override('xfr_timeout', 30, 'service:mdns')
+        self.assertEqual(30, dnsutils.xfr_timeout())
+
+    def test_xfr_timeout_set_using_worker(self):
+        CONF.set_override('xfr_timeout', 40, 'service:worker')
+        self.assertEqual(40, dnsutils.xfr_timeout())
 
     @mock.patch.object(dns.query, 'xfr')
     @mock.patch.object(dns.zone, 'from_xfr')

@@ -286,3 +286,36 @@ class TestService(oslotest.base.BaseTestCase):
         )
 
         self.service.executor.run.assert_called_with(mock_export_zone())
+
+    @mock.patch.object(service.zonetasks, 'ZoneXfr')
+    def test_perform_zone_xfr(self, mock_perform_zone_xfr):
+        self.service._executor = mock.Mock()
+        self.service._pool = mock.Mock()
+        zone = mock.Mock()
+
+        self.service.perform_zone_xfr(self.context, zone)
+
+        mock_perform_zone_xfr.assert_called_with(
+            self.service.executor,
+            self.context,
+            zone,
+            None
+        )
+
+        self.service.executor.run.assert_called_with(mock_perform_zone_xfr())
+
+    @mock.patch.object(service.zonetasks, 'GetZoneSerial')
+    def test_get_serial_number(self, mock_get_serial_number):
+        zone = mock.Mock()
+
+        self.service.get_serial_number(
+            self.context, zone, 'localhost', 53
+        )
+
+        mock_get_serial_number.assert_called_with(
+            self.service.executor,
+            self.context,
+            zone,
+            'localhost',
+            53
+        )

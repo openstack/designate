@@ -198,15 +198,6 @@ class MockPool(object):
 
 
 # Fixtures
-fx_mdns_api = fixtures.MockPatch('designate.central.service.mdns_rpcapi')
-
-mdns_api = mock.PropertyMock(
-    return_value=mock.NonCallableMagicMock(spec_set=[
-        'a'
-    ])
-)
-
-
 fx_worker = fixtures.MockPatch(
     'designate.central.service.worker_rpcapi.WorkerAPI.get_instance',
     mock.MagicMock(spec_set=[
@@ -281,12 +272,6 @@ class CentralBasic(TestCase):
 
 
 class CentralServiceTestCase(CentralBasic):
-
-    def test_mdns_api_patch(self):
-        with fx_mdns_api:
-            q = self.service.mdns_api
-            assert 'mdns_rpcapi.MdnsAPI.get_instance' in repr(q)
-
     def test_conf_fixture(self):
         assert 'service:central' in designate.central.service.cfg.CONF
 
@@ -1017,13 +1002,14 @@ class CentralZoneTestCase(CentralBasic):
             masters=[RoObject(host='10.0.0.1', port=53)],
             serial=1,
         )
-        with fx_mdns_api:
-            self.service.mdns_api.get_serial_number.return_value = \
-                "SUCCESS", 2, 1
+        with fx_worker:
+            self.service.worker_api.get_serial_number.return_value = (
+                'SUCCESS', 2
+            )
             self.service.xfr_zone(
                 self.context, CentralZoneTestCase.zone__id)
             self.assertTrue(
-                self.service.mdns_api.perform_zone_xfr.called)
+                self.service.worker_api.perform_zone_xfr.called)
 
             self.assertTrue(designate.central.service.policy.check.called)
         self.assertEqual(

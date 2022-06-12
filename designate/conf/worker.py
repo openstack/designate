@@ -46,6 +46,21 @@ WORKER_OPTS = [
                 help='Whether to allow synchronous zone exports'),
     cfg.StrOpt('topic', default='worker',
                help='RPC topic name for worker'),
+    cfg.IntOpt('xfr_timeout', help="Timeout in seconds for XFR's.",
+               default=10),
+    cfg.IntOpt('serial_max_retries',
+               help='The maximum number of times to retry fetching a zones '
+                    'serial.',
+               default=3),
+    cfg.IntOpt('serial_retry_delay',
+               help='The time to wait before retrying a zone serial request.',
+               default=1),
+    cfg.IntOpt('serial_timeout',
+               help='Timeout in seconds before giving up on fetching a zones '
+                    'serial.',
+               default=1),
+    cfg.BoolOpt('all_tcp', default=False,
+                help='Send all traffic over TCP'),
 ]
 
 

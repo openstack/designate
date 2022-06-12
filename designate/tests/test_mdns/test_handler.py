@@ -177,9 +177,6 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                                return_value=zone):
             response = next(self.handler(request)).to_wire()
 
-        self.mock_tg.add_thread.assert_called_with(
-            self.handler.zone_sync, self.context, zone,
-            [zone.masters[0]])
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     @mock.patch.object(dns.resolver.Resolver, 'query')

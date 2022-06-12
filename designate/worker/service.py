@@ -42,7 +42,7 @@ class AlsoNotifyTask(object):
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '1.0'
+    RPC_API_VERSION = '1.1'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -143,10 +143,10 @@ class Service(service.RPCService):
 
     def _do_zone_action(self, context, zone):
         pool = self.get_pool(zone.pool_id)
-        all_tasks = []
-        all_tasks.append(zonetasks.ZoneAction(
-            self.executor, context, pool, zone, zone.action
-        ))
+        all_tasks = [
+            zonetasks.ZoneAction(self.executor, context, pool, zone,
+                                 zone.action)
+        ]
 
         # Send a NOTIFY to each also-notifies
         for also_notify in pool.also_notifies:
@@ -206,3 +206,26 @@ class Service(service.RPCService):
         return self.executor.run(zonetasks.ExportZone(
             self.executor, context, zone, export
         ))
+
+    @rpc.expected_exceptions()
+    def perform_zone_xfr(self, context, zone, servers=None):
+        """
+        :param zone: Zone to be exported
+        :param servers:
+        :return: None
+        """
+        return self.executor.run(zonetasks.ZoneXfr(
+            self.executor, context, zone, servers
+        ))
+
+    @rpc.expected_exceptions()
+    def get_serial_number(self, context, zone, host, port):
+        """
+        :param zone: Zone to get serial number
+        :param host:
+        :param port:
+        :return: tuple
+        """
+        return self.executor.run(zonetasks.GetZoneSerial(
+            self.executor, context, zone, host, port,
+        ))[0]

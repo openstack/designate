@@ -185,7 +185,7 @@ class RequestHandler(object):
 
         try:
             zone = dnsutils.do_axfr(zone_name, self.masters,
-                source=self.transfer_source)
+                                    source=self.transfer_source)
             self.backend.update_zone(zone)
         except Exception:
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))

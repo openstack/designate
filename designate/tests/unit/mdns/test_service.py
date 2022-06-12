@@ -44,12 +44,10 @@ class MdnsServiceTest(oslotest.base.BaseTestCase):
         self.service = service.Service()
 
     @mock.patch.object(designate.service.DNSService, 'start')
-    @mock.patch.object(designate.service.RPCService, 'start')
-    def test_service_start(self, mock_rpc_start, mock_dns_start):
+    def test_service_start(self, mock_dns_start):
         self.service.start()
 
         self.assertTrue(mock_dns_start.called)
-        self.assertTrue(mock_rpc_start.called)
 
     def test_service_stop(self):
         self.service.dns_service.stop = mock.Mock()
@@ -61,14 +59,6 @@ class MdnsServiceTest(oslotest.base.BaseTestCase):
         self.assertIn('Stopping mdns service', self.stdlog.logger.output)
 
     def test_service_name(self):
-        self.assertEqual('mdns', self.service.service_name)
-
-    def test_mdns_rpc_topic(self):
-        CONF.set_override('topic', 'test-topic', 'service:mdns')
-
-        self.service = service.Service()
-
-        self.assertEqual('test-topic', self.service.rpc_topic)
         self.assertEqual('mdns', self.service.service_name)
 
     @mock.patch.object(storage, 'get_storage')

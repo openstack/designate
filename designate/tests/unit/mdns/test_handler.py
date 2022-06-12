@@ -24,6 +24,7 @@ from designate import exceptions
 from designate.mdns import handler
 from designate import objects
 from designate.tests import fixtures
+from designate.worker import rpcapi as worker_rpcapi
 
 CONF = cfg.CONF
 
@@ -38,6 +39,14 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         self.storage = mock.Mock()
         self.tg = mock.Mock()
         self.handler = handler.RequestHandler(self.storage, self.tg)
+
+    def test_worker_api(self):
+        self.assertIsNone(self.handler._worker_api)
+        self.assertIsInstance(self.handler.worker_api,
+                              worker_rpcapi.WorkerAPI)
+        self.assertIsNotNone(self.handler._worker_api)
+        self.assertIsInstance(self.handler.worker_api,
+                              worker_rpcapi.WorkerAPI)
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
     def test_notify(self, mock_query):
@@ -206,7 +215,6 @@ class TestRequestHandlerCall(oslotest.base.BaseTestCase):
     def setUp(self):
         super(TestRequestHandlerCall, self).setUp()
         self.handler = handler.RequestHandler(mock.Mock(), mock.Mock())
-        self.handler._central_api = mock.Mock(name='central_api')
 
         # Use a simple handlers that doesn't require a real request
         self.handler._handle_query_error = mock.Mock(return_value='Error')
@@ -214,10 +222,6 @@ class TestRequestHandlerCall(oslotest.base.BaseTestCase):
         self.handler._handle_record_query = mock.Mock(
             return_value=['Record Query'])
         self.handler._handle_notify = mock.Mock(return_value=['Notify'])
-
-    def test_central_api_property(self):
-        self.handler._central_api = 'foo'
-        self.assertEqual(self.handler.central_api, 'foo')
 
     def test__call___unhandled_opcodes(self):
         unhandled_codes = [

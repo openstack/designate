@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    Removed the ``monascastatsd`` based metrics solution as all calls using
+    it has been changed or removed and designate is no longer tracking
+    any metrics using the metrics endpoint.

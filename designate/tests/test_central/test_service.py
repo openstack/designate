@@ -34,12 +34,12 @@ import testtools
 from testtools.matchers import GreaterThan
 
 from designate import exceptions
-from designate.mdns import rpcapi as mdns_api
 from designate import objects
 from designate.storage.impl_sqlalchemy import tables
 from designate.tests import fixtures
 from designate.tests.test_central import CentralTestCase
 from designate import utils
+from designate.worker import rpcapi as worker_api
 
 LOG = logging.getLogger(__name__)
 
@@ -1307,13 +1307,15 @@ class CentralServiceTest(CentralTestCase):
         # Create a zone
         secondary = self.create_zone(**fixture)
 
-        mdns = mock.Mock()
-        with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
-            get_mdns.return_value = mdns
-            mdns.get_serial_number.return_value = ('SUCCESS', 10, 1, )
+        worker = mock.Mock()
+        with mock.patch.object(worker_api.WorkerAPI,
+                               'get_instance') as get_worker:
+            get_worker.return_value = worker
+            worker.get_serial_number.return_value = ('SUCCESS', 10)
+
             self.central_service.xfr_zone(self.admin_context, secondary.id)
 
-        self.assertTrue(mdns.perform_zone_xfr.called)
+        self.assertTrue(worker.perform_zone_xfr.called)
 
     def test_xfr_zone_same_serial(self):
         # Create a zone
@@ -1324,13 +1326,14 @@ class CentralServiceTest(CentralTestCase):
         # Create a zone
         secondary = self.create_zone(**fixture)
 
-        mdns = mock.Mock()
-        with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
-            get_mdns.return_value = mdns
-            mdns.get_serial_number.return_value = ('SUCCESS', 1, 1, )
+        worker = mock.Mock()
+        with mock.patch.object(worker_api.WorkerAPI,
+                               'get_instance') as get_worker:
+            get_worker.return_value = worker
+            worker.get_serial_number.return_value = ('SUCCESS', 1)
             self.central_service.xfr_zone(self.admin_context, secondary.id)
 
-        self.assertFalse(mdns.perform_zone_xfr.called)
+        self.assertFalse(worker.perform_zone_xfr.called)
 
     def test_xfr_zone_lower_serial(self):
         # Create a zone
@@ -1343,13 +1346,14 @@ class CentralServiceTest(CentralTestCase):
         secondary = self.create_zone(**fixture)
         secondary.serial
 
-        mdns = mock.Mock()
-        with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
-            get_mdns.return_value = mdns
-            mdns.get_serial_number.return_value = ('SUCCESS', 0, 1, )
+        worker = mock.Mock()
+        with mock.patch.object(worker_api.WorkerAPI,
+                               'get_instance') as get_worker:
+            get_worker.return_value = worker
+            worker.get_serial_number.return_value = ('SUCCESS', 0)
             self.central_service.xfr_zone(self.admin_context, secondary.id)
 
-        self.assertFalse(mdns.perform_zone_xfr.called)
+        self.assertFalse(worker.perform_zone_xfr.called)
 
     def test_xfr_zone_invalid_type(self):
         zone = self.create_zone()

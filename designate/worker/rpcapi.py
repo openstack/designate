@@ -35,15 +35,16 @@ class WorkerAPI(object):
     API version history:
 
         1.0 - Initial version
+        1.1 - Added perform_zone_xfr and get_serial_number
     """
-    RPC_API_VERSION = '1.0'
+    RPC_API_VERSION = '1.1'
 
     def __init__(self, topic=None):
         self.topic = topic if topic else cfg.CONF['service:worker'].topic
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='1.0')
+        self.client = rpc.get_client(target, version_cap='1.1')
 
     @classmethod
     def get_instance(cls):
@@ -78,3 +79,13 @@ class WorkerAPI(object):
     def start_zone_export(self, context, zone, export):
         return self.client.cast(
             context, 'start_zone_export', zone=zone, export=export)
+
+    def perform_zone_xfr(self, context, zone, servers=None):
+        return self.client.cast(
+            context, 'perform_zone_xfr', zone=zone, servers=servers)
+
+    def get_serial_number(self, context, zone, host, port):
+        return self.client.call(
+            context, 'get_serial_number', zone=zone,
+            host=host, port=port,
+        )

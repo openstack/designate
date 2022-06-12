@@ -19,7 +19,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.context import DesignateContext
-from designate.mdns import rpcapi as mdns_api
 from designate.plugin import DriverPlugin
 
 LOG = logging.getLogger(__name__)
@@ -57,10 +56,6 @@ class Backend(DriverPlugin):
 
     def stop(self):
         LOG.info('Stopped %s backend', self.get_canonical_name())
-
-    @property
-    def mdns_api(self):
-        return mdns_api.MdnsAPI.get_instance()
 
     # Core Backend Interface
     @abc.abstractmethod

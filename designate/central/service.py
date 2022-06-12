@@ -37,7 +37,6 @@ from designate import context as dcontext
 from designate import coordination
 from designate import dnsutils
 from designate import exceptions
-from designate.mdns import rpcapi as mdns_rpcapi
 from designate import network_api
 from designate import notifications
 from designate import objects
@@ -242,10 +241,6 @@ class Service(service.RPCService):
     def stop(self, graceful=True):
         self.coordination.stop()
         super(Service, self).stop(graceful)
-
-    @property
-    def mdns_api(self):
-        return mdns_rpcapi.MdnsAPI.get_instance()
 
     @property
     def worker_api(self):
@@ -957,7 +952,7 @@ class Service(service.RPCService):
         self.worker_api.create_zone(context, zone)
 
         if zone.type == 'SECONDARY':
-            self.mdns_api.perform_zone_xfr(context, zone)
+            self.worker_api.perform_zone_xfr(context, zone)
 
         # If zone is a superzone, update subzones
         # with new parent IDs
@@ -1116,7 +1111,7 @@ class Service(service.RPCService):
 
         # Fire off a XFR
         if 'masters' in changes:
-            self.mdns_api.perform_zone_xfr(context, zone)
+            self.worker_api.perform_zone_xfr(context, zone)
 
         self.worker_api.update_zone(context, zone)
 
@@ -1239,15 +1234,15 @@ class Service(service.RPCService):
         # Ensure the format of the servers are correct, then poll the
         # serial
         srv = random.choice(zone.masters)
-        status, serial, retries = self.mdns_api.get_serial_number(
-            context, zone, srv.host, srv.port, 3, 1, 3, 0)
+        status, serial = self.worker_api.get_serial_number(
+            context, zone, srv.host, srv.port)
 
         # Perform XFR if serial's are not equal
-        if serial > zone.serial:
+        if serial is not None and serial > zone.serial:
             LOG.info("Serial %(srv_serial)d is not equal to zone's "
                      "%(serial)d, performing AXFR",
                      {"srv_serial": serial, "serial": zone.serial})
-            self.mdns_api.perform_zone_xfr(context, zone)
+            self.worker_api.perform_zone_xfr(context, zone)
 
     @rpc.expected_exceptions()
     def count_zones(self, context, criterion=None):

@@ -16,7 +16,6 @@ Contents:
    Designate Tempest Plugin <https://docs.openstack.org/designate-tempest-plugin/latest>
    architecture
    gmr
-   metrics
    sourcedoc/index
    ubuntu-dev
    integrations
