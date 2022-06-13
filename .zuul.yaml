@@ -187,7 +187,6 @@
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
-    queue: designate
     gate:
       jobs:
         - designate-bind9
