@@ -16,7 +16,6 @@
 import re
 
 import jsonschema
-from jsonschema import compat
 import netaddr
 
 
@@ -56,7 +55,7 @@ draft4_format_checker = jsonschema.draft4_format_checker
 @draft3_format_checker.checks("ip-address")
 @draft4_format_checker.checks("ipv4")
 def is_ipv4(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     try:
@@ -76,7 +75,7 @@ def is_ipv4(instance):
 @draft3_format_checker.checks("ipv6")
 @draft4_format_checker.checks("ipv6")
 def is_ipv6(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     try:
@@ -90,7 +89,7 @@ def is_ipv6(instance):
 @draft3_format_checker.checks("host-name")
 @draft4_format_checker.checks("hostname")
 def is_hostname(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_HOSTNAME, instance):
@@ -101,7 +100,7 @@ def is_hostname(instance):
 
 @draft4_format_checker.checks("ns-hostname")
 def is_ns_hostname(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     # BIND doesn't like *.host.com. see bug #1533299
@@ -114,7 +113,7 @@ def is_ns_hostname(instance):
 @draft3_format_checker.checks("ip-or-host")
 @draft4_format_checker.checks("ip-or-host")
 def is_ip_or_host(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_ZONENAME, instance)\
@@ -130,7 +129,7 @@ def is_ip_or_host(instance):
 @draft3_format_checker.checks("zone-name")
 @draft4_format_checker.checks("zonename")
 def is_zonename(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_ZONENAME, instance):
@@ -141,7 +140,7 @@ def is_zonename(instance):
 
 @draft4_format_checker.checks("srv-hostname")
 def is_srv_hostname(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_SRV_HOST_NAME, instance):
@@ -152,7 +151,7 @@ def is_srv_hostname(instance):
 
 @draft4_format_checker.checks("txt-data")
 def is_txt_data(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if instance.endswith('\\'):
@@ -164,7 +163,7 @@ def is_txt_data(instance):
 @draft3_format_checker.checks("tld-name")
 @draft4_format_checker.checks("tldname")
 def is_tldname(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_TLDNAME, instance):
@@ -176,7 +175,7 @@ def is_tldname(instance):
 @draft3_format_checker.checks("email")
 @draft4_format_checker.checks("email")
 def is_email(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     # A valid email address. We use the RFC1035 version of "valid".
@@ -193,7 +192,7 @@ def is_email(instance):
 
 @draft4_format_checker.checks("sshfp")
 def is_sshfp_fingerprint(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_SSHFP_FINGERPRINT, instance):
@@ -205,7 +204,7 @@ def is_sshfp_fingerprint(instance):
 @draft3_format_checker.checks("uuid")
 @draft4_format_checker.checks("uuid")
 def is_uuid(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_UUID, instance):
@@ -219,7 +218,7 @@ def is_uuid(instance):
 def is_floating_ip_id(instance):
     # TODO(kiall): Apparently, this is used in exactly zero places outside the
     #              tests. Determine if we should remove this code...
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_FIP_ID, instance):
@@ -231,7 +230,7 @@ def is_floating_ip_id(instance):
 @draft3_format_checker.checks("ip-and-port")
 @draft4_format_checker.checks("ipandport")
 def is_ip_and_port(instance):
-    if not isinstance(instance, compat.str_types):
+    if not isinstance(instance, str):
         return True
 
     if not re.match(RE_IP_AND_PORT, instance):
