@@ -104,8 +104,6 @@ How do I monitor Designate?
 Designate can be monitored by various
 `monitoring systems listed here <https://wiki.openstack.org/wiki/Operations/Monitoring>`_
 
-OpenStack recommends `Monasca <https://wiki.openstack.org/wiki/Monasca>`_
-
 What are useful metrics to monitor?
 -----------------------------------
 

@@ -28,7 +28,6 @@ from designate.conf import infoblox
 from designate.conf import keystone
 from designate.conf import knot2
 from designate.conf import mdns
-from designate.conf import metrics
 from designate.conf import msdns
 from designate.conf import network_api
 from designate.conf import producer
@@ -54,7 +53,6 @@ infoblox.register_opts(CONF)
 keystone.register_opts(CONF)
 knot2.register_opts(CONF)
 mdns.register_opts(CONF)
-metrics.register_opts(CONF)
 msdns.register_opts(CONF)
 network_api.register_opts(CONF)
 producer.register_opts(CONF)

@@ -23,9 +23,9 @@ import dns.rdatatype
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.central import rpcapi as central_api
 from designate import exceptions
-from designate.mdns import xfr
+from designate.worker import rpcapi as worker_api
+
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -38,18 +38,18 @@ CONF.import_opt('default_pool_id', 'designate.central',
 TSIG_RRSIZE = 10 + 64 + 160 + 1
 
 
-class RequestHandler(xfr.XFRMixin):
+class RequestHandler(object):
     def __init__(self, storage, tg):
-        self._central_api = None
+        self._worker_api = None
 
         self.storage = storage
         self.tg = tg
 
     @property
-    def central_api(self):
-        if not self._central_api:
-            self._central_api = central_api.CentralAPI.get_instance()
-        return self._central_api
+    def worker_api(self):
+        if not self._worker_api:
+            self._worker_api = worker_api.WorkerAPI.get_instance()
+        return self._worker_api
 
     def __call__(self, request):
         """
@@ -169,8 +169,7 @@ class RequestHandler(xfr.XFRMixin):
                     'master_addr': master_addr.to_data()
                 }
             )
-            self.tg.add_thread(self.zone_sync, context, zone,
-                               [master_addr])
+            self.worker_api.perform_zone_xfr(context, zone, [master_addr])
 
         response.flags |= dns.flags.AA
 

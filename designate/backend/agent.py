@@ -40,7 +40,7 @@ from designate.backend import private_codes
 from designate.conf.agent import DEFAULT_AGENT_PORT
 from designate import dnsutils
 from designate import exceptions
-from designate.mdns import rpcapi as mdns_api
+
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -58,10 +58,6 @@ class AgentPoolBackend(base.Backend):
         self.retry_interval = CONF['service:worker'].poll_retry_interval
         self.max_retries = CONF['service:worker'].poll_max_retries
         # FIXME: the agent retries creating zones without any interval
-
-    @property
-    def mdns_api(self):
-        return mdns_api.MdnsAPI.get_instance()
 
     def create_zone(self, context, zone):
         LOG.debug('Create Zone')

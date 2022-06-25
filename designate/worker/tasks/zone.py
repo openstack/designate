@@ -14,14 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from collections import namedtuple
+import errno
+import socket
 import time
 
 import dns
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import timeutils
 
 from designate import dnsutils
 from designate import exceptions
+from designate import objects
 from designate import utils
 from designate.worker.tasks import base
 
@@ -148,6 +152,36 @@ class SendNotify(base.Task):
             raise e
 
         return False
+
+
+class ZoneXfr(base.Task):
+    """
+    Perform AXFR on Zone
+    """
+
+    def __init__(self, executor, context, zone, servers=None):
+        super(ZoneXfr, self).__init__(executor)
+        self.context = context
+        self.zone = zone
+        self.servers = servers
+
+    def __call__(self):
+        servers = self.servers or self.zone.masters
+        if isinstance(servers, objects.ListObjectMixin):
+            servers = servers.to_list()
+
+        try:
+            dnspython_zone = dnsutils.do_axfr(self.zone.name, servers)
+        except exceptions.XFRFailure as e:
+            LOG.warning(e)
+            return
+
+        self.zone.update(dnsutils.from_dnspython_zone(dnspython_zone))
+        self.zone.transferred_at = timeutils.utcnow()
+        self.zone.obj_reset_changes(['name'])
+        self.central_api.update_zone(
+            self.context, self.zone, increment_serial=False
+        )
 
 
 class ZoneActor(base.Task):
@@ -556,6 +590,136 @@ class ZonePoller(base.Task):
 
         self._update_status()
         return result
+
+
+class GetZoneSerial(base.Task):
+    """
+    Get zone serial number from a resolver using retries.
+    """
+    def __init__(self, executor, context, zone, host, port):
+        super(GetZoneSerial, self).__init__(executor)
+        self.context = context
+        self.zone = zone
+        self.host = host
+        self.port = port
+        self.serial_max_retries = CONF['service:worker'].serial_max_retries
+        self.serial_retry_delay = CONF['service:worker'].serial_retry_delay
+        self.serial_timeout = CONF['service:worker'].serial_timeout
+
+    def __call__(self):
+        LOG.debug(
+            'Sending SOA for zone_name=%(zone)s to %(server)s:%(port)d.',
+            {
+                'zone': self.zone.name,
+                'server': self.host,
+                'port': self.port,
+            }
+        )
+        actual_serial = None
+        status = 'ERROR'
+        for retry in range(0, self.serial_max_retries):
+            response = self._make_and_send_soa_message(
+                self.zone.name, self.host, self.port
+            )
+            if not response:
+                pass
+            elif (response.rcode() in (
+                    dns.rcode.NXDOMAIN,
+                    dns.rcode.REFUSED,
+                    dns.rcode.SERVFAIL) or not bool(response.answer)):
+                status = 'NO_ZONE'
+                if (self.zone.serial == 0 and
+                        self.zone.action in ('DELETE', 'NONE')):
+                    actual_serial = 0
+                    break
+            elif not (response.flags & dns.flags.AA):
+                LOG.warning(
+                    'Unable to get serial for zone_name=%(zone)s '
+                    'to %(server)s:%(port)d. '
+                    'Unable to get an Authoritative Answer from server.',
+                    {
+                        'zone': self.zone.name,
+                        'server': self.host,
+                        'port': self.port,
+                    }
+                )
+                break
+            elif dns.rcode.from_flags(
+                    response.flags, response.ednsflags) != dns.rcode.NOERROR:
+                pass
+            elif (len(response.answer) == 1 and
+                  str(response.answer[0].name) == self.zone.name and
+                  response.answer[0].rdclass == dns.rdataclass.IN and
+                  response.answer[0].rdtype == dns.rdatatype.SOA):
+                rrset = response.answer[0]
+                actual_serial = list(rrset.to_rdataset().items)[0].serial
+
+            if actual_serial is not None:
+                status = 'SUCCESS'
+                break
+            time.sleep(self.serial_retry_delay)
+
+        if actual_serial is None:
+            LOG.warning(
+                'Unable to get serial for zone_name=%(zone)s'
+                'to %(server)s:%(port)d.',
+                {
+                    'zone': self.zone.name,
+                    'server': self.host,
+                    'port': self.port,
+                }
+            )
+
+        return status, actual_serial
+
+    def _make_and_send_soa_message(self, zone_name, host, port):
+        """
+        Generate and send a SOA message.
+
+        :param zone_name: The zone name.
+        :param host: The destination host for the dns message.
+        :param port: The destination port for the dns message.
+        """
+        try:
+            return dnsutils.soa(
+                zone_name, host, port, timeout=self.serial_timeout
+            )
+        except socket.error as e:
+            if e.errno != errno.EAGAIN:
+                raise
+            LOG.info(
+                'Got EAGAIN while trying to send SOA for '
+                'zone_name=%(zone_name)s to %(server)s:%(port)d. '
+                'timeout=%(timeout)d seconds.',
+                {
+                    'zone_name': zone_name,
+                    'server': host,
+                    'port': port,
+                    'timeout': self.serial_timeout
+                }
+            )
+        except dns.exception.Timeout:
+            LOG.warning(
+                'Got Timeout while trying to send SOA for '
+                'zone_name=%(zone_name)s to %(server)s:%(port)d. '
+                'timeout=%(timeout)d seconds.',
+                {
+                    'zone_name': zone_name,
+                    'server': host,
+                    'port': port,
+                    'timeout': self.serial_timeout
+                }
+            )
+        except dns.query.BadResponse:
+            LOG.warning(
+                'Got BadResponse while trying to send SOA '
+                'for zone_name=%(zone_name)s to %(server)s:%(port)d.',
+                {
+                    'zone_name': zone_name,
+                    'server': host,
+                    'port': port,
+                }
+            )
 
 
 ###################

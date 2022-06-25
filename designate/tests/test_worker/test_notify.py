@@ -21,13 +21,12 @@ import dns.exception
 import dns.message
 import dns.query
 
-from designate.mdns import notify
 from designate import objects
-from designate.tests.test_mdns import MdnsTestCase
+from designate.tests import TestCase
+from designate.worker.tasks import zone
 
 
-class MdnsNotifyTest(MdnsTestCase):
-
+class WorkerNotifyTest(TestCase):
     test_zone = {
         'name': 'example.com.',
         'email': 'example@example.com',
@@ -35,14 +34,13 @@ class MdnsNotifyTest(MdnsTestCase):
     }
 
     def setUp(self):
-        super(MdnsNotifyTest, self).setUp()
+        super(WorkerNotifyTest, self).setUp()
         self.nameserver = objects.PoolNameserver.from_dict({
             'id': 'f278782a-07dc-4502-9177-b5d85c5f7c7e',
             'host': '127.0.0.1',
             'port': 65255
         })
         self.mock_tg = mock.Mock()
-        self.notify = notify.NotifyEndpoint(self.mock_tg)
 
     def test_poll_for_serial_number(self):
         # id 10001
@@ -62,12 +60,14 @@ class MdnsNotifyTest(MdnsTestCase):
                          "00000e10")
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
-            status, serial, retries = self.notify.get_serial_number(
-                'context', objects.Zone.from_dict(self.test_zone),
-                self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
-            self.assertEqual(status, 'SUCCESS')
-            self.assertEqual(serial, self.test_zone['serial'])
-            self.assertEqual(retries, 2)
+            get_zone_serial = zone.GetZoneSerial(
+                self.mock_tg, 'context',
+                objects.Zone.from_dict(self.test_zone),
+                self.nameserver.host, self.nameserver.port,
+            )
+            result = get_zone_serial()
+            self.assertEqual(result[0], 'SUCCESS')
+            self.assertEqual(result[1], self.test_zone['serial'])
 
     def test_poll_for_serial_number_lower_serial(self):
         # id 10001
@@ -87,12 +87,14 @@ class MdnsNotifyTest(MdnsTestCase):
                          "00000e10")
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
-            status, serial, retries = self.notify.get_serial_number(
-                'context', objects.Zone.from_dict(self.test_zone),
-                self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
-            self.assertEqual(status, 'ERROR')
-            self.assertEqual(serial, 99)
-            self.assertEqual(retries, 0)
+            get_zone_serial = zone.GetZoneSerial(
+                self.mock_tg, 'context',
+                objects.Zone.from_dict(self.test_zone),
+                self.nameserver.host, self.nameserver.port,
+            )
+            result = get_zone_serial()
+            self.assertEqual(result[0], 'SUCCESS')
+            self.assertEqual(result[1], 99)
 
     def test_poll_for_serial_number_higher_serial(self):
         # id 10001
@@ -112,18 +114,23 @@ class MdnsNotifyTest(MdnsTestCase):
                          "00000e10")
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
-            status, serial, retries = self.notify.get_serial_number(
-                'context', objects.Zone.from_dict(self.test_zone),
-                self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
-            self.assertEqual(status, 'SUCCESS')
-            self.assertEqual(serial, 101)
-            self.assertEqual(retries, 2)
+            get_zone_serial = zone.GetZoneSerial(
+                self.mock_tg, 'context',
+                objects.Zone.from_dict(self.test_zone),
+                self.nameserver.host, self.nameserver.port,
+            )
+            result = get_zone_serial()
+            self.assertEqual(result[0], 'SUCCESS')
+            self.assertEqual(result[1], 101)
 
     @patch.object(dns.query, 'udp', side_effect=dns.exception.Timeout)
     def test_poll_for_serial_number_timeout(self, _):
-        status, serial, retries = self.notify.get_serial_number(
-            'context', objects.Zone.from_dict(self.test_zone),
-            self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
-        self.assertEqual(status, 'ERROR')
-        self.assertIsNone(serial)
-        self.assertEqual(retries, 0)
+        self.CONF.set_override('serial_timeout', 1, 'service:worker')
+        get_zone_serial = zone.GetZoneSerial(
+            self.mock_tg, 'context',
+            objects.Zone.from_dict(self.test_zone),
+            self.nameserver.host, self.nameserver.port,
+        )
+        result = get_zone_serial()
+        self.assertEqual(result[0], 'ERROR')
+        self.assertIsNone(result[1])

@@ -33,7 +33,6 @@ from oslo_utils import netutils
 from designate.common import profiler
 import designate.conf
 from designate.i18n import _
-from designate.metrics import metrics
 from designate import policy
 from designate import rpc
 from designate import utils
@@ -150,7 +149,6 @@ class DNSService(object):
         self.tcp_backlog = tcp_backlog
         self.tcp_recv_timeout = tcp_recv_timeout
         self.listen = listen
-        metrics.init()
 
         # Eventet will complain loudly about our use of multiple greentheads
         # reading/writing to the UDP socket at once. Disable this warning.

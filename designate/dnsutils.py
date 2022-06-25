@@ -337,19 +337,25 @@ def dnspythonrecord_to_recordset(rname, rdataset):
     return rrset
 
 
-def do_axfr(zone_name, servers, timeout=None, source=None):
+def xfr_timeout():
+    if CONF['service:mdns'].xfr_timeout is not None:
+        return CONF['service:mdns'].xfr_timeout
+    else:
+        return CONF['service:worker'].xfr_timeout
+
+
+def do_axfr(zone_name, servers, source=None):
     """
     Requests an AXFR for a given zone name and process the response
 
     :returns: Zone instance from dnspython
     """
     random.shuffle(servers)
-    timeout = timeout or CONF["service:mdns"].xfr_timeout
 
     xfr = None
     for srv in servers:
         for address in get_ip_addresses(srv['host']):
-            to = eventlet.Timeout(timeout)
+            to = eventlet.Timeout(xfr_timeout())
             log_info = {'name': zone_name, 'host': srv, 'address': address}
             try:
                 LOG.info(
@@ -415,6 +421,24 @@ def notify(zone_name, host, port=53):
     return send_dns_message(msg, host, port=port)
 
 
+def soa(zone_name, host, port=53, timeout=10):
+    """
+    Set up a soa packet and send it
+    """
+    msg = prepare_msg(zone_name, rdatatype=dns.rdatatype.SOA,
+                      dns_opcode=dns.opcode.QUERY)
+    msg.flags |= dns.flags.RD
+
+    return send_dns_message(msg, host, port=port, timeout=timeout)
+
+
+def use_all_tcp():
+    if CONF['service:mdns'].all_tcp is not None:
+        return CONF['service:mdns'].all_tcp
+    else:
+        return CONF['service:worker'].all_tcp
+
+
 def send_dns_message(dns_message, host, port=53, timeout=10):
     """
     Send the dns message and return the response
@@ -423,7 +447,7 @@ def send_dns_message(dns_message, host, port=53, timeout=10):
     """
     ip_address = get_ip_address(host)
     # This can raise some exceptions, but we'll catch them elsewhere
-    if not CONF['service:mdns'].all_tcp:
+    if not use_all_tcp():
         return dns.query.udp(
             dns_message, ip_address, port=port, timeout=timeout)
     return dns.query.tcp(

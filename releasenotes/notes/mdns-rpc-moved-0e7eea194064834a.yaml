@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    The ``SECONDARY zone`` RPC calls were moved from the ``mdns`` service to ``worker``
+    service. When upgrading multi-controller deployments we recommend that you
+    restart the ``central`` and ``worker`` services first to move the
+    ``SECONDARY zone`` calls to the ``worker``, and once both services has been
+    upgraded go ahead and restart the ``mdns`` service.

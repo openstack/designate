@@ -21,9 +21,9 @@ import oslo_messaging as messaging
 
 from designate.central import service as central_service
 from designate import exceptions
-from designate.mdns import rpcapi as mdns_api
 from designate import objects
 from designate.tests.test_api.test_v2 import ApiV2TestCase
+from designate.worker import rpcapi as worker_api
 
 
 class ApiV2ZonesTest(ApiV2TestCase):
@@ -565,16 +565,17 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a zone
         zone = self.create_zone(**fixture)
 
-        mdns = mock.Mock()
-        with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
-            get_mdns.return_value = mdns
-            mdns.get_serial_number.return_value = ('SUCCESS', 10, 1, )
+        worker = mock.Mock()
+        with mock.patch.object(worker_api.WorkerAPI,
+                               'get_instance') as get_worker:
+            get_worker.return_value = worker
+            worker.get_serial_number.return_value = ('SUCCESS', 10)
 
             response = self.client.post_json(
                 '/zones/%s/tasks/xfr' % zone['id'],
                 None, status=202)
 
-        self.assertTrue(mdns.perform_zone_xfr.called)
+        self.assertTrue(worker.perform_zone_xfr.called)
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
