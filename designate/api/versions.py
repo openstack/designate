@@ -16,7 +16,21 @@
 import flask
 from oslo_config import cfg
 
+from designate.common import constants
+
 cfg.CONF.import_opt('enable_host_header', 'designate.api', group='service:api')
+
+
+def _add_a_version(versions, version, api_url, status, timestamp):
+    versions.append({
+        'id': version,
+        'status': status,
+        'updated': timestamp,
+        'links': [{'href': api_url,
+                   'rel': 'self'},
+                  {'href': constants.API_REF_URL,
+                   'rel': 'help'}]
+    })
 
 
 def factory(global_config, **local_conf):
@@ -28,23 +42,15 @@ def factory(global_config, **local_conf):
             url_root = flask.request.url_root
         else:
             url_root = cfg.CONF['service:api'].api_base_uri
+        api_url = url_root.rstrip('/') + '/v2'
 
-        return flask.jsonify({
-            "versions": {
-                "values": [{
-                    'id': 'v2',
-                    'status': 'CURRENT',
-                    'links': [
-                        {
-                            'href': url_root.rstrip('/') + '/v2',
-                            'rel': 'self',
-                        }, {
-                            'rel': 'help',
-                            'href': 'https://docs.openstack.org/api-ref/dns'
-                        }
-                    ]
-                }]
-            }
-        })
+        versions = []
+        # Initial API version for v2 API
+        _add_a_version(versions, 'v2', api_url, constants.SUPPORTED,
+                       '2022-06-29T00:00:00Z')
+        _add_a_version(versions, 'v2.0', api_url, constants.CURRENT,
+                       '2022-06-29T00:00:00Z')
+
+        return flask.jsonify({'versions': versions})
 
     return app
