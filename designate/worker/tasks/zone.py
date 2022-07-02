@@ -681,7 +681,7 @@ class GetZoneSerial(base.Task):
         :param port: The destination port for the dns message.
         """
         try:
-            return dnsutils.soa(
+            return dnsutils.soa_query(
                 zone_name, host, port, timeout=self.serial_timeout
             )
         except socket.error as e:

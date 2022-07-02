@@ -392,44 +392,33 @@ def do_axfr(zone_name, servers, source=None):
     )
 
 
-def prepare_msg(zone_name, rdatatype=dns.rdatatype.SOA,
-                dns_opcode=dns.opcode.QUERY):
+def prepare_dns_message(zone_name, rdatatype, opcode):
     """
-    Do the needful to set up a dns packet with dnspython
+    Create a dns message using dnspython
     """
     dns_message = dns.message.make_query(zone_name, rdatatype)
-    dns_message.set_opcode(dns_opcode)
-
+    dns_message.set_opcode(opcode)
     return dns_message
 
 
-def dig(zone_name, host, rdatatype, port=53):
+def notify(zone_name, host, port=53, timeout=10):
     """
-    Set up and send a regular dns query, datatype configurable
+    Create a NOTIFY message and send it
     """
-    query = prepare_msg(zone_name, rdatatype=rdatatype)
+    dns_message = prepare_dns_message(
+        zone_name, rdatatype=dns.rdatatype.SOA, opcode=dns.opcode.NOTIFY
+    )
+    return send_dns_message(dns_message, host, port=port, timeout=timeout)
 
-    return send_dns_message(query, host, port=port)
 
-
-def notify(zone_name, host, port=53):
+def soa_query(zone_name, host, port=53, timeout=10):
     """
-    Set up a notify packet and send it
+    Create a SOA Query message and send it
     """
-    msg = prepare_msg(zone_name, dns_opcode=dns.opcode.NOTIFY)
-
-    return send_dns_message(msg, host, port=port)
-
-
-def soa(zone_name, host, port=53, timeout=10):
-    """
-    Set up a soa packet and send it
-    """
-    msg = prepare_msg(zone_name, rdatatype=dns.rdatatype.SOA,
-                      dns_opcode=dns.opcode.QUERY)
-    msg.flags |= dns.flags.RD
-
-    return send_dns_message(msg, host, port=port, timeout=timeout)
+    dns_message = prepare_dns_message(
+        zone_name, rdatatype=dns.rdatatype.SOA, opcode=dns.opcode.QUERY
+    )
+    return send_dns_message(dns_message, host, port=port, timeout=timeout)
 
 
 def use_all_tcp():
@@ -459,7 +448,7 @@ def get_serial(zone_name, host, port=53):
     Possibly raises dns.exception.Timeout or dns.query.BadResponse.
     Possibly returns 0 if, e.g., the answer section is empty.
     """
-    resp = dig(zone_name, host, dns.rdatatype.SOA, port=port)
+    resp = soa_query(zone_name, host, port=port)
     if not resp.answer:
         return 0
     rdataset = resp.answer[0].to_rdataset()
