@@ -81,9 +81,6 @@ class RPCService(Service):
         self.rpc_server = None
         self.rpc_topic = rpc_topic
 
-    def override_endpoints(self, endpoints):
-        self.endpoints = endpoints
-
     def start(self):
         super(RPCService, self).start()
         target = messaging.Target(topic=self.rpc_topic, server=self.host)
