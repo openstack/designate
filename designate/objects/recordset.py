@@ -90,7 +90,7 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
         'name': fields.HostField(maxLength=255, nullable=True),
         'type': fields.StringFields(nullable=True, read_only=True),
         'ttl': fields.IntegerFields(nullable=True,
-                                    minimum=1, maximum=2147483647),
+                                    minimum=0, maximum=2147483647),
         'description': fields.StringFields(nullable=True, maxLength=160),
         'records': fields.PolymorphicObjectField('RecordList', nullable=True),
     }
