@@ -56,6 +56,46 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual('NONE', response.json['action'])
         self.assertEqual('ACTIVE', response.json['status'])
 
+    def test_create_recordset_with_zero_ttl(self):
+        fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
+        fixture['ttl'] = 0
+        response = self.client.post_json(
+            '/zones/%s/recordsets' % self.zone['id'], fixture)
+
+        # Check the headers are what we expect
+        self.assertEqual(201, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+    def test_update_recordset_zero_ttl(self):
+        # Create a recordset
+        recordset = self.create_recordset(self.zone, records=[])
+
+        # Prepare an update body
+        body = {'ttl': 0}
+
+        url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
+                                           recordset['id'])
+        response = self.client.put_json(url, body, status=200)
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # The action and status are NONE and ACTIVE as there are no records
+        self.assertEqual('NONE', response.json['action'])
+        self.assertEqual('ACTIVE', response.json['status'])
+        self.assertEqual(0, response.json['ttl'])
+
+        # Check the zone's status is as expected
+        response = self.client.get('/zones/%s/recordsets/%s' %
+                                   (recordset['zone_id'], recordset['id']),
+                                   headers=[('Accept', 'application/json')])
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        self.assertEqual(0, response.json['ttl'])
+
     def test_create_recordset_with_records(self):
         # Prepare a RecordSet fixture
         fixture = self.get_recordset_fixture(
@@ -167,14 +207,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     def test_create_recordset_with_negative_ttl(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
         fixture['ttl'] = -1
-        body = fixture
-        url = '/zones/%s/recordsets' % self.zone['id']
-        self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
-
-    def test_create_recordset_with_zero_ttl(self):
-        fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
-        fixture['ttl'] = 0
         body = fixture
         url = '/zones/%s/recordsets' % self.zone['id']
         self._assert_exception(
@@ -703,14 +735,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     def test_update_recordset_invalid_ttl(self):
         recordset = self.create_recordset(self.zone)
         body = {'ttl': '>?!@'}
-        url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
-                                           recordset['id'])
-        self._assert_exception('invalid_object', 400,
-                               self.client.put_json, url, body)
-
-    def test_update_recordset_zero_ttl(self):
-        recordset = self.create_recordset(self.zone)
-        body = {'ttl': 0}
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
         self._assert_exception('invalid_object', 400,
