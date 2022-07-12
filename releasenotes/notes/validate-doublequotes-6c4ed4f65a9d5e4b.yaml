@@ -1,0 +1,4 @@
+---
+fixes:
+  - Verify that if a TXT record starts with a double quote, it also ends with
+    a double quote.

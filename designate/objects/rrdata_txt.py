@@ -36,10 +36,20 @@ class TXT(Record):
     def _is_wrapped_in_double_quotes(value):
         return value.startswith('"') and value.endswith('"')
 
+    @staticmethod
+    def _is_missing_double_quote(value):
+        return ((value.startswith('"') and not value.endswith('"')) or
+                (not value.startswith('"') and value.endswith('"')))
+
     def _validate_record_single_string(self, value):
         if len(value) > 255:
             err = ("Any TXT record string exceeding "
                    "255 characters has to be split.")
+            raise InvalidObject(err)
+
+        if self._is_missing_double_quote(value):
+            err = ("TXT record is missing a double quote either at beginning "
+                   "or at end.")
             raise InvalidObject(err)
 
         if not self._is_wrapped_in_double_quotes(value):
