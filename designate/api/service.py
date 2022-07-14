@@ -47,9 +47,10 @@ class Service(service.WSGIService):
         api_paste_config = cfg.CONF['service:api'].api_paste_config
         config_paths = utils.find_config(api_paste_config)
 
-        if len(config_paths) == 0:
-            msg = 'Unable to determine appropriate api-paste-config file'
-            raise exceptions.ConfigurationError(msg)
+        if not config_paths:
+            raise exceptions.ConfigurationError(
+                'Unable to determine appropriate api-paste-config file'
+            )
 
         LOG.info('Using api-paste-config found at: %s', config_paths[0])
 

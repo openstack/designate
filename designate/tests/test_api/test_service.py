@@ -13,7 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from unittest import mock
+
+
+from paste import urlmap
+
 from designate.api import service
+from designate import exceptions
 from designate.tests.test_api import ApiTestCase
 
 
@@ -29,3 +35,14 @@ class ApiServiceTest(ApiTestCase):
         # NOTE: Start is already done by the fixture in start_service()
         self.service.start()
         self.service.stop()
+
+    def test_get_wsgi_application(self):
+        self.assertIsInstance(self.service.wsgi_application, urlmap.URLMap)
+
+    @mock.patch('designate.utils.find_config')
+    def test_unable_to_find_config(self, mock_find_config):
+        mock_find_config.return_value = list()
+        with self.assertRaisesRegex(
+                exceptions.ConfigurationError,
+                'Unable to determine appropriate api-paste-config file'):
+            self.assertFalse(self.service.wsgi_application)
