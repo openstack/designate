@@ -20,17 +20,27 @@ LOG = logging.getLogger(__name__)
 
 class RRDataSPFTest(oslotest.base.BaseTestCase):
     def test_reject_non_quoted_spaces(self):
-        record = objects.SPF(data='foo bar')
+        recordset = objects.RecordSet(
+            name='www.example.test.', type='SPF',
+            records=objects.RecordList(objects=[
+                objects.Record(data='foo bar'),
+            ])
+        )
         self.assertRaisesRegex(
             exceptions.InvalidObject,
             'Provided object does not match schema',
-            record.validate
+            recordset.validate
         )
 
     def test_reject_non_escaped_quotes(self):
-        record = objects.SPF(data='foo"bar')
+        recordset = objects.RecordSet(
+            name='www.example.test.', type='SPF',
+            records=objects.RecordList(objects=[
+                objects.Record(data='"foo"bar"'),
+            ])
+        )
         self.assertRaisesRegex(
             exceptions.InvalidObject,
             'Provided object does not match schema',
-            record.validate
+            recordset.validate
         )

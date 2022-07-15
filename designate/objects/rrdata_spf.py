@@ -12,7 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.exceptions import InvalidObject
 from designate.objects import base
 from designate.objects import fields
 from designate.objects.record import Record
@@ -33,22 +32,23 @@ class SPF(Record):
         return self.txt_data
 
     def _from_string(self, value):
-        if (not value.startswith('"') and not value.endswith('"')):
+        if not value.startswith('"') and not value.endswith('"'):
             # value with spaces should be quoted as per RFC1035 5.1
             for element in value:
                 if element.isspace():
-                    err = ("Empty spaces are not allowed in SPF record, "
-                           "unless wrapped in double quotes.")
-                    raise InvalidObject(err)
+                    raise ValueError(
+                        'Empty spaces are not allowed in SPF record, '
+                        'unless wrapped in double quotes.'
+                    )
         else:
             # quotes within value should be escaped with backslash
             strip_value = value.strip('"')
             for index, char in enumerate(strip_value):
                 if char == '"':
                     if strip_value[index - 1] != "\\":
-                        err = ("Quotation marks should be escaped with "
-                               "backslash.")
-                        raise InvalidObject(err)
+                        raise ValueError(
+                            'Quotation marks should be escaped with backslash.'
+                        )
 
         self.txt_data = value
 

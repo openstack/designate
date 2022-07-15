@@ -21,7 +21,7 @@ from designate import objects
 LOG = logging.getLogger(__name__)
 
 
-class NAPTRRecordTest(oslotest.base.BaseTestCase):
+class RRDataNAPTRTest(oslotest.base.BaseTestCase):
     def test_parse_naptr(self):
         naptr_record = objects.NAPTR()
         naptr_record._from_string(

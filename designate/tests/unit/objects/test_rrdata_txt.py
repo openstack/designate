@@ -20,42 +20,57 @@ LOG = logging.getLogger(__name__)
 
 class RRDataTXTTest(oslotest.base.BaseTestCase):
     def test_reject_non_quoted_spaces(self):
-        record = objects.TXT(data='foo bar')
+        recordset = objects.RecordSet(
+            name='www.example.test.', type='TXT',
+            records=objects.RecordList(objects=[
+                objects.Record(data='foo bar'),
+            ])
+        )
         self.assertRaisesRegex(
             exceptions.InvalidObject,
             'Provided object does not match schema',
-            record.validate
+            recordset.validate
         )
 
     def test_reject_non_escaped_quotes(self):
-        record = objects.TXT(data='foo"bar')
+        recordset = objects.RecordSet(
+            name='www.example.test.', type='TXT',
+            records=objects.RecordList(objects=[
+                objects.Record(data='"foo"bar"'),
+            ])
+        )
         self.assertRaisesRegex(
             exceptions.InvalidObject,
             'Provided object does not match schema',
-            record.validate
+            recordset.validate
         )
 
     def test_multiple_strings_one_record(self):
         # these quotes do not have to be escaped as
         # per rfc7208 3.3 and rfc1035 3.3.14
-        record = objects.TXT(data='"foo" "bar"')
+        recordset = objects.RecordSet(
+            name='www.example.test.', type='TXT',
+            records=objects.RecordList(objects=[
+                objects.Record(data='"foo" "bar"'),
+            ])
+        )
         self.assertRaisesRegex(
             exceptions.InvalidObject,
             'Provided object does not match schema',
-            record.validate
+            recordset.validate
         )
 
     def test_reject_non_matched_quotes(self):
         record = objects.TXT()
         self.assertRaisesRegex(
-            exceptions.InvalidObject,
+            ValueError,
             "TXT record is missing a double quote either at beginning "
             "or at end.",
             record._from_string,
             '"foo'
         )
         self.assertRaisesRegex(
-            exceptions.InvalidObject,
+            ValueError,
             "TXT record is missing a double quote either at beginning "
             "or at end.",
             record._from_string,

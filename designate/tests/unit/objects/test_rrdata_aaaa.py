@@ -1,7 +1,3 @@
-# Copyright 2018 Verizon Wireless
-#
-# Author: Graham Hayes <gr@ham.ie>
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -22,21 +18,21 @@ from designate import objects
 LOG = logging.getLogger(__name__)
 
 
-class RRDataATest(oslotest.base.BaseTestCase):
-    def test_valid_a_record(self):
+class RRDataAAAATest(oslotest.base.BaseTestCase):
+    def test_valid_aaaa_record(self):
         recordset = objects.RecordSet(
-            name='www.example.test.', type='A',
+            name='www.example.test.', type='AAAA',
             records=objects.RecordList(objects=[
-                objects.Record(data='192.168.0.1'),
+                objects.Record(data='2001:db8:0:1::1'),
             ])
         )
         recordset.validate()
 
-    def test_reject_aaaa_record(self):
+    def test_reject_a_record(self):
         recordset = objects.RecordSet(
-            name='www.example.test.', type='A',
+            name='www.example.test.', type='AAAA',
             records=objects.RecordList(objects=[
-                objects.Record(data='2001:db8:0:1::1'),
+                objects.Record(data='192.168.0.1'),
             ])
         )
         self.assertRaisesRegex(
@@ -47,22 +43,9 @@ class RRDataATest(oslotest.base.BaseTestCase):
 
     def test_reject_invalid_data(self):
         recordset = objects.RecordSet(
-            name='www.example.test.', type='A',
+            name='www.example.test.', type='AAAA',
             records=objects.RecordList(objects=[
                 objects.Record(data='TXT'),
-            ])
-        )
-        self.assertRaisesRegex(
-            exceptions.InvalidObject,
-            'Provided object does not match schema',
-            recordset.validate
-        )
-
-    def test_reject_leading_zeros(self):
-        recordset = objects.RecordSet(
-            name='www.example.test.', type='A',
-            records=objects.RecordList(objects=[
-                objects.Record(data='10.0.001.1'),
             ])
         )
         self.assertRaisesRegex(

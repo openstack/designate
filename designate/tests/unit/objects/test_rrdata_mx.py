@@ -22,7 +22,7 @@ from designate import objects
 LOG = logging.getLogger(__name__)
 
 
-class MXRecordTest(oslotest.base.BaseTestCase):
+class RRDataMXTest(oslotest.base.BaseTestCase):
     def test_parse_mx(self):
         mx_record = objects.MX()
         mx_record._from_string('0 mail.example.org.')

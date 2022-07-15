@@ -16,13 +16,13 @@
 from oslo_log import log as logging
 import oslotest.base
 
-from designate.exceptions import InvalidObject
+from designate import exceptions
 from designate import objects
 
 LOG = logging.getLogger(__name__)
 
 
-class SSHFPecordTest(oslotest.base.BaseTestCase):
+class RRDataSSHTPTest(oslotest.base.BaseTestCase):
     def test_parse_sshfp(self):
         sshfp_record = objects.SSHFP()
         sshfp_record._from_string(
@@ -34,7 +34,7 @@ class SSHFPecordTest(oslotest.base.BaseTestCase):
                          sshfp_record.fingerprint)
 
     def test_validate_sshfp_signed_zero_alg(self):
-        record_set = objects.RecordSet(
+        recordset = objects.RecordSet(
             name='www.example.org.', type='SSHFP',
             records=objects.RecordList(objects=[
                 objects.Record(
@@ -42,11 +42,14 @@ class SSHFPecordTest(oslotest.base.BaseTestCase):
                     status='ACTIVE'),
             ])
         )
-
-        self.assertRaises(InvalidObject, record_set.validate)
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            recordset.validate
+        )
 
     def test_validate_sshfp_signed_zero_fptype(self):
-        record_set = objects.RecordSet(
+        recordset = objects.RecordSet(
             name='www.example.org.', type='SSHFP',
             records=objects.RecordList(objects=[
                 objects.Record(
@@ -54,5 +57,8 @@ class SSHFPecordTest(oslotest.base.BaseTestCase):
                     status='ACTIVE'),
             ])
         )
-
-        self.assertRaises(InvalidObject, record_set.validate)
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            recordset.validate
+        )

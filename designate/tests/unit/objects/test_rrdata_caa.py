@@ -21,7 +21,7 @@ from designate import objects
 LOG = logging.getLogger(__name__)
 
 
-class CAARecordTest(oslotest.base.BaseTestCase):
+class RRDataCAATest(oslotest.base.BaseTestCase):
     def test_parse_caa_issue(self):
         caa_record = objects.CAA()
         caa_record._from_string('0 issue ca.example.net')
