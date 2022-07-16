@@ -23,7 +23,6 @@ It is used via a single directive in the .rst file
 """
 import configparser as config_parser
 import os
-import sys
 
 from docutils import nodes
 from docutils.parsers import rst
@@ -96,11 +95,7 @@ class SupportMatrixDirective(rst.Directive):
         :returns: SupportMatrix instance
         """
 
-        # SafeConfigParser was deprecated in Python 3.2
-        if sys.version_info >= (3, 2):
-            cfg = config_parser.ConfigParser()
-        else:
-            cfg = config_parser.SafeConfigParser()
+        cfg = config_parser.ConfigParser()
         env = self.state.document.settings.env
         fname = self.options.get("support-matrix",
                                  "support-matrix.ini")
