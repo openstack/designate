@@ -84,8 +84,8 @@ class BlacklistsController(rest.RestController):
 
         response.status_int = 201
 
-        blacklist = DesignateAdapter.render(
-            'API_v2', blacklist, request=request)
+        blacklist = DesignateAdapter.render('API_v2', blacklist,
+                                            request=request)
 
         response.headers['Location'] = blacklist['links']['self']
 

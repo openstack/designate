@@ -102,7 +102,7 @@ class PoolCommands(base.Commands):
             print('-------------------')
 
             print(yaml.dump(DesignateAdapter.render('YAML', pool),
-                  default_flow_style=False))
+                            default_flow_style=False))
 
         except messaging.exceptions.MessagingTimeout:
             LOG.critical("No response received from designate-central. "

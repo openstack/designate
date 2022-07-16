@@ -38,10 +38,8 @@ class ServiceStatusController(rest.RestController):
         service_statuses = self.central_api.find_service_statuses(
             context, criterion, )
 
-        return DesignateAdapter.render(
-            'API_v2',
-            service_statuses,
-            request=request)
+        return DesignateAdapter.render('API_v2', service_statuses,
+                                       request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('service_id')
@@ -54,5 +52,5 @@ class ServiceStatusController(rest.RestController):
         service_status = self.central_api.find_service_status(
             context, criterion)
 
-        return DesignateAdapter.render(
-            'API_v2', service_status, request=request)
+        return DesignateAdapter.render('API_v2', service_status,
+                                       request=request)

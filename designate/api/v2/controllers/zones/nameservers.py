@@ -40,7 +40,5 @@ class NameServersController(rest.RestController):
         LOG.info("Created %(ns_records)s", {'ns_records': ns_records})
 
         return {
-            "nameservers": DesignateAdapter.render(
-                'API_v2',
-                ns_records,
-                request=request)}
+            "nameservers": DesignateAdapter.render('API_v2', ns_records,
+                                                   request=request)}

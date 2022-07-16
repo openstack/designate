@@ -66,8 +66,8 @@ class ZoneExportCreateController(rest.RestController):
 
         LOG.info("Created %(zone_export)s", {'zone_export': zone_export})
 
-        zone_export = DesignateAdapter.render(
-            'API_v2', zone_export, request=request)
+        zone_export = DesignateAdapter.render('API_v2', zone_export,
+                                              request=request)
 
         response.headers['Location'] = zone_export['links']['self']
         return zone_export
@@ -91,10 +91,7 @@ class ZoneExportsController(rest.RestController):
 
         LOG.info("Retrieved %(export)s", {'export': zone_export})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            zone_export,
-            request=request)
+        return DesignateAdapter.render('API_v2', zone_export, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -116,10 +113,7 @@ class ZoneExportsController(rest.RestController):
         LOG.info("Retrieved %(exports)s",
                  {'exports': zone_exports})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            zone_exports,
-            request=request)
+        return DesignateAdapter.render('API_v2', zone_exports, request=request)
 
     # NOTE: template=None is important here, template='json:' manifests
     #       in this bug: https://bugs.launchpad.net/designate/+bug/1592153

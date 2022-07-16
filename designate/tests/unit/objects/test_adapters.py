@@ -59,21 +59,28 @@ class DesignateDateTimeAdaptor(adapters.DesignateAdapter):
 
 class DesignateAdapterTest(oslotest.base.BaseTestCase):
     def test_get_object_adapter(self):
-        adapters.DesignateAdapter.get_object_adapter(
-            'TEST_API', objects.DesignateObject())
+        adapter = adapters.DesignateAdapter.get_object_adapter(
+            objects.DesignateObject(), 'TEST_API'
+        )
+        self.assertIsInstance(adapter(), DesignateTestAdapter)
 
     def test_object_render(self):
-        adapters.DesignateAdapter.render('TEST_API', objects.DesignateObject())
+        test_obj = adapters.DesignateAdapter.render('TEST_API',
+                                                    objects.DesignateObject())
+        self.assertEqual(dict(), test_obj)
 
     def test_datetime_format(self):
+        now = timeutils.utcnow()
         test_obj = DesignateTestPersistentObject()
-        test_obj.created_at = timeutils.utcnow()
+        test_obj.created_at = now
 
         test_dict = adapters.DesignateAdapter.render('TEST_API', test_obj)
 
         datetime.datetime.strptime(
             test_dict['created_at'], '%Y-%m-%dT%H:%M:%S.%f'
         )
+
+        self.assertEqual(now, test_obj.created_at)
 
 
 class RecordSetAPIv2AdapterTest(oslotest.base.BaseTestCase):

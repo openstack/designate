@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class ZoneTransferAcceptAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneTransferAccept
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -44,22 +42,19 @@ class ZoneTransferAcceptAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-        obj = super(ZoneTransferAcceptAPIv2Adapter, cls)._render_object(
-            object, *args, **kwargs)
-
-        obj['links']['zone'] = (
-            '%s/v2/%s/%s' % (cls._get_base_url(kwargs['request']), 'zones',
-                             obj['zone_id'])
+    def render_object(cls, obj, *args, **kwargs):
+        new_obj = super(ZoneTransferAcceptAPIv2Adapter, cls).render_object(
+            obj, *args, **kwargs
         )
-
-        return obj
+        new_obj['links']['zone'] = (
+                '%s/v2/%s/%s' % (cls._get_base_url(kwargs['request']),
+                                 'zones', new_obj['zone_id'])
+        )
+        return new_obj
 
 
 class ZoneTransferAcceptListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneTransferAcceptList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

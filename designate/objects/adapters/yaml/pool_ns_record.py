@@ -17,9 +17,7 @@ from designate.objects.adapters.yaml import base
 
 
 class PoolNsRecordYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolNsRecord
-
     MODIFICATIONS = {
         'fields': {
             'priority': {
@@ -33,7 +31,5 @@ class PoolNsRecordYAMLAdapter(base.YAMLAdapter):
 
 
 class PoolNsRecordListYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolNsRecordList
-
     MODIFICATIONS = {}

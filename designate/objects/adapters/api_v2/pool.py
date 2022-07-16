@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class PoolAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.Pool
-
     MODIFICATIONS = {
         'fields': {
             'id': {},
@@ -50,9 +48,7 @@ class PoolAPIv2Adapter(base.APIv2Adapter):
 
 
 class PoolListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.PoolList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

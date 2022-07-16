@@ -42,8 +42,8 @@ class TransferAcceptsController(rest.RestController):
         LOG.info("Retrieved %(transfer_accepts)s",
                  {'transfer_accepts': transfer_accepts})
 
-        return DesignateAdapter.render(
-            'API_v2', transfer_accepts, request=request)
+        return DesignateAdapter.render('API_v2', transfer_accepts,
+                                       request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -64,11 +64,8 @@ class TransferAcceptsController(rest.RestController):
         LOG.info("Retrieved %(zone_transfer_accepts)s",
                  {'zone_transfer_accepts': zone_transfer_accepts})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            zone_transfer_accepts,
-            request=request,
-            context=context)
+        return DesignateAdapter.render('API_v2', zone_transfer_accepts,
+                                       request=request, context=context)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -91,8 +88,9 @@ class TransferAcceptsController(rest.RestController):
         LOG.info("Created %(zone_transfer_accept)s",
                  {'zone_transfer_accept': zone_transfer_accept})
 
-        zone_transfer_accept = DesignateAdapter.render(
-            'API_v2', zone_transfer_accept, request=request)
+        zone_transfer_accept = DesignateAdapter.render('API_v2',
+                                                       zone_transfer_accept,
+                                                       request=request)
 
         response.headers['Location'] = zone_transfer_accept['links']['self']
 

@@ -20,9 +20,7 @@ LOG = logging.getLogger(__name__)
 
 
 class PoolYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.Pool
-
     MODIFICATIONS = {
         'fields': {
             'id': {
@@ -54,7 +52,5 @@ class PoolYAMLAdapter(base.YAMLAdapter):
 
 
 class PoolListYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolList
-
     MODIFICATIONS = {}

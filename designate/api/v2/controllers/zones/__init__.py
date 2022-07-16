@@ -54,10 +54,7 @@ class ZonesController(rest.RestController):
 
         LOG.info("Retrieved %(zone)s", {'zone': zone})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            zone,
-            request=request)
+        return DesignateAdapter.render('API_v2', zone, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):

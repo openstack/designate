@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class ZoneAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.Zone
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -61,36 +59,28 @@ class ZoneAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _parse_object(cls, values, object, *args, **kwargs):
-
+    def parse_object(cls, values, obj, *args, **kwargs):
         if 'masters' in values:
-
-            object.masters = objects.adapters.DesignateAdapter.parse(
+            obj.masters = objects.adapters.DesignateAdapter.parse(
                 cls.ADAPTER_FORMAT,
                 values['masters'],
                 objects.ZoneMasterList(),
                 *args, **kwargs)
-
             del values['masters']
-
         if 'attributes' in values:
-
-            object.attributes = objects.adapters.DesignateAdapter.parse(
+            obj.attributes = objects.adapters.DesignateAdapter.parse(
                 cls.ADAPTER_FORMAT,
                 values['attributes'],
                 objects.ZoneAttributeList(),
                 *args, **kwargs)
-
             del values['attributes']
 
-        return super(ZoneAPIv2Adapter, cls)._parse_object(
-            values, object, *args, **kwargs)
+        return super(ZoneAPIv2Adapter, cls).parse_object(
+            values, obj, *args, **kwargs)
 
 
 class ZoneListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

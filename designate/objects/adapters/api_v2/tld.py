@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class TldAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.Tld
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -40,9 +38,7 @@ class TldAPIv2Adapter(base.APIv2Adapter):
 
 
 class TldListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.TldList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

@@ -24,9 +24,7 @@ cfg.CONF.import_opt('enable_host_header', 'designate.api', group='service:api')
 
 
 class APIv2Adapter(base.DesignateAdapter):
-
     BASE_URI = cfg.CONF['service:api'].api_base_uri.rstrip('/')
-
     ADAPTER_FORMAT = 'API_v2'
 
     #####################
@@ -34,33 +32,33 @@ class APIv2Adapter(base.DesignateAdapter):
     #####################
 
     @classmethod
-    def _render_list(cls, list_object, *args, **kwargs):
+    def render_list(cls, list_objects, *args, **kwargs):
+        r_list = super(APIv2Adapter, cls).render_list(
+            list_objects, *args, **kwargs)
 
-        r_list = super(APIv2Adapter, cls)._render_list(
-            list_object, *args, **kwargs)
-
-        if cls.MODIFICATIONS['options'].get('links', True)\
-                and 'request' in kwargs:
+        if (cls.MODIFICATIONS['options'].get('links', True) and
+                'request' in kwargs):
             r_list['links'] = cls._get_collection_links(
-                list_object, kwargs['request'])
+                list_objects, kwargs['request']
+            )
         # Check if we should include metadata
-        if isinstance(list_object, ovoobj_base.PagedListObjectMixin):
+        if isinstance(list_objects, ovoobj_base.PagedListObjectMixin):
             metadata = {}
-            if list_object.total_count is not None:
-                metadata['total_count'] = list_object.total_count
+            if list_objects.total_count is not None:
+                metadata['total_count'] = list_objects.total_count
             r_list['metadata'] = metadata
 
         return r_list
 
     @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-        obj = super(APIv2Adapter, cls)._render_object(object, *args, **kwargs)
+    def render_object(cls, obj, *args, **kwargs):
+        new_obj = super(APIv2Adapter, cls).render_object(obj, *args, **kwargs)
 
-        if cls.MODIFICATIONS['options'].get('links', True)\
-                and 'request' in kwargs:
-            obj['links'] = cls._get_resource_links(object, kwargs['request'])
+        if (cls.MODIFICATIONS['options'].get('links', True) and
+                'request' in kwargs):
+            new_obj['links'] = cls._get_resource_links(obj, kwargs['request'])
 
-        return obj
+        return new_obj
 
     #####################
     #  Parsing methods  #

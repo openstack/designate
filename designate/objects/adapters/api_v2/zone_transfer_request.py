@@ -19,9 +19,7 @@ from designate import policy
 
 
 class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneTransferRequest
-
     MODIFICATIONS = {
         'fields': {
             "id": {
@@ -61,27 +59,24 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-        obj = super(ZoneTransferRequestAPIv2Adapter, cls)._render_object(
-            object, *args, **kwargs)
-
+    def render_object(cls, obj, *args, **kwargs):
+        new_obj = super(ZoneTransferRequestAPIv2Adapter, cls).render_object(
+            obj, *args, **kwargs
+        )
         try:
             if policy.enforce_new_defaults():
-                target = {constants.RBAC_PROJECT_ID: object.tenant_id}
+                target = {constants.RBAC_PROJECT_ID: obj.tenant_id}
             else:
-                target = {'tenant_id': object.tenant_id}
-
+                target = {'tenant_id': obj.tenant_id}
             policy.check(
-                'get_zone_transfer_request_detailed',
-                kwargs['context'],
-                target)
-
+                'get_zone_transfer_request_detailed', kwargs['context'], target
+            )
         except exceptions.Forbidden:
             for field in cls.MODIFICATIONS['fields']:
                 if cls.MODIFICATIONS['fields'][field].get('protected', True):
-                    del obj[field]
+                    del new_obj[field]
 
-        return obj
+        return new_obj
 
     @classmethod
     def _get_path(cls, request, *args):
@@ -89,9 +84,7 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
 
 
 class ZoneTransferRequestListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneTransferRequestList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

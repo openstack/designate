@@ -16,9 +16,7 @@ from designate.objects.adapters.yaml import base
 
 
 class PoolNameserverYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolNameserver
-
     MODIFICATIONS = {
         'fields': {
             'host': {
@@ -32,7 +30,5 @@ class PoolNameserverYAMLAdapter(base.YAMLAdapter):
 
 
 class PoolNameserverListYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolNameserverList
-
     MODIFICATIONS = {}

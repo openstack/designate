@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class RecordAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.Record
-
     MODIFICATIONS = {
         'fields': {
             "data": {
@@ -33,19 +31,17 @@ class RecordAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _render_object(cls, record, *arg, **kwargs):
+    def render_object(cls, record, *arg, **kwargs):
         return record.data
 
     @classmethod
-    def _parse_object(cls, value, record_object, *args, **kwargs):
+    def parse_object(cls, value, record_object, *args, **kwargs):
         record_object.data = value
         return record_object
 
 
 class RecordListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.RecordList
-
     MODIFICATIONS = {
         'options': {
             'links': False,
@@ -55,8 +51,8 @@ class RecordListAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _render_list(cls, record_list, *arg, **kwargs):
-        list = []
+    def render_list(cls, record_list, *arg, **kwargs):
+        records = []
         for record in record_list:
-            list.append(record.data)
-        return list
+            records.append(record.data)
+        return records

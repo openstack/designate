@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class BlacklistAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.Blacklist
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -40,9 +38,7 @@ class BlacklistAPIv2Adapter(base.APIv2Adapter):
 
 
 class BlacklistListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.BlacklistList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

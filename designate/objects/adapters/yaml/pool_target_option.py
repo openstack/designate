@@ -16,9 +16,7 @@ from designate.objects.adapters.yaml import base
 
 
 class PoolTargetOptionYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolTargetOption
-
     MODIFICATIONS = {
         'fields': {
             'key': {
@@ -31,52 +29,47 @@ class PoolTargetOptionYAMLAdapter(base.YAMLAdapter):
     }
 
     @classmethod
-    def _render_object(cls, object, *arg, **kwargs):
-        return {str(object.key): str(object.value)}
+    def render_object(cls, obj, *arg, **kwargs):
+        return {
+            str(obj.key): str(obj.value)
+        }
 
     @classmethod
-    def _parse_object(cls, values, object, *args, **kwargs):
+    def parse_object(cls, values, obj, *args, **kwargs):
         for key in values.keys():
-            object.key = key
-            object.value = values[key]
+            obj.key = key
+            obj.value = values[key]
 
-        return object
+        return obj
 
 
 class PoolTargetOptionListYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolTargetOptionList
-
     MODIFICATIONS = {}
 
     @classmethod
-    def _render_list(cls, list_object, *args, **kwargs):
-
+    def render_list(cls, list_objects, *args, **kwargs):
         r_list = {}
-
-        for object in list_object:
-            value = cls.get_object_adapter(
-                cls.ADAPTER_FORMAT,
-                object).render(cls.ADAPTER_FORMAT, object, *args, **kwargs)
+        for obj in list_objects:
+            adapter = cls.get_object_adapter(obj)
+            value = adapter.render(cls.ADAPTER_FORMAT, obj, *args, **kwargs)
             for key in value.keys():
                 r_list[key] = value[key]
-
         return r_list
 
     @classmethod
-    def _parse_list(cls, values, output_object, *args, **kwargs):
-
+    def parse_list(cls, values, output_object, *args, **kwargs):
         for key, value in values.items():
             # Add the object to the list
             output_object.append(
                 # Get the right Adapter
                 cls.get_object_adapter(
-                    cls.ADAPTER_FORMAT,
                     # This gets the internal type of the list, and parses it
                     # We need to do `get_object_adapter` as we need a new
                     # instance of the Adapter
                     output_object.LIST_ITEM_TYPE()).parse(
-                        {key: value}, output_object.LIST_ITEM_TYPE()))
+                        {key: value}, output_object.LIST_ITEM_TYPE()
+                )
+            )
 
-        # Return the filled list
         return output_object

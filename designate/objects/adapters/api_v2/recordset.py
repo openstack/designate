@@ -17,9 +17,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class RecordSetAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.RecordSet
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -60,7 +58,7 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _parse_object(cls, new_recordset, recordset, *args, **kwargs):
+    def parse_object(cls, new_recordset, recordset, *args, **kwargs):
         # TODO(Graham): Remove this when
         # https://bugs.launchpad.net/designate/+bug/1432842 is fixed
         try:
@@ -118,7 +116,7 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
             # Do a single assignment, preserves the object change fields
             recordset.records = new_recordset_records
 
-        return super(RecordSetAPIv2Adapter, cls)._parse_object(
+        return super(RecordSetAPIv2Adapter, cls).parse_object(
             new_recordset, recordset, *args, **kwargs)
 
     @classmethod
@@ -144,9 +142,7 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
 
 
 class RecordSetListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.RecordSetList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

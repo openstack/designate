@@ -18,9 +18,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class ZoneExportAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneExport
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -47,26 +45,26 @@ class ZoneExportAPIv2Adapter(base.APIv2Adapter):
         return '/v2/zones/tasks/exports'
 
     @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-        obj = super(ZoneExportAPIv2Adapter, cls)._render_object(
-            object, *args, **kwargs)
+    def render_object(cls, obj, *args, **kwargs):
+        new_obj = super(ZoneExportAPIv2Adapter, cls).render_object(
+            obj, *args, **kwargs
+        )
 
-        if obj['location'] and obj['location'].startswith('designate://'):
+        if (new_obj['location'] and
+                new_obj['location'].startswith('designate://')):
             # Get the base uri from the self link, which respects host headers
-            base_uri = obj['links']['self']. \
-                split(cls._get_path(kwargs['request']))[0]
+            base_uri = new_obj['links']['self'].split(
+                cls._get_path(kwargs['request']))[0]
 
-            obj['links']['export'] = \
-                '%s/%s' % \
-                (base_uri, obj['location'].split('://')[1])
+            new_obj['links']['export'] = (
+                    '%s/%s' % (base_uri, new_obj['location'].split('://')[1])
+            )
 
-        return obj
+        return new_obj
 
 
 class ZoneExportListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneExportList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

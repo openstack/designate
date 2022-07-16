@@ -18,9 +18,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class ZoneImportAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneImport
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -42,23 +40,21 @@ class ZoneImportAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-        obj = super(ZoneImportAPIv2Adapter, cls)._render_object(
-            object, *args, **kwargs)
+    def render_object(cls, obj, *args, **kwargs):
+        new_obj = super(ZoneImportAPIv2Adapter, cls).render_object(
+            obj, *args, **kwargs)
 
-        if obj['zone_id'] is not None:
-            obj['links']['zone'] = (
+        if new_obj['zone_id'] is not None:
+            new_obj['links']['zone'] = (
                 '%s/v2/%s/%s' % (cls._get_base_url(kwargs['request']), 'zones',
-                                 obj['zone_id'])
+                                 new_obj['zone_id'])
             )
 
-        return obj
+        return new_obj
 
 
 class ZoneImportListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ZoneImportList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

@@ -43,11 +43,8 @@ class TransferRequestsController(rest.RestController):
         LOG.info("Retrieved %(transfer_request)s",
                  {'transfer_request': transfer_request})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            transfer_request,
-            request=request,
-            context=context)
+        return DesignateAdapter.render('API_v2', transfer_request,
+                                       request=request, context=context)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -68,11 +65,8 @@ class TransferRequestsController(rest.RestController):
         LOG.info("Retrieved %(zone_transfer_requests)s",
                  {'zone_transfer_requests': zone_transfer_requests})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            zone_transfer_requests,
-            request=request,
-            context=context)
+        return DesignateAdapter.render('API_v2', zone_transfer_requests,
+                                       request=request, context=context)
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
@@ -103,8 +97,10 @@ class TransferRequestsController(rest.RestController):
         LOG.info("Created %(zone_transfer_request)s",
                  {'zone_transfer_request': zone_transfer_request})
 
-        zone_transfer_request = DesignateAdapter.render(
-            'API_v2', zone_transfer_request, request=request, context=context)
+        zone_transfer_request = DesignateAdapter.render('API_v2',
+                                                        zone_transfer_request,
+                                                        request=request,
+                                                        context=context)
 
         response.headers['Location'] = zone_transfer_request['links']['self']
         # Prepare and return the response body
@@ -140,8 +136,8 @@ class TransferRequestsController(rest.RestController):
 
         response.status_int = 200
 
-        return DesignateAdapter.render(
-            'API_v2', zone_transfer_request, request=request, context=context)
+        return DesignateAdapter.render('API_v2', zone_transfer_request,
+                                       request=request, context=context)
 
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('zone_transfer_request_id')

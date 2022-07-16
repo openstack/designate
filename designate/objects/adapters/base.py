@@ -24,28 +24,30 @@ LOG = log.getLogger(__name__)
 
 
 class DesignateObjectAdapterMetaclass(type):
-    def __init__(cls, names, bases, dict_):
+    def __init__(cls, name, bases, cls_dict):
         if not hasattr(cls, '_adapter_classes'):
             cls._adapter_classes = {}
             return
 
         key = '%s:%s' % (cls.adapter_format(), cls.adapter_object())
-
         if key not in cls._adapter_classes:
             cls._adapter_classes[key] = cls
         else:
             raise Exception(
                 "Duplicate DesignateAdapterObject with"
                 " format '%(format)s and object %(object)s'" %
-                {'format': cls.adapter_format(),
-                 'object': cls.adapter_object()}
+                {
+                    'format': cls.adapter_format(),
+                    'object': cls.adapter_object()
+                }
             )
 
 
 class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
     """docstring for DesignateObjectAdapter"""
-
+    ADAPTER_FORMAT = None
     ADAPTER_OBJECT = objects.DesignateObject
+    MODIFICATIONS = None
 
     @classmethod
     def adapter_format(cls):
@@ -56,56 +58,53 @@ class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
         return cls.ADAPTER_OBJECT.obj_name()
 
     @classmethod
-    def get_object_adapter(cls, format_, object):
-        if isinstance(object, objects.DesignateObject):
-            key = '%s:%s' % (format_, object.obj_name())
+    def get_object_adapter(cls, obj, obj_format=None):
+        if obj_format is None:
+            obj_format = cls.ADAPTER_FORMAT
+        if isinstance(obj, objects.DesignateObject):
+            key = '%s:%s' % (obj_format, obj.obj_name())
         else:
-            key = '%s:%s' % (format_, object)
+            key = '%s:%s' % (obj_format, obj)
         try:
             return cls._adapter_classes[key]
         except KeyError as e:
             keys = str(e).split(':')
-            msg = "Adapter for %(object)s to format %(format)s not found" % {
-                "object": keys[1],
-                "format": keys[0]
-            }
-            raise exceptions.AdapterNotFound(msg)
+            raise exceptions.AdapterNotFound(
+                'Adapter for %(obj)s to format %(format)s not found' %
+                {
+                    'obj': keys[1],
+                    'format': keys[0]
+                }
+            )
 
     #####################
     # Rendering methods #
     #####################
 
     @classmethod
-    def render(cls, format_, object, *args, **kwargs):
-
-        if isinstance(object, objects.ListObjectMixin):
-            # type_ = 'list'
-            return cls.get_object_adapter(
-                format_, object)._render_list(object, *args, **kwargs)
+    def render(cls, obj_format, obj, *args, **kwargs):
+        adapter = cls.get_object_adapter(obj, obj_format)
+        if isinstance(obj, objects.ListObjectMixin):
+            return adapter.render_list(obj, *args, **kwargs)
         else:
-            # type_ = 'object'
-            return cls.get_object_adapter(
-                format_, object)._render_object(object, *args, **kwargs)
+            return adapter.render_object(obj, *args, **kwargs)
+
+    @staticmethod
+    def is_datetime_field(obj, key):
+        field = obj.FIELDS.get(key, {})
+        if isinstance(field, fields.Field):
+            # TODO(daidv): If we change to use DateTimeField or STL
+            # we should change this to exact object
+            return isinstance(field, fields.DateTimeField)
+        else:
+            return field.get('schema', {}).get('format', '') == 'date-time'
+
+    @staticmethod
+    def obj_formatdatetime_field(obj):
+        return datetime.datetime.strftime(obj, utils.DATETIME_FORMAT)
 
     @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-
-        # We need to findout the type of field sometimes - these are helper
-        # methods for that.
-
-        def _is_datetime_field(object, key):
-            field = object.FIELDS.get(key, {})
-            if isinstance(field, fields.Field):
-                # TODO(daidv): If we change to use DateTimeField or STL
-                # we should change this to exact object
-                return isinstance(field, fields.DateTimeField)
-            else:
-                return field.get('schema', {}).get('format', '') == 'date-time'
-
-        def _format_datetime_field(obj):
-            return datetime.datetime.strftime(
-                obj, utils.DATETIME_FORMAT)
-
+    def render_object(cls, obj, *args, **kwargs):
         # The dict we will return to be rendered to JSON / output format
         r_obj = {}
         # Loop over all fields that are supposed to be output
@@ -114,211 +113,191 @@ class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
             field_props = cls.MODIFICATIONS['fields'][key]
             # Check if it has to be renamed
             if field_props.get('rename', False):
-                obj = getattr(object, field_props.get('rename'))
+                new_obj = getattr(obj, field_props.get('rename'))
                 # if rename is specified we need to change the key
                 obj_key = field_props.get('rename')
             else:
                 # if not, move on
-                obj = getattr(object, key, None)
+                new_obj = getattr(obj, key, None)
                 obj_key = key
             # Check if this item is a relation (another DesignateObject that
             # will need to be converted itself
-            field = object.FIELDS.get(obj_key, {})
+            field = obj.FIELDS.get(obj_key, {})
             if isinstance(field, dict) and field.get('relation'):
-                # Get a adapter for the nested object
+                # Get an adapter for the nested object
                 # Get the class the object is and get its adapter, then set
                 # the item in the dict to the output
-                r_obj[key] = cls.get_object_adapter(
-                    cls.ADAPTER_FORMAT,
-                    object.FIELDS[obj_key].get('relation_cls')).render(
-                    cls.ADAPTER_FORMAT, obj, *args, **kwargs)
+                adapter = cls.get_object_adapter(
+                    obj.FIELDS[obj_key].get('relation_cls')
+                )
+                r_obj[key] = adapter.render(cls.ADAPTER_FORMAT, new_obj, *args,
+                                            **kwargs)
             elif hasattr(field, 'objname'):
                 # Add by daidv: Check if field is OVO field and have a relation
-                r_obj[key] = cls.get_object_adapter(
-                    cls.ADAPTER_FORMAT,
-                    field.objname).render(
-                    cls.ADAPTER_FORMAT, obj, *args, **kwargs)
-            elif _is_datetime_field(object, obj_key) and obj is not None:
+                adapter = cls.get_object_adapter(field.objname)
+                r_obj[key] = adapter.render(cls.ADAPTER_FORMAT, new_obj, *args,
+                                            **kwargs)
+            elif cls.is_datetime_field(obj, obj_key) and new_obj is not None:
                 # So, we now have a datetime object to render correctly
                 # see bug #1579844
-                r_obj[key] = _format_datetime_field(obj)
+                r_obj[key] = cls.obj_formatdatetime_field(new_obj)
             else:
                 # Just attach the damn item if there is no weird edge cases
-                r_obj[key] = obj
-        # Send it back
+                r_obj[key] = new_obj
+
         return r_obj
 
     @classmethod
-    def _render_list(cls, list_object, *args, **kwargs):
-        # The list we will return to be rendered to JSON / output format
+    def render_list(cls, list_objects, *args, **kwargs):
         r_list = []
-        # iterate and convert each DesignateObject in the list, and append to
-        # the object we are returning
-        for object in list_object:
-            r_list.append(cls.get_object_adapter(
-                cls.ADAPTER_FORMAT,
-                object).render(cls.ADAPTER_FORMAT, object, *args, **kwargs))
-        return {cls.MODIFICATIONS['options']['collection_name']: r_list}
+        for obj in list_objects:
+            adapter = cls.get_object_adapter(obj)
+            r_list.append(
+                adapter.render(cls.ADAPTER_FORMAT, obj, *args, **kwargs)
+            )
+        return {
+            cls.MODIFICATIONS['options']['collection_name']: r_list
+        }
 
     #####################
     #  Parsing methods  #
     #####################
 
     @classmethod
-    def parse(cls, format_, values, output_object, *args, **kwargs):
-
-        LOG.debug("Creating %s object with values %r",
-                  output_object.obj_name(), values)
+    def parse(cls, obj_format, values, output_object, *args, **kwargs):
+        LOG.debug(
+            'Creating %s object with values %r',
+            output_object.obj_name(), values
+        )
         LOG.debug(output_object)
 
         try:
+            adapter = cls.get_object_adapter(output_object, obj_format)
             if isinstance(output_object, objects.ListObjectMixin):
-                # type_ = 'list'
-                return cls.get_object_adapter(
-                    format_,
-                    output_object)._parse_list(
-                    values, output_object, *args, **kwargs)
+                return adapter.parse_list(
+                    values, output_object, *args, **kwargs
+                )
             else:
-                # type_ = 'object'
-                return cls.get_object_adapter(
-                    format_,
-                    output_object)._parse_object(
-                    values, output_object, *args, **kwargs)
-
+                return adapter.parse_object(
+                    values, output_object, *args, **kwargs
+                )
         except TypeError as e:
             LOG.exception(
-                "TypeError creating %(name)s with values %(values)r",
+                'TypeError creating %(name)s with values %(values)r',
                 {
-                    "name": output_object.obj_name(),
-                    "values": values
+                    'name': output_object.obj_name(),
+                    'values': values
                 })
-            error_message = (u'Provided object is not valid. '
-                             u'Got a TypeError with message {}'.format(
-                                                            str(e)))
-            raise exceptions.InvalidObject(error_message)
+            raise exceptions.InvalidObject(
+                'Provided object is not valid. Got a TypeError with '
+                'message {}'.format(e)
+            )
 
         except AttributeError as e:
             LOG.exception(
-                "AttributeError creating %(name)s with values %(values)r",
+                'AttributeError creating %(name)s with values %(values)r',
                 {
-                    "name": output_object.obj_name(),
-                    "values": values
+                    'name': output_object.obj_name(),
+                    'values': values
                 })
-            error_message = (u'Provided object is not valid. '
-                             u'Got an AttributeError with message {}'.format(
-                                                            str(e)))
-            raise exceptions.InvalidObject(error_message)
+            raise exceptions.InvalidObject(
+                'Provided object is not valid. Got an AttributeError with '
+                'message {}'.format(e)
+            )
 
         except exceptions.InvalidObject:
             LOG.info(
-                "InvalidObject creating %(name)s with values %(values)r",
+                'InvalidObject creating %(name)s with values %(values)r',
                 {
-                    "name": output_object.obj_name(),
-                    "values": values
+                    'name': output_object.obj_name(),
+                    'values': values
                 })
             raise
 
         except Exception as e:
             LOG.exception(
-                "Exception creating %(name)s with values %(values)r",
+                'Exception creating %(name)s with values %(values)r',
                 {
-                    "name": output_object.obj_name(),
-                    "values": values
+                    'name': output_object.obj_name(),
+                    'values': values
                 })
-            error_message = (u'Provided object is not valid. '
-                             u'Got a {} error with message {}'.format(
-                                        type(e).__name__, str(e)))
-            raise exceptions.InvalidObject(error_message)
+            raise exceptions.InvalidObject(
+                'Provided object is not valid. Got a {} error with '
+                'message {}'.format(type(e).__name__, e)
+            )
 
     @classmethod
-    def _parse_object(cls, values, output_object, *args, **kwargs):
+    def parse_object(cls, values, output_object, *args, **kwargs):
         error_keys = []
-
         for key, value in values.items():
-            if key in cls.MODIFICATIONS['fields']:
-                # No rename needed
-                obj_key = key
-                # This item may need to be translated
-                if cls.MODIFICATIONS['fields'][key].get('rename', False):
-                    obj_key = cls.MODIFICATIONS['fields'][key].get('rename')
+            if key not in cls.MODIFICATIONS['fields']:
+                error_keys.append(key)
+                continue
 
-                ##############################################################
-                # TODO(graham): Remove this section of code  when validation #
-                # is moved into DesignateObjects properly                    #
-                ##############################################################
+            obj_key = key
+            field_props = cls.MODIFICATIONS['fields'][key]
+            if field_props.get('rename', False):
+                obj_key = field_props.get('rename')
 
-                # Check if the field should be allowed change after it is
-                # initially set (eg zone name)
-                if cls.MODIFICATIONS['fields'][key].get('immutable', False):
-                    if getattr(output_object, obj_key, False) and \
-                                    getattr(output_object, obj_key) != value:
-                        error_keys.append(key)
-                        break
-                # Is this field a read only field
-                elif cls.MODIFICATIONS['fields'][key].get('read_only', True) \
-                        and getattr(output_object, obj_key) != value:
+            #############################################################
+            # TODO(graham): Remove this section of code when validation #
+            # is moved into DesignateObjects properly                   #
+            #############################################################
+
+            # Check if the field should be allowed change after it is
+            # initially set (e.g. zone name)
+            if field_props.get('immutable', False):
+                if (getattr(output_object, obj_key, False) and
+                        getattr(output_object, obj_key) != value):
                     error_keys.append(key)
                     break
-
-                # Check if the key is a nested object
-                check_field = output_object.FIELDS.get(obj_key, {})
-                if isinstance(check_field, fields.Field) and hasattr(
-                        check_field, 'objname'):
-                    # (daidv): Check if field is OVO field and have a relation
-                    obj_class_name = output_object.FIELDS.get(obj_key).objname
-                    obj_class = objects.DesignateObject.obj_cls_from_name(
-                        obj_class_name)
-                    obj = cls.get_object_adapter(
-                        cls.ADAPTER_FORMAT, obj_class_name).parse(
-                        value, obj_class())
-                    setattr(output_object, obj_key, obj)
-                elif not isinstance(check_field, fields.Field)\
-                        and check_field.get('relation', False):
-                    # Get the right class name
-                    obj_class_name = output_object.FIELDS.get(
-                        obj_key, {}).get('relation_cls')
-                    # Get the an instance of it
-                    obj_class = \
-                        objects.DesignateObject.obj_cls_from_name(
-                            obj_class_name)
-                    # Get the adapted object
-                    obj = \
-                        cls.get_object_adapter(
-                            cls.ADAPTER_FORMAT, obj_class_name).parse(
-                            value, obj_class())
-                    # Set the object on the main object
-                    setattr(output_object, obj_key, obj)
-                else:
-                    # No nested objects here, just set the value
-                    setattr(output_object, obj_key, value)
-            else:
-                # We got an extra key
+            # Is this field a read only field
+            elif (field_props.get('read_only', True) and
+                  getattr(output_object, obj_key) != value):
                 error_keys.append(key)
+                break
+
+            # Check if the key is a nested object
+            check_field = output_object.FIELDS.get(obj_key, {})
+            if (isinstance(check_field, fields.Field) and
+                    hasattr(check_field, 'objname')):
+                obj_class_name = output_object.FIELDS.get(obj_key).objname
+                obj_class = objects.DesignateObject.obj_cls_from_name(
+                    obj_class_name
+                )
+                adapter = cls.get_object_adapter(obj_class_name)
+                obj = adapter.parse(value, obj_class())
+                setattr(output_object, obj_key, obj)
+            elif (not isinstance(check_field, fields.Field) and
+                  check_field.get('relation', False)):
+                obj_class_name = output_object.FIELDS.get(obj_key, {}).get(
+                    'relation_cls'
+                )
+                obj_class = objects.DesignateObject.obj_cls_from_name(
+                    obj_class_name
+                )
+                adapter = cls.get_object_adapter(obj_class_name)
+                obj = adapter.parse(value, obj_class())
+                setattr(output_object, obj_key, obj)
+            else:
+                # No nested objects here, just set the value
+                setattr(output_object, obj_key, value)
 
         if error_keys:
-            error_message = str.format(
+            raise exceptions.InvalidObject(
                 'Provided object does not match schema.  Keys {0} are not '
-                'valid for {1}',
-                error_keys, cls.MODIFICATIONS['options']['resource_name'])
-
-            raise exceptions.InvalidObject(error_message)
+                'valid for {1}'.format(
+                    error_keys, cls.MODIFICATIONS['options']['resource_name']
+                )
+            )
 
         return output_object
 
     @classmethod
-    def _parse_list(cls, values, output_object, *args, **kwargs):
-
+    def parse_list(cls, values, output_object, *args, **kwargs):
         for item in values:
-            # Add the object to the list
+            adapter = cls.get_object_adapter(output_object.LIST_ITEM_TYPE())
             output_object.append(
-                # Get the right Adapter
-                cls.get_object_adapter(
-                    cls.ADAPTER_FORMAT,
-                    # This gets the internal type of the list, and parses it
-                    # We need to do `get_object_adapter` as we need a new
-                    # instance of the Adapter
-                    output_object.LIST_ITEM_TYPE()).parse(
-                    item, output_object.LIST_ITEM_TYPE()))
-
-        # Return the filled list
+                adapter.parse(item, output_object.LIST_ITEM_TYPE())
+            )
         return output_object

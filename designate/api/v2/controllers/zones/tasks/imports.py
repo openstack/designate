@@ -41,10 +41,7 @@ class ZoneImportController(rest.RestController):
 
         LOG.info("Retrieved %(import)s", {'import': zone_import})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            zone_import,
-            request=request)
+        return DesignateAdapter.render('API_v2', zone_import, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -65,10 +62,7 @@ class ZoneImportController(rest.RestController):
 
         LOG.info("Retrieved %(imports)s", {'imports': zone_imports})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            zone_imports,
-            request=request)
+        return DesignateAdapter.render('API_v2', zone_imports, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -89,8 +83,8 @@ class ZoneImportController(rest.RestController):
 
         LOG.info("Created %(zone_import)s", {'zone_import': zone_import})
 
-        zone_import = DesignateAdapter.render(
-            'API_v2', zone_import, request=request)
+        zone_import = DesignateAdapter.render('API_v2', zone_import,
+                                              request=request)
 
         response.headers['Location'] = zone_import['links']['self']
         # Prepare and return the response body

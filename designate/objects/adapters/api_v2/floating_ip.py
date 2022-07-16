@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class FloatingIPAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.FloatingIP
-
     MODIFICATIONS = {
         'fields': {
             "id": {
@@ -49,20 +47,18 @@ class FloatingIPAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _get_resource_links(cls, object, request):
+    def _get_resource_links(cls, obj, request):
         return {
             'self': '%s%s/%s' % (
                 cls._get_base_url(request),
                 cls._get_path(request),
-                object.key
+                obj.key
             )
         }
 
 
 class FloatingIPListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.FloatingIPList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

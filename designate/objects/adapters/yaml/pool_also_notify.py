@@ -16,9 +16,7 @@ from designate.objects.adapters.yaml import base
 
 
 class PoolAlsoNotifyYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolAlsoNotify
-
     MODIFICATIONS = {
         'fields': {
             'host': {
@@ -32,7 +30,5 @@ class PoolAlsoNotifyYAMLAdapter(base.YAMLAdapter):
 
 
 class PoolAlsoNotifyListYAMLAdapter(base.YAMLAdapter):
-
     ADAPTER_OBJECT = objects.PoolAlsoNotifyList
-
     MODIFICATIONS = {}

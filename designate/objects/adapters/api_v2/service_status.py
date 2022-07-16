@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class ServiceStatusAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ServiceStatus
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -39,22 +37,19 @@ class ServiceStatusAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-        obj = super(ServiceStatusAPIv2Adapter, cls)._render_object(
-            object, *args, **kwargs)
-
-        obj['links']['self'] = (
-                '%s/v2/%s/%s' % (cls._get_base_url(kwargs['request']),
-                                 'service_statuses', obj['id'])
+    def render_object(cls, obj, *args, **kwargs):
+        new_obj = super(ServiceStatusAPIv2Adapter, cls).render_object(
+            obj, *args, **kwargs
         )
-
-        return obj
+        new_obj['links']['self'] = (
+                '%s/v2/%s/%s' % (cls._get_base_url(kwargs['request']),
+                                 'service_statuses', new_obj['id'])
+        )
+        return new_obj
 
 
 class ServiceStatusListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.ServiceStatusList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

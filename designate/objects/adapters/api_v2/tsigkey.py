@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class TsigKeyAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.TsigKey
-
     MODIFICATIONS = {
         'fields': {
             "id": {},
@@ -49,9 +47,7 @@ class TsigKeyAPIv2Adapter(base.APIv2Adapter):
 
 
 class TsigKeyListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.TsigKeyList
-
     MODIFICATIONS = {
         'options': {
             'links': True,

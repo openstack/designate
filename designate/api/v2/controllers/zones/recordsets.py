@@ -37,11 +37,10 @@ class RecordSetsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.get_recordset(
-                context, zone_id, recordset_id),
-            request=request)
+        return DesignateAdapter.render('API_v2',
+                                       self.central_api.get_recordset(
+                                           context, zone_id, recordset_id),
+                                       request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
@@ -83,8 +82,8 @@ class RecordSetsController(rest.RestController):
         else:
             response.status_int = 201
 
-        recordset = DesignateAdapter.render(
-            'API_v2', recordset, request=request)
+        recordset = DesignateAdapter.render('API_v2', recordset,
+                                            request=request)
 
         response.headers['Location'] = recordset['links']['self']
 

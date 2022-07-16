@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class QuotaAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.Quota
-
     MODIFICATIONS = {
         'fields': {
             'resource': {
@@ -37,9 +35,7 @@ class QuotaAPIv2Adapter(base.APIv2Adapter):
 
 
 class QuotaListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.QuotaList
-
     MODIFICATIONS = {
         'options': {
             'links': True,
@@ -49,18 +45,14 @@ class QuotaListAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _render_list(cls, list_object, *args, **kwargs):
-
+    def render_list(cls, list_objects, *args, **kwargs):
         r_list = {}
-
-        for object in list_object:
-            r_list[object.resource] = object.hard_limit
-
+        for obj in list_objects:
+            r_list[obj.resource] = obj.hard_limit
         return r_list
 
     @classmethod
-    def _parse_list(cls, values, output_object, *args, **kwargs):
-
+    def parse_list(cls, values, output_object, *args, **kwargs):
         for key, value in values.items():
             # Add the object to the list
             output_object.append(
@@ -71,6 +63,4 @@ class QuotaListAPIv2Adapter(base.APIv2Adapter):
                     }
                 )
             )
-
-        # Return the filled list
         return output_object

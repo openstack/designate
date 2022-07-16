@@ -16,9 +16,7 @@ from designate.objects.adapters.api_v2 import base
 
 
 class PoolNsRecordAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.PoolNsRecord
-
     MODIFICATIONS = {
         'fields': {
             'priority': {
@@ -37,9 +35,7 @@ class PoolNsRecordAPIv2Adapter(base.APIv2Adapter):
 
 
 class PoolNsRecordListAPIv2Adapter(base.APIv2Adapter):
-
     ADAPTER_OBJECT = objects.PoolNsRecordList
-
     MODIFICATIONS = {
         'options': {
             'links': False,
@@ -49,9 +45,7 @@ class PoolNsRecordListAPIv2Adapter(base.APIv2Adapter):
     }
 
     @classmethod
-    def _render_list(cls, list_object, *args, **kwargs):
-
-        r_list = super(PoolNsRecordListAPIv2Adapter, cls)._render_list(
-            list_object, *args, **kwargs)
-
+    def render_list(cls, list_objects, *args, **kwargs):
+        r_list = super(PoolNsRecordListAPIv2Adapter, cls).render_list(
+            list_objects, *args, **kwargs)
         return r_list[cls.MODIFICATIONS['options']['collection_name']]
