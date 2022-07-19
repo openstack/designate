@@ -169,8 +169,6 @@ class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
             'Creating %s object with values %r',
             output_object.obj_name(), values
         )
-        LOG.debug(output_object)
-
         try:
             adapter = cls.get_object_adapter(output_object, obj_format)
             if isinstance(output_object, objects.ListObjectMixin):
@@ -285,7 +283,7 @@ class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
 
         if error_keys:
             raise exceptions.InvalidObject(
-                'Provided object does not match schema.  Keys {0} are not '
+                'Provided object does not match schema. Keys {0} are not '
                 'valid for {1}'.format(
                     error_keys, cls.MODIFICATIONS['options']['resource_name']
                 )

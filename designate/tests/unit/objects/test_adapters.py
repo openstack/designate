@@ -20,27 +20,59 @@ from oslo_log import log as logging
 from oslo_utils import timeutils
 import oslotest.base
 
+from designate import exceptions
 from designate import objects
 from designate.objects import adapters
 from designate.objects import base
+from designate.objects import fields
 
 LOG = logging.getLogger(__name__)
 
 
-class DesignateTestAdapter(adapters.DesignateAdapter):
-    ADAPTER_OBJECT = objects.DesignateObject
-    ADAPTER_FORMAT = 'TEST_API'
+@base.DesignateRegistry.register
+class DesignateTestObject(base.DictObjectMixin, base.PersistentObjectMixin,
+                          base.DesignateObject):
+    def __init__(self, *args, **kwargs):
+        super(DesignateTestObject, self).__init__(*args, **kwargs)
 
-    MODIFICATIONS = {
-        'fields': {},
-        'options': {}
+    fields = {
+        'name': fields.StringFields(maxLength=255),
+        'description': fields.StringFields(nullable=True, maxLength=255)
     }
+
+    STRING_KEYS = [
+        'id', 'name'
+    ]
 
 
 @base.DesignateRegistry.register
-class DesignateTestPersistentObject(objects.DesignateObject,
-                                    objects.base.PersistentObjectMixin):
+class DesignateTestPersistentObject(objects.base.PersistentObjectMixin,
+                                    objects.DesignateObject):
     pass
+
+
+class DesignateTestAdapter(adapters.DesignateAdapter):
+    ADAPTER_OBJECT = DesignateTestObject
+    ADAPTER_FORMAT = 'TEST_API'
+
+    MODIFICATIONS = {
+        'fields': {
+            'id': {},
+            'name': {
+                'read_only': False
+            },
+            'description': {
+                'read_only': False
+            },
+            'created_at': {},
+            'updated_at': {},
+        },
+        'options': {
+            'links': True,
+            'resource_name': 'test_obj',
+            'collection_name': 'test_obj',
+        }
+    }
 
 
 class DesignateDateTimeAdaptor(adapters.DesignateAdapter):
@@ -49,38 +81,63 @@ class DesignateDateTimeAdaptor(adapters.DesignateAdapter):
 
     MODIFICATIONS = {
         'fields': {
-            "id": {},
-            "created_at": {},
-            "updated_at": {},
+            'id': {},
+            'created_at': {},
+            'updated_at': {},
         },
         'options': {}
     }
 
 
 class DesignateAdapterTest(oslotest.base.BaseTestCase):
+    def test_parse(self):
+        test_obj = adapters.DesignateAdapter.parse(
+            'TEST_API', {'name': 'example.test.'}, DesignateTestObject()
+        )
+
+        self.assertIsInstance(test_obj, DesignateTestObject)
+        self.assertEqual('example.test.', test_obj.name)
+
+    def test_parse_schema_does_not_match(self):
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema. '
+            'Keys \\[\'address\'\\] are not valid for test_obj',
+            adapters.DesignateAdapter.parse,
+            'TEST_API', {'address': '192.168.0.1'}, DesignateTestObject(),
+        )
+
     def test_get_object_adapter(self):
         adapter = adapters.DesignateAdapter.get_object_adapter(
-            objects.DesignateObject(), 'TEST_API'
+            DesignateTestObject(), 'TEST_API'
         )
+
         self.assertIsInstance(adapter(), DesignateTestAdapter)
 
     def test_object_render(self):
-        test_obj = adapters.DesignateAdapter.render('TEST_API',
-                                                    objects.DesignateObject())
-        self.assertEqual(dict(), test_obj)
+        test_obj = adapters.DesignateAdapter.render(
+            'TEST_API', DesignateTestObject()
+        )
+
+        self.assertEqual(
+            sorted([
+                'created_at', 'description', 'id', 'name', 'updated_at',
+            ]),
+            sorted(test_obj)
+        )
 
     def test_datetime_format(self):
         now = timeutils.utcnow()
         test_obj = DesignateTestPersistentObject()
         test_obj.created_at = now
-
         test_dict = adapters.DesignateAdapter.render('TEST_API', test_obj)
 
-        datetime.datetime.strptime(
-            test_dict['created_at'], '%Y-%m-%dT%H:%M:%S.%f'
+        self.assertEqual(
+            datetime.datetime.strptime(
+                test_dict['created_at'], '%Y-%m-%dT%H:%M:%S.%f'
+            ),
+            test_obj.created_at
         )
-
-        self.assertEqual(now, test_obj.created_at)
 
 
 class RecordSetAPIv2AdapterTest(oslotest.base.BaseTestCase):
