@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 class RRDataSSHTPTest(oslotest.base.BaseTestCase):
     def test_parse_sshfp(self):
         sshfp_record = objects.SSHFP()
-        sshfp_record._from_string(
+        sshfp_record.from_string(
             '0 0 72d30d211ce8c464de2811e534de23b9be9b4dc4')
 
         self.assertEqual(0, sshfp_record.algorithm)

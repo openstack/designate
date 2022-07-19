@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 class RRDataMXTest(oslotest.base.BaseTestCase):
     def test_parse_mx(self):
         mx_record = objects.MX()
-        mx_record._from_string('0 mail.example.org.')
+        mx_record.from_string('0 mail.example.org.')
 
         self.assertEqual(0, mx_record.priority)
         self.assertEqual('mail.example.org.', mx_record.exchange)

@@ -28,10 +28,7 @@ class SPF(Record):
         'txt_data': fields.StringFields()
     }
 
-    def _to_string(self):
-        return self.txt_data
-
-    def _from_string(self, value):
+    def from_string(self, value):
         if not value.startswith('"') and not value.endswith('"'):
             # value with spaces should be quoted as per RFC1035 5.1
             for element in value:

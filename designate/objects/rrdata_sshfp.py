@@ -30,10 +30,7 @@ class SSHFP(Record):
         'fingerprint': fields.Sshfp(nullable=True),
     }
 
-    def _to_string(self):
-        return "%(algorithm)s %(fp_type)s %(fingerprint)s" % self
-
-    def _from_string(self, value):
+    def from_string(self, value):
         algorithm, fp_type, fingerprint = value.split(' ')
 
         for value in {algorithm, fp_type}:

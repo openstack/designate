@@ -28,9 +28,6 @@ class TXT(Record):
         'txt_data': fields.TxtField()
     }
 
-    def _to_string(self):
-        return self.txt_data
-
     @staticmethod
     def _is_wrapped_in_double_quotes(value):
         return value.startswith('"') and value.endswith('"')
@@ -71,7 +68,7 @@ class TXT(Record):
                             'Quotation marks should be escaped with backslash.'
                         )
 
-    def _from_string(self, value):
+    def from_string(self, value):
         if len(value) > 255:
             # expecting record containing multiple strings as
             # per rfc7208 3.3 and rfc1035 3.3.14

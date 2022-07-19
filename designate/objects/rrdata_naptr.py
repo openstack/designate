@@ -35,12 +35,10 @@ class NAPTR(Record):
         'replacement': fields.DomainField(maxLength=255)
     }
 
-    def _to_string(self):
-        return ("%(order)s %(preference)s %(flags)s %(service)s %(regexp)s "
-                "%(replacement)s" % self)
-
-    def _from_string(self, v):
-        order, preference, flags, service, regexp, replacement = v.split(' ')
+    def from_string(self, value):
+        order, preference, flags, service, regexp, replacement = (
+            value.split(' ')
+        )
         self.order = int(order)
         self.preference = int(preference)
         self.flags = flags

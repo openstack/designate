@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 class RRDataNAPTRTest(oslotest.base.BaseTestCase):
     def test_parse_naptr(self):
         naptr_record = objects.NAPTR()
-        naptr_record._from_string(
+        naptr_record.from_string(
             '0 0 S SIP+D2U !^.*$!sip:customer-service@example.com! _sip._udp.example.com.')  # noqa
 
         self.assertEqual(0, naptr_record.order)

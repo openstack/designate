@@ -39,6 +39,10 @@ class TestObject(objects.DesignateObject):
         'nested_list': fields.ObjectFields('TestObjectList', nullable=True),
     }
 
+    STRING_KEYS = [
+        'id', 'name'
+    ]
+
 
 @base.DesignateRegistry.register
 class TestObjectDict(TestObject, objects.DictObjectMixin):
@@ -64,6 +68,36 @@ class TestValidatableObject(objects.DesignateObject):
 
 
 class DesignateObjectTest(oslotest.base.BaseTestCase):
+    def test_obj_to_repr(self):
+        obj = TestObject.from_dict({
+            'id': 1, 'name': 'example'
+        })
+        self.assertEqual(
+            "<TestObject id:'1' name:'example'>",
+            repr(obj)
+        )
+
+    def test_obj_to_str(self):
+        obj = TestObject.from_dict({
+            'id': 1, 'name': 'example'
+        })
+        self.assertEqual(
+            "<TestObject id:'1' name:'example'>", str(obj)
+        )
+
+    def test_empty_obj_to_str(self):
+        self.assertEqual(
+            "<TestObject id:'None' name:'None'>", str(TestObject())
+        )
+
+    def test_record_to_str(self):
+        obj = objects.Record.from_dict({
+            'id': 1, 'recordset_id': '2', 'data': 'example'
+        })
+        self.assertEqual(
+            "<Record id:'1' recordset_id:'2' data:'example'>", str(obj)
+        )
+
     def test_obj_cls_from_name(self):
         cls = objects.DesignateObject.obj_cls_from_name('TestObject')
         self.assertEqual(TestObject, cls)

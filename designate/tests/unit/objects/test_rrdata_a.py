@@ -23,6 +23,19 @@ LOG = logging.getLogger(__name__)
 
 
 class RRDataATest(oslotest.base.BaseTestCase):
+    def test_to_repr(self):
+        recordset = objects.RecordSet(
+            name='www.example.test.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.168.0.1'),
+            ])
+        )
+        recordset.validate()
+        self.assertEqual(
+            "<Record id:'None' recordset_id:'None' data:'192.168.0.1'>",
+            repr(recordset.records[0])
+        )
+
     def test_valid_a_record(self):
         recordset = objects.RecordSet(
             name='www.example.test.', type='A',

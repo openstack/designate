@@ -66,13 +66,13 @@ class RRDataTXTTest(oslotest.base.BaseTestCase):
             ValueError,
             "TXT record is missing a double quote either at beginning "
             "or at end.",
-            record._from_string,
+            record.from_string,
             '"foo'
         )
         self.assertRaisesRegex(
             ValueError,
             "TXT record is missing a double quote either at beginning "
             "or at end.",
-            record._from_string,
+            record.from_string,
             'foo"'
         )
