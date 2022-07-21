@@ -21,7 +21,7 @@ from oslo_db import exception as oslo_db_exception
 from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_log import log as logging
 from oslo_utils import timeutils
-from sqlalchemy import select, or_, between, func, distinct
+from sqlalchemy import select, or_, between, func, distinct, inspect
 
 from designate import exceptions
 from designate import objects
@@ -95,6 +95,9 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
     def rollback(self):
         self.session.rollback()
+
+    def get_inspector(self):
+        return inspect(self.engine)
 
     @staticmethod
     def _apply_criterion(table, query, criterion):
