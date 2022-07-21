@@ -62,7 +62,7 @@ class RestController(pecan.rest.RestController):
         else:
             return criterion
 
-    def _handle_post(self, method, remainder):
+    def _handle_post(self, method, remainder, request=None):
         '''
         Routes ``POST`` actions to the appropriate controller.
         '''
@@ -75,7 +75,8 @@ class RestController(pecan.rest.RestController):
 
         controller = getattr(self, remainder[0], None)
         if controller and not inspect.ismethod(controller):
-            return pecan.routing.lookup_controller(controller, remainder[1:])
+            return pecan.routing.lookup_controller(controller, remainder[1:],
+                                                   request=request)
 
         # finally, check for the regular post_one/post requests
         controller = self._find_controller('post_one', 'post')
@@ -84,7 +85,7 @@ class RestController(pecan.rest.RestController):
 
         pecan.abort(405)
 
-    def _handle_patch(self, method, remainder):
+    def _handle_patch(self, method, remainder, request=None):
         '''
         Routes ``PATCH`` actions to the appropriate controller.
         '''
@@ -97,7 +98,8 @@ class RestController(pecan.rest.RestController):
 
         controller = getattr(self, remainder[0], None)
         if controller and not inspect.ismethod(controller):
-            return pecan.routing.lookup_controller(controller, remainder[1:])
+            return pecan.routing.lookup_controller(controller, remainder[1:],
+                                                   request=request)
 
         # finally, check for the regular patch_one/patch requests
         controller = self._find_controller('patch_one', 'patch')
@@ -106,7 +108,7 @@ class RestController(pecan.rest.RestController):
 
         pecan.abort(405)
 
-    def _handle_put(self, method, remainder):
+    def _handle_put(self, method, remainder, request=None):
         '''
         Routes ``PUT`` actions to the appropriate controller.
         '''
@@ -119,7 +121,8 @@ class RestController(pecan.rest.RestController):
 
         controller = getattr(self, remainder[0], None)
         if controller and not inspect.ismethod(controller):
-            return pecan.routing.lookup_controller(controller, remainder[1:])
+            return pecan.routing.lookup_controller(controller, remainder[1:],
+                                                   request=request)
 
         # finally, check for the regular put_one/put requests
         controller = self._find_controller('put_one', 'put')
@@ -128,7 +131,7 @@ class RestController(pecan.rest.RestController):
 
         pecan.abort(405)
 
-    def _handle_delete(self, method, remainder):
+    def _handle_delete(self, method, remainder, request=None):
         '''
         Routes ``DELETE`` actions to the appropriate controller.
         '''
@@ -141,7 +144,8 @@ class RestController(pecan.rest.RestController):
 
         controller = getattr(self, remainder[0], None)
         if controller and not inspect.ismethod(controller):
-            return pecan.routing.lookup_controller(controller, remainder[1:])
+            return pecan.routing.lookup_controller(controller, remainder[1:],
+                                                   request=request)
 
         # finally, check for the regular delete_one/delete requests
         controller = self._find_controller('delete_one', 'delete')
