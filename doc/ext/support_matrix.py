@@ -101,7 +101,7 @@ class SupportMatrixDirective(rst.Directive):
                                  "support-matrix.ini")
         rel_fpath, fpath = env.relfn2path(fname)
         with open(fpath) as fp:
-            cfg.readfp(fp)
+            cfg.read_file(fp)
 
         # This ensures that the docs are rebuilt whenever the
         # .ini file changes
