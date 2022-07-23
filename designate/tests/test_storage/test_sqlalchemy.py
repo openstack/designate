@@ -53,7 +53,8 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
             u'zone_transfer_requests',
             u'zones'
         ]
-        self.assertEqual(table_names, self.storage.engine.table_names())
+        inspector = self.storage.get_inspector()
+        self.assertEqual(table_names, inspector.get_table_names())
 
     def test_schema_table_indexes(self):
         indexes_t = self.storage.engine.execute("SELECT * FROM sqlite_master WHERE type = 'index';")  # noqa
