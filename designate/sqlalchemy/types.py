@@ -27,6 +27,7 @@ class UUID(TypeDecorator):
 
     Copied verbatim from SQLAlchemy documentation.
     """
+    cache_ok = True
     impl = CHAR
 
     def load_dialect_impl(self, dialect):
