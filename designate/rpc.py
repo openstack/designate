@@ -11,8 +11,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import functools
-import threading
 
 from oslo_config import cfg
 import oslo_messaging as messaging
@@ -40,7 +38,6 @@ __all__ = [
 ]
 
 CONF = cfg.CONF
-EXPECTED_EXCEPTION = threading.local()
 NOTIFICATION_TRANSPORT = None
 NOTIFIER = None
 TRANSPORT = None
@@ -237,27 +234,3 @@ def create_transport(url):
     return messaging.get_rpc_transport(CONF,
                                        url=url,
                                        allowed_remote_exmods=exmods)
-
-
-def expected_exceptions():
-    def outer(f):
-        @functools.wraps(f)
-        def exception_wrapper(self, *args, **kwargs):
-            if not hasattr(EXPECTED_EXCEPTION, 'depth'):
-                EXPECTED_EXCEPTION.depth = 0
-            EXPECTED_EXCEPTION.depth += 1
-
-            # We only want to wrap the first function wrapped.
-            if EXPECTED_EXCEPTION.depth > 1:
-                return f(self, *args, **kwargs)
-
-            try:
-                return f(self, *args, **kwargs)
-            except designate.exceptions.DesignateException as e:
-                if e.expected:
-                    raise rpc_dispatcher.ExpectedException()
-                raise
-            finally:
-                EXPECTED_EXCEPTION.depth = 0
-        return exception_wrapper
-    return outer

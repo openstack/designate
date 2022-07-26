@@ -30,6 +30,7 @@ from oslo_service import sslutils
 from oslo_service import wsgi
 from oslo_utils import netutils
 
+from designate.common.decorators import rpc as rpc_decorator
 from designate.common import profiler
 import designate.conf
 from designate.i18n import _
@@ -77,6 +78,7 @@ class RPCService(Service):
                   rpc_topic, self.name)
 
         self.endpoints = [self]
+        self.exception_thread_local = rpc_decorator.ExceptionThreadLocal()
         self.notifier = None
         self.rpc_server = None
         self.rpc_topic = rpc_topic
