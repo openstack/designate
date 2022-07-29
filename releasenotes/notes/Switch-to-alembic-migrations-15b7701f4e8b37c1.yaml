@@ -1,0 +1,7 @@
+---
+other:
+  - |
+    Designate will now use Alembic migrations for database schema updates.
+    This transition will automatically be handled for upgrades.
+    The sqlalchemy-migrate package has been removed from the Designate
+    requirements and the alembic package has been added.

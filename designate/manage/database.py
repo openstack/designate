@@ -13,41 +13,76 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from io import StringIO
 import os
+import sys
 
-from migrate.versioning import api as versioning_api
+from alembic import command as alembic_command
+from alembic.config import Config
 from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.manage import base
-from designate.sqlalchemy import utils
 
-
-LOG = logging.getLogger(__name__)
-
-REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
-                                          'storage', 'impl_sqlalchemy',
-                                          'migrate_repo'))
-cfg.CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
-                    group='storage:sqlalchemy')
 CONF = cfg.CONF
-INIT_VERSION = 69
-
-
-def get_manager():
-    return utils.get_migration_manager(
-        REPOSITORY, CONF['storage:sqlalchemy'].connection, INIT_VERSION)
+LOG = logging.getLogger(__name__)
 
 
 class DatabaseCommands(base.Commands):
-    def version(self):
-        current = get_manager().version()
-        latest = versioning_api.version(repository=REPOSITORY).value
+    def _get_alembic_config(self, db_url=None, stringio_buffer=sys.stdout):
+        alembic_dir = os.path.join(os.path.dirname(__file__),
+                                   os.pardir, 'storage/impl_sqlalchemy')
+        alembic_cfg = Config(os.path.join(alembic_dir, 'alembic.ini'),
+                             stdout=stringio_buffer)
+        alembic_cfg.set_main_option(
+            'script_location', 'designate.storage.impl_sqlalchemy:alembic')
+        if db_url:
+            alembic_cfg.set_main_option('sqlalchemy.url', db_url)
+        else:
+            alembic_cfg.set_main_option('sqlalchemy.url',
+                                        CONF['storage:sqlalchemy'].connection)
+        return alembic_cfg
+
+    def current(self, db_url=None, stringio_buffer=sys.stdout):
+        alembic_command.current(
+            self._get_alembic_config(db_url=db_url,
+                                     stringio_buffer=stringio_buffer))
+
+    def heads(self, db_url=None, stringio_buffer=sys.stdout):
+        alembic_command.heads(
+            self._get_alembic_config(db_url=db_url,
+                                     stringio_buffer=stringio_buffer))
+
+    def history(self, db_url=None, stringio_buffer=sys.stdout):
+        alembic_command.history(
+            self._get_alembic_config(db_url=db_url,
+                                     stringio_buffer=stringio_buffer))
+
+    def version(self, db_url=None):
+        # Using StringIO buffers here to keep the command output as similar
+        # as it was before the migration to alembic.
+        current_buffer = StringIO()
+        latest_buffer = StringIO()
+        alembic_command.current(
+            self._get_alembic_config(db_url=db_url,
+                                     stringio_buffer=current_buffer))
+        current = current_buffer.getvalue().replace('\n', ' ')
+        current_buffer.close()
+        alembic_command.heads(
+            self._get_alembic_config(db_url=db_url,
+                                     stringio_buffer=latest_buffer))
+        latest = latest_buffer.getvalue().replace('\n', ' ')
+        latest_buffer.close()
         print("Current: %s Latest: %s" % (current, latest))
 
-    def sync(self):
-        get_manager().upgrade(None)
+    def sync(self, db_url=None, stringio_buffer=sys.stdout):
+        alembic_command.upgrade(
+            self._get_alembic_config(db_url=db_url,
+                                     stringio_buffer=stringio_buffer), 'head')
 
-    @base.args('revision', nargs='?')
-    def upgrade(self, revision):
-        get_manager().upgrade(revision)
+    @base.args('revision', default='head', nargs='?',
+               help='The revision identifier to upgrade to.')
+    def upgrade(self, revision, db_url=None, stringio_buffer=sys.stdout):
+        alembic_command.upgrade(
+            self._get_alembic_config(
+                db_url=db_url, stringio_buffer=stringio_buffer), revision)

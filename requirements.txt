@@ -5,6 +5,7 @@
 # The order of packages is significant, because pip processes them in the order
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
+alembic>=1.6.5 # MIT
 eventlet>=0.26.1 # MIT
 Flask!=0.11,>=0.10 # BSD
 greenlet>=0.4.15 # MIT
@@ -35,7 +36,6 @@ python-neutronclient>=6.7.0 # Apache-2.0
 requests>=2.23.0 # Apache-2.0
 tenacity>=6.0.0 # Apache-2.0
 SQLAlchemy>=1.2.19 # MIT
-sqlalchemy-migrate>=0.11.0 # Apache-2.0
 stevedore>=1.20.0 # Apache-2.0
 WebOb>=1.7.1 # MIT
 dnspython>=1.16.0  # http://www.dnspython.org/LICENSE

@@ -31,7 +31,6 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
     def test_schema_table_names(self):
         table_names = [
             u'blacklists',
-            u'migrate_version',
             u'pool_also_notifies',
             u'pool_attributes',
             u'pool_nameservers',
@@ -54,10 +53,32 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
             u'zones'
         ]
         inspector = self.storage.get_inspector()
-        self.assertEqual(table_names, inspector.get_table_names())
+
+        actual_table_names = inspector.get_table_names()
+
+        # We have transitioned database schema migration tools.
+        # They use different tracking tables. Accomidate that one or both
+        # may exist in this test.
+        migration_table_found = False
+        if ('migrate_version' in actual_table_names or
+                'alembic_version' in actual_table_names):
+            migration_table_found = True
+        self.assertTrue(migration_table_found,
+            'A DB migration table was not found.')
+        try:
+            actual_table_names.remove('migrate_version')
+        except ValueError:
+            pass
+        try:
+            actual_table_names.remove('alembic_version')
+        except ValueError:
+            pass
+
+        self.assertEqual(table_names, actual_table_names)
 
     def test_schema_table_indexes(self):
-        indexes_t = self.storage.engine.execute("SELECT * FROM sqlite_master WHERE type = 'index';")  # noqa
+        indexes_t = self.storage.engine.execute(
+            "SELECT * FROM sqlite_master WHERE type = 'index';")
 
         indexes = {}  # table name -> index names -> cmd
         for _, index_name, table_name, num, cmd in indexes_t:

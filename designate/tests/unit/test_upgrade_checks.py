@@ -11,8 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from unittest import mock
 
-from migrate.changeset.constraint import UniqueConstraint
 from oslo_upgradecheck import upgradecheck
 from sqlalchemy.schema import MetaData
 from sqlalchemy.schema import Table
@@ -52,22 +52,13 @@ class TestDuplicateServiceStatus(tests.TestCase):
         self.assertEqual(upgradecheck.Code.SUCCESS,
                          checks._duplicate_service_status().code)
 
-    def test_failure(self):
-        # Drop unique constraint so we can test error cases
-        constraint = UniqueConstraint('service_name', 'hostname',
-                                      table=self.service_statuses_table,
-                                      name="unique_service_status")
-        constraint.drop()
-        fake_record = {'id': '1',
-                       'service_name': 'worker',
-                       'hostname': 'localhost',
-                       'status': 'UP',
-                       'stats': '',
-                       'capabilities': '',
-                       }
-        self.service_statuses_table.insert().execute(fake_record)
-        fake_record['id'] = '2'
-        self.service_statuses_table.insert().execute(fake_record)
+    @mock.patch('designate.sqlalchemy.session.get_engine')
+    def test_failure(self, mock_get_engine):
+        mock_engine = mock.MagicMock()
+        mock_execute = mock.MagicMock()
+        mock_engine.execute.return_value = mock_execute
+        mock_execute.fetchall.return_value = [(2,)]
+        mock_get_engine.return_value = mock_engine
 
         checks = status.Checks()
         self.assertEqual(upgradecheck.Code.FAILURE,

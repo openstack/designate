@@ -33,7 +33,6 @@ from designate.common import constants
 import designate.conf
 from designate.context import DesignateContext
 from designate import exceptions
-from designate.manage import database as manage_database
 from designate import objects
 from designate import policy
 from designate import storage
@@ -359,15 +358,8 @@ class TestCase(base.BaseTestCase):
 
         self._disable_osprofiler()
 
-        # The database fixture needs to be set up here (as opposed to isolated
-        # in a storage test case) because many tests end up using storage.
-        REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                  '..', 'storage',
-                                                  'impl_sqlalchemy',
-                                                  'migrate_repo'))
         self.db_fixture = self.useFixture(
-            fixtures.DatabaseFixture.get_fixture(
-                REPOSITORY, manage_database.INIT_VERSION))
+            fixtures.DatabaseFixture.get_fixture())
 
         if os.getenv('DESIGNATE_SQL_DEBUG', "False").lower() in _TRUE_VALUES:
             connection_debug = 50
