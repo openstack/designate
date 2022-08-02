@@ -11,10 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import ipaddress
 import os.path
 import urllib
 
-import netaddr
 from oslo_config import cfg
 from oslo_log import log as logging
 import requests
@@ -83,7 +83,7 @@ class PDNS4Backend(base.Backend):
         masters = []
         for master in self.masters:
             host = master.host
-            if netaddr.IPAddress(host).version == 6:
+            if ipaddress.ip_address(host).version == 6:
                 host = '[%s]' % host
             masters.append('%s:%d' % (host, master.port))
 

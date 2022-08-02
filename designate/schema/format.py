@@ -13,10 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import ipaddress
 import re
 
 import jsonschema
-import netaddr
 
 
 # NOTE(kiall): All of the below regular expressions are terminated with
@@ -59,9 +59,7 @@ def is_ipv4(instance):
         return True
 
     try:
-        address = netaddr.IPAddress(instance, version=4)
-        # netaddr happly accepts, and expands "127.0" into "127.0.0.0"
-        if str(address) != instance:
+        if ipaddress.ip_address(instance).version != 4:
             return False
     except Exception:
         return False
@@ -79,7 +77,8 @@ def is_ipv6(instance):
         return True
 
     try:
-        netaddr.IPAddress(instance, version=6)
+        if ipaddress.ip_address(instance).version != 6:
+            return False
     except Exception:
         return False
 
