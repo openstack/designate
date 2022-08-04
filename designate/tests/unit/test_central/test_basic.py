@@ -392,7 +392,7 @@ class CentralServiceTestCase(CentralBasic):
 
     def test_create_recordset_in_storage(self):
         self.service._enforce_recordset_quota = mock.Mock()
-        self.service._validate_recordset = mock.Mock()
+        self.service._validate_recordset = mock.Mock(spec=objects.RecordSet)
 
         self.service.storage.create_recordset = mock.Mock(return_value='rs')
         self.service._update_zone_in_storage = mock.Mock()
@@ -416,7 +416,7 @@ class CentralServiceTestCase(CentralBasic):
         central_service.storage.create_recordset = mock.Mock(return_value='rs')
         central_service._update_zone_in_storage = mock.Mock()
 
-        recordset = mock.Mock()
+        recordset = mock.Mock(spec=objects.RecordSet)
         recordset.obj_attr_is_set.return_value = True
         recordset.records = [MockRecord()]
 
@@ -441,7 +441,7 @@ class CentralServiceTestCase(CentralBasic):
         # NOTE(thirose): Since this is a race condition we assume that
         #  we will hit it if we try to do the operations in a loop 100 times.
         for num in range(100):
-            recordset = mock.Mock()
+            recordset = mock.Mock(spec=objects.RecordSet)
             recordset.name = "b{}".format(num)
             recordset.obj_attr_is_set.return_value = True
             recordset.records = [MockRecord()]
@@ -1148,7 +1148,7 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_update_recordset_fail_on_changes(self):
         self.service.storage.get_zone.return_value = RoObject()
-        recordset = mock.Mock()
+        recordset = mock.Mock(spec=objects.RecordSet)
         recordset.obj_get_original_value.return_value = '1'
 
         recordset.obj_get_changes.return_value = ['tenant_id', 'foo']
@@ -1179,7 +1179,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service.storage.get_zone.return_value = RoObject(
             action='DELETE',
         )
-        recordset = mock.Mock()
+        recordset = mock.Mock(spec=objects.RecordSet)
         recordset.obj_get_changes.return_value = ['foo']
 
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
@@ -1196,7 +1196,7 @@ class CentralZoneTestCase(CentralBasic):
             tenant_id='2',
             action='bogus',
         )
-        recordset = mock.Mock()
+        recordset = mock.Mock(spec=objects.RecordSet)
         recordset.obj_get_changes.return_value = ['foo']
         recordset.managed = True
         self.context = mock.Mock()
@@ -1216,10 +1216,11 @@ class CentralZoneTestCase(CentralBasic):
             tenant_id='2',
             action='bogus',
         )
-        recordset = mock.Mock()
+        recordset = mock.Mock(spec=objects.RecordSet)
         recordset.obj_get_changes.return_value = ['foo']
-        recordset.obj_get_original_value.return_value =\
+        recordset.obj_get_original_value.return_value = (
             '9c85d9b0-1e9d-4e99-aede-a06664f1af2e'
+        )
         recordset.managed = False
         self.service._update_recordset_in_storage = mock.Mock(
             return_value=('x', 'y')
@@ -1239,7 +1240,7 @@ class CentralZoneTestCase(CentralBasic):
             'recordset_id': '9c85d9b0-1e9d-4e99-aede-a06664f1af2e',
             'project_id': '2'}, target)
 
-    def test__update_recordset_in_storage(self):
+    def test_update_recordset_in_storage(self):
         recordset = mock.Mock()
         recordset.name = 'n'
         recordset.type = 't'
@@ -1426,7 +1427,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertTrue(
             self.service._delete_recordset_in_storage.called)
 
-    def test__delete_recordset_in_storage(self):
+    def test_delete_recordset_in_storage(self):
         def mock_uds(c, zone, inc):
             return zone
         self.service._update_zone_in_storage = mock_uds
@@ -1730,7 +1731,7 @@ class CentralQuotaTest(unittest.TestCase):
         service = Service()
         service.storage.count_records.return_value = 10
 
-        recordset = mock.Mock()
+        recordset = mock.Mock(spec=objects.RecordSet)
         recordset.managed = False
         recordset.records = ['1.1.1.%i' % (i + 1) for i in range(5)]
 
@@ -1801,7 +1802,7 @@ class CentralQuotaTest(unittest.TestCase):
             1, 1,
         ]
 
-        managed_recordset = mock.Mock()
+        managed_recordset = mock.Mock(spec=objects.RecordSet)
         managed_recordset.managed = True
 
         recordset_one_record = mock.Mock()

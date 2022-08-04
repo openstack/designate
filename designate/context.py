@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import copy
-import itertools
 
 from keystoneauth1.access import service_catalog as ksa_service_catalog
 from keystoneauth1 import plugin
@@ -144,21 +143,6 @@ class DesignateContext(context.RequestContext):
         kwargs['system_scope'] = 'all'
 
         return cls(None, **kwargs)
-
-    @classmethod
-    def get_context_from_function_and_args(cls, function, args, kwargs):
-        """
-        Find an arg of type DesignateContext and return it.
-
-        This is useful in a couple of decorators where we don't
-        know much about the function we're wrapping.
-        """
-
-        for arg in itertools.chain(kwargs.values(), args):
-            if isinstance(arg, cls):
-                return arg
-
-        return None
 
     @property
     def all_tenants(self):

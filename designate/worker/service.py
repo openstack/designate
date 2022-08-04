@@ -21,9 +21,9 @@ import oslo_messaging as messaging
 
 from designate import backend
 from designate.central import rpcapi as central_api
+from designate.common.decorators import rpc
 from designate.context import DesignateContext
 from designate import exceptions
-from designate import rpc
 from designate import service
 from designate import storage
 from designate.worker import processing
