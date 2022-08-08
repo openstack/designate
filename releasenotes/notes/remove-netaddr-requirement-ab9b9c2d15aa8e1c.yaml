@@ -1,0 +1,5 @@
+---
+other:
+  - |
+    The netaddr python module has been removed as a Designate requirement. It
+    has been replaced with the python standard library 'ipaddress' module.

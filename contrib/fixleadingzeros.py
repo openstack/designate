@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import argparse
+import ipaddress
 import logging
 import sys
 
@@ -22,7 +23,6 @@ import dns.exception
 from dns.ipv4 import inet_aton
 from keystoneauth1.identity import generic
 from keystoneauth1 import session as keystone_session
-import netaddr
 
 from designateclient import shell
 from designateclient.v2 import client
@@ -72,8 +72,9 @@ def fix_bad_recordsets(bad_recordsets):
     for rs in bad_recordsets:
         new_records = []
         for ip in bad_recordsets[rs]['records']:
+            ip = '.'.join(f'{int(i)}' for i in ip.split('.'))
             new_records.append(
-                str(netaddr.IPAddress(ip, flags=netaddr.ZEROFILL).ipv4())
+                str(ipaddress.IPv4Address(ip))
             )
         bad_recordsets[rs]['records'] = new_records
     return bad_recordsets
