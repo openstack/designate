@@ -28,10 +28,7 @@ class CNAME(Record):
         'cname': fields.DomainField(maxLength=255)
     }
 
-    def _to_string(self):
-        return self.cname
-
-    def _from_string(self, value):
+    def from_string(self, value):
         self.cname = value
 
     # The record type is defined in the RFC. This will be used when the record

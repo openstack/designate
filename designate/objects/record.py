@@ -66,11 +66,11 @@ class Record(base.DesignateObject, base.PersistentObjectMixin,
         'id', 'recordset_id', 'data'
     ]
 
-    def __str__(self):
+    def __repr__(self):
         record = self.to_dict()
-        record['data'] = record['data'][:35]
-        return (self._make_obj_str(self.STRING_KEYS)
-                % record)
+        if 'data' in record:
+            record['data'] = record['data'][:35]
+        return self._make_obj_str(record)
 
 
 @base.DesignateRegistry.register

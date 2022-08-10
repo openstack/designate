@@ -37,10 +37,7 @@ class SRV(Record):
             'name': fields.SRVField(maxLength=255, nullable=True)
         }
 
-    def _to_string(self):
-        return "%(priority)s %(weight)s %(target)s %(port)s" % self
-
-    def _from_string(self, value):
+    def from_string(self, value):
         priority, weight, port, target = value.split(' ')
         self.priority = int(priority)
         self.weight = int(weight)

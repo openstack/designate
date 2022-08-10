@@ -151,11 +151,11 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
         for record in old_records:
             record_obj = record_cls()
             try:
-                record_obj._from_string(record.data)
-            # The _from_string() method will throw a ValueError if there is not
+                record_obj.from_string(record.data)
+            # The from_string() method will throw a ValueError if there is not
             # enough data blobs
             except ValueError as e:
-                # Something broke in the _from_string() method
+                # Something broke in the from_string() method
                 # Fake a correct looking ValidationError() object
                 e = ValidationError()
                 e.path = ['records', i]

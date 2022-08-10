@@ -92,11 +92,8 @@ class CERT(Record):
             raise ValueError('Cert certificate is not valid.')
         return certificate
 
-    def _to_string(self):
-        return '%(cert_type)s %(key_tag)s %(cert_algo)s %(certificate)s' % self
-
-    def _from_string(self, v):
-        cert_type, key_tag, cert_algo, certificate = v.split(' ', 3)
+    def from_string(self, value):
+        cert_type, key_tag, cert_algo, certificate = value.split(' ', 3)
 
         self.cert_type = self.validate_cert_type(cert_type)
         self.key_tag = int(key_tag)

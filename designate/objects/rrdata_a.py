@@ -28,10 +28,7 @@ class A(Record):
         'address': fields.IPV4AddressField()
     }
 
-    def _to_string(self):
-        return self.address
-
-    def _from_string(self, value):
+    def from_string(self, value):
         self.address = value
 
     # The record type is defined in the RFC. This will be used when the record

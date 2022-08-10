@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_versionedobjects import base
@@ -19,10 +20,9 @@ from oslo_versionedobjects.base import VersionedObjectDictCompat as DictObjectMi
 from oslo_versionedobjects import exception
 from oslo_versionedobjects import fields as ovoo_fields
 
-
 from designate import exceptions
-from designate.i18n import _
 from designate.objects import fields
+
 
 LOG = logging.getLogger(__name__)
 
@@ -54,16 +54,15 @@ class DesignateObject(base.VersionedObject):
         self.FIELDS = self.fields
 
     @classmethod
-    def _make_obj_str(cls, keys):
-        msg = "<%(name)s" % {'name': cls.obj_name()}
-        for key in keys:
-            msg += " {0}:'%({0})s'".format(key)
+    def _make_obj_str(cls, data):
+        msg = "<%s" % cls.obj_name()
+        for key in cls.STRING_KEYS:
+            msg += " %s:'%s'" % (key, data.get(key))
         msg += ">"
         return msg
 
-    def __str__(self):
-        return (self._make_obj_str(self.STRING_KEYS)
-                % self)
+    def __repr__(self):
+        return self._make_obj_str(self.to_dict())
 
     def save(self, context):
         pass
@@ -152,9 +151,6 @@ class DesignateObject(base.VersionedObject):
 
     def __ne__(self, other):
         return not (self.__eq__(other))
-
-    def __repr__(self):
-        return "OVO Objects"
 
     # TODO(daidv): all of bellow functions should
     # be removed when we completed migration.
@@ -360,11 +356,13 @@ class ListObjectMixin(base.ObjectListBase):
 
         return list_
 
-    def __str__(self):
-        return (_("<%(type)s count:'%(count)s' object:'%(list_type)s'>")
-                % {'count': len(self),
-                   'type': self.LIST_ITEM_TYPE.obj_name(),
-                   'list_type': self.obj_name()})
+    def __repr__(self):
+        return ("<%(type)s count:'%(count)s' object:'%(list_type)s'>" %
+                {
+                    'type': self.LIST_ITEM_TYPE.obj_name(),
+                    'count': len(self),
+                    'list_type': self.obj_name()
+                })
 
     def __iter__(self):
         """List iterator interface"""

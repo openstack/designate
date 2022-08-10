@@ -35,12 +35,10 @@ class SOA(Record):
         'minimum': fields.IntegerFields(minimum=0, maximum=2147483647)
     }
 
-    def _to_string(self):
-        return ("%(mname)s %(rname)s %(serial)s %(refresh)s %(retry)s "
-                "%(expire)s %(minimum)s" % self)
-
-    def _from_string(self, v):
-        mname, rname, serial, refresh, retry, expire, minimum = v.split(' ')
+    def from_string(self, value):
+        mname, rname, serial, refresh, retry, expire, minimum = (
+            value.split(' ')
+        )
         self.mname = mname
         self.rname = rname
         self.serial = int(serial)

@@ -28,6 +28,8 @@ LOG = logging.getLogger(__name__)
 
 def create_test_recordset():
     record_set = objects.RecordSet(
+        id='f6a2cbd6-7f9a-4e0c-a00d-98a02aa73fc8',
+        zone_id='74038683-cab1-4056-bdf8-b39bd155ff21',
         name='www.example.org.',
         type='A',
         records=objects.RecordList(objects=[
@@ -39,11 +41,19 @@ def create_test_recordset():
 
 
 class RecordSetTest(oslotest.base.BaseTestCase):
-
     def test_init(self):
         record_set = create_test_recordset()
         self.assertEqual('www.example.org.', record_set.name)
         self.assertEqual('A', record_set.type)
+
+    def test_to_repr(self):
+        record_set = create_test_recordset()
+        self.assertEqual(
+            "<RecordSet id:'f6a2cbd6-7f9a-4e0c-a00d-98a02aa73fc8' type:'A' "
+            "name:'www.example.org.' "
+            "zone_id:'74038683-cab1-4056-bdf8-b39bd155ff21'>",
+            repr(record_set)
+        )
 
     def test_not_managed(self):
         record_set = create_test_recordset()

@@ -29,10 +29,7 @@ class MX(Record):
         'exchange': fields.StringFields(maxLength=255),
     }
 
-    def _to_string(self):
-        return '%(priority)s %(exchange)s' % self
-
-    def _from_string(self, value):
+    def from_string(self, value):
         priority, exchange = value.split(' ')
 
         if repr(int(priority)) != priority:

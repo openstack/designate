@@ -30,11 +30,8 @@ class CAA(Record):
         'prpt': fields.CaaPropertyField()
     }
 
-    def _to_string(self):
-        return ("%(flag)s %(prpt)s" % self)
-
-    def _from_string(self, v):
-        flags, prpt = v.split(' ', 1)
+    def from_string(self, value):
+        flags, prpt = value.split(' ', 1)
         self.flags = int(flags)
         self.prpt = prpt
 
