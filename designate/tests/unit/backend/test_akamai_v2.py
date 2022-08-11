@@ -17,24 +17,30 @@
 import json
 from unittest import mock
 
+import oslotest.base
 import requests
 
 from designate.backend import impl_akamai_v2 as akamai
+from designate import context
 from designate import exceptions
 from designate import objects
-import designate.tests
 from designate.tests import fixtures
 
 
-class AkamaiBackendTestCase(designate.tests.TestCase):
+class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(AkamaiBackendTestCase, self).setUp()
+
+        self.admin_context = mock.Mock()
+        mock.patch.object(
+            context.DesignateContext, 'get_admin_context',
+            return_value=self.admin_context).start()
+
         self.zone = objects.Zone(
             id='cca7908b-dad4-4c50-adba-fb67d4c556e8',
             name='example.com.',
             email='example@example.com'
         )
-
         self.target = {
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'akamai_v2',
