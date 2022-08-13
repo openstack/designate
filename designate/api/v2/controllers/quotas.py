@@ -39,17 +39,17 @@ class QuotasController(rest.RestController):
         return DesignateAdapter.render('API_v2', quotas)
 
     @pecan.expose(template='json:', content_type='application/json')
-    def get_one(self, tenant_id):
+    def get_one(self, project_id):
         context = pecan.request.environ['context']
 
-        quotas = self.central_api.get_quotas(context, tenant_id)
+        quotas = self.central_api.get_quotas(context, project_id)
 
         quotas = QuotaList.from_dict(quotas)
 
         return DesignateAdapter.render('API_v2', quotas)
 
     @pecan.expose(template='json:', content_type='application/json')
-    def patch_one(self, tenant_id):
+    def patch_one(self, project_id):
         """Modify a Quota"""
         request = pecan.request
         context = request.environ['context']
@@ -60,7 +60,7 @@ class QuotasController(rest.RestController):
         # this will raise only if KeystoneV3 endpoint is not found at all,
         # or the creds are passing but the project is not found
         if cfg.CONF['service:api'].quotas_verify_project_id:
-            keystone.verify_project_id(context, tenant_id)
+            keystone.verify_project_id(context, project_id)
 
         quotas = DesignateAdapter.parse('API_v2', body, QuotaList())
 
@@ -74,23 +74,23 @@ class QuotasController(rest.RestController):
                 "scoped tokens.")
 
         for quota in quotas:
-            self.central_api.set_quota(context, tenant_id, quota.resource,
+            self.central_api.set_quota(context, project_id, quota.resource,
                                        quota.hard_limit)
 
-        quotas = self.central_api.get_quotas(context, tenant_id)
+        quotas = self.central_api.get_quotas(context, project_id)
 
         quotas = QuotaList.from_dict(quotas)
 
         return DesignateAdapter.render('API_v2', quotas)
 
     @pecan.expose(template=None, content_type='application/json')
-    def delete_one(self, tenant_id):
+    def delete_one(self, project_id):
         """Reset to the Default Quotas"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.reset_quotas(context, tenant_id)
+        self.central_api.reset_quotas(context, project_id)
 
         response.status_int = 204
 
