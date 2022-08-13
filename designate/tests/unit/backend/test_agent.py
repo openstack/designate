@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from unittest import mock
 
 import dns
@@ -18,31 +19,42 @@ import dns.query
 import dns.rdataclass
 import dns.rdatatype
 
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
+import oslotest.base
+
 import designate.backend.agent as agent
 import designate.backend.private_codes as pcodes
+from designate import context
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
-from designate import tests
 from designate.tests.unit import RoObject
 
+CONF = cfg.CONF
 
-class AgentBackendTestCase(tests.TestCase):
+
+class AgentBackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(AgentBackendTestCase, self).setUp()
-        self.CONF.set_override('poll_timeout', 1, 'service:worker')
-        self.CONF.set_override('poll_retry_interval', 4,
-                               'service:worker')
-        self.CONF.set_override('poll_max_retries', 5, 'service:worker')
-        self.CONF.set_override('poll_delay', 6, 'service:worker')
+        self.useFixture(cfg_fixture.Config(CONF))
 
-        self.context = self.get_context()
+        self.context = mock.Mock()
+        self.admin_context = mock.Mock()
+        mock.patch.object(
+            context.DesignateContext, 'get_admin_context',
+            return_value=self.admin_context).start()
+
+        CONF.set_override('poll_timeout', 1, 'service:worker')
+        CONF.set_override('poll_retry_interval', 4, 'service:worker')
+        CONF.set_override('poll_max_retries', 5, 'service:worker')
+        CONF.set_override('poll_delay', 6, 'service:worker')
+
         self.zone = objects.Zone(
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             name='example.com.',
             email='example@example.com',
         )
-
         self.target = {
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'agent',

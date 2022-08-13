@@ -11,27 +11,34 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from unittest import mock
 
+import oslotest.base
+
 from designate.backend import impl_bind9
+from designate import context
 from designate import exceptions
 from designate import objects
-import designate.tests
 from designate.tests import fixtures
 from designate import utils
 
 import subprocess
 
 
-class Bind9BackendTestCase(designate.tests.TestCase):
+class Bind9BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(Bind9BackendTestCase, self).setUp()
+        self.admin_context = mock.Mock()
+        mock.patch.object(
+            context.DesignateContext, 'get_admin_context',
+            return_value=self.admin_context).start()
+
         self.zone = objects.Zone(
             id='cca7908b-dad4-4c50-adba-fb67d4c556e8',
             name='example.com.',
             email='example@example.com'
         )
-
         self.target = {
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'bind9',

@@ -13,32 +13,38 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import socket
 import ssl
 from unittest import mock
 
 import eventlet
+import oslotest.base
 
 from designate.backend import impl_nsd4
+from designate import context
 from designate import exceptions
 from designate import objects
-import designate.tests
 
 
-class NSD4BackendTestCase(designate.tests.TestCase):
+class NSD4BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(NSD4BackendTestCase, self).setUp()
+
+        self.context = mock.Mock()
+        self.admin_context = mock.Mock()
+        mock.patch.object(
+            context.DesignateContext, 'get_admin_context',
+            return_value=self.admin_context).start()
 
         keyfile = mock.sentinel.key
         certfile = mock.sentinel.cert
 
-        self.context = self.get_context()
         self.zone = objects.Zone(
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             name='example.com.',
             email='example@example.com',
         )
-
         self.port = 6969
         self.target = {
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',

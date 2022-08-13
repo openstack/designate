@@ -13,11 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+from unittest import mock
+
+import oslotest.base
 import requests_mock
 
 from designate.backend import impl_dynect
+from designate import context
 from designate import objects
-import designate.tests
 
 MASTERS = ["10.0.0.1"]
 CONTACT = 'jdoe@myco.biz'
@@ -110,18 +114,22 @@ ACTIVATE_SUCCESS = {
 }
 
 
-class DynECTTestsCase(designate.tests.TestCase):
+class DynECTTestsCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(DynECTTestsCase, self).setUp()
 
+        self.context = mock.Mock()
+        self.admin_context = mock.Mock()
+        mock.patch.object(
+            context.DesignateContext, 'get_admin_context',
+            return_value=self.admin_context).start()
+
         self.base_address = 'https://api.dynect.net:443/REST'
-        self.context = self.get_context()
         self.zone = objects.Zone(
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             name='example.com.',
             email='example@example.com',
         )
-
         self.target = {
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'dyndns',
