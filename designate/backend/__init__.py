@@ -27,12 +27,13 @@ GOOD_STATUSES = [
 def get_backend(target):
     cls = base.Backend.get_driver(target.type)
 
-    msg = "Backend Driver '%s' loaded. Has status of '%s'" \
-          % (target.type, cls.__backend_status__)
+    message = "Backend Driver '%s' loaded. Has status of '%s'" % (
+        target.type, cls.__backend_status__
+    )
 
     if cls.__backend_status__ in GOOD_STATUSES:
-        LOG.info(msg)
+        LOG.info(message)
     else:
-        LOG.warning(msg)
+        LOG.warning(message)
 
     return cls(target)
