@@ -110,8 +110,8 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
 
         self.policy({'zone_export': '@'})
         get_response = self.adminclient.get('/zones/export/%s' %
-                                       response.json['zone_id'],
-                                       headers={'Accept': 'text/dns'})
+                                            response.json['zone_id'],
+                                            headers={'Accept': 'text/dns'})
         exported_zonefile = get_response.body.decode('utf-8')
 
         imported = dnszone.from_text(self.get_zonefile_fixture())

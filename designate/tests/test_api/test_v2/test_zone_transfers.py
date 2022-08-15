@@ -28,7 +28,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_create_zone_transfer_request(self):
         response = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         # Check the headers are what we expect
@@ -53,7 +53,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_create_zone_transfer_request_scoped(self):
         response = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {'target_project_id': str(self.tenant_1_context.project_id)})
 
         # Check the headers are what we expect
@@ -79,7 +79,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
     def test_create_zone_transfer_request_empty_body(self):
         # Send an empty ("None") body
         response = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             None)
 
         # Check the headers are what we expect
@@ -88,7 +88,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_get_zone_transfer_request(self):
         initial = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         response = self.client.get(
@@ -129,7 +129,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.assertEqual(0, len(response.json['transfer_requests']))
 
         self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         data = self.client.get(
@@ -139,7 +139,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_update_zone_transfer_request(self):
         initial = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         response = self.client.patch_json(
@@ -168,7 +168,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_delete_zone_transfer_request(self):
         initial = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         response = self.client.delete(
@@ -180,7 +180,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_create_zone_transfer_accept(self):
         initial = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         response = self.client.post_json(
@@ -216,7 +216,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_get_zone_transfer_accept(self):
         initial = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         transfer_accept = self.client.post_json(
@@ -272,7 +272,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.assertEqual(0, len(response.json['transfer_accepts']))
 
         initial = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         self.client.post_json(
@@ -288,14 +288,14 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.assertEqual(1, len(data.json['transfer_accepts']))
 
     def test_create_zone_transfer_request_deleting_zone(self):
-        url = '/zones/%s/tasks/transfer_requests' % (self.zone.id)
+        url = '/zones/%s/tasks/transfer_requests' % self.zone.id
         body = {}
         self.client.delete('/zones/%s' % self.zone['id'], status=202)
         self._assert_exception('bad_request', 400, self.client.post_json, url,
                                body)
 
     def test_create_zone_transfer_accept_deleting_zone(self):
-        url = '/zones/%s/tasks/transfer_requests' % (self.zone.id)
+        url = '/zones/%s/tasks/transfer_requests' % self.zone.id
         body = {}
         self.client.delete('/zones/%s' % self.zone['id'], status=202)
         self._assert_exception('bad_request', 400, self.client.post_json, url,
@@ -304,7 +304,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
     # Metadata tests
     def test_metadata_exists_zone_transfer_accepts(self):
         initial = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         self.client.post_json(
@@ -324,7 +324,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_total_count_zone_transfer_accepts(self):
         initial = self.client.post_json(
-            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            '/zones/%s/tasks/transfer_requests' % self.zone.id,
             {})
 
         self.client.post_json(
