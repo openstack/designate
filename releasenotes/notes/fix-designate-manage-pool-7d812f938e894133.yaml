@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Fixed an issue in central where "designate manage pool update" may return
+    an error designate.exceptions.MissingProjectID when attempting to create a
+    new pool.
