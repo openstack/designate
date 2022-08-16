@@ -51,12 +51,6 @@ class Backend(DriverPlugin):
         self.max_retries = CONF['service:worker'].poll_max_retries
         self.delay = CONF['service:worker'].poll_delay
 
-    def start(self):
-        LOG.info('Starting %s backend', self.get_canonical_name())
-
-    def stop(self):
-        LOG.info('Stopped %s backend', self.get_canonical_name())
-
     # Core Backend Interface
     @abc.abstractmethod
     def create_zone(self, context, zone):
