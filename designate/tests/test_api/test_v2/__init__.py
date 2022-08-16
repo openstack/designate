@@ -37,9 +37,6 @@ class ApiV2TestCase(ApiTestCase):
     def setUp(self):
         super(ApiV2TestCase, self).setUp()
 
-        # Ensure the v2 API is enabled
-        self.config(enable_api_v2=True, group='service:api')
-
         # Create the application
         self.app = api_v2.factory({})
 

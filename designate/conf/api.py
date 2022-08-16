@@ -42,7 +42,7 @@ API_OPTS = [
                help='The strategy to use for auth. Supports noauth or '
                     'keystone'),
     cfg.BoolOpt('enable_api_v2', default=True,
-                help='enable-api-v2 which enable in a future'),
+                help='Enable the Designate V2 API'),
     cfg.BoolOpt('enable_api_admin', default=False,
                 help='enable-api-admin'),
     cfg.IntOpt('max_header_line', default=16384,
