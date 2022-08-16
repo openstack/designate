@@ -2524,8 +2524,6 @@ class Service(service.RPCService):
 
         policy.check('create_pool', context)
 
-        self._is_valid_project_id(pool.tenant_id)
-
         created_pool = self.storage.create_pool(context, pool)
 
         return created_pool
