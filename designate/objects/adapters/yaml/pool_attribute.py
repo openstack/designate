@@ -59,7 +59,6 @@ class PoolAttributeListYAMLAdapter(base.YAMLAdapter):
 
     @classmethod
     def parse_list(cls, values, output_object, *args, **kwargs):
-
         for key, value in values.items():
             # Add the object to the list
             output_object.append(

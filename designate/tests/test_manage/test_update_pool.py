@@ -13,6 +13,7 @@ from unittest import mock
 
 from oslo_log import log as logging
 
+from designate import context
 from designate.manage.pool import PoolCommands
 from designate import objects
 from designate.tests import fixtures
@@ -26,6 +27,10 @@ class UpdatePoolTestCase(DesignateManageTestCase):
         super(DesignateManageTestCase, self).setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
+
+        self.context = context.DesignateContext.get_admin_context(
+            request_id='designate-manage'
+        )
 
     def hydrate_pool_targets(self, target_masters):
         pool_targets = objects.PoolTargetList()
@@ -49,19 +54,21 @@ class UpdatePoolTestCase(DesignateManageTestCase):
 
         # Ensure the correct NS Records are in place
         pool = self.central_service.get_pool(
-            self.admin_context, zone.pool_id)
+            self.admin_context, zone.pool_id
+        )
 
         pool.targets = self.hydrate_pool_targets([objects.PoolTargetMaster(
-                  pool_target_id=pool.id,
-                  host="127.0.0.1",
-                  port="53")])
+            pool_target_id=pool.id,
+            host='192.0.2.2',
+            port='53')]
+        )
 
         command = PoolCommands()
-        command.context = self.admin_context
+        command.context = self.context
         command.central_api = self.central_service
 
-        with mock.patch.object(self.central_service,
-                               "update_zone") as mock_update_zone:
+        with mock.patch.object(
+                self.central_service, 'update_zone') as mock_update_zone:
             command._update_zones(pool)
             mock_update_zone.assert_called_once()
 
@@ -77,25 +84,69 @@ class UpdatePoolTestCase(DesignateManageTestCase):
 
         # Ensure the correct NS Records are in place
         pool = self.central_service.get_pool(
-            self.admin_context, zone.pool_id)
+            self.admin_context, zone.pool_id
+        )
 
         targets1 = self.hydrate_pool_targets([
             objects.PoolTargetMaster(
-                  pool_target_id=pool.id,
-                  host="127.0.0.1",
-                  port="53")
+                pool_target_id=pool.id,
+                host='192.0.2.3',
+                port='53')
         ])
         targets2 = self.hydrate_pool_targets([
             objects.PoolTargetMaster(
-                  pool_target_id=pool.id,
-                  host="127.0.0.1",
-                  port="53")
+                pool_target_id=pool.id,
+                host='192.0.2.4',
+                port='53')
         ])
         pool.targets = objects.PoolTargetList()
         pool.targets.extend(targets1.objects + targets2.objects)
 
         command = PoolCommands()
-        command.context = self.admin_context
+        command.context = self.context
         command.central_api = self.central_service
 
         command._update_zones(pool)
+
+    def test_create_new_pool(self):
+        pool = {
+            'name': 'new_pool',
+            'description': 'New PowerDNS Pool',
+            'attributes': {},
+            'ns_records': [
+                {'hostname': 'ns1-1.example.org.', 'priority': 1},
+                {'hostname': 'ns1-2.example.org.', 'priority': 2}
+            ],
+            'nameservers': [
+                {'host': '192.0.2.2', 'port': 53}
+            ],
+            'targets': [
+                {
+                    'type': 'powerdns',
+                    'description': 'PowerDNS Database Cluster',
+                    'masters': [
+                        {'host': '192.0.2.1', 'port': 5354}
+                    ],
+                    'options': {
+                        'host': '192.0.2.2', 'port': 53,
+                        'connection': 'connection'
+                    }
+                }
+            ],
+            'also_notifies': [
+                {'host': '192.0.2.4', 'port': 53}
+            ]
+        }
+
+        command = PoolCommands()
+        command.context = self.context
+        command.central_api = self.central_service
+
+        command._create_pool(pool, dry_run=False)
+
+        pool = self.central_service.find_pool(
+            self.admin_context, {'name': 'new_pool'}
+        )
+
+        self.assertEqual('new_pool', pool.name)
+        self.assertEqual('New PowerDNS Pool', pool.description)
