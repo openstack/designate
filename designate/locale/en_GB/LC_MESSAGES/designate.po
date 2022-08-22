@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: designate VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-03-26 20:30+0000\n"
+"POT-Creation-Date: 2022-08-18 22:28+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,10 +21,6 @@ msgstr ""
 #, python-format
 msgid "%s is not a valid project ID."
 msgstr "%s is not a valid project ID."
-
-#, python-format
-msgid "<%(type)s count:'%(count)s' object:'%(list_type)s'>"
-msgstr "<%(type)s count:'%(count)s' object:'%(list_type)s'>"
 
 msgid "An unknown exception occurred."
 msgstr "An unknown exception occurred."
