@@ -37,6 +37,7 @@ CONF = cfg.CONF
 class PoolCommands(base.Commands):
     def __init__(self):
         super(PoolCommands, self).__init__()
+        self.output_msg = ['']
 
     # NOTE(jh): Cannot do this earlier because we are still missing the config
     # at that point, see bug #1651576
@@ -44,13 +45,28 @@ class PoolCommands(base.Commands):
         rpc.init(cfg.CONF)
         self.central_api = central_rpcapi.CentralAPI()
 
+    def _create_pool(self, pool, dry_run):
+        pool = DesignateAdapter.parse('YAML', pool, objects.Pool())
+        for ns_record in pool.ns_records:
+            try:
+                ns_record.validate()
+            except exceptions.InvalidObject as e:
+                LOG.error(e.errors.to_list()[0]['message'])
+                sys.exit(1)
+
+        if dry_run:
+            self.output_msg.append('Create Pool: %s' % pool)
+        else:
+            LOG.info('Creating new pool: %s', pool)
+            self.central_api.create_pool(self.context, pool)
+
     def _update_zones(self, pool):
-        LOG.info("Updating zone masters for pool: {}".format(pool.id))
+        LOG.info('Updating zone masters for pool: %s', pool.id)
 
         def __get_masters_from_pool(pool):
             masters = []
             for target in pool.targets:
-                for master in target.get("masters", []):
+                for master in target.get('masters', []):
                     master = {'host': master['host'], 'port': master['port']}
                     found = False
                     for existing_master in masters:
@@ -69,9 +85,11 @@ class PoolCommands(base.Commands):
 
         for zone in zones:
             zone.masters = objects.ZoneMasterList().from_list(
-                __get_masters_from_pool(pool))
-            self.central_api.update_zone(self.context,
-                                         zone)
+                __get_masters_from_pool(pool)
+            )
+            self.central_api.update_zone(
+                self.context, zone
+            )
 
     @base.args('--file', help='The path to the file the yaml output should be '
                'written to',
@@ -81,8 +99,10 @@ class PoolCommands(base.Commands):
         try:
             pools = self.central_api.find_pools(self.context)
         except messaging.exceptions.MessagingTimeout:
-            LOG.critical("No response received from designate-central. "
-                         "Check it is running, and retry")
+            LOG.critical(
+                'No response received from designate-central. '
+                'Check it is running, and retry'
+            )
             sys.exit(1)
         with open(file, 'w') as stream:
             yaml.dump(
@@ -96,7 +116,7 @@ class PoolCommands(base.Commands):
     def show_config(self, pool_id):
         self._startup()
         try:
-            pool = self.central_api.find_pool(self.context, {"id": pool_id})
+            pool = self.central_api.find_pool(self.context, {'id': pool_id})
 
             print('Pool Configuration:')
             print('-------------------')
@@ -105,8 +125,10 @@ class PoolCommands(base.Commands):
                             default_flow_style=False))
 
         except messaging.exceptions.MessagingTimeout:
-            LOG.critical("No response received from designate-central. "
-                         "Check it is running, and retry")
+            LOG.critical(
+                'No response received from designate-central. '
+                'Check it is running, and retry'
+            )
             sys.exit(1)
 
     @base.args('--file', help='The path to the yaml file describing the pools',
@@ -115,40 +137,45 @@ class PoolCommands(base.Commands):
         '--delete',
         help='Any Pools not listed in the config file will be deleted. '
              ' WARNING: This will delete any zones left in this pool',
-        action="store_true",
+        action='store_true',
         default=False)
     @base.args(
         '--dry-run',
         help='This will simulate what will happen when you run this command',
-        action="store_true",
+        action='store_true',
         default=False)
     def update(self, file, delete, dry_run):
         self._startup()
         print('Updating Pools Configuration')
         print('****************************')
-        output_msg = ['']
 
         with open(file, 'r') as stream:
             xpools = yaml.safe_load(stream)
 
         if dry_run:
-            output_msg.append("The following changes will occur:")
-            output_msg.append("*********************************")
+            self.output_msg.append('The following changes will occur:')
+            self.output_msg.append('*********************************')
 
         for xpool in xpools:
             try:
                 if 'id' in xpool:
                     try:
                         pool = self.central_api.get_pool(
-                            self.context, xpool['id'])
+                            self.context, xpool['id']
+                        )
                     except Exception as e:
-                        msg = ("Bad ID Supplied for pool. pool_id: "
-                            "%(pool)s message: %(res)s")
-                        LOG.critical(msg, {'pool': xpool['id'], 'res': e})
+                        LOG.critical(
+                            'Bad ID Supplied for pool. pool_id: '
+                            '%(pool)s message: %(res)s',
+                            {
+                                'pool': xpool['id'], 'res': e
+                            }
+                        )
                         continue
                 else:
                     pool = self.central_api.find_pool(
-                        self.context, {"name": xpool['name']})
+                        self.context, {'name': xpool['name']}
+                    )
 
                 LOG.info('Updating existing pool: %s', pool)
 
@@ -167,7 +194,7 @@ class PoolCommands(base.Commands):
                         sys.exit(1)
 
                 if dry_run:
-                    output_msg.append("Update Pool: %s" % pool)
+                    self.output_msg.append('Update Pool: %s' % pool)
                 else:
                     pool = self.central_api.update_pool(self.context, pool)
                     # Bug: Changes in the pool targets should trigger a
@@ -175,21 +202,12 @@ class PoolCommands(base.Commands):
                     self._update_zones(pool)
 
             except exceptions.PoolNotFound:
-                pool = DesignateAdapter.parse('YAML', xpool, objects.Pool())
-                for ns_record in pool.ns_records:
-                    try:
-                        ns_record.validate()
-                    except exceptions.InvalidObject as e:
-                        LOG.error(e.errors.to_list()[0]['message'])
-                        sys.exit(1)
-                if dry_run:
-                    output_msg.append("Create Pool: %s" % pool)
-                else:
-                    LOG.info('Creating new pool: %s', pool)
-                    self.central_api.create_pool(self.context, pool)
+                self._create_pool(xpool, dry_run)
             except messaging.exceptions.MessagingTimeout:
-                LOG.critical("No response received from designate-central. "
-                             "Check it is running, and retry")
+                LOG.critical(
+                    'No response received from designate-central. '
+                    'Check it is running, and retry'
+                )
                 sys.exit(1)
 
         if delete:
@@ -206,7 +224,7 @@ class PoolCommands(base.Commands):
                         criterion={'name': pool})
 
                     if dry_run:
-                        output_msg.append("Delete Pool: %s" % p)
+                        self.output_msg.append('Delete Pool: %s' % p)
 
                     else:
                         LOG.info('Deleting %s', p)
@@ -214,9 +232,10 @@ class PoolCommands(base.Commands):
 
                 except messaging.exceptions.MessagingTimeout:
                     LOG.critical(
-                        "No response received from designate-central. "
-                        "Check it is running, and retry")
+                        'No response received from designate-central. '
+                        'Check it is running, and retry'
+                    )
                     sys.exit(1)
 
-        for line in output_msg:
+        for line in self.output_msg:
             print(line)
