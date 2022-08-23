@@ -16,14 +16,18 @@ import oslotest.base
 import stevedore.exception
 
 from designate import backend
+from designate.backend import base
 from designate.backend import impl_pdns4
 from designate import context
 from designate import objects
+from designate.tests import fixtures
 
 
 class BaseBackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(BaseBackendTestCase, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
 
         self.context = mock.Mock()
         self.admin_context = mock.Mock()
@@ -38,6 +42,40 @@ class BaseBackendTestCase(oslotest.base.BaseTestCase):
             'options': [
             ],
         }
+
+    @mock.patch.object(base.Backend, 'get_driver')
+    def test_untested_backend(self, mock_get_driver):
+        driver = mock.Mock()
+        driver.__backend_status__ = 'untested'
+        mock_get_driver.return_value = driver
+
+        self.target['type'] = 'test'
+        pool_target = objects.PoolTarget.from_dict(self.target)
+
+        backend.get_backend(pool_target)
+
+        self.assertIn('WARNING', self.stdlog.logger.output)
+        self.assertIn(
+            "Backend Driver 'test' loaded. Has status of 'untested'",
+            self.stdlog.logger.output
+        )
+
+    @mock.patch.object(base.Backend, 'get_driver')
+    def test_tested_backend(self, mock_get_driver):
+        driver = mock.Mock()
+        driver.__backend_status__ = 'integrated'
+        mock_get_driver.return_value = driver
+
+        self.target['type'] = 'test'
+        pool_target = objects.PoolTarget.from_dict(self.target)
+
+        backend.get_backend(pool_target)
+
+        self.assertNotIn('WARNING', self.stdlog.logger.output)
+        self.assertIn(
+            "Backend Driver 'test' loaded. Has status of 'integrated'",
+            self.stdlog.logger.output
+        )
 
     def test_get_backend(self):
         pool_target = objects.PoolTarget.from_dict(self.target)
