@@ -1,0 +1,39 @@
+---
+
+- name: bind
+  description: Default BIND Pool
+
+  ns_records:
+    - hostname: ns1-1.example.org.
+      priority: 1
+    - hostname: ns1-2.example.org.
+      priority: 2
+    - hostname: ns1-3.example.org.
+      priority: 3
+
+  nameservers:
+    - host: 192.0.2.2
+      port: 53
+    - host: 192.0.2.3
+      port: 53
+
+  targets:
+    - type: bind9
+      description: BIND Instance
+      masters:
+        - host: 192.0.2.5
+          port: 5354
+        - host: 192.0.2.6
+          port: 5354
+        - host: 192.0.2.7
+          port: 5354
+      options:
+        host: ::1
+        port: 5322
+        rndc_host: ::1
+        rndc_port: 953
+        rndc_config_file: /etc/bind/rndc.conf
+        rndc_key_file: /etc/bind/rndc.key
+  also_notifies:
+   - host: 192.0.2.4
+     port: 53
