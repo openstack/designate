@@ -34,7 +34,18 @@ class RRDataMXTest(oslotest.base.BaseTestCase):
         record_set = objects.RecordSet(
             name='www.example.org.', type='MX',
             records=objects.RecordList(objects=[
-                objects.Record(data='-0 mail.example.org.',
+                objects.Record(data='-0 mail.example.test.',
+                               status='ACTIVE'),
+            ])
+        )
+
+        self.assertRaises(InvalidObject, record_set.validate)
+
+    def test_validate_mx_not_fqdn(self):
+        record_set = objects.RecordSet(
+            name='www.example.org.', type='MX',
+            records=objects.RecordList(objects=[
+                objects.Record(data='10 mail.example.test',
                                status='ACTIVE'),
             ])
         )
