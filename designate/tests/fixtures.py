@@ -33,12 +33,12 @@ from oslo_log import log as logging
 from oslo_utils import importutils
 import tooz.coordination
 
+from designate.manage import database as db_commands
 from designate import network_api
 from designate.network_api import fake as fake_network_api
 from designate import policy
 from designate import rpc
 import designate.service
-from designate.sqlalchemy import utils as sqlalchemy_utils
 import designate.utils
 
 """Test fixtures
@@ -117,14 +117,13 @@ class PolicyFixture(fixtures.Fixture):
 
 class DatabaseFixture(fixtures.Fixture):
 
-    fixtures = {}
+    fixture = None
 
     @staticmethod
-    def get_fixture(repo_path, init_version=None):
-        if repo_path not in DatabaseFixture.fixtures:
-            DatabaseFixture.fixtures[repo_path] = DatabaseFixture(
-                repo_path, init_version)
-        return DatabaseFixture.fixtures[repo_path]
+    def get_fixture():
+        if not DatabaseFixture.fixture:
+            DatabaseFixture.fixture = DatabaseFixture()
+        return DatabaseFixture.fixture
 
     def _mktemp(self):
         """Create temporary database file
@@ -142,7 +141,7 @@ class DatabaseFixture(fixtures.Fixture):
                                    dir=tmp_dir)
         return path
 
-    def __init__(self, repo_path, init_version=None):
+    def __init__(self):
         super(DatabaseFixture, self).__init__()
 
         # Create the Golden DB
@@ -150,9 +149,8 @@ class DatabaseFixture(fixtures.Fixture):
         self.golden_url = 'sqlite:///%s' % self.golden_db
 
         # Migrate the Golden DB
-        manager = sqlalchemy_utils.get_migration_manager(
-            repo_path, self.golden_url, init_version)
-        manager.upgrade(None)
+        db_cmds = db_commands.DatabaseCommands()
+        db_cmds.upgrade('head', db_url=self.golden_url)
 
         # Prepare the Working Copy DB
         self.working_copy = self._mktemp()
