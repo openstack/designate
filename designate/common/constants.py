@@ -12,6 +12,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+# API constants
+API_REF_URL = 'https://docs.openstack.org/api-ref/dns'
+CURRENT = 'CURRENT'
+SUPPORTED = 'SUPPORTED'
+DEPRECATED = 'DEPRECATED'
+EXPERIMENTAL = 'EXPERIMENTAL'
+
 # RBAC related constants
 RBAC_PROJECT_ID = 'project_id'
 RBAC_TARGET_PROJECT_ID = 'target_project_id'

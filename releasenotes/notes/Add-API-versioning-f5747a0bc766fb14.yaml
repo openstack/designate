@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Adds simple API versioning for Designate. Designate API minor releases are
+    additive to the API major revision and share the same URL path. Subsequent
+    minor versions are a superset of the previous versions of the same major
+    revision.
