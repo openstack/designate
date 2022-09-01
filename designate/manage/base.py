@@ -39,3 +39,8 @@ class Commands(object):
         self.context = context.DesignateContext.get_admin_context(
             request_id='designate-manage'
         )
+        self.output_message = ['']
+
+    def _print_result(self):
+        for message in self.output_message:
+            print(message)

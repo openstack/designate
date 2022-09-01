@@ -15,7 +15,9 @@
 # under the License.
 #
 # Copied: designate
+
 import sys
+import traceback
 
 import eventlet
 from oslo_config import cfg
@@ -62,8 +64,9 @@ def add_command_parsers(subparsers):
         parser.set_defaults(command_object=command_object)
 
         category_subparsers = parser.add_subparsers(dest='action')
+        category_subparsers.required = True
 
-        for (action, action_fn) in methods_of(command_object):
+        for action, action_fn in methods_of(command_object):
             action = getattr(action_fn, '_cmd_name', action)
             parser = category_subparsers.add_parser(action)
 
@@ -75,8 +78,8 @@ def add_command_parsers(subparsers):
             parser.set_defaults(action_kwargs=action_kwargs)
 
 
-category_opt = cfg.SubCommandOpt('category', title="Commands",
-                                 help="Available Commands",
+category_opt = cfg.SubCommandOpt('category', title='Commands',
+                                 help='Available Commands',
                                  handler=add_command_parsers)
 
 
@@ -108,13 +111,15 @@ def fetch_func_args(func):
 
 def main():
     CONF.register_cli_opt(category_opt)
-
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
 
     gmr.TextGuruMeditation.setup_autorun(version)
 
-    fn = CONF.category.action_fn
-
-    fn_args = fetch_func_args(fn)
-    fn(*fn_args)
+    try:
+        fn = CONF.category.action_fn
+        fn_args = fetch_func_args(fn)
+        fn(*fn_args)
+    except Exception:
+        print('An error has occurred:\n%s' % traceback.format_exc())
+        return 255
