@@ -62,6 +62,10 @@ def _create_facade_lazily(cfg_group, connection=None, discriminator=None):
 
     if cache_name not in _FACADES:
         conf = dict(cfg.CONF[cfg_group].items())
+        # FIXME(stephenfin): Remove this (and ideally use of
+        # LegacyEngineFacade) asap since it's not compatible with SQLAlchemy
+        # 2.0
+        conf['autocommit'] = True
         _FACADES[cache_name] = session.EngineFacade(
             connection,
             **conf
