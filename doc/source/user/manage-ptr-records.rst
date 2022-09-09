@@ -588,18 +588,6 @@ When we query any other IP address in `192.0.2.0/24` we get
 
 Success!
 
-You can further specify `in-addr.arpa.` zones to chunks of IP
-addresses by using Classless in-addr.arpa. Delegation. See `RFC 2317`_
-for more information.
-
-.. note::
-
-    The naming scheme of `RFC 2317`_ is currently not supported and
-    names such as `24/0.2.0.192.in-addr.arpa.` which include a `/`
-    lead to an error. The suggested workaround is to use `-` instead
-    of `/`. For more details please see
-    https://bugs.launchpad.net/designate/+bug/1880583.
-
 .. note::
 
     In BIND9, when creating a new `PTR` we could skip the zone name.
@@ -607,4 +595,184 @@ for more information.
     for the record name ends up as `12.2.0.192.in-addr.arpa.`. In
     Designate, the name of a record MUST be a complete host name.
 
+Classless IN-Addr.ARPA Delegation
+=================================
+
+You may want to delegate blocks of IP addresses to projects that do not align
+to subnet boundries. For example, if you wanted to give project "A" three IP
+addresses. To allow project "A" to manage DNS records for those three
+addresses, without delegating a whole subnet zone to project "A", you can use
+classless IN-ADDR.ARPA delegation as described in `RFC 2317`_.
+
+.. note::
+
+    As discussed in section 4 of `RFC 2317`_, the examples in the RFC use
+    '/' in the delegated zones but '-' is recommended.
+    Designate will not allow you to use '/' in zone names. You will need
+    to use the recommended '-' instead.
+
 .. _RFC 2317: https://tools.ietf.org/html/rfc2317
+
+In this example, we will delegate a PTR zone for three IP addresses, from the
+192.0.2.0/24 subnet, to the `Demo` project '9284a20339184a9bb299386c380211c7'.
+
+.. note::
+
+    Unless noted in the examples, the commands are using a credential with
+    an admin role. This is not necessary, but is a typical use case.
+
+First, the full subnet in-addr.arpa zone will need to be created:
+
+.. code-block:: console
+
+    $ openstack zone create --email me@example.com 2.0.192.in-addr.arpa.
+    +----------------+--------------------------------------+
+    | Field          | Value                                |
+    +----------------+--------------------------------------+
+    | action         | CREATE                               |
+    | attributes     |                                      |
+    | created_at     | 2022-09-09T20:05:41.000000           |
+    | description    | None                                 |
+    | email          | me@example.com                       |
+    | id             | bbdf0e8f-8d73-4659-ae62-f59e95a31cd7 |
+    | masters        |                                      |
+    | name           | 2.0.192.in-addr.arpa.                |
+    | pool_id        | 794ccc2c-d751-44fe-b57f-8894c9f5c842 |
+    | project_id     | cc5ab848dbe7462e9c7603d54a9af90f     |
+    | serial         | 1662753940                           |
+    | status         | PENDING                              |
+    | transferred_at | None                                 |
+    | ttl            | 3600                                 |
+    | type           | PRIMARY                              |
+    | updated_at     | None                                 |
+    | version        | 1                                    |
+    +----------------+--------------------------------------+
+
+Next we will create the delegated zone:
+
+.. code-block:: console
+
+    $ openstack zone create --email me@example.com 1-3.2.0.192.in-addr.arpa.
+    +----------------+--------------------------------------+
+    | Field          | Value                                |
+    +----------------+--------------------------------------+
+    | action         | CREATE                               |
+    | attributes     |                                      |
+    | created_at     | 2022-09-09T20:06:59.000000           |
+    | description    | None                                 |
+    | email          | me@example.com                       |
+    | id             | 2d353ed7-cb7f-4ff7-9c1e-54481304f4cb |
+    | masters        |                                      |
+    | name           | 1-3.2.0.192.in-addr.arpa.            |
+    | pool_id        | 794ccc2c-d751-44fe-b57f-8894c9f5c842 |
+    | project_id     | cc5ab848dbe7462e9c7603d54a9af90f     |
+    | serial         | 1662754018                           |
+    | status         | PENDING                              |
+    | transferred_at | None                                 |
+    | ttl            | 3600                                 |
+    | type           | PRIMARY                              |
+    | updated_at     | None                                 |
+    | version        | 1                                    |
+    +----------------+--------------------------------------+
+
+Now we can share the delegated zone with the `Demo` project:
+
+.. code-block:: console
+
+    $ openstack zone share create 1-3.2.0.192.in-addr.arpa. 9284a20339184a9bb299386c380211c7
+    +-------------------+--------------------------------------+
+    | Field             | Value                                |
+    +-------------------+--------------------------------------+
+    | created_at        | 2022-09-09T20:07:20.000000           |
+    | id                | 7859ca43-bcee-4fd1-aa2d-efda17b75198 |
+    | project_id        | cc5ab848dbe7462e9c7603d54a9af90f     |
+    | target_project_id | 9284a20339184a9bb299386c380211c7     |
+    | updated_at        | None                                 |
+    | zone_id           | 2d353ed7-cb7f-4ff7-9c1e-54481304f4cb |
+    +-------------------+--------------------------------------+
+
+Once we have the zones created and shared, we can now add the CNAME records to
+the full subnet zone that point to the delegated zone records. This will need
+to be repeated for each IP address being delegated. This example creates the
+first CNAME record for the 192.0.2.1 IP address.
+
+.. code-block:: console
+
+    $ openstack recordset create --record 1.1-3.2.0.192.in-addr.arpa. --type CNAME 2.0.192.in-addr.arpa. 1.2.0.192.in-addr.arpa.
+    +-------------+--------------------------------------+
+    | Field       | Value                                |
+    +-------------+--------------------------------------+
+    | action      | CREATE                               |
+    | created_at  | 2022-09-09T20:09:16.000000           |
+    | description | None                                 |
+    | id          | 482bd367-9815-4d86-a93d-734bbc92499a |
+    | name        | 1.2.0.192.in-addr.arpa.              |
+    | project_id  | cc5ab848dbe7462e9c7603d54a9af90f     |
+    | records     | 1.1-3.2.0.192.in-addr.arpa.          |
+    | status      | PENDING                              |
+    | ttl         | None                                 |
+    | type        | CNAME                                |
+    | updated_at  | None                                 |
+    | version     | 1                                    |
+    | zone_id     | bbdf0e8f-8d73-4659-ae62-f59e95a31cd7 |
+    | zone_name   | 2.0.192.in-addr.arpa.                |
+    +-------------+--------------------------------------+
+
+Finally, members of the `Demo` project can now create the PTR records for the
+delegates IP addresses. In this example the administrator will create the first
+record on behalf of the `Demo` project.
+
+.. code-block:: console
+
+    $ openstack recordset create --sudo-project-id 9284a20339184a9bb299386c380211c7 --record www.example.com. --type PTR 1-3.2.0.192.in-addr.arpa. 1.1-3.2.0.192.in-addr.arpa.
+    +-------------+--------------------------------------+
+    | Field       | Value                                |
+    +-------------+--------------------------------------+
+    | action      | CREATE                               |
+    | created_at  | 2022-09-09T20:08:17.000000           |
+    | description | None                                 |
+    | id          | cea3f3ce-687b-422c-a378-bdcfe382a159 |
+    | name        | 1.1-3.2.0.192.in-addr.arpa.          |
+    | project_id  | 9284a20339184a9bb299386c380211c7     |
+    | records     | www.example.com.                     |
+    | status      | PENDING                              |
+    | ttl         | None                                 |
+    | type        | PTR                                  |
+    | updated_at  | None                                 |
+    | version     | 1                                    |
+    | zone_id     | 2d353ed7-cb7f-4ff7-9c1e-54481304f4cb |
+    | zone_name   | 1-3.2.0.192.in-addr.arpa.            |
+    +-------------+--------------------------------------+
+
+We can now use dig to query a recursive resolver to verify the delegation:
+
+.. code-block:: console
+
+    $ dig -x 192.0.2.1 @198.51.100.5
+
+    ; <<>> DiG 9.16.32-RH <<>> -x 192.0.2.1 @198.51.100.5
+    ;; global options: +cmd
+    ;; Got answer:
+    ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 16209
+    ;; flags: qr aa rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+    ;; OPT PSEUDOSECTION:
+    ; EDNS: version: 0, flags:; udp: 4096
+    ; COOKIE: a415d9b43dcef11c01000000631ba068973cbfbf5b765032 (good)
+    ;; QUESTION SECTION:
+    ;1.2.0.192.in-addr.arpa.		IN	PTR
+
+    ;; ANSWER SECTION:
+    1.2.0.192.in-addr.arpa.	3600	IN	CNAME	1.1-3.2.0.192.in-addr.arpa.
+    1.1-3.2.0.192.in-addr.arpa. 3600 IN	PTR	www.example.com.
+
+    ;; Query time: 0 msec
+    ;; SERVER: 198.51.100.5#53(198.51.100.5)
+    ;; WHEN: Fri Sep 09 13:22:00 PDT 2022
+    ;; MSG SIZE  rcvd: 149
+
+.. note::
+
+    Your resolver or DNS server settings (such as allow recursion and/or
+    minimal responses) may cause dig to only display the CNAME and not resolve
+    the PTR record in the same request.
