@@ -71,6 +71,9 @@ function configure_designate {
 
     # Central Configuration
     iniset $DESIGNATE_CONF service:central workers $API_WORKERS
+    if [[ -n "$SCHEDULER_FILTERS" ]]; then
+        iniset $DESIGNATE_CONF service:central scheduler_filters $SCHEDULER_FILTERS
+    fi
 
     # mDNS Configuration
     iniset $DESIGNATE_CONF service:mdns listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT_MDNS}
@@ -205,6 +208,27 @@ function create_designate_pool_configuration {
     # Allow Backends to do backend specific tasks
     if function_exists create_designate_pool_configuration_backend; then
         create_designate_pool_configuration_backend
+    fi
+
+    # create the tsigkey for the secondary pool acct., if necessary.
+    if [ "$DESIGNATE_BACKEND_DRIVER" == "multipool-bind9" ] && \
+    [ -d $BIND2_CFG_DIR ] && [ -f $BIND2_TSIGKEY_FILE ]; then
+        # parse the data from the bind-2/named.conf.tsigkeys file,
+        # which was created during the init_designate_backend section.
+        NAME=`cat $BIND2_TSIGKEY_FILE | grep 'key' | \
+            awk '{split($0, a, " "); print a[2];}' | \
+            sed -e 's/^"//' -e 's/"$//'| \
+            awk '{split($0, a, "{"); print a[1];}'`
+        ALGORITHM=`cat $BIND2_TSIGKEY_FILE | grep 'algorithm' | \
+            awk '{split($0, a, " "); print a[2];}' | \
+            sed -r 's/(.*);/\1/'`
+        SECRET=`cat $BIND2_TSIGKEY_FILE | grep 'secret' | \
+            awk '{split($0, a, " "); print a[2];}' | \
+            sed -r 's/(.*);/\1/' | sed -e 's/^"//' -e 's/"$//'`
+        RESOURCE_ID=$(sudo mysql -u root -p$DATABASE_PASSWORD designate -N -e "select id from pools where name = 'secondary_pool';")
+
+        # create the openstack
+        openstack tsigkey create --name $NAME --algorithm $ALGORITHM --secret $SECRET --scope POOL --resource-id $RESOURCE_ID
     fi
 }
 

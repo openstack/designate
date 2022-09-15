@@ -19,6 +19,7 @@ from oslo_log import log as logging
 import oslo_messaging
 
 from designate.central import service
+from designate import exceptions
 from designate.manage import base
 from designate.manage import pool
 from designate.tests import base_fixtures
@@ -60,7 +61,7 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
         pool_id = self.central_service.find_pool(
             self.admin_context, {'name': 'default'}).id
 
-        self.command.show_config(pool_id)
+        self.command.show_config(pool_id, all_pools=False)
 
         self.print_result.assert_called_once()
         self.assertIn('Pool Configuration', self.command.output_message[1])
@@ -75,7 +76,7 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
         pool_id = self.central_service.find_pool(
             self.admin_context, {'name': 'default'}).id
 
-        self.command.show_config(pool_id)
+        self.command.show_config(pool_id, all_pools=False)
 
         self.print_result.assert_called_once()
         self.assertIn('Pool Configuration', self.command.output_message[1])
@@ -88,7 +89,8 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
     def test_show_config_rpc_timeout(self, mock_find_pool):
         self.assertRaises(
             SystemExit,
-            self.command.show_config, '5421ca70-f1b7-4edc-9e01-b604011a262a'
+            self.command.show_config, '5421ca70-f1b7-4edc-9e01-b604011a262a',
+            all_pools=False
         )
 
         mock_find_pool.assert_called_once()
@@ -96,7 +98,8 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
     def test_show_config_pool_not_found(self):
         self.assertRaises(
             SystemExit,
-            self.command.show_config, '5421ca70-f1b7-4edc-9e01-b604011a262a'
+            self.command.show_config, '5421ca70-f1b7-4edc-9e01-b604011a262a',
+            all_pools=False
         )
         self.assertIn(
             'Pool not found', ''.join(self.command.output_message)
@@ -105,7 +108,7 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
     def test_show_config_invalid_uuid(self):
         self.assertRaises(
             SystemExit,
-            self.command.show_config, 'None'
+            self.command.show_config, 'None', all_pools=False
         )
         self.print_result.assert_called_once()
         self.assertIn(
@@ -115,10 +118,38 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
     def test_show_config_empty(self):
         self.assertRaises(
             SystemExit,
-            self.command.show_config, 'a36bb018-9584-420c-acc6-2b5cf89714ad'
+            self.command.show_config, 'a36bb018-9584-420c-acc6-2b5cf89714ad',
+            all_pools=False
         )
         self.print_result.assert_called_once()
         self.assertIn('Pool not found', ''.join(self.command.output_message))
+
+    def test_show_config_multiple_pools(self):
+        self.command._setup()
+        self.command._create_pool(get_pools(name='multiple-pools.yaml')[0])
+        self.command._create_pool(get_pools(name='multiple-pools.yaml')[1])
+
+        # Calling show_config --all_pools without specifying pool_id
+        self.command.show_config(None, all_pools=True)
+
+        self.print_result.assert_called_once()
+
+        pools = self.central_service.find_pools(self.admin_context, {})
+        self.assertIn('Pool Configuration', self.command.output_message[1])
+        for p in pools:
+            self.assertIn(p.id, ''.join(self.command.output_message))
+            self.assertIn(p.description,
+                          ''.join(self.command.output_message))
+
+        # Calling show_config --all_pools with pool_id
+        # (should ignore the pool_id)
+        self.command.show_config('a36bb018-9584-420c-acc6-2b5cf89714ad',
+                                 all_pools=True)
+        for p in pools:
+            self.assertEqual(2, sum(
+                p.id in s for s in self.command.output_message))
+            self.assertEqual(2, sum(
+                p.description in s for s in self.command.output_message))
 
     def test_update(self):
         self.command.update(
@@ -169,6 +200,32 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
 
         pools = self.central_service.find_pools(self.admin_context, {})
         self.assertEqual(2, len(pools))
+
+    def test_update_multiple_pools_name(self):
+        self.command.update(
+            get_pools_path('pools.yaml'), delete=False, dry_run=False
+        )
+
+        pools = self.central_service.find_pools(self.admin_context, {})
+        self.assertEqual(1, len(pools))
+
+        # Updating an existing pool (same name) to a different id should fail
+        self.assertRaises(
+            exceptions.DuplicatePool,
+            self.command.update,
+            get_pools_path('sample_output.yaml'), delete=False, dry_run=False
+        )
+
+        pools = self.central_service.find_pools(self.admin_context, {})
+        self.assertEqual(1, len(pools))
+
+        # Updating Pools with different name will only add pools
+        self.command.update(
+            get_pools_path('multiple-pools.yaml'), delete=False, dry_run=False
+        )
+
+        pools = self.central_service.find_pools(self.admin_context, {})
+        self.assertEqual(3, len(pools))
 
     @mock.patch.object(service.Service, 'find_pool',
                        side_effect=oslo_messaging.MessagingTimeout())

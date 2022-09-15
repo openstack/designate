@@ -169,6 +169,50 @@ managed by designate as part of the default pool.
 In the ``AUTHORITY`` section, the numeric value between the name and `IN` is
 the TTL, which has updated to the new value of 3000.
 
+Multiple Pools Zone Creation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When Multipools is configured, if you want to create a zone and attach it to a
+different pool than the default one, you must indicate to which pool your zone
+will be attached to. This is done via the attributes options during the zone
+creation.
+
+See the following example:
+
+  .. code-block:: console
+
+    $ openstack zone create --email dnsmaster@example.com example.com. --attributes pool_level:secondary
+
+    +----------------+--------------------------------------+
+    | Field          | Value                                |
+    +----------------+--------------------------------------+
+    | action         | CREATE                               |
+    | attributes     | pool_level:secondary                 |
+    |                |                                      |
+    | created_at     | 2023-01-24T18:30:45.000000           |
+    | description    | None                                 |
+    | email          | dnsmaster@example.com                |
+    | id             | d106e7b0-9973-41a1-b3db-0fb34b6d952c |
+    | masters        |                                      |
+    | name           | example.com.                         |
+    | pool_id        | 10cec123-43f0-4b60-98a8-1204dd826c67 |
+    | project_id     | 5160768b59524fd283a4fa82d7327644     |
+    | serial         | 1674585045                           |
+    | status         | PENDING                              |
+    | transferred_at | None                                 |
+    | ttl            | 3600                                 |
+    | type           | PRIMARY                              |
+    | updated_at     | None                                 |
+    | version        | 1                                    |
+    +----------------+--------------------------------------+
+
+    $ openstack zone list
+    +--------------------------------------+---------------+---------+------------+--------+--------+
+    | id                                   | name          | type    |     serial | status | action |
+    +--------------------------------------+---------------+---------+------------+--------+--------+
+    | d106e7b0-9973-41a1-b3db-0fb34b6d952c | example.com.  | PRIMARY | 1674585045 | ACTIVE | NONE   |
+    +--------------------------------------+---------------+---------+------------+--------+--------+
+
+
 Deleting a zone
 ---------------
 

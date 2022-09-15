@@ -17,4 +17,11 @@ repository.  See contrib/vagrant to create a vagrant VM.
      [[local|localrc]]
      enable_plugin designate https://opendev.org/openstack/designate
 
+   **Note:** Running with a multipool option:
+   Perform the above step, and in addition set the backend driver and
+   scheduler filters::
+
+    SCHEDULER_FILTERS=attribute,pool_id_attributes,in_doubt_default_pool
+    DESIGNATE_BACKEND_DRIVER=multipool-bind9
+
 3. run ``stack.sh``
