@@ -18,6 +18,7 @@ from unittest import mock
 import dns
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+from oslo_messaging import conffixture as messaging_fixture
 import oslotest.base
 
 from designate import exceptions
@@ -39,6 +40,11 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         self.storage = mock.Mock()
         self.tg = mock.Mock()
         self.handler = handler.RequestHandler(self.storage, self.tg)
+        self.messaging_conf = messaging_fixture.ConfFixture(CONF)
+        self.messaging_conf.transport_url = 'fake:/'
+        self.messaging_conf.response_timeout = 5
+        self.useFixture(self.messaging_conf)
+        self.useFixture(fixtures.RPCFixture(CONF))
 
     def test_worker_api(self):
         self.assertIsNone(self.handler._worker_api)
