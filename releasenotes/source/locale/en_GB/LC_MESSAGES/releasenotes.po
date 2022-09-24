@@ -8,11 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-14 16:16+0000\n"
+"POT-Creation-Date: 2022-09-21 06:24+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2022-09-15 08:53+0000\n"
+"PO-Revision-Date: 2022-09-24 01:01+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -37,8 +37,8 @@ msgstr "11.0.0"
 msgid "11.0.2"
 msgstr "11.0.2"
 
-msgid "11.0.2-2"
-msgstr "11.0.2-2"
+msgid "11.0.2-3"
+msgstr "11.0.2-3"
 
 msgid "12.0.0"
 msgstr "12.0.0"
@@ -46,8 +46,8 @@ msgstr "12.0.0"
 msgid "12.1.0"
 msgstr "12.1.0"
 
-msgid "12.1.0-2"
-msgstr "12.1.0-2"
+msgid "12.1.0-4"
+msgstr "12.1.0-4"
 
 msgid "13.0.0"
 msgstr "13.0.0"
@@ -55,20 +55,20 @@ msgstr "13.0.0"
 msgid "13.0.1"
 msgstr "13.0.1"
 
-msgid "13.0.1-2"
-msgstr "13.0.1-2"
+msgid "13.0.1-4"
+msgstr "13.0.1-4"
 
 msgid "14.0.0"
 msgstr "14.0.0"
 
-msgid "14.0.0-82"
-msgstr "14.0.0-82"
-
 msgid "14.0.1"
 msgstr "14.0.1"
 
-msgid "14.0.1-2"
-msgstr "14.0.1-2"
+msgid "14.0.1-5"
+msgstr "14.0.1-5"
+
+msgid "15.0.0.0rc1"
+msgstr "15.0.0.0rc1"
 
 msgid "2.0.0"
 msgstr "2.0.0"
@@ -1126,6 +1126,9 @@ msgstr "Xena Series Release Notes"
 
 msgid "Yoga Series Release Notes"
 msgstr "Yoga Series Release Notes"
+
+msgid "Zed Series Release Notes"
+msgstr "Zed Series Release Notes"
 
 msgid "`LP#1971856 <https://bugs.launchpad.net/designate/+bug/1971856>`__"
 msgstr "`LP#1971856 <https://bugs.launchpad.net/designate/+bug/1971856>`__"
