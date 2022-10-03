@@ -115,6 +115,7 @@ function configure_designate_backend {
         rndc_port: $DESIGNATE_SERVICE_PORT_RNDC
         rndc_config_file: $BIND_CFG_DIR/rndc.conf
         rndc_key_file: $BIND_CFG_DIR/rndc.key
+        clean_zonefile: true
 EOF
 
     sudo chown $STACK_USER $BIND_CFG_DIR
