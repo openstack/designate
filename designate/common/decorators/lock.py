@@ -52,7 +52,7 @@ def extract_zone_id(args, kwargs):
         for arg in itertools.chain(args, kwargs.values()):
             if not isinstance(arg, objects.DesignateObject):
                 continue
-            if isinstance(arg, objects.Zone):
+            elif isinstance(arg, objects.Zone):
                 zone_id = arg.id
                 if zone_id:
                     break
@@ -68,8 +68,6 @@ def extract_zone_id(args, kwargs):
         arg = args[1]
         if isinstance(arg, str):
             zone_id = arg
-        elif isinstance(zone_id, objects.Zone):
-            zone_id = arg.id
 
     return zone_id
 
