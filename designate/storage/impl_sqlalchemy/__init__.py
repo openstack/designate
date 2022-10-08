@@ -180,7 +180,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return tenant_list
 
     def get_tenant(self, context, tenant_id):
-        # get list list & count of all zones owned by given tenant_id
+        # get list & count of all zones owned by given tenant_id
         query = select([tables.zones.c.name])
         query = self._apply_tenant_criteria(context, tables.zones, query)
         query = self._apply_deleted_criteria(context, tables.zones, query)
@@ -232,7 +232,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 zone.masters = objects.ZoneMasterList()
 
             zone.attributes = self._find_zone_attributes(
-                context, {'zone_id': zone.id, "key": "!master"})
+                context, {'zone_id': zone.id, 'key': '!master'})
 
             zone.obj_reset_changes(['masters', 'attributes'])
 
@@ -247,12 +247,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 _load_relations(d)
 
         if one:
-            LOG.debug("Fetched zone %s", zones)
+            LOG.debug('Fetched zone %s', zones)
         return zones
 
     def create_zone(self, context, zone):
         # Patch in the reverse_name column
-        extra_values = {"reverse_name": zone.name[::-1]}
+        extra_values = {'reverse_name': zone.name[::-1]}
 
         # Don't handle recordsets for now
         zone = self._create(
@@ -295,7 +295,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tenant_id_changed = True
 
         # Don't handle recordsets for now
-        LOG.debug("Updating zone %s", zone)
+        LOG.debug('Updating zone %s', zone)
         updated_zone = self._update(
             context, tables.zones, zone, exceptions.DuplicateZone,
             exceptions.ZoneNotFound,
@@ -407,16 +407,17 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                     self.delete_recordset(context, i)
 
         if tenant_id_changed:
-            recordsets_query = tables.recordsets.update().\
-                where(tables.recordsets.c.zone_id == zone.id)\
-                .values({'tenant_id': zone.tenant_id})
-
-            records_query = tables.records.update().\
-                where(tables.records.c.zone_id == zone.id).\
+            self.session.execute(
+                tables.recordsets.update().
+                where(tables.recordsets.c.zone_id == zone.id).
                 values({'tenant_id': zone.tenant_id})
+            )
 
-            self.session.execute(records_query)
-            self.session.execute(recordsets_query)
+            self.session.execute(
+                tables.records.update().
+                where(tables.records.c.zone_id == zone.id).
+                values({'tenant_id': zone.tenant_id})
+            )
 
         return updated_zone
 
@@ -444,8 +445,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             current = zones_by_id[current.parent_zone_id]
             max_steps -= 1
             if max_steps == 0:
-                raise exceptions.IllegalParentZone("Loop detected in the"
-                                                   " zone hierarchy")
+                raise exceptions.IllegalParentZone('Loop detected in the'
+                                                   ' zone hierarchy')
 
         return current.parent_zone_id
 
@@ -464,10 +465,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             limit=limit,
         )
         if not zones:
-            LOG.info("No zones to be purged")
+            LOG.info('No zones to be purged')
             return
 
-        LOG.debug("Purging %d zones", len(zones))
+        LOG.debug('Purging %d zones', len(zones))
 
         zones_by_id = {z.id: z for z in zones}
 
@@ -475,16 +476,18 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
             # Reparent child zones, if any.
             surviving_parent_id = self._walk_up_zones(zone, zones_by_id)
-            query = tables.zones.update().\
-                where(tables.zones.c.parent_zone_id == zone.id).\
+            query = (
+                tables.zones.update().
+                where(tables.zones.c.parent_zone_id == zone.id).
                 values(parent_zone_id=surviving_parent_id)
+            )
 
             resultproxy = self.session.execute(query)
-            LOG.debug("%d child zones updated", resultproxy.rowcount)
+            LOG.debug('%d child zones updated', resultproxy.rowcount)
 
             self.purge_zone(context, zone)
 
-        LOG.info("Purged %d zones", len(zones))
+        LOG.info('Purged %d zones', len(zones))
         return len(zones)
 
     def count_zones(self, context, criterion=None):
@@ -525,9 +528,6 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                                           limit=limit, sort_key=sort_key,
                                           sort_dir=sort_dir)
 
-    def find_zone_attribute(self, context, criterion):
-        return self._find_zone_attributes(context, criterion, one=True)
-
     def update_zone_attribute(self, context, zone_attribute):
         return self._update(context, tables.zone_attributes,
                             zone_attribute,
@@ -554,26 +554,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                           marker, limit, sort_key, sort_dir)
 
     def create_zone_master(self, context, zone_id, zone_master):
-
         zone_master.zone_id = zone_id
         return self._create(tables.zone_masters, zone_master,
                             exceptions.DuplicateZoneMaster)
 
-    def get_zone_masters(self, context, zone_attribute_id):
-        return self._find_zone_masters(
-            context, {'id': zone_attribute_id}, one=True)
-
-    def find_zone_masters(self, context, criterion=None, marker=None,
-                          limit=None, sort_key=None, sort_dir=None):
-        return self._find_zone_masters(context, criterion, marker=marker,
-                                       limit=limit, sort_key=sort_key,
-                                       sort_dir=sort_dir)
-
-    def find_zone_master(self, context, criterion):
-        return self._find_zone_master(context, criterion, one=True)
-
     def update_zone_master(self, context, zone_master):
-
         return self._update(context, tables.zone_masters,
                             zone_master,
                             exceptions.DuplicateZoneMaster,
@@ -596,8 +581,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         # Check to see if the criterion can use the reverse_name column
         criterion = self._rname_check(criterion)
 
-        if criterion is not None \
-                and not criterion.get('zones_deleted', True):
+        if criterion is not None and not criterion.get('zones_deleted', True):
             # remove 'zones_deleted' from the criterion, as _apply_criterion
             # assumes each key in criterion to be a column name.
             del criterion['zones_deleted']
@@ -606,8 +590,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             rjoin = tables.recordsets.join(
                 tables.zones,
                 tables.recordsets.c.zone_id == tables.zones.c.id)
-            query = select([tables.recordsets]).select_from(rjoin).\
+            query = (
+                select([tables.recordsets]).select_from(rjoin).
                 where(tables.zones.c.deleted == '0')
+            )
 
             recordsets = self._find(
                 context, tables.recordsets, objects.RecordSet,
@@ -640,10 +626,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.recordsets,
             tables.records.c.recordset_id == tables.recordsets.c.id)
 
-        query = select([tables.recordsets.c.id, tables.recordsets.c.type,
-                        tables.recordsets.c.ttl, tables.recordsets.c.name,
-                        tables.records.c.data, tables.records.c.action]).\
+        query = (
+            select([tables.recordsets.c.id, tables.recordsets.c.type,
+                    tables.recordsets.c.ttl, tables.recordsets.c.name,
+                    tables.records.c.data, tables.records.c.action]).
             select_from(rjoin).where(tables.records.c.action != 'DELETE')
+        )
 
         query = query.order_by(tables.recordsets.c.id)
 
@@ -660,7 +648,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         recordset.zone_id = zone_id
 
         # Patch in the reverse_name column
-        extra_values = {"reverse_name": recordset.name[::-1]}
+        extra_values = {'reverse_name': recordset.name[::-1]}
 
         recordset = self._create(
             tables.recordsets, recordset, exceptions.DuplicateRecordSet,
@@ -686,9 +674,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.recordsets,
             tables.records.c.recordset_id == tables.recordsets.c.id)
 
-        query = select([tables.recordsets.c.name, tables.recordsets.c.ttl,
-                        tables.recordsets.c.type, tables.records.c.data]).\
+        query = (
+            select([tables.recordsets.c.name, tables.recordsets.c.ttl,
+                    tables.recordsets.c.type, tables.records.c.data]).
             select_from(rjoin)
+        )
 
         query = query.order_by(tables.recordsets.c.created_at)
 
@@ -769,9 +759,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.zones,
             tables.recordsets.c.zone_id == tables.zones.c.id)
 
-        query = select([func.count(tables.recordsets.c.id)]).\
-            select_from(rjoin).\
+        query = (
+            select([func.count(tables.recordsets.c.id)]).
+            select_from(rjoin).
             where(tables.zones.c.deleted == '0')
+        )
 
         query = self._apply_criterion(tables.recordsets, query, criterion)
         query = self._apply_tenant_criteria(context, tables.recordsets, query)
@@ -798,7 +790,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         Calculates the hash of the record, used to ensure record uniqueness.
         """
         md5sum = md5(usedforsecurity=False)
-        md5sum.update(("%s:%s" % (record.recordset_id,
+        md5sum.update(('%s:%s' % (record.recordset_id,
                                   record.data)).encode('utf-8'))
 
         return md5sum.hexdigest()
@@ -847,9 +839,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.zones,
             tables.records.c.zone_id == tables.zones.c.id)
 
-        query = select([func.count(tables.records.c.id)]).\
-            select_from(rjoin).\
+        query = (
+            select([func.count(tables.records.c.id)]).
+            select_from(rjoin).
             where(tables.zones.c.deleted == '0')
+        )
 
         query = self._apply_criterion(tables.records, query, criterion)
         query = self._apply_tenant_criteria(context, tables.records, query)
@@ -1067,19 +1061,6 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return self._create(tables.pool_ns_records, pool_ns_record,
                             exceptions.DuplicatePoolNsRecord)
 
-    def get_pool_ns_record(self, context, pool_ns_record_id):
-        return self._find_pool_ns_records(
-            context, {'id': pool_ns_record_id}, one=True)
-
-    def find_pool_ns_records(self, context, criterion=None, marker=None,
-                             limit=None, sort_key=None, sort_dir=None):
-        return self._find_pool_ns_records(context, criterion, marker=marker,
-                                          limit=limit, sort_key=sort_key,
-                                          sort_dir=sort_dir)
-
-    def find_pool_ns_record(self, context, criterion):
-        return self._find_pool_ns_records(context, criterion, one=True)
-
     def update_pool_ns_record(self, context, pool_ns_record):
         return self._update(context, tables.pool_ns_records, pool_ns_record,
                             exceptions.DuplicatePoolNsRecord,
@@ -1116,8 +1097,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def find_pool_nameservers(self, context, criterion=None, marker=None,
                    limit=None, sort_key=None, sort_dir=None):
         return self._find_pool_nameservers(context, criterion, marker=marker,
-                                          limit=limit, sort_key=sort_key,
-                                          sort_dir=sort_dir)
+                                           limit=limit, sort_key=sort_key,
+                                           sort_dir=sort_dir)
 
     def find_pool_nameserver(self, context, criterion):
         return self._find_pool_nameservers(context, criterion, one=True)
@@ -1195,8 +1176,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def find_pool_targets(self, context, criterion=None, marker=None,
                           limit=None, sort_key=None, sort_dir=None):
         return self._find_pool_targets(context, criterion, marker=marker,
-                                limit=limit, sort_key=sort_key,
-                                sort_dir=sort_dir)
+                                       limit=limit, sort_key=sort_key,
+                                       sort_dir=sort_dir)
 
     def find_pool_target(self, context, criterion):
         return self._find_pool_targets(context, criterion, one=True)
@@ -1208,7 +1189,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                                   'targets', 'also_notifies')
 
         # Gather the pool ID's we have
-        finder = getattr(self, "_find_pool_%s" % attribute_name)
+        finder = getattr(self, '_find_pool_%s' % attribute_name)
         have_items = set()
         for r in finder(context, {'pool_id': pool.id}):
             have_items.add(r.id)
@@ -1245,17 +1226,17 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             singular = attribute_name[:-1]
 
         # Delete items
-        fn = getattr(self, "delete_pool_%s" % singular)
+        fn = getattr(self, 'delete_pool_%s' % singular)
         for item_id in have_items - keep_items:
             fn(context, item_id)
 
         # Update items
-        fn = getattr(self, "update_pool_%s" % singular)
+        fn = getattr(self, 'update_pool_%s' % singular)
         for item in update_items:
             fn(context, item)
 
         # Create items
-        fn = getattr(self, "create_pool_%s" % singular)
+        fn = getattr(self, 'create_pool_%s' % singular)
         for item in create_items:
             fn(context, pool.id, item)
 
@@ -1265,7 +1246,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         assert attribute_name in ('options', 'masters')
 
         # Gather the pool ID's we have
-        finder = getattr(self, "_find_pool_target_%s" % attribute_name)
+        finder = getattr(self, '_find_pool_target_%s' % attribute_name)
         have_items = set()
         for r in finder(context, {'pool_target_id': pool_target.id}):
             have_items.add(r.id)
@@ -1299,17 +1280,17 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         singular = attribute_name[:-1]
 
         # Delete items
-        fn = getattr(self, "delete_pool_target_%s" % singular)
+        fn = getattr(self, 'delete_pool_target_%s' % singular)
         for item_id in have_items - keep_items:
             fn(context, item_id)
 
         # Update items
-        fn = getattr(self, "update_pool_target_%s" % singular)
+        fn = getattr(self, 'update_pool_target_%s' % singular)
         for item in update_items:
             fn(context, item)
 
         # Create items
-        fn = getattr(self, "create_pool_target_%s" % singular)
+        fn = getattr(self, 'create_pool_target_%s' % singular)
         for item in create_items:
             fn(context, pool_target.id, item)
 
@@ -1354,19 +1335,6 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return self._create(tables.pool_target_options, pool_target_option,
                             exceptions.DuplicatePoolTargetOption)
 
-    def get_pool_target_option(self, context, pool_target_option_id):
-        return self._find_pool_target_options(
-            context, {'id': pool_target_option_id}, one=True)
-
-    def find_pool_target_options(self, context, criterion=None, marker=None,
-                                 limit=None, sort_key=None, sort_dir=None):
-        return self._find_pool_target_options(
-            context, criterion, marker=marker, limit=limit, sort_key=sort_key,
-            sort_dir=sort_dir)
-
-    def find_pool_target_option(self, context, criterion):
-        return self._find_pool_target_options(context, criterion, one=True)
-
     def update_pool_target_option(self, context, pool_target_option):
         return self._update(
             context, tables.pool_target_options, pool_target_option,
@@ -1398,19 +1366,6 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         return self._create(tables.pool_target_masters, pool_target_master,
                             exceptions.DuplicatePoolTargetMaster)
-
-    def get_pool_target_master(self, context, pool_target_master_id):
-        return self._find_pool_target_masters(
-            context, {'id': pool_target_master_id}, one=True)
-
-    def find_pool_target_masters(self, context, criterion=None, marker=None,
-                                 limit=None, sort_key=None, sort_dir=None):
-        return self._find_pool_target_masters(
-            context, criterion, marker=marker, limit=limit, sort_key=sort_key,
-            sort_dir=sort_dir)
-
-    def find_pool_target_master(self, context, criterion):
-        return self._find_pool_target_masters(context, criterion, one=True)
 
     def update_pool_target_master(self, context, pool_target_master):
         return self._update(
@@ -1482,7 +1437,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.zone_transfer_requests.c.zone_id == tables.zones.c.id)
 
         query = select(
-            [table, tables.zones.c.name.label("zone_name")]
+            [table, tables.zones.c.name.label('zone_name')]
         ).select_from(ljoin)
 
         if not context.all_tenants:
@@ -1511,8 +1466,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def create_zone_transfer_request(self, context, zone_transfer_request):
 
         try:
-            criterion = {"zone_id": zone_transfer_request.zone_id,
-                         "status": "ACTIVE"}
+            criterion = {'zone_id': zone_transfer_request.zone_id,
+                         'status': 'ACTIVE'}
             self.find_zone_transfer_request(
                 context, criterion)
         except exceptions.ZoneTransferRequestNotFound:
@@ -1546,7 +1501,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def update_zone_transfer_request(self, context, zone_transfer_request):
 
-        zone_transfer_request.obj_reset_changes(('zone_name'))
+        zone_transfer_request.obj_reset_changes('zone_name')
 
         updated_zt_request = self._update(
             context,
@@ -1653,7 +1608,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     # Zone Import Methods
     def _find_zone_imports(self, context, criterion, one=False, marker=None,
-                   limit=None, sort_key=None, sort_dir=None):
+                           limit=None, sort_key=None, sort_dir=None):
         if not criterion:
             criterion = {}
         criterion['task_type'] = 'IMPORT'
@@ -1674,13 +1629,13 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def get_zone_import(self, context, zone_import_id):
         return self._find_zone_imports(context, {'id': zone_import_id},
-                                     one=True)
+                                       one=True)
 
     def find_zone_imports(self, context, criterion=None, marker=None,
                   limit=None, sort_key=None, sort_dir=None):
         return self._find_zone_imports(context, criterion, marker=marker,
-                               limit=limit, sort_key=sort_key,
-                               sort_dir=sort_dir)
+                                       limit=limit, sort_key=sort_key,
+                                       sort_dir=sort_dir)
 
     def find_zone_import(self, context, criterion):
         return self._find_zone_imports(context, criterion, one=True)
@@ -1693,13 +1648,13 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def delete_zone_import(self, context, zone_import_id):
         # Fetch the existing zone_import, we'll need to return it.
         zone_import = self._find_zone_imports(context, {'id': zone_import_id},
-                                one=True)
+                                              one=True)
         return self._delete(context, tables.zone_tasks, zone_import,
-                    exceptions.ZoneImportNotFound)
+                            exceptions.ZoneImportNotFound)
 
     # Zone Export Methods
     def _find_zone_exports(self, context, criterion, one=False, marker=None,
-                   limit=None, sort_key=None, sort_dir=None):
+                           limit=None, sort_key=None, sort_dir=None):
         if not criterion:
             criterion = {}
         criterion['task_type'] = 'EXPORT'
@@ -1719,13 +1674,13 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def get_zone_export(self, context, zone_export_id):
         return self._find_zone_exports(context, {'id': zone_export_id},
-                                     one=True)
+                                       one=True)
 
     def find_zone_exports(self, context, criterion=None, marker=None,
-                  limit=None, sort_key=None, sort_dir=None):
+                          limit=None, sort_key=None, sort_dir=None):
         return self._find_zone_exports(context, criterion, marker=marker,
-                               limit=limit, sort_key=sort_key,
-                               sort_dir=sort_dir)
+                                       limit=limit, sort_key=sort_key,
+                                       sort_dir=sort_dir)
 
     def find_zone_export(self, context, criterion):
         return self._find_zone_exports(context, criterion, one=True)
@@ -1738,9 +1693,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def delete_zone_export(self, context, zone_export_id):
         # Fetch the existing zone_export, we'll need to return it.
         zone_export = self._find_zone_exports(context, {'id': zone_export_id},
-                                one=True)
+                                              one=True)
         return self._delete(context, tables.zone_tasks, zone_export,
-                    exceptions.ZoneExportNotFound)
+                            exceptions.ZoneExportNotFound)
 
     def count_zone_tasks(self, context, criterion=None):
         query = select([func.count(tables.zone_tasks.c.id)])
@@ -1788,6 +1743,6 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     # Reverse Name utils
     def _rname_check(self, criterion):
         # If the criterion has 'name' in it, switch it out for reverse_name
-        if criterion is not None and criterion.get('name', "").startswith('*'):
+        if criterion is not None and criterion.get('name', '').startswith('*'):
             criterion['reverse_name'] = criterion.pop('name')[::-1]
         return criterion

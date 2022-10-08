@@ -397,6 +397,21 @@ class StorageTestCase(object):
         self.assertEqual(tsig['secret'], actual[0]['secret'])
         self.assertEqual(tsig['scope'], actual[0]['scope'])
 
+    def test_find_tsigkey(self):
+        # Create a single tsigkey
+        tsig = self.create_tsigkey()
+
+        actual = self.storage.find_tsigkeys(self.admin_context)
+        self.assertEqual(1, len(actual))
+        name = actual[0].name
+
+        actual = self.storage.find_tsigkey(self.admin_context,
+                                           {'name': name})
+        self.assertEqual(tsig['name'], actual['name'])
+        self.assertEqual(tsig['algorithm'], actual['algorithm'])
+        self.assertEqual(tsig['secret'], actual['secret'])
+        self.assertEqual(tsig['scope'], actual['scope'])
+
     def test_find_tsigkeys_paging(self):
         # Create 10 TSIG Keys
         created = [self.create_tsigkey(name='tsig-%s' % i)
