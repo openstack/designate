@@ -1544,7 +1544,7 @@ class StorageTestCase(object):
     def test_create_tld(self):
         values = {
             'name': 'com',
-            'description': u'This is a comment.'
+            'description': 'This is a comment.'
         }
 
         result = self.storage.create_tld(
@@ -1869,8 +1869,8 @@ class StorageTestCase(object):
 
     def test_create_pool_with_all_relations(self):
         values = {
-            'name': u'Pool',
-            'description': u'Pool description',
+            'name': 'Pool',
+            'description': 'Pool description',
             'attributes': [{'key': 'scope', 'value': 'public'}],
             'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
             'nameservers': [{'host': "192.0.2.1", 'port': 53}],
@@ -2029,8 +2029,8 @@ class StorageTestCase(object):
 
     def test_update_pool_with_all_relations(self):
         values = {
-            'name': u'Pool-A',
-            'description': u'Pool-A description',
+            'name': 'Pool-A',
+            'description': 'Pool-A description',
             'attributes': [{'key': 'scope', 'value': 'public'}],
             'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
             'nameservers': [{'host': "192.0.2.1", 'port': 53}],
@@ -2054,8 +2054,8 @@ class StorageTestCase(object):
         # we trigger an update rather than a create.
         values = {
             'id': created_pool_id,
-            'name': u'Pool-B',
-            'description': u'Pool-B description',
+            'name': 'Pool-B',
+            'description': 'Pool-B description',
             'attributes': [{'key': 'scope', 'value': 'private'}],
             'ns_records': [{'priority': 1, 'hostname': 'ns2.example.org.'}],
             'nameservers': [{'host': "192.0.2.5", 'port': 53}],
@@ -2534,7 +2534,7 @@ class StorageTestCase(object):
         pool = self.create_pool(fixture=0)
 
         # Create 10 PoolTargets
-        created = [self.create_pool_target(pool, description=u'Target %d' % i)
+        created = [self.create_pool_target(pool, description='Target %d' % i)
                    for i in range(10)]
 
         # Ensure we can page through the results.
@@ -2546,9 +2546,9 @@ class StorageTestCase(object):
 
         # Create two pool_targets
         pool_target_one = self.create_pool_target(
-            pool, fixture=0, description=u'One')
+            pool, fixture=0, description='One')
         pool_target_two = self.create_pool_target(
-            pool, fixture=1, description=u'Two')
+            pool, fixture=1, description='Two')
 
         # Verify pool_target_one
         criterion = dict(description=pool_target_one['description'])
@@ -2588,9 +2588,9 @@ class StorageTestCase(object):
 
         # Create two pool_targets
         pool_target_one = self.create_pool_target(
-            pool, fixture=0, description=u'One')
+            pool, fixture=0, description='One')
         pool_target_two = self.create_pool_target(
-            pool, fixture=1, description=u'Two')
+            pool, fixture=1, description='Two')
 
         # Verify pool_target_one
         criterion = dict(description=pool_target_one['description'])
@@ -2622,16 +2622,16 @@ class StorageTestCase(object):
     def test_update_pool_target(self):
         pool = self.create_pool(fixture=0)
 
-        pool_target = self.create_pool_target(pool, description=u'One')
+        pool_target = self.create_pool_target(pool, description='One')
 
         # Update the pool_target
-        pool_target.description = u'Two'
+        pool_target.description = 'Two'
 
         pool_target = self.storage.update_pool_target(
             self.admin_context, pool_target)
 
         # Verify the new values
-        self.assertEqual(u'Two', pool_target.description)
+        self.assertEqual('Two', pool_target.description)
 
         # Ensure the version column was incremented
         self.assertEqual(2, pool_target.version)

@@ -30,27 +30,27 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
 
     def test_schema_table_names(self):
         table_names = [
-            u'blacklists',
-            u'pool_also_notifies',
-            u'pool_attributes',
-            u'pool_nameservers',
-            u'pool_ns_records',
-            u'pool_target_masters',
-            u'pool_target_options',
-            u'pool_targets',
-            u'pools',
-            u'quotas',
-            u'records',
-            u'recordsets',
-            u'service_statuses',
-            u'tlds',
-            u'tsigkeys',
-            u'zone_attributes',
-            u'zone_masters',
-            u'zone_tasks',
-            u'zone_transfer_accepts',
-            u'zone_transfer_requests',
-            u'zones'
+            'blacklists',
+            'pool_also_notifies',
+            'pool_attributes',
+            'pool_nameservers',
+            'pool_ns_records',
+            'pool_target_masters',
+            'pool_target_options',
+            'pool_targets',
+            'pools',
+            'quotas',
+            'records',
+            'recordsets',
+            'service_statuses',
+            'tlds',
+            'tsigkeys',
+            'zone_attributes',
+            'zone_masters',
+            'zone_tasks',
+            'zone_transfer_accepts',
+            'zone_transfer_requests',
+            'zones'
         ]
         inspector = self.storage.get_inspector()
 

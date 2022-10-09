@@ -78,7 +78,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
     @property
     def session(self):
         # NOTE: This uses a thread local store, allowing each greenthread to
-        #       have it's own session stored correctly. Without this, each
+        #       have its own session stored correctly. Without this, each
         #       greenthread may end up using a single global session, which
         #       leads to bad things happening.
 
@@ -101,51 +101,38 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
     @staticmethod
     def _apply_criterion(table, query, criterion):
-        if criterion is not None:
-            for name, value in criterion.items():
-                column = getattr(table.c, name)
+        if criterion is None:
+            return query
 
+        for name, value in criterion.items():
+            column = getattr(table.c, name)
+
+            if isinstance(value, str):
                 # Wildcard value: '%'
-                if isinstance(value, str) and '%' in value:
+                if '%' in value:
                     query = query.where(column.like(value))
-
-                elif (isinstance(value, str) and
-                        value.startswith('!')):
-                    queryval = value[1:]
-                    query = query.where(column != queryval)
-
-                elif (isinstance(value, str) and
-                        value.startswith('<=')):
-                    queryval = value[2:]
-                    query = query.where(column <= queryval)
-
-                elif (isinstance(value, str) and
-                        value.startswith('<')):
-                    queryval = value[1:]
-                    query = query.where(column < queryval)
-
-                elif (isinstance(value, str) and
-                        value.startswith('>=')):
-                    queryval = value[2:]
-                    query = query.where(column >= queryval)
-
-                elif (isinstance(value, str) and
-                        value.startswith('>')):
-                    queryval = value[1:]
-                    query = query.where(column > queryval)
-
-                elif (isinstance(value, str) and
-                        value.startswith('BETWEEN')):
-                    elements = [i.strip(" ") for i in
-                                value.split(" ", 1)[1].strip(" ").split(",")]
-                    query = query.where(between(
-                        column, elements[0], elements[1]))
-
-                elif isinstance(value, list):
-                    query = query.where(column.in_(value))
-
+                elif value.startswith('!'):
+                    query = query.where(column != value[1:])
+                elif value.startswith('<='):
+                    query = query.where(column <= value[2:])
+                elif value.startswith('<'):
+                    query = query.where(column < value[1:])
+                elif value.startswith('>='):
+                    query = query.where(column >= value[2:])
+                elif value.startswith('>'):
+                    query = query.where(column > value[1:])
+                elif value.startswith('BETWEEN'):
+                    elements = [i.strip(' ') for i in
+                                value.split(' ', 1)[1].strip(' ').split(',')]
+                    query = query.where(
+                        between(column, elements[0], elements[1])
+                    )
                 else:
                     query = query.where(column == value)
+            elif isinstance(value, list):
+                query = query.where(column.in_(value))
+            else:
+                query = query.where(column == value)
 
         return query
 
@@ -211,8 +198,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         try:
             resultproxy = self.session.execute(query, [dict(values)])
         except oslo_db_exception.DBDuplicateEntry:
-            msg = "Duplicate %s" % obj.obj_name()
-            raise exc_dup(msg)
+            raise exc_dup("Duplicate %s" % obj.obj_name())
 
         # Refetch the row, for generated columns etc
         query = select([table]).where(
@@ -247,8 +233,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
             results = resultproxy.fetchall()
 
             if len(results) != 1:
-                msg = "Could not find %s" % cls.obj_name()
-                raise exc_notfound(msg)
+                raise exc_notfound("Could not find %s" % cls.obj_name())
             else:
                 return _set_object_from_model(cls(), results[0])
         else:
@@ -300,13 +285,17 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                     records_table,
                     recordsets_table.c.id == records_table.c.recordset_id)
 
-        inner_q = select([recordsets_table.c.id,      # 0 - RS ID
-                          zones_table.c.name]         # 1 - ZONE NAME
-                         ).select_from(rzjoin).\
+        inner_q = (
+            select([recordsets_table.c.id,      # 0 - RS ID
+                    zones_table.c.name]).       # 1 - ZONE NAME
+            select_from(rzjoin).
             where(zones_table.c.deleted == '0')
+        )
 
-        count_q = select([func.count(distinct(recordsets_table.c.id))]).\
+        count_q = (
+            select([func.count(distinct(recordsets_table.c.id))]).
             select_from(rzjoin).where(zones_table.c.deleted == '0')
+        )
 
         if index_hint:
             inner_q = inner_q.with_hint(recordsets_table, index_hint,
@@ -507,7 +496,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                     current_rrset.records.append(rrdata)
 
             else:
-                # We've already got an rrset, add the rdata
+                # We've already got a rrset, add the rdata
                 if record[r_map['id']] is not None:
                     rrdata = objects.Record()
 
@@ -517,8 +506,8 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                     current_rrset.records.append(rrdata)
 
         # If the last record examined was a new rrset, or there is only 1 rrset
-        if len(rrsets) == 0 or \
-                (len(rrsets) != 0 and rrsets[-1] != current_rrset):
+        if (len(rrsets) == 0 or
+                (len(rrsets) != 0 and rrsets[-1] != current_rrset)):
             if current_rrset is not None:
                 rrsets.append(current_rrset)
 
@@ -539,9 +528,11 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
             for skip_value in skip_values:
                 values.pop(skip_value, None)
 
-        query = table.update()\
-                     .where(table.c.id == obj.id)\
-                     .values(**values)
+        query = (
+            table.update().
+            where(table.c.id == obj.id).
+            values(**values)
+        )
 
         query = self._apply_tenant_criteria(context, table, query)
         query = self._apply_deleted_criteria(context, table, query)
@@ -550,12 +541,10 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         try:
             resultproxy = self.session.execute(query)
         except oslo_db_exception.DBDuplicateEntry:
-            msg = "Duplicate %s" % obj.obj_name()
-            raise exc_dup(msg)
+            raise exc_dup("Duplicate %s" % obj.obj_name())
 
         if resultproxy.rowcount != 1:
-            msg = "Could not find %s" % obj.obj_name()
-            raise exc_notfound(msg)
+            raise exc_notfound("Could not find %s" % obj.obj_name())
 
         # Refetch the row, for generated columns etc
         query = select([table]).where(table.c.id == obj.id)
@@ -598,8 +587,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         resultproxy = self.session.execute(query)
 
         if resultproxy.rowcount != 1:
-            msg = "Could not find %s" % obj.obj_name()
-            raise exc_notfound(msg)
+            raise exc_notfound("Could not find %s" % obj.obj_name())
 
         # Refetch the row, for generated columns etc
         query = select([table]).where(table.c.id == obj.id)

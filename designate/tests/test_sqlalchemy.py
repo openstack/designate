@@ -37,79 +37,79 @@ class SQLAlchemyTestCase(TestCase):
         self.query = mock.Mock()
 
     def test_wildcard(self):
-        criterion = {"a": "%foo%"}
+        criterion = {'a': '%foo%'}
 
-        op = dummy_table.c.a.like("%foo")
+        op = dummy_table.c.a.like('%foo')
         with mock.patch.object(dummy_table.c.a, 'operate') as func:
             func.return_value = op
 
             base.SQLAlchemy._apply_criterion(
                 dummy_table, self.query, criterion)
-            func.assert_called_with(operators.like_op, "%foo%", escape=None)
+            func.assert_called_with(operators.like_op, '%foo%', escape=None)
             self.query.where.assert_called_with(op)
 
     def test_ne(self):
-        criterion = {"a": "!foo"}
+        criterion = {'a': '!foo'}
 
-        op = dummy_table.c.a != "foo"
+        op = dummy_table.c.a != 'foo'
         with mock.patch.object(dummy_table.c.a, 'operate') as func:
             func.return_value = op
 
             base.SQLAlchemy._apply_criterion(
                 dummy_table, self.query, criterion)
-            func.assert_called_with(operator.ne, "foo")
+            func.assert_called_with(operator.ne, 'foo')
             self.query.where.assert_called_with(op)
 
     def test_le(self):
-        criterion = {"a": "<=foo"}
+        criterion = {'a': '<=foo'}
 
-        op = dummy_table.c.a <= "foo"
+        op = dummy_table.c.a <= 'foo'
         with mock.patch.object(dummy_table.c.a, 'operate') as func:
             func.return_value = op
 
             base.SQLAlchemy._apply_criterion(
                 dummy_table, self.query, criterion)
-            func.assert_called_with(operator.le, "foo")
+            func.assert_called_with(operator.le, 'foo')
             self.query.where.assert_called_with(op)
 
     def test_lt(self):
-        criterion = {"a": "<foo"}
+        criterion = {'a': '<foo'}
 
-        op = dummy_table.c.a < "foo"
+        op = dummy_table.c.a < 'foo'
         with mock.patch.object(dummy_table.c.a, 'operate') as func:
             func.return_value = op
 
             base.SQLAlchemy._apply_criterion(
                 dummy_table, self.query, criterion)
-            func.assert_called_with(operator.lt, "foo")
+            func.assert_called_with(operator.lt, 'foo')
             self.query.where.assert_called_with(op)
 
     def test_ge(self):
-        criterion = {"a": ">=foo"}
+        criterion = {'a': '>=foo'}
 
-        op = dummy_table.c.a >= "foo"
+        op = dummy_table.c.a >= 'foo'
         with mock.patch.object(dummy_table.c.a, 'operate') as func:
             func.return_value = op
 
             base.SQLAlchemy._apply_criterion(
                 dummy_table, self.query, criterion)
-            func.assert_called_with(operator.ge, "foo")
+            func.assert_called_with(operator.ge, 'foo')
             self.query.where.assert_called_with(op)
 
     def test_gt(self):
-        criterion = {"a": ">foo"}
+        criterion = {'a': '>foo'}
 
-        op = dummy_table.c.a > "foo"
+        op = dummy_table.c.a > 'foo'
         with mock.patch.object(dummy_table.c.a, 'operate') as func:
             func.return_value = op
 
             base.SQLAlchemy._apply_criterion(
                 dummy_table, self.query, criterion)
-            func.assert_called_with(operator.gt, "foo")
+            func.assert_called_with(operator.gt, 'foo')
             self.query.where.assert_called_with(op)
 
     def test_between(self):
-        criterion = {"a": "BETWEEN 1,3"}
+        criterion = {'a': 'BETWEEN 1,3'}
 
         op = dummy_table.c.a.between(1, 3)
         with mock.patch.object(dummy_table.c.a, 'operate') as func:
@@ -119,4 +119,40 @@ class SQLAlchemyTestCase(TestCase):
                 dummy_table, self.query, criterion)
             func.assert_called_with(operators.between_op, '1', '3',
                                     symmetric=False)
+            self.query.where.assert_called_with(op)
+
+    def test_regular_string(self):
+        criterion = {'a': 'foo'}
+
+        op = dummy_table.c.a.like('foo')
+        with mock.patch.object(dummy_table.c.a, 'operate') as func:
+            func.return_value = op
+
+            base.SQLAlchemy._apply_criterion(
+                dummy_table, self.query, criterion)
+            func.assert_called_with(operator.eq, 'foo')
+            self.query.where.assert_called_with(op)
+
+    def test_list(self):
+        criterion = {'a': ['foo']}
+
+        op = dummy_table.c.a.between(1, 3)
+        with mock.patch.object(dummy_table.c.a, 'operate') as func:
+            func.return_value = op
+
+            base.SQLAlchemy._apply_criterion(
+                dummy_table, self.query, criterion)
+            func.assert_called_with(operators.in_op, ['foo'])
+            self.query.where.assert_called_with(op)
+
+    def test_boolean(self):
+        criterion = {'a': True}
+
+        op = dummy_table.c.a.like('foo')
+        with mock.patch.object(dummy_table.c.a, 'operate') as func:
+            func.return_value = op
+
+            base.SQLAlchemy._apply_criterion(
+                dummy_table, self.query, criterion)
+            func.assert_called_with(operator.eq, True)
             self.query.where.assert_called_with(op)
