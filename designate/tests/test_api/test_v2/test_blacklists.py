@@ -169,7 +169,7 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
     def test_create_invalid_denylist_pattern(self):
         self.policy({'create_blacklist': '@'})
         body = {
-            'description': u'This is the description.'
+            'description': 'This is the description.'
         }
 
         url = '/blacklists/'

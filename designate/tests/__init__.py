@@ -221,7 +221,7 @@ class TestCase(base.BaseTestCase):
 
     blacklist_fixtures = [{
         'pattern': 'blacklisted.com.',
-        'description': u'This is a comment',
+        'description': 'This is a comment',
     }, {
         'pattern': 'blacklisted.net.'
     }, {
@@ -230,13 +230,13 @@ class TestCase(base.BaseTestCase):
 
     pool_fixtures = [
         {'name': 'Pool-One',
-         'description': u'Pool-One description',
+         'description': 'Pool-One description',
          'attributes': [{'key': 'scope', 'value': 'public'}],
          'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'},
                         {'priority': 2, 'hostname': 'ns2.example.org.'}]},
 
         {'name': 'Pool-Two',
-         'description': u'Pool-Two description',
+         'description': 'Pool-Two description',
          'attributes': [{'key': 'scope', 'value': 'public'}],
          'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}]},
     ]
@@ -268,10 +268,10 @@ class TestCase(base.BaseTestCase):
     pool_target_fixtures = [
         {'pool_id': default_pool_id,
          'type': "fake",
-         'description': u"FooBar"},
+         'description': "FooBar"},
         {'pool_id': default_pool_id,
          'type': "fake",
-         'description': u"BarFoo"},
+         'description': "BarFoo"},
     ]
 
     pool_also_notify_fixtures = [
@@ -421,7 +421,7 @@ class TestCase(base.BaseTestCase):
         ])
 
         pool.targets = objects.PoolTargetList.from_list([
-            {'type': 'fake', u'description': u"Fake PoolTarget for Tests"}
+            {'type': 'fake', 'description': "Fake PoolTarget for Tests"}
         ])
 
         # Save the default pool

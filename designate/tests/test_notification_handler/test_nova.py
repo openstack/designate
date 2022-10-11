@@ -76,7 +76,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         fixture = self.get_notification_fixture('nova', event_type)
 
         # Set the instance display_name to a string containing UTF8.
-        fixture['payload']['display_name'] = u'Test↟Instance'
+        fixture['payload']['display_name'] = 'Test↟Instance'
 
         self.assertIn(event_type, self.plugin.get_event_types())
 

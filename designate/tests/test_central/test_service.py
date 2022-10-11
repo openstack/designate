@@ -2488,7 +2488,7 @@ class CentralServiceTest(CentralTestCase):
         blacklist = self.create_blacklist(fixture=0)
 
         # Update the Object
-        blacklist.description = u"New Comment"
+        blacklist.description = 'New Comment'
 
         # Perform the update
         self.central_service.update_blacklist(self.admin_context, blacklist)
@@ -2498,7 +2498,7 @@ class CentralServiceTest(CentralTestCase):
                                                        blacklist.id)
 
         # Verify that the record was updated correctly
-        self.assertEqual(u"New Comment", blacklist.description)
+        self.assertEqual('New Comment', blacklist.description)
 
     def test_delete_blacklist(self):
         # Create a blacklisted zone
@@ -2691,14 +2691,14 @@ class CentralServiceTest(CentralTestCase):
         pool = self.create_pool(fixture=0)
 
         # Update and save the pool
-        pool.description = u'New Comment'
+        pool.description = 'New Comment'
         self.central_service.update_pool(self.admin_context, pool)
 
         # Fetch the pool
         pool = self.central_service.get_pool(self.admin_context, pool.id)
 
         # Verify that the pool was updated correctly
-        self.assertEqual(u"New Comment", pool.description)
+        self.assertEqual('New Comment', pool.description)
 
     def test_update_pool_add_ns_record(self):
         # Create a server pool and 3 zones

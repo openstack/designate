@@ -1686,7 +1686,7 @@ class StorageTestCase(object):
     def test_create_blacklist(self):
         values = {
             'pattern': "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
-            'description': u"This is a comment."
+            'description': 'This is a comment.'
         }
 
         result = self.storage.create_blacklist(
@@ -1861,7 +1861,7 @@ class StorageTestCase(object):
             'nameservers': [{'host': "192.0.2.1", 'port': 53}],
             'targets': [{
                 'type': "fake",
-                'description': u"FooBar",
+                'description': 'FooBar',
                 'masters': [{'host': "192.0.2.2",
                              'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
@@ -2021,7 +2021,7 @@ class StorageTestCase(object):
             'nameservers': [{'host': "192.0.2.1", 'port': 53}],
             'targets': [{
                 'type': "fake",
-                'description': u"FooBar",
+                'description': 'FooBar',
                 'masters': [{'host': "192.0.2.2",
                              'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
@@ -2046,13 +2046,13 @@ class StorageTestCase(object):
             'nameservers': [{'host': "192.0.2.5", 'port': 53}],
             'targets': [{
                 'type': "fake",
-                'description': u"NewFooBar",
+                'description': 'NewFooBar',
                 'masters': [{'host': "192.0.2.2",
                              'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
             }, {
                 'type': "fake",
-                'description': u"FooBar2",
+                'description': 'FooBar2',
                 'masters': [{'host': "192.0.2.7", 'port': 5355}],
                 'options': [{'key': 'fake_option', 'value': 'new_fake_value'}],
             }],
@@ -2598,7 +2598,8 @@ class StorageTestCase(object):
 
         expected = self.create_pool_target(pool, fixture=0)
 
-        criterion = dict(description=expected['description'] + u"NOT FOUND")
+        criterion = dict(description=expected['description'] + ''
+                                                               'NOT FOUND')
 
         with testtools.ExpectedException(exceptions.PoolTargetNotFound):
             self.storage.find_pool_target(self.admin_context, criterion)

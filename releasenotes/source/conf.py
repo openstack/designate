@@ -60,8 +60,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Designate Release Notes'
-copyright = u'2015, Designate Developers'
+project = 'Designate Release Notes'
+copyright = '2015, Designate Developers'
 
 # Release notes are versions independent.
 # The short X.Y version.
@@ -212,9 +212,9 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'DesignateReleaseNotes.tex', u'Designate Release Notes '
-     u'Documentation',
-     u'Designate Developers', 'manual'),
+    ('index', 'DesignateReleaseNotes.tex', 'Designate Release Notes '
+     'Documentation',
+     'Designate Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -243,9 +243,9 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'designatereleasenotes', u'Designate Release Notes '
-                                       u'Documentation',
-     [u'Designate Developers'], 1)
+    ('index', 'designatereleasenotes', 'Designate Release Notes '
+                                       'Documentation',
+     ['Designate Developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -258,9 +258,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'DesignateReleaseNotes', u'Designate Release Notes '
-                                       u'Documentation',
-     u'Designate Developers', 'DesignateReleaseNotes',
+    ('index', 'DesignateReleaseNotes', 'Designate Release Notes '
+                                       'Documentation',
+     'Designate Developers', 'DesignateReleaseNotes',
      'One line description of project.',
      'Miscellaneous'),
 ]

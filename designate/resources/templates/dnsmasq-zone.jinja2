@@ -1,5 +1,5 @@
 # Example input:
-# {u'mail.example.com.': {u'A': [u'192.0.2.1', u'192.0.2.2']}, u'www.example.com.': {u'A': [u'192.0.2.1', u'192.0.2.2']}}
+# {'mail.example.com.': {'A': ['192.0.2.1', '192.0.2.2']}, 'www.example.com.': {'A': ['192.0.2.1', '192.0.2.2']}}
 {% for name in template_data -%}
 {% for rdtype in template_data[name] -%}
 # RecordSet: {{name}} / {{rdtype}}

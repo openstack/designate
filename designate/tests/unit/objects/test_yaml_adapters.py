@@ -73,64 +73,64 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
         pool_dict = {
             'also_notifies': [
                 {
-                    'host': u'192.0.2.4',
-                    'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+                    'host': '192.0.2.4',
+                    'pool_id': 'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
                     'port': 53,
                 }
             ],
             'attributes': [],
-            'description': u'Default PowerDNS 4 Pool',
-            'id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
-            'name': u'default',
+            'description': 'Default PowerDNS 4 Pool',
+            'id': 'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+            'name': 'default',
             'nameservers': [
                 {
-                    'host': u'192.0.2.2',
-                    'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+                    'host': '192.0.2.2',
+                    'pool_id': 'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
                     'port': 53,
                 },
                 {
-                    'host': u'192.0.2.3',
-                    'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+                    'host': '192.0.2.3',
+                    'pool_id': 'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
                     'port': 53,
                 }
             ],
             'ns_records': [
                 {
-                    'hostname': u'ns1-1.example.org.',
-                    'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+                    'hostname': 'ns1-1.example.org.',
+                    'pool_id': 'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
                     'priority': 1,
                 },
                 {
-                    'hostname': u'ns1-2.example.org.',
-                    'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+                    'hostname': 'ns1-2.example.org.',
+                    'pool_id': 'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
                     'priority': 2,
                 }
             ],
-            'provisioner': u'UNMANAGED',
+            'provisioner': 'UNMANAGED',
             'targets': [
                 {
-                    'description': u'PowerDNS 4 Server',
+                    'description': 'PowerDNS 4 Server',
                     'masters': [
                         {
-                            'host': u'192.0.2.1',
-                            'pool_target_id': u'd567d569-2d69-41d5-828d-f7054bb10b5c',  # noqa
+                            'host': '192.0.2.1',
+                            'pool_target_id': 'd567d569-2d69-41d5-828d-f7054bb10b5c',  # noqa
                             'port': DEFAULT_MDNS_PORT,
                         }
                     ],
                     'options': [
                         {
-                            'key': u'api_endpoint',
-                            'pool_target_id': u'd567d569-2d69-41d5-828d-f7054bb10b5c',  # noqa
-                            'value': u'http://192.0.2.1:8081',  # noqa
+                            'key': 'api_endpoint',
+                            'pool_target_id': 'd567d569-2d69-41d5-828d-f7054bb10b5c',  # noqa
+                            'value': 'http://192.0.2.1:8081',  # noqa
                         },
                         {
-                            'key': u'api_token',
-                            'pool_target_id': u'd567d569-2d69-41d5-828d-f7054bb10b5c',  # noqa
-                            'value': u'api_key',  # noqa
+                            'key': 'api_token',
+                            'pool_target_id': 'd567d569-2d69-41d5-828d-f7054bb10b5c',  # noqa
+                            'value': 'api_key',  # noqa
                         },
                     ],
-                    'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
-                    'type': u'pdns4',
+                    'pool_id': 'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+                    'type': 'pdns4',
                 }
             ]
         }

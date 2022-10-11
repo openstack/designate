@@ -59,8 +59,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Designate API Reference'
-copyright = u'OpenStack Foundation'
+project = 'Designate API Reference'
+copyright = 'OpenStack Foundation'
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/designate'
@@ -100,7 +100,7 @@ pygments_style = 'native'
 # -- Options for man page output ----------------------------------------------
 
 # Grouping the document tree for man pages.
-# List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
+# List of tuples 'sourcefile', 'target', 'title', 'Authors name', 'manual'
 
 
 # -- Options for HTML output --------------------------------------------------
@@ -186,8 +186,8 @@ htmlhelp_basename = 'designatedoc'
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'Designate.tex', u'OpenStack DNS API Documentation',
-     u'OpenStack Foundation', 'manual'),
+    ('index', 'Designate.tex', 'OpenStack DNS API Documentation',
+     'OpenStack Foundation', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

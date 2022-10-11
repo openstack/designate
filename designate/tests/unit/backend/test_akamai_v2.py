@@ -109,7 +109,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             json={
                 'comment': 'Created by Designate for Tenant %s' % project_id,
                 'masters': ['192.168.1.1', '192.168.1.2'],
-                'type': 'secondary', 'zone': u'example.com.'
+                'type': 'secondary', 'zone': 'example.com.'
             },
             params={
                 'gid': '777',
@@ -140,7 +140,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             json={
                 'comment': 'Created by Designate for Tenant %s' % project_id,
                 'masters': ['192.168.1.1', '192.168.1.2'],
-                'type': 'secondary', 'zone': u'example.com.'
+                'type': 'secondary', 'zone': 'example.com.'
             },
             params={
                 'gid': '777',
@@ -450,12 +450,12 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
 
         mock_post.assert_has_calls([
             mock.call(
-                json={'zones': [u'example.com.']},
+                json={'zones': ['example.com.']},
                 params={'force': True},
                 url='https://host_value/config-dns/v2/zones/delete-requests'
             ),
             mock.call(
-                json={'zones': [u'example.com.']},
+                json={'zones': ['example.com.']},
                 params={'force': False},
                 url='https://host_value/config-dns/v2/zones/delete-requests'
             )
@@ -489,12 +489,12 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
 
         mock_post.assert_has_calls([
             mock.call(
-                json={'zones': [u'example.com.']},
+                json={'zones': ['example.com.']},
                 params={'force': True},
                 url='https://host_value/config-dns/v2/zones/delete-requests'
             ),
             mock.call(
-                json={'zones': [u'example.com.']},
+                json={'zones': ['example.com.']},
                 params={'force': False},
                 url='https://host_value/config-dns/v2/zones/delete-requests'
             )

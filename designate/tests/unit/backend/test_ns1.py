@@ -72,7 +72,7 @@ class NS1BackendTestCase(oslotest.base.BaseTestCase):
             ],
         }
         self.put_request_json = {
-            'zone': u'example.com',
+            'zone': 'example.com',
             'secondary': {
                 'enabled': True,
                 'primary_ip': '192.0.2.1',
@@ -80,7 +80,7 @@ class NS1BackendTestCase(oslotest.base.BaseTestCase):
             }
         }
         self.put_request_tsig_json = {
-            'zone': u'example.com',
+            'zone': 'example.com',
             'secondary': {
                 'enabled': True,
                 'primary_ip': '192.0.2.1',

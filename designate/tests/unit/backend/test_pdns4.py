@@ -72,9 +72,9 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
         self.assertEqual(
             req_mock.last_request.json(),
             {
-                'kind': u'slave',
+                'kind': 'slave',
                 'masters': ['192.0.2.1:53', '192.0.2.2:35'],
-                'name': u'example.com.',
+                'name': 'example.com.',
             }
         )
 
@@ -105,9 +105,9 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
         self.assertEqual(
             req_mock.last_request.json(),
             {
-                'kind': u'slave',
+                'kind': 'slave',
                 'masters': ['[2001:db8::9abc]:53'],
-                'name': u'example.com.',
+                'name': 'example.com.',
             }
         )
 
@@ -133,9 +133,9 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
         self.assertEqual(
             req_mock.last_request.json(),
             {
-                'kind': u'slave',
+                'kind': 'slave',
                 'masters': ['192.0.2.1:53', '192.0.2.2:35'],
-                'name': u'example.com.',
+                'name': 'example.com.',
             }
         )
 
@@ -204,9 +204,9 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
         self.assertEqual(
             req_mock.last_request.json(),
             {
-                'kind': u'slave',
+                'kind': 'slave',
                 'masters': ['192.0.2.1:53', '192.0.2.2:35'],
-                'name': u'example.com.',
+                'name': 'example.com.',
                 'slave_tsig_key_ids': ['tsig_key'],
             }
         )
