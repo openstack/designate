@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 class LocalResolver(jsonschema.RefResolver):
     def __init__(self, base_uri, referrer):
-        super(LocalResolver, self).__init__(base_uri, referrer, (), True)
+        super(LocalResolver, self).__init__(base_uri, referrer)
         self.api_version = None
 
     @classmethod
