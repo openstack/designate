@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Fixed designate compatibility with jsonschema >= 4.16.0.
