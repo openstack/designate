@@ -148,6 +148,7 @@
 
 - project-template:
     name: designate-devstack-jobs
+    queue: designate
     check:
       jobs:
         - designate-bind9
@@ -157,7 +158,6 @@
         - designate-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
-    queue: designate
     gate:
       jobs:
         - designate-bind9
@@ -178,7 +178,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario-wallaby
-    queue: designate
     experimental:
       jobs:
         - designate-pdns4-postgres
