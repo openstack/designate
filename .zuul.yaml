@@ -176,6 +176,7 @@
 
 - project-template:
     name: designate-devstack-jobs
+    queue: designate
     check:
       jobs:
         - designate-bind9
@@ -212,7 +213,6 @@
         - neutron-tempest-plugin-designate-scenario
         - designate-tox-dnspython-latest:
             voting: false
-    queue: designate
     gate:
       jobs:
         - neutron-tempest-plugin-designate-scenario
