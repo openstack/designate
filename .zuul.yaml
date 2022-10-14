@@ -99,6 +99,7 @@
 
 - project-template:
     name: designate-devstack-jobs
+    queue: designate
     check:
       jobs:
         - designate-bind9
@@ -108,7 +109,6 @@
         - designate-ipv6-only-bind9
 
     gate:
-      queue: designate
       jobs:
         - designate-bind9
         - designate-pdns4
@@ -128,8 +128,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario-ussuri
-    gate:
-      queue: designate
     experimental:
       jobs:
         - designate-pdns4-postgres
