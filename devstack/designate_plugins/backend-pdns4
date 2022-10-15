@@ -46,7 +46,10 @@ function install_designate_backend {
     fi
 
     install_package $PDNS
-    sudo rm -rf $POWERDNS_CFG_DIR/pdns.d
+
+    # We need to wait for the configuration and database to be in place
+    # before we can start up pdns4. Otherwise it will just crash in a loop.
+    stop_designate_backend
 }
 
 # configure_designate_backend - make configuration changes, including those to other services
@@ -88,12 +91,12 @@ EOF
 setgid=pdns
 setuid=pdns
 config-dir=$POWERDNS_CFG_DIR
-socket-dir=/var/run
 guardian=yes
 daemon=yes
 disable-axfr=no
-local-address=$HOST_IP
-local-ipv6=$HOST_IPV6
+# local-address should always be set, we temporarily
+# commented it out due to compatibility issues with pdns 4.3.
+# local-address=$HOST_IP $HOST_IPV6
 local-port=$DESIGNATE_SERVICE_PORT_DNS
 master=no
 slave=yes
@@ -134,17 +137,10 @@ EOF
     else
         die $LINENO "PDNS4 backend only supports MySQL / pgSQL"
     fi
-    restart_service pdns
 }
 
 # init_designate_backend - initialize databases, etc.
 function init_designate_backend {
-    # Stop pdns so that the migration succeeds, if not you get a error
-    # that the schema is still in use.
-    if is_service_enabled postgresql; then
-        stop_designate_backend
-    fi
-
     # (Re)create designate_pdns database
     recreate_database designate_pdns utf8
     if is_service_enabled mysql; then
@@ -154,6 +150,8 @@ function init_designate_backend {
     else
         die $LINENO "PDNS4 backend only supports MySQL"
     fi
+
+    restart_service pdns
 }
 
 # create_designate_pool_configuration_backend - Perform post-pool config tasks

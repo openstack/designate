@@ -1,27 +1,31 @@
+-- Based on https://docs.powerdns.com/authoritative/backends/generic-mysql.html#default-schema
+
 CREATE TABLE domains (
   id                    INT AUTO_INCREMENT,
   name                  VARCHAR(255) NOT NULL,
   master                VARCHAR(128) DEFAULT NULL,
   last_check            INT DEFAULT NULL,
-  type                  VARCHAR(6) NOT NULL,
-  notified_serial       INT DEFAULT NULL,
-  account               VARCHAR(40) DEFAULT NULL,
+  type                  VARCHAR(8) NOT NULL,
+  notified_serial       INT UNSIGNED DEFAULT NULL,
+  account               VARCHAR(40) CHARACTER SET 'utf8' DEFAULT NULL,
+  options               TEXT DEFAULT NULL,
+  catalog               VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (id)
 ) Engine=InnoDB;
 
 CREATE UNIQUE INDEX name_index ON domains(name);
+CREATE INDEX catalog_idx ON domains(catalog);
 
 
 CREATE TABLE records (
-  id                    INT AUTO_INCREMENT,
+  id                    BIGINT AUTO_INCREMENT,
   domain_id             INT DEFAULT NULL,
   name                  VARCHAR(255) DEFAULT NULL,
   type                  VARCHAR(10) DEFAULT NULL,
-  -- Changed to "TEXT", as VARCHAR(65000) is too big for most MySQL installs
+  -- Changed to "TEXT", as VARCHAR(64000) is too big for most MySQL installs
   content               TEXT DEFAULT NULL,
   ttl                   INT DEFAULT NULL,
   prio                  INT DEFAULT NULL,
-  change_date           INT DEFAULT NULL,
   disabled              TINYINT(1) DEFAULT 0,
   ordername             VARCHAR(255) BINARY DEFAULT NULL,
   auth                  TINYINT(1) DEFAULT 1,
@@ -30,13 +34,13 @@ CREATE TABLE records (
 
 CREATE INDEX nametype_index ON records(name,type);
 CREATE INDEX domain_id ON records(domain_id);
-CREATE INDEX recordorder ON records (domain_id, ordername);
+CREATE INDEX ordername ON records (ordername);
 
 
 CREATE TABLE supermasters (
   ip                    VARCHAR(64) NOT NULL,
   nameserver            VARCHAR(255) NOT NULL,
-  account               VARCHAR(40) NOT NULL,
+  account               VARCHAR(40) CHARACTER SET 'utf8' NOT NULL,
   PRIMARY KEY (ip, nameserver)
 ) Engine=InnoDB;
 
@@ -47,9 +51,9 @@ CREATE TABLE comments (
   name                  VARCHAR(255) NOT NULL,
   type                  VARCHAR(10) NOT NULL,
   modified_at           INT NOT NULL,
-  account               VARCHAR(40) NOT NULL,
-  -- Changed to "TEXT", as VARCHAR(65000) is too big for most MySQL installs
-  comment               TEXT NOT NULL,
+  account               VARCHAR(40) CHARACTER SET 'utf8' DEFAULT NULL,
+  -- Changed to "TEXT", as VARCHAR(64000) is too big for most MySQL installs
+  comment               TEXT CHARACTER SET 'utf8' NOT NULL,
   PRIMARY KEY (id)
 ) Engine=InnoDB;
 
@@ -74,6 +78,7 @@ CREATE TABLE cryptokeys (
   domain_id             INT NOT NULL,
   flags                 INT NOT NULL,
   active                BOOL,
+  published             BOOL DEFAULT 1,
   content               TEXT,
   PRIMARY KEY(id)
 ) Engine=InnoDB;
