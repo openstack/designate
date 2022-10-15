@@ -63,8 +63,9 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
         if ('migrate_version' in actual_table_names or
                 'alembic_version' in actual_table_names):
             migration_table_found = True
-        self.assertTrue(migration_table_found,
-            'A DB migration table was not found.')
+        self.assertTrue(
+            migration_table_found, 'A DB migration table was not found.'
+        )
         try:
             actual_table_names.remove('migrate_version')
         except ValueError:
