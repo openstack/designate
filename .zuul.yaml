@@ -1,6 +1,7 @@
 - job:
     name: designate-base
     parent: devstack-tempest
+    nodeset: openstack-single-node-jammy
     vars: &base_vars
       devstack_localrc:
         DESIGNATE_SERVICE_PORT_DNS: 5322
@@ -35,6 +36,7 @@
 - job:
     name: designate-base-ipv6-only
     parent: devstack-tempest-ipv6
+    nodeset: openstack-single-node-jammy
     description: |
       Designate devstack-tempest base job for IPv6-only deployment
     irrelevant-files: *base_irrelevant_files
