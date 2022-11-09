@@ -136,7 +136,7 @@ class DesignateObject(base.VersionedObject):
                 name == 'VERSION' or
                 name == 'fields'):
             raise AttributeError(
-                "Designate object '%(type)s' has no"
+                "Designate object '%(type)s' has no "
                 "attribute '%(name)s'" % {
                     'type': self.obj_name(),
                     'name': name,
