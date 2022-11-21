@@ -18,18 +18,19 @@ from sqlalchemy.schema import MetaData
 from sqlalchemy.schema import Table
 
 from designate.cmd import status
-from designate.sqlalchemy import session
+from designate.sqlalchemy import sql
 from designate import tests
 
 
 class TestDuplicateServiceStatus(tests.TestCase):
     def setUp(self):
         super(TestDuplicateServiceStatus, self).setUp()
-        self.engine = session.get_engine('storage:sqlalchemy')
         self.meta = MetaData()
-        self.meta.bind = self.engine
-        self.service_statuses_table = Table('service_statuses', self.meta,
-                                            autoload=True)
+        self.meta.bind = sql.get_read_engine()
+        self.service_statuses_table = Table(
+            'service_statuses', self.meta,
+            autoload_with=sql.get_read_engine()
+        )
 
     def test_success(self):
         fake_record = {'id': '1',
@@ -39,27 +40,46 @@ class TestDuplicateServiceStatus(tests.TestCase):
                        'stats': '',
                        'capabilities': '',
                        }
-        self.service_statuses_table.insert().execute(fake_record)
-        # Different hostname should be fine
-        fake_record['id'] = '2'
-        fake_record['hostname'] = 'otherhost'
-        self.service_statuses_table.insert().execute(fake_record)
-        # Different service_name should be fine
-        fake_record['id'] = '3'
-        fake_record['service_name'] = 'producer'
-        self.service_statuses_table.insert().execute(fake_record)
-        checks = status.Checks()
-        self.assertEqual(upgradecheck.Code.SUCCESS,
-                         checks._duplicate_service_status().code)
+        with sql.get_write_session() as session:
+            query = (
+                self.service_statuses_table.insert().
+                values(fake_record)
+            )
+            session.execute(query)
 
-    @mock.patch('designate.sqlalchemy.session.get_engine')
-    def test_failure(self, mock_get_engine):
-        mock_engine = mock.MagicMock()
-        mock_execute = mock.MagicMock()
-        mock_engine.execute.return_value = mock_execute
-        mock_execute.fetchall.return_value = [(2,)]
-        mock_get_engine.return_value = mock_engine
+            # Different hostname should be fine
+            fake_record['id'] = '2'
+            fake_record['hostname'] = 'otherhost'
+            query = (
+                self.service_statuses_table.insert().
+                values(fake_record)
+            )
+            session.execute(query)
+
+            # Different service_name should be fine
+            fake_record['id'] = '3'
+            fake_record['service_name'] = 'producer'
+            query = (
+                self.service_statuses_table.insert().
+                values(fake_record)
+            )
+            session.execute(query)
+
+            checks = status.Checks()
+            self.assertEqual(upgradecheck.Code.SUCCESS,
+                             checks._duplicate_service_status().code)
+
+    @mock.patch('designate.sqlalchemy.sql.get_read_session')
+    @mock.patch('designate.storage.sql.get_read_engine')
+    def test_failure(self, mock_get_engine, mock_get_read):
+        mock_sql_execute = mock.Mock()
+        mock_sql_fetchall = mock.Mock()
+
+        mock_get_read().__enter__.return_value = mock_sql_execute
+        mock_sql_execute.execute.return_value = mock_sql_fetchall
+        mock_sql_fetchall.fetchall.return_value = [(2,)]
 
         checks = status.Checks()
-        self.assertEqual(upgradecheck.Code.FAILURE,
-                         checks._duplicate_service_status().code)
+
+        result = checks._duplicate_service_status().code
+        self.assertEqual(upgradecheck.Code.FAILURE, result)

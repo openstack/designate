@@ -21,6 +21,7 @@ from sqlalchemy.sql.expression import or_, literal_column
 from designate import exceptions
 from designate import objects
 from designate.sqlalchemy import base as sqlalchemy_base
+from designate.sqlalchemy import sql
 from designate.storage import base as storage_base
 from designate.storage.impl_sqlalchemy import tables
 
@@ -37,8 +38,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def __init__(self):
         super(SQLAlchemyStorage, self).__init__()
 
-    def get_name(self):
-        return self.name
+    def get_inspector(self):
+        return sql.get_inspector()
 
     # CRUD for our resources (quota, server, tsigkey, tenant, zone & record)
     # R - get_*, find_*s
@@ -162,14 +163,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     ##
     def find_tenants(self, context):
         # returns an array of tenant_id & count of their zones
-        query = select([tables.zones.c.tenant_id,
-                        func.count(tables.zones.c.id)])
+        query = select(tables.zones.c.tenant_id, func.count(tables.zones.c.id))
         query = self._apply_tenant_criteria(context, tables.zones, query)
         query = self._apply_deleted_criteria(context, tables.zones, query)
         query = query.group_by(tables.zones.c.tenant_id)
 
-        resultproxy = self.session.execute(query)
-        results = resultproxy.fetchall()
+        with sql.get_read_session() as session:
+            resultproxy = session.execute(query)
+            results = resultproxy.fetchall()
 
         tenant_list = objects.TenantList(
             objects=[objects.Tenant(id=t[0], zone_count=t[1]) for t in
@@ -181,13 +182,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def get_tenant(self, context, tenant_id):
         # get list & count of all zones owned by given tenant_id
-        query = select([tables.zones.c.name])
+        query = select(tables.zones.c.name)
         query = self._apply_tenant_criteria(context, tables.zones, query)
         query = self._apply_deleted_criteria(context, tables.zones, query)
         query = query.where(tables.zones.c.tenant_id == tenant_id)
 
-        resultproxy = self.session.execute(query)
-        results = resultproxy.fetchall()
+        with sql.get_read_session() as session:
+            resultproxy = session.execute(query)
+            results = resultproxy.fetchall()
 
         return objects.Tenant(
             id=tenant_id,
@@ -197,12 +199,13 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def count_tenants(self, context):
         # tenants are the owner of zones, count the number of unique tenants
         # select count(distinct tenant_id) from zones
-        query = select([func.count(distinct(tables.zones.c.tenant_id))])
+        query = select(func.count(distinct(tables.zones.c.tenant_id)))
         query = self._apply_tenant_criteria(context, tables.zones, query)
         query = self._apply_deleted_criteria(context, tables.zones, query)
 
-        resultproxy = self.session.execute(query)
-        result = resultproxy.fetchone()
+        with sql.get_read_session() as session:
+            resultproxy = session.execute(query)
+            result = resultproxy.fetchone()
 
         if result is None:
             return 0
@@ -223,7 +226,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                             literal_column('False')),
                            else_=literal_column('True')).label('shared')
         query = select(
-            [tables.zones, shared_case]).outerjoin(tables.shared_zones)
+            tables.zones, shared_case).outerjoin(tables.shared_zones)
 
         zones = self._find(
             context, tables.zones, objects.Zone, objects.ZoneList,
@@ -417,17 +420,18 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                     self.delete_recordset(context, i)
 
         if tenant_id_changed:
-            self.session.execute(
-                tables.recordsets.update().
-                where(tables.recordsets.c.zone_id == zone.id).
-                values({'tenant_id': zone.tenant_id})
-            )
+            with sql.get_write_session() as session:
+                session.execute(
+                    tables.recordsets.update().
+                    where(tables.recordsets.c.zone_id == zone.id).
+                    values({'tenant_id': zone.tenant_id})
+                )
 
-            self.session.execute(
-                tables.records.update().
-                where(tables.records.c.zone_id == zone.id).
-                values({'tenant_id': zone.tenant_id})
-            )
+                session.execute(
+                    tables.records.update().
+                    where(tables.records.c.zone_id == zone.id).
+                    values({'tenant_id': zone.tenant_id})
+                )
 
         return updated_zone
 
@@ -492,8 +496,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 values(parent_zone_id=surviving_parent_id)
             )
 
-            resultproxy = self.session.execute(query)
-            LOG.debug('%d child zones updated', resultproxy.rowcount)
+            with sql.get_write_session() as session:
+                resultproxy = session.execute(query)
+                LOG.debug('%d child zones updated', resultproxy.rowcount)
 
             self.purge_zone(context, zone)
 
@@ -501,13 +506,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return len(zones)
 
     def count_zones(self, context, criterion=None):
-        query = select([func.count(tables.zones.c.id)])
+        query = select(func.count(tables.zones.c.id))
         query = self._apply_criterion(tables.zones, query, criterion)
         query = self._apply_tenant_criteria(context, tables.zones, query)
         query = self._apply_deleted_criteria(context, tables.zones, query)
 
-        resultproxy = self.session.execute(query)
-        result = resultproxy.fetchone()
+        with sql.get_read_session() as session:
+            resultproxy = session.execute(query)
+            result = resultproxy.fetchone()
 
         if result is None:
             return 0
@@ -577,12 +583,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         query = query.where(tables.shared_zones.c.zone_id == zone_id)
         query = query.where(
             tables.shared_zones.c.target_project_id == project_id)
-        return self.session.scalar(query) is not None
+        with sql.get_read_session() as session:
+            return session.scalar(query) is not None
 
     def delete_zone_shares(self, zone_id):
         query = tables.shared_zones.delete().where(
             tables.shared_zones.c.zone_id == zone_id)
-        self.session.execute(query)
+        with sql.get_write_session() as session:
+            session.execute(query)
 
     # Zone attribute methods
     def _find_zone_attributes(self, context, criterion, one=False,
@@ -671,7 +679,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 tables.zones,
                 tables.recordsets.c.zone_id == tables.zones.c.id)
             query = (
-                select([tables.recordsets]).select_from(rjoin).
+                select(tables.recordsets).select_from(rjoin).
                 where(tables.zones.c.deleted == '0')
             )
 
@@ -713,9 +721,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.records.c.recordset_id == tables.recordsets.c.id)
 
         query = (
-            select([tables.recordsets.c.id, tables.recordsets.c.type,
-                    tables.recordsets.c.ttl, tables.recordsets.c.name,
-                    tables.records.c.data, tables.records.c.action]).
+            select(tables.recordsets.c.id, tables.recordsets.c.type,
+                   tables.recordsets.c.ttl, tables.recordsets.c.name,
+                   tables.records.c.data, tables.records.c.action).
             select_from(rjoin).where(tables.records.c.action != 'DELETE')
         )
 
@@ -758,8 +766,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.records.c.recordset_id == tables.recordsets.c.id)
 
         query = (
-            select([tables.recordsets.c.name, tables.recordsets.c.ttl,
-                    tables.recordsets.c.type, tables.records.c.data]).
+            select(tables.recordsets.c.name, tables.recordsets.c.ttl,
+                   tables.recordsets.c.type, tables.records.c.data).
             select_from(rjoin)
         )
 
@@ -844,7 +852,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.recordsets.c.zone_id == tables.zones.c.id)
 
         query = (
-            select([func.count(tables.recordsets.c.id)]).
+            select(func.count(tables.recordsets.c.id)).
             select_from(rjoin).
             where(tables.zones.c.deleted == '0')
         )
@@ -853,8 +861,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         query = self._apply_tenant_criteria(context, tables.recordsets, query)
         query = self._apply_deleted_criteria(context, tables.recordsets, query)
 
-        resultproxy = self.session.execute(query)
-        result = resultproxy.fetchone()
+        with sql.get_read_session() as session:
+            resultproxy = session.execute(query)
+            result = resultproxy.fetchone()
 
         if result is None:
             return 0
@@ -924,7 +933,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.records.c.zone_id == tables.zones.c.id)
 
         query = (
-            select([func.count(tables.records.c.id)]).
+            select(func.count(tables.records.c.id)).
             select_from(rjoin).
             where(tables.zones.c.deleted == '0')
         )
@@ -933,8 +942,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         query = self._apply_tenant_criteria(context, tables.records, query)
         query = self._apply_deleted_criteria(context, tables.records, query)
 
-        resultproxy = self.session.execute(query)
-        result = resultproxy.fetchone()
+        with sql.get_read_session() as session:
+            resultproxy = session.execute(query)
+            result = resultproxy.fetchone()
 
         if result is None:
             return 0
@@ -1521,7 +1531,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.zone_transfer_requests.c.zone_id == tables.zones.c.id)
 
         query = select(
-            [table, tables.zones.c.name.label('zone_name')]
+            table, tables.zones.c.name.label('zone_name')
         ).select_from(ljoin)
 
         if not context.all_tenants:
@@ -1611,14 +1621,15 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             exceptions.ZoneTransferRequestNotFound)
 
     def count_zone_transfer_accept(self, context, criterion=None):
-        query = select([func.count(tables.zone_transfer_accepts.c.id)])
+        query = select(func.count(tables.zone_transfer_accepts.c.id))
         query = self._apply_criterion(tables.zone_transfer_accepts,
                     query, criterion)
         query = self._apply_deleted_criteria(context,
                     tables.zone_transfer_accepts, query)
 
-        resultproxy = self.session.execute(query)
-        result = resultproxy.fetchone()
+        with sql.get_read_session() as session:
+            resultproxy = session.execute(query)
+            result = resultproxy.fetchone()
 
         if result is None:
             return 0
@@ -1782,13 +1793,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                             exceptions.ZoneExportNotFound)
 
     def count_zone_tasks(self, context, criterion=None):
-        query = select([func.count(tables.zone_tasks.c.id)])
+        query = select(func.count(tables.zone_tasks.c.id))
         query = self._apply_criterion(tables.zone_tasks, query, criterion)
         query = self._apply_tenant_criteria(context, tables.zone_tasks, query)
         query = self._apply_deleted_criteria(context, tables.zone_tasks, query)
 
-        resultproxy = self.session.execute(query)
-        result = resultproxy.fetchone()
+        with sql.get_read_session() as session:
+            resultproxy = session.execute(query)
+            result = resultproxy.fetchone()
 
         if result is None:
             return 0

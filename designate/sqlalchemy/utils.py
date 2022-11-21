@@ -23,9 +23,10 @@ import sqlalchemy
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import select
 
+
 from designate import exceptions
 from designate.i18n import _
-
+from designate.sqlalchemy import sql
 
 LOG = log.getLogger(__name__)
 
@@ -51,7 +52,7 @@ def paginate_query(query, table, limit, sort_keys, marker=None,
     if marker is not None:
         marker_values = []
         for sort_key in sort_keys:
-            v = marker[sort_key]
+            v = getattr(marker, sort_key)
             marker_values.append(v)
 
         # Build up an array of sort criteria as in the docstring
@@ -117,13 +118,14 @@ def sort_query(query, table, sort_keys, sort_dir=None, sort_dirs=None):
     return query, sort_dirs
 
 
-def check_marker(table, marker, session):
+def check_marker(table, marker):
 
-    marker_query = select([table]).where(table.c.id == marker)
+    marker_query = select(table).where(table.c.id == marker)
 
     try:
-        marker_resultproxy = session.execute(marker_query)
-        marker = marker_resultproxy.fetchone()
+        with sql.get_read_session() as session:
+            marker_resultproxy = session.execute(marker_query)
+            marker = marker_resultproxy.fetchone()
         if marker is None:
             raise exceptions.MarkerNotFound(
                 'Marker %s could not be found' % marker)

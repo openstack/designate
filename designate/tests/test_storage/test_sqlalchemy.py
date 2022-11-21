@@ -14,8 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_log import log as logging
+from sqlalchemy import text
 
 from designate import storage
+from designate.storage import sql
 from designate.tests.test_storage import StorageTestCase
 from designate.tests import TestCase
 
@@ -53,6 +55,7 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
             'zone_transfer_requests',
             'zones'
         ]
+
         inspector = self.storage.get_inspector()
 
         actual_table_names = inspector.get_table_names()
@@ -79,16 +82,17 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
         self.assertEqual(table_names, actual_table_names)
 
     def test_schema_table_indexes(self):
-        indexes_t = self.storage.engine.execute(
-            "SELECT * FROM sqlite_master WHERE type = 'index';")
+        with sql.get_read_session() as session:
+            indexes_t = session.execute(
+                text("SELECT * FROM sqlite_master WHERE type = 'index';"))
 
-        indexes = {}  # table name -> index names -> cmd
-        for _, index_name, table_name, num, cmd in indexes_t:
-            if index_name.startswith("sqlite_"):
-                continue  # ignore sqlite-specific indexes
-            if table_name not in indexes:
-                indexes[table_name] = {}
-            indexes[table_name][index_name] = cmd
+            indexes = {}  # table name -> index names -> cmd
+            for _, index_name, table_name, num, cmd in indexes_t:
+                if index_name.startswith("sqlite_"):
+                    continue  # ignore sqlite-specific indexes
+                if table_name not in indexes:
+                    indexes[table_name] = {}
+                indexes[table_name][index_name] = cmd
 
         expected = {
             "records": {

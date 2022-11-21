@@ -21,6 +21,7 @@ from oslo_utils import timeutils
 
 from designate.producer import tasks
 from designate.storage.impl_sqlalchemy import tables
+from designate.storage import sql
 from designate.tests import fixtures
 from designate.tests import TestCase
 
@@ -52,7 +53,8 @@ class DeletedZonePurgeTest(TestCase):
     def _fetch_all_zones(self):
         # Fetch all zones including deleted ones.
         query = tables.zones.select()
-        return self.central_service.storage.session.execute(query).fetchall()
+        with sql.get_read_session() as session:
+            return session.execute(query).fetchall()
 
     def _delete_zone(self, zone, mock_deletion_time):
         # Set a zone as deleted
@@ -64,8 +66,9 @@ class DeletedZonePurgeTest(TestCase):
                 status='DELETED',
         )
 
-        pxy = self.central_service.storage.session.execute(query)
-        self.assertEqual(1, pxy.rowcount)
+        with sql.get_write_session() as session:
+            pxy = session.execute(query)
+            self.assertEqual(1, pxy.rowcount)
 
     def _create_deleted_zones(self):
         # Create a number of deleted zones in the past days.
@@ -114,7 +117,8 @@ class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
 
     def _fetch_zones(self, query):
         # Fetch zones including deleted ones.
-        return self.central_service.storage.session.execute(query).fetchall()
+        with sql.get_read_session() as session:
+            return session.execute(query).fetchall()
 
     def _create_zones(self):
         # Create a number of zones; half of them with delayed_notify set.
