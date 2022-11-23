@@ -68,9 +68,9 @@ class WorkerAPI(object):
         return self.client.cast(
             context, 'update_zone', zone=zone)
 
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, hard_delete):
         return self.client.cast(
-            context, 'delete_zone', zone=zone)
+            context, 'delete_zone', zone=zone, hard_delete=hard_delete)
 
     def recover_shard(self, context, begin, end):
         return self.client.cast(

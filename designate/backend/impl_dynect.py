@@ -356,7 +356,7 @@ class DynECTBackend(base.Backend):
         client.put(url, data={'activate': True})
         client.logout()
 
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, zone_params=None):
         LOG.info('Deleting zone %(d_id)s / %(d_name)s',
                  {'d_id': zone['id'], 'd_name': zone['name']})
         url = '/Zone/%s' % zone['name'].rstrip('.')

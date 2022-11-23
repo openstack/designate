@@ -27,6 +27,7 @@ def set_defaults():
                        'X-Auth-Sudo-Project-ID',
                        'X-Auth-All-Projects',
                        'X-Designate-Edit-Managed-Records',
+                       'X-Designate-Hard-Delete',
                        'OpenStack-DNS-Hide-Counts'],
         expose_headers=['X-OpenStack-Request-ID',
                         'Host'],

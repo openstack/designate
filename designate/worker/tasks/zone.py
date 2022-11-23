@@ -44,13 +44,14 @@ class ZoneActionOnTarget(base.Task):
     :return: Success/Failure of the target action (bool)
     """
 
-    def __init__(self, executor, context, zone, target):
+    def __init__(self, executor, context, zone, target, zone_params):
         super(ZoneActionOnTarget, self).__init__(executor)
         self.zone = zone
         self.action = zone.action
         self.target = target
         self.context = context
         self.task_name = 'ZoneActionOnTarget-%s' % self.action.title()
+        self.zone_params = zone_params
 
     def __call__(self):
         LOG.debug(
@@ -70,7 +71,8 @@ class ZoneActionOnTarget(base.Task):
                     self.target.backend.create_zone(self.context, self.zone)
                     SendNotify(self.executor, self.zone, self.target)()
                 elif self.action == 'DELETE':
-                    self.target.backend.delete_zone(self.context, self.zone)
+                    self.target.backend.delete_zone(self.context, self.zone,
+                                                    self.zone_params)
                 else:
                     self.target.backend.update_zone(self.context, self.zone)
                     SendNotify(self.executor, self.zone, self.target)()
@@ -195,15 +197,17 @@ class ZoneActor(base.Task):
              of targets (bool)
     """
 
-    def __init__(self, executor, context, pool, zone):
+    def __init__(self, executor, context, pool, zone, zone_params=None):
         super(ZoneActor, self).__init__(executor)
         self.context = context
         self.pool = pool
         self.zone = zone
+        self.zone_params = zone_params
 
     def _execute(self):
         results = self.executor.run([
-            ZoneActionOnTarget(self.executor, self.context, self.zone, target)
+            ZoneActionOnTarget(self.executor, self.context, self.zone, target,
+                               self.zone_params)
             for target in self.pool.targets
         ])
         return results
@@ -250,13 +254,15 @@ class ZoneAction(base.Task):
              number of nameservers (bool)
     """
 
-    def __init__(self, executor, context, pool, zone, action):
+    def __init__(self, executor, context, pool, zone, action,
+                 zone_params=None):
         super(ZoneAction, self).__init__(executor)
         self.context = context
         self.pool = pool
         self.zone = zone
         self.action = action
         self.task_name = 'ZoneAction-%s' % self.action.title()
+        self.zone_params = zone_params
 
     def _wait_for_nameservers(self):
         """
@@ -266,7 +272,7 @@ class ZoneAction(base.Task):
 
     def _zone_action_on_targets(self):
         actor = ZoneActor(
-            self.executor, self.context, self.pool, self.zone
+            self.executor, self.context, self.pool, self.zone, self.zone_params
         )
         return actor()
 

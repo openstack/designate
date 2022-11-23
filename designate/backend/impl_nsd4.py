@@ -94,7 +94,7 @@ class NSD4Backend(base.Backend):
             if "already exists" not in str(e):
                 raise
 
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, zone_params=None):
         LOG.debug('Delete Zone')
         command = 'delzone %s' % zone['name']
 

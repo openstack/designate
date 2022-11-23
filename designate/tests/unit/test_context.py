@@ -96,6 +96,25 @@ class TestDesignateContext(designate.tests.TestCase):
         with testtools.ExpectedException(exceptions.Forbidden):
             ctxt.edit_managed_records = True
 
+    def test_hard_delete(self):
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
+        admin_ctxt = ctxt.elevated()
+
+        admin_ctxt.hard_delete = True
+
+        self.assertFalse(ctxt.is_admin)
+        self.assertTrue(admin_ctxt.is_admin)
+        self.assertTrue(admin_ctxt.hard_delete)
+
+    def test_hard_delete_failure(self):
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
+        with testtools.ExpectedException(exceptions.Forbidden):
+            ctxt.hard_delete = True
+
     @mock.patch.object(policy, 'check')
     def test_sudo(self, mock_policy_check):
         ctxt = context.DesignateContext(

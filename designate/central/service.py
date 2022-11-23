@@ -1047,7 +1047,11 @@ class Service(service.RPCService):
             zone = self.storage.delete_zone(context, zone.id)
         else:
             zone = self._delete_zone_in_storage(context, zone)
-            self.worker_api.delete_zone(context, zone)
+            delete_zonefile = False
+            if context.hard_delete:
+                delete_zonefile = True
+            self.worker_api.delete_zone(context, zone,
+                                        hard_delete=delete_zonefile)
 
         return zone
 

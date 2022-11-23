@@ -125,7 +125,7 @@ class PDNS4Backend(base.Backend):
                     LOG.error('Could not delete errored zone %s', zone)
             raise exceptions.Backend(e)
 
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, zone_params=None):
         """Delete a DNS zone"""
 
         # First verify that the zone exists -- If it's not present

@@ -166,6 +166,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
 
         self.context = mock.Mock()
         self.executor = mock.Mock()
+        self.zone_params = mock.Mock()
 
     @mock.patch.object(dnsutils, 'notify')
     def test_call_create(self, mock_notify):
@@ -175,6 +176,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             self.context,
             self.zone,
             self.target,
+            self.zone_params
         )
 
         self.assertTrue(self.actor())
@@ -193,6 +195,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             self.context,
             self.zone,
             self.target,
+            self.zone_params,
         )
 
         self.assertTrue(self.actor())
@@ -211,6 +214,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             self.context,
             self.zone,
             self.target,
+            self.zone_params
         )
 
         self.assertTrue(self.actor())
@@ -227,6 +231,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             self.context,
             self.zone,
             self.target,
+            self.zone_params
         )
 
         self.assertFalse(self.actor())
@@ -289,11 +294,13 @@ class TestZoneActor(oslotest.base.BaseTestCase):
         self.context = mock.Mock()
         self.pool = mock.Mock()
         self.executor = mock.Mock()
+        self.zone_params = mock.Mock()
         self.actor = zone.ZoneActor(
             self.executor,
             self.context,
             self.pool,
             mock.Mock(action='CREATE'),
+            self.zone_params
         )
 
     def test_threshold_from_config(self):

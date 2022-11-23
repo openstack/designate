@@ -27,5 +27,5 @@ class FakeBackend(base.Backend):
     def create_zone(self, context, zone):
         LOG.info('Create Zone %r', zone)
 
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, zone_params=None):
         LOG.info('Delete Zone %r', zone)

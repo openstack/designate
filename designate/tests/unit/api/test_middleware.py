@@ -144,3 +144,22 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
 
         self.app(self.request)
         self.assertFalse(self.ctxt.edit_managed_records)
+
+    def test_hard_delete_in_headers(self):
+        self.request.headers.update({
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin',
+            'X-Designate-Hard-Delete': 'True'
+        })
+
+        self.app(self.request)
+        self.assertTrue(self.ctxt.hard_delete)
+
+    def test_hard_delete_not_set(self):
+        self.request.headers.update({
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin',
+        })
+
+        self.app(self.request)
+        self.assertFalse(self.ctxt.hard_delete)

@@ -43,6 +43,12 @@ deprecated_use_sudo = policy.DeprecatedRule(
     deprecated_reason=base.DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
+deprecated_hard_delete = policy.DeprecatedRule(
+    name="hard_delete",
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=base.DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
 
 rules = [
     policy.RuleDefault(
@@ -68,7 +74,13 @@ rules = [
         check_str=base.SYSTEM_ADMIN,
         scope_types=['system'],
         description='Accept sudo from user to tenant.',
-        deprecated_rule=deprecated_use_sudo)
+        deprecated_rule=deprecated_use_sudo),
+    policy.RuleDefault(
+        name="hard_delete",
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        description="Clean backend resources associated with zone",
+        deprecated_rule=deprecated_hard_delete),
 ]
 
 

@@ -189,7 +189,7 @@ class AkamaiBackend(base.Backend):
             zone, self.masters, contract_id, gid, project_id, self.target)
         self.client.create_zone(payload)
 
-    def delete_zone(self, context, zone):
+    def delete_zone(self, context, zone, zone_params=None):
         """Delete a DNS zone"""
         LOG.debug('Delete Zone')
         self.client.delete_zone(zone['name'])

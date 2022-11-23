@@ -179,11 +179,12 @@ class TestService(oslotest.base.BaseTestCase):
 
     def test_delete_zone(self):
         self.service._do_zone_action = mock.Mock()
+        self.zone_params = {}
 
         self.service.delete_zone(self.context, self.zone)
 
         self.service._do_zone_action.assert_called_with(
-            self.context, self.zone
+            self.context, self.zone, self.zone_params
         )
 
     def test_update_zone(self):
@@ -204,15 +205,18 @@ class TestService(oslotest.base.BaseTestCase):
         pool.also_notifies = mock.MagicMock()
         pool.also_notifies.__iter__.return_value = []
         self.service.get_pool.return_value = pool
+        self.zone_params = {}
 
-        self.service._do_zone_action(self.context, self.zone)
+        self.service._do_zone_action(self.context, self.zone,
+                                     self.zone_params)
 
         mock_zone_action.assert_called_with(
             self.service.executor,
             self.context,
             pool,
             self.zone,
-            self.zone.action
+            self.zone.action,
+            self.zone_params
         )
 
         self.service._executor.run.assert_called_with([mock_zone_action()])
@@ -230,15 +234,18 @@ class TestService(oslotest.base.BaseTestCase):
             mock.Mock(host='192.168.1.1', port=53),
         ]
         self.service.get_pool.return_value = pool
+        self.zone_params = {}
 
-        self.service._do_zone_action(self.context, self.zone)
+        self.service._do_zone_action(self.context, self.zone,
+                                     self.zone_params)
 
         mock_zone_action.assert_called_with(
             self.service.executor,
             self.context,
             pool,
             self.zone,
-            self.zone.action
+            self.zone.action,
+            self.zone_params
         )
 
         self.service._executor.run.assert_called_with(
