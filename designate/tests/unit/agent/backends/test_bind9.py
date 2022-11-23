@@ -95,12 +95,15 @@ class Bind9AgentBackendTestCase(designate.tests.TestCase):
     @mock.patch('designate.utils.execute')
     @mock.patch.object(dns.zone.Zone, 'to_file')
     def test_sync_zone(self, mock_to_file, mock_execute):
+        FAKE_STATE_PATH = '/tmp/fake/state/path'
+        self.CONF.set_override('state_path', FAKE_STATE_PATH)
+
         zone = backends.create_dnspy_zone('example.org')
 
         self.backend._sync_zone(zone)
 
         mock_to_file.assert_called_once_with(
-            '/var/lib/designate/zones/example.org.zone', relativize=False
+            FAKE_STATE_PATH + '/zones/example.org.zone', relativize=False
         )
 
         mock_execute.assert_called_once_with(
@@ -110,16 +113,19 @@ class Bind9AgentBackendTestCase(designate.tests.TestCase):
     @mock.patch('designate.utils.execute')
     @mock.patch.object(dns.zone.Zone, 'to_file')
     def test_sync_zone_with_new_zone(self, mock_to_file, mock_execute):
+        FAKE_STATE_PATH = '/tmp/fake/state/path'
+        self.CONF.set_override('state_path', FAKE_STATE_PATH)
+
         zone = backends.create_dnspy_zone('example.org')
 
         self.backend._sync_zone(zone, new_zone_flag=True)
 
         mock_to_file.assert_called_once_with(
-            '/var/lib/designate/zones/example.org.zone', relativize=False
+            FAKE_STATE_PATH + '/zones/example.org.zone', relativize=False
         )
 
         mock_execute.assert_called_once_with(
             'rndc', '-s', '127.0.0.1', '-p', '953', 'addzone',
             'example.org { type master; '
-            'file "/var/lib/designate/zones/example.org.zone"; };'
+            'file "' + FAKE_STATE_PATH + '/zones/example.org.zone"; };'
         )
