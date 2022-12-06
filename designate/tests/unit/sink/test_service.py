@@ -75,17 +75,23 @@ class TestSinkService(oslotest.base.BaseTestCase):
         mock_notification_listener.assert_not_called()
 
     def test_service_stop(self):
+        self.service.heartbeat.stop = mock.Mock()
         self.service._notification_listener = None
 
         self.service.stop()
+
+        self.assertTrue(self.service.heartbeat.stop.called)
 
         self.assertIn('Stopping sink service', self.stdlog.logger.output)
         self.assertIsNone(self.service._notification_listener)
 
     def test_service_stop_and_notification_listener_stopped(self):
+        self.service.heartbeat.stop = mock.Mock()
         self.service._notification_listener = mock.Mock()
 
         self.service.stop()
+
+        self.assertTrue(self.service.heartbeat.stop.called)
 
         self.assertIn('Stopping sink service', self.stdlog.logger.output)
         self.service._notification_listener.stop.assert_called_with()

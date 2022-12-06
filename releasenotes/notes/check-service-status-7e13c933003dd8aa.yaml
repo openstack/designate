@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Add two periodic service status checks, first is change service status
+    from 'UP' to 'DOWN' for services which are not heartbeated for longer
+    than threshold value and second is delete service status entries
+    which are marked as 'STOPPED' longer than 48 hours.

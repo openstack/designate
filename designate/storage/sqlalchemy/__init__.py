@@ -2460,6 +2460,11 @@ class SQLAlchemyStorage(base.SQLAlchemy):
             exceptions.DuplicateServiceStatus,
             exceptions.ServiceStatusNotFound)
 
+    def delete_service_status(self, context, service_status):
+        return self._delete(
+            context, tables.service_status, service_status,
+            exceptions.ServiceStatusNotFound)
+
     # Reverse Name utils
     def _rname_check(self, criterion):
         # If the criterion has 'name' in it, switch it out for reverse_name

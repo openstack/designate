@@ -27,7 +27,7 @@ class ServiceStatus(base.DesignateObject, base.DictObjectMixin,
         "hostname": fields.StringFields(nullable=True),
         "heartbeated_at": fields.DateTimeField(nullable=True),
         "status": fields.EnumField(nullable=True, valid_values=[
-            "UP", "DOWN", "WARNING"
+            "UP", "DOWN", "WARNING", "STOPPED"
         ]),
         "stats": fields.BaseObjectField(nullable=True),
         "capabilities": fields.BaseObjectField(nullable=True),

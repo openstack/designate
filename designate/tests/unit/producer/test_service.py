@@ -51,6 +51,8 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
         self.tg = mock.Mock()
         self.service = service.Service()
         self.service.coordination = mock.Mock()
+        self.service.heartbeat = mock.Mock()
+        self.service.rpc_server = mock.Mock()
         self.service.tg = self.tg
 
         mock_policy_init.assert_called_once()
@@ -74,7 +76,7 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
 
         # Make sure that tasks were added to the tg timer.
         self.tg.add_timer_args.assert_called()
-        self.assertEqual(6, self.tg.add_timer_args.call_count)
+        self.assertEqual(8, self.tg.add_timer_args.call_count)
 
     @mock.patch.object(service.coordination, 'Partitioner')
     @mock.patch.object(designate.service.RPCService, 'start')
@@ -98,6 +100,7 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
         self.service.stop()
 
         self.service.coordination.stop.assert_called()
+        self.service.heartbeat.stop.assert_called()
 
         self.assertIn('Stopping producer service', self.stdlog.logger.output)
 

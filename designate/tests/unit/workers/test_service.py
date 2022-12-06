@@ -70,8 +70,10 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
 
     @mock.patch.object(designate.rpc, 'get_notification_listener')
     def test_service_stop(self, mock_notification_listener):
+        self.service.heartbeat.stop = mock.Mock()
         self.service.stop()
 
+        self.assertTrue(self.service.heartbeat.stop.called)
         self.assertIn('Stopping worker service', self.stdlog.logger.output)
 
     def test_service_name(self):

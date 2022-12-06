@@ -3370,6 +3370,28 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         # Make sure the entry was updated.
         self.assertIsNotNone(service_status.updated_at)
 
+    def test_delete_service_status_entry(self):
+        values = self.get_service_status_fixture(fixture=1)
+
+        admin_context = self.get_admin_context()
+        admin_context.all_tenants = True
+        admin_context.system_scope = 'all'
+
+        self.storage.create_service_status(
+            admin_context, objects.ServiceStatus.from_dict(values))
+
+        service_status = self.central_service.delete_service_status(
+            admin_context, objects.ServiceStatus.from_dict(values))
+
+        self.assertEqual('c326f735-eecc-4968-969f-355a43c4ae27',
+                         service_status.id)
+
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.find_service_status,
+                                admin_context,
+                                objects.ServiceStatus.from_dict(values)
+                                )
+
     def test_create_zone_transfer_request(self):
         zone = self.create_zone()
         zone_transfer_request = self.create_zone_transfer_request(zone)

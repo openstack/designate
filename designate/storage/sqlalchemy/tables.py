@@ -42,7 +42,7 @@ ZONE_TYPES = ('PRIMARY', 'SECONDARY', 'CATALOG')
 ZONE_TASK_TYPES = ['IMPORT', 'EXPORT']
 
 SERVICE_STATES = [
-    "UP", "DOWN", "WARNING"
+    "UP", "DOWN", "WARNING", "STOPPED"
 ]
 
 metadata = MetaData()

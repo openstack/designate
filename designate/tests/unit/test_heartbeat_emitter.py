@@ -18,6 +18,7 @@ from oslo_config import fixture as cfg_fixture
 from oslo_service import loopingcall
 import oslotest.base
 
+from designate.common import constants
 import designate.conf
 from designate import heartbeat_emitter
 from designate import objects
@@ -60,11 +61,16 @@ class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
         noop_emitter.stop()
 
         mock_timer.stop.assert_called_once()
+        self.assertIn(
+            "<ServiceStatus service_name:'svc' hostname:'203.0.113.1' "
+            "status:'STOPPED'>",
+            self.stdlog.logger.output
+        )
 
-    def test_get_status(self):
+    def test_get_stats_and_capabilities(self):
         noop_emitter = heartbeat_emitter.get_heartbeat_emitter('svc')
 
-        self.assertEqual(('UP', {}, {},), noop_emitter.get_status())
+        self.assertEqual(({}, {},), noop_emitter.get_stats_and_capabilities())
 
     def test_emit(self):
         noop_emitter = heartbeat_emitter.get_heartbeat_emitter('svc')
@@ -107,7 +113,38 @@ class RpcEmitterTest(oslotest.base.BaseTestCase):
             mock_service_status.assert_called_once_with(
                 service_name='svc',
                 hostname=CONF.host,
-                status='UP',
+                status=constants.SERVICE_UP,
+                stats={},
+                capabilities={},
+                heartbeated_at=mock.ANY
+            )
+
+            central.update_service_status.assert_called_once_with(
+                mock_context.return_value, mock_service_status.return_value
+            )
+
+    @mock.patch.object(objects, 'ServiceStatus')
+    @mock.patch('designate.context.DesignateContext.get_admin_context')
+    @mock.patch.object(loopingcall, 'FixedIntervalLoopingCall')
+    def test_stop_heartbeat(self, mock_looping, mock_context,
+                            mock_service_status):
+        mock_timer = mock.Mock()
+        mock_looping.return_value = mock_timer
+
+        emitter = heartbeat_emitter.RpcEmitter('svc')
+        emitter.start()
+
+        mock_timer.start.assert_called_once()
+
+        central = mock.Mock()
+        with mock.patch('designate.central.rpcapi.CentralAPI.get_instance',
+                        return_value=central):
+            emitter.stop()
+
+            mock_service_status.assert_called_once_with(
+                service_name='svc',
+                hostname=CONF.host,
+                status=constants.SERVICE_STOPPED,
                 stats={},
                 capabilities={},
                 heartbeated_at=mock.ANY

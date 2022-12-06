@@ -20,6 +20,7 @@ from designate.central import rpcapi
 import designate.conf
 from designate import coordination
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate.producer import tasks
 from designate import service
 
@@ -49,6 +50,8 @@ class Service(service.RPCService):
         self.coordination = coordination.Coordination(
             self.service_name, self.tg, grouping_enabled=True
         )
+        self.heartbeat = heartbeat_emitter.get_heartbeat_emitter(
+            self.service_name)
 
     @property
     def service_name(self):
@@ -89,8 +92,10 @@ class Service(service.RPCService):
 
             interval = CONF[task.get_canonical_name()].interval
             self.tg.add_timer_args(interval, task, stop_on_exception=False)
+        self.heartbeat.start()
 
     def stop(self, graceful=True):
+        self.heartbeat.stop()
         super().stop(graceful)
         self.coordination.stop()
 

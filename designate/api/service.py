@@ -18,6 +18,7 @@ from paste import deploy
 
 import designate.conf
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate import service
 from designate import utils
 
@@ -33,11 +34,15 @@ class Service(service.WSGIService):
             self.service_name,
             CONF['service:api'].listen,
         )
+        self.heartbeat = heartbeat_emitter.get_heartbeat_emitter(
+            self.service_name)
 
     def start(self):
         super().start()
+        self.heartbeat.start()
 
     def stop(self, graceful=True):
+        self.heartbeat.stop()
         super().stop(graceful)
 
     @property

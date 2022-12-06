@@ -19,7 +19,6 @@ from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
 import designate.conf
-from designate import heartbeat_emitter
 from designate.mdns import service as mdns_service
 from designate import service
 from designate import utils
@@ -35,7 +34,5 @@ def main():
     gmr.TextGuruMeditation.setup_autorun(version)
 
     server = mdns_service.Service()
-    heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name)
     service.serve(server, workers=CONF['service:mdns'].workers)
-    heartbeat.start()
     service.wait()

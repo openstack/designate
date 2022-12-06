@@ -41,6 +41,12 @@ deprecated_update_service_status = policy.DeprecatedRule(
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
+deprecated_delete_service_status = policy.DeprecatedRule(
+    "delete_service_status",
+    base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
 
 
 rules = [
@@ -75,6 +81,12 @@ rules = [
         check_str=base.SYSTEM_ADMIN,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_update_service_status
+    ),
+    policy.RuleDefault(
+        name="delete_service_status",
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        deprecated_rule=deprecated_delete_service_status
     )
 ]
 

@@ -20,7 +20,6 @@ from oslo_reports import guru_meditation_report as gmr
 
 from designate.api import service as api_service
 import designate.conf
-from designate import heartbeat_emitter
 from designate import service
 from designate import utils
 from designate import version
@@ -36,7 +35,5 @@ def main():
     gmr.TextGuruMeditation.setup_autorun(version)
 
     server = api_service.Service()
-    heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name)
     service.serve(server, workers=CONF['service:api'].workers)
-    heartbeat.start()
     service.wait()
