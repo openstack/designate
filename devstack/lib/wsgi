@@ -4,6 +4,8 @@ function designate_configure_uwsgi {
     # We are using the http transport to work around an issue with
     # broken connections when using the uwsgi protocol of a local socket
     # See bug: https://github.com/unbit/uwsgi/issues/2368
+    enable_apache_mod proxy
+    enable_apache_mod proxy_http
     wsgi_conf=$(apache_site_config_for designate-api-wsgi)
     echo 'ProxyPass "/dns" "http://127.0.0.1:60053" retry=0' | sudo tee $wsgi_conf
 
