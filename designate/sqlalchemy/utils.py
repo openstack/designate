@@ -17,7 +17,6 @@
 #    under the License.
 
 from oslo_db import exception as oslo_db_exception
-from oslo_db.sqlalchemy.migration_cli import manager
 from oslo_db.sqlalchemy import utils
 from oslo_log import log
 import sqlalchemy
@@ -39,15 +38,6 @@ RRSET_FILTERING_INDEX = {
     'ttl': 'rrset_ttl',
     'tenant_id': 'rrset_tenant_id',
 }
-
-
-def get_migration_manager(repo_path, url, init_version=None):
-    migration_config = {
-        'migration_repo_path': repo_path,
-        'db_url': url,
-        'init_version': init_version,
-    }
-    return manager.MigrationManager(migration_config)
 
 
 # copy from olso/db/sqlalchemy/utils.py
