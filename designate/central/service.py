@@ -776,7 +776,7 @@ class Service(service.RPCService):
                 # Record the Parent Zone ID
                 zone.parent_zone_id = parent_zone.id
             else:
-                raise exceptions.IllegalChildZone('Unable to create'
+                raise exceptions.IllegalChildZone('Unable to create '
                                                   'subzone in another '
                                                   'tenants zone')
 
