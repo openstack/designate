@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import dns
 
 """
     backend.private_codes
@@ -33,3 +33,55 @@ SUCCESS = 65280
 FAILURE = 65281
 CREATE = 65282
 DELETE = 65283
+
+# TODO(johnsom) Remove this after the agents framework is removed or the
+#               protocol has been updated to not use an unassigned opcode(14).
+#
+# This is an Opcode Enum class that includes the unassigned[1][2]
+# opcode 14 used in the Designate agent framework until the agent framework
+# can be removed or fixed.
+# [1] https://www.rfc-editor.org/rfc/rfc6895.html#section-2.2
+# [2] https://www.iana.org/assignments/dns-parameters/ \
+#     dns-parameters.xhtml#dns-parameters-5
+#
+# Based on dns.opcode.Opcode:
+#
+# Copyright (C) Dnspython Contributors, see LICENSE for text of ISC license
+# Copyright (C) 2001-2017 Nominum, Inc.
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for any purpose with or without fee is hereby granted,
+# provided that the above copyright notice and this permission notice
+# appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND NOMINUM DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL NOMINUM BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+# OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+class OpcodeWith14(dns.enum.IntEnum):
+    #: Query
+    QUERY = 0
+    #: Inverse Query (historical)
+    IQUERY = 1
+    #: Server Status (unspecified and unimplemented anywhere)
+    STATUS = 2
+    #: Notify
+    NOTIFY = 4
+    #: Dynamic Update
+    UPDATE = 5
+
+    # Unassigned, but used by Designate for command/control in the agents
+    UNASSIGNED14 = 14
+
+    @classmethod
+    def _maximum(cls):
+        return 15
+
+    @classmethod
+    def _unknown_exception_class(cls):
+        return dns.opcode.UnknownOpcode

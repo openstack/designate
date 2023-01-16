@@ -21,6 +21,7 @@ import dns.resolver
 
 import designate
 from designate.agent import handler
+from designate.backend import private_codes
 import designate.tests
 
 
@@ -34,6 +35,10 @@ class AgentRequestHandlerTest(designate.tests.TestCase):
 
         self.handler = handler.RequestHandler()
         self.addr = ['0.0.0.0', 5558]
+
+        # TODO(johnsom) Remove this after the agents framework is removed or
+        # the protocol has been updated to not use an unassigned opcode(14).
+        dns.opcode.Opcode = private_codes.OpcodeWith14
 
     def test_init(self):
         self.CONF.set_override('masters', ['192.168.0.1', '192.168.0.2'],

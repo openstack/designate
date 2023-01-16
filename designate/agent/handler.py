@@ -56,6 +56,10 @@ class RequestHandler(object):
         backend_driver = cfg.CONF['service:agent'].backend_driver
         self.backend = agent_backend.get_backend(backend_driver, self)
 
+        # TODO(johnsom) Remove this after the agents framework is removed or
+        # the protocol has been updated to not use an unassigned opcode(14).
+        dns.opcode.Opcode = pcodes.OpcodeWith14
+
     def __call__(self, request):
         """
         :param request: DNS Request Message

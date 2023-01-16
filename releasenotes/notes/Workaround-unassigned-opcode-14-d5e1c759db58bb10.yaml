@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Workaround the use of an unassigned opcode(14) by Designate that fails
+    validation when used with dnspython >= 2.3.0.
+
+    `LP#2002950 <https://launchpad.net/bugs/2002950>`__

@@ -59,6 +59,10 @@ class AgentPoolBackend(base.Backend):
         self.max_retries = CONF['service:worker'].poll_max_retries
         # FIXME: the agent retries creating zones without any interval
 
+        # TODO(johnsom) Remove this after the agents framework is removed or
+        # the protocol has been updated to not use an unassigned opcode(14).
+        dns.opcode.Opcode = private_codes.OpcodeWith14
+
     def create_zone(self, context, zone):
         LOG.debug('Create Zone')
         response = self._make_and_send_dns_message(
