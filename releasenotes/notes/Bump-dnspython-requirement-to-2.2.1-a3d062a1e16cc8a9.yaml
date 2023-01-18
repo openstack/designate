@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    Designate has increased the minimum version of dnspython to 2.2.1 for the
+    antelope (2023.1) release to reflect support for python 3.10.
