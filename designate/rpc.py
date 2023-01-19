@@ -181,7 +181,7 @@ def get_client(target, version_cap=None, serializer=None):
     if serializer is None:
         serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
-    return messaging.RPCClient(
+    return messaging.get_rpc_client(
         TRANSPORT,
         target,
         version_cap=version_cap,
