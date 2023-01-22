@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Moved zone serial updates to a `designate-producer` task called
+    `increment_serial` to fix race conditions and to reduce the number of
+    updates to the upstream DNS servers when performing multiple DNS updates.

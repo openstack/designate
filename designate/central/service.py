@@ -27,6 +27,7 @@ from dns import zone as dnszone
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
+from oslo_utils import timeutils
 
 from designate.common import constants
 from designate.common.decorators import lock
@@ -51,7 +52,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.6'
+    RPC_API_VERSION = '6.7'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -349,48 +350,35 @@ class Service(service.RPCService):
                 "A project ID must be specified when not using a project "
                 "scoped token.")
 
-    def _increment_zone_serial(self, context, zone, set_delayed_notify=False):
-        """Update the zone serial and the SOA record
-        Optionally set delayed_notify to have PM issue delayed notify
-        """
-
-        # Increment the serial number
-        zone.serial = utils.increment_serial(zone.serial)
-        if set_delayed_notify:
-            zone.delayed_notify = True
-
-        zone = self.storage.update_zone(context, zone)
-
-        # Update SOA record
-        self._update_soa(context, zone)
-
-        return zone
-
     # SOA Recordset Methods
-    def _build_soa_record(self, zone, ns_records):
-        return "%s %s. %d %d %d %d %d" % (ns_records[0]['hostname'],
-                                          zone['email'].replace("@", "."),
-                                          zone['serial'],
-                                          zone['refresh'],
-                                          zone['retry'],
-                                          zone['expire'],
-                                          zone['minimum'])
+    @staticmethod
+    def _build_soa_record(zone, ns_records):
+        return '%s %s. %d %d %d %d %d' % (
+            ns_records[0]['hostname'],
+            zone['email'].replace('@', '.'),
+            zone['serial'],
+            zone['refresh'],
+            zone['retry'],
+            zone['expire'],
+            zone['minimum']
+        )
 
     def _create_soa(self, context, zone):
         pool_ns_records = self._get_pool_ns_records(context, zone.pool_id)
-
-        soa_values = [self._build_soa_record(zone, pool_ns_records)]
-        recordlist = objects.RecordList(objects=[
-            objects.Record(data=r, managed=True) for r in soa_values])
-        values = {
-            'name': zone['name'],
-            'type': "SOA",
-            'records': recordlist
-        }
-        soa, zone = self._create_recordset_in_storage(
-            context, zone, objects.RecordSet(**values),
-            increment_serial=False)
-        return soa
+        records = objects.RecordList(objects=[
+            objects.Record(
+                data=self._build_soa_record(zone, pool_ns_records),
+                managed=True
+            )
+        ])
+        return self._create_recordset_in_storage(
+            context, zone,
+            objects.RecordSet(
+                name=zone['name'],
+                type='SOA',
+                records=records
+            ), increment_serial=False
+        )[0]
 
     def _update_soa(self, context, zone):
         # NOTE: We should not be updating SOA records when a zone is SECONDARY.
@@ -400,14 +388,18 @@ class Service(service.RPCService):
         # Get the pool for it's list of ns_records
         pool_ns_records = self._get_pool_ns_records(context, zone.pool_id)
 
-        soa = self.find_recordset(context,
-                                  criterion={'zone_id': zone['id'],
-                                             'type': "SOA"})
+        soa = self.find_recordset(
+            context, criterion={
+                'zone_id': zone['id'],
+                'type': 'SOA'
+            }
+        )
 
         soa.records[0].data = self._build_soa_record(zone, pool_ns_records)
 
-        self._update_recordset_in_storage(context, zone, soa,
-                                          increment_serial=False)
+        self._update_recordset_in_storage(
+            context, zone, soa, increment_serial=False
+        )
 
     # NS Recordset Methods
     def _create_ns(self, context, zone, ns_records):
@@ -731,6 +723,14 @@ class Service(service.RPCService):
         return pool.ns_records
 
     @rpc.expected_exceptions()
+    @transaction
+    @lock.synchronized_zone()
+    def increment_zone_serial(self, context, zone):
+        zone.serial = self.storage.increment_serial(context, zone.id)
+        self._update_soa(context, zone)
+        return zone.serial
+
+    @rpc.expected_exceptions()
     @notification.notify_type('dns.domain.create')
     @notification.notify_type('dns.zone.create')
     @lock.synchronized_zone(new_zone=True)
@@ -853,7 +853,8 @@ class Service(service.RPCService):
                 # can be very long-lived.
                 time.sleep(0)
                 self._create_recordset_in_storage(
-                    context, zone, rrset, increment_serial=False)
+                    context, zone, rrset, increment_serial=False
+                )
 
         return zone
 
@@ -992,29 +993,28 @@ class Service(service.RPCService):
         """Update zone
         """
         zone = self._update_zone_in_storage(
-            context, zone, increment_serial=increment_serial)
+            context, zone, increment_serial=increment_serial
+        )
 
         # Fire off a XFR
         if 'masters' in changes:
             self.worker_api.perform_zone_xfr(context, zone)
 
-        self.worker_api.update_zone(context, zone)
-
         return zone
 
     @transaction
     def _update_zone_in_storage(self, context, zone,
-            increment_serial=True, set_delayed_notify=False):
-
+                                increment_serial=True,
+                                set_delayed_notify=False):
         zone.action = 'UPDATE'
         zone.status = 'PENDING'
 
         if increment_serial:
-            # _increment_zone_serial increments and updates the zone
-            zone = self._increment_zone_serial(
-                context, zone, set_delayed_notify=set_delayed_notify)
-        else:
-            zone = self.storage.update_zone(context, zone)
+            zone.increment_serial = True
+        if set_delayed_notify:
+            zone.delayed_notify = True
+
+        zone = self.storage.update_zone(context, zone)
 
         return zone
 
@@ -1329,7 +1329,6 @@ class Service(service.RPCService):
     # RecordSet Methods
     @rpc.expected_exceptions()
     @notification.notify_type('dns.recordset.create')
-    @lock.synchronized_zone()
     def create_recordset(self, context, zone_id, recordset,
                          increment_serial=True):
         zone = self.storage.get_zone(context, zone_id,
@@ -1372,9 +1371,8 @@ class Service(service.RPCService):
         context = context.elevated(all_tenants=True)
 
         recordset, zone = self._create_recordset_in_storage(
-            context, zone, recordset, increment_serial=increment_serial)
-
-        self.worker_api.update_zone(context, zone)
+            context, zone, recordset, increment_serial=increment_serial
+        )
 
         recordset.zone_name = zone.name
         recordset.obj_reset_changes(['zone_name'])
@@ -1412,33 +1410,33 @@ class Service(service.RPCService):
     @transaction_shallow_copy
     def _create_recordset_in_storage(self, context, zone, recordset,
                                      increment_serial=True):
-
         # Ensure the tenant has enough quota to continue
         self._enforce_recordset_quota(context, zone)
-
         self._validate_recordset(context, zone, recordset)
 
-        if recordset.obj_attr_is_set('records') and len(recordset.records) > 0:
-
+        if recordset.obj_attr_is_set('records') and recordset.records:
             # Ensure the tenant has enough zone record quotas to
             # create new records
             self._enforce_record_quota(context, zone, recordset)
 
-            if increment_serial:
-                # update the zone's status and increment the serial
-                zone = self._update_zone_in_storage(
-                    context, zone, increment_serial)
-
             for record in recordset.records:
                 record.action = 'CREATE'
                 record.status = 'PENDING'
-                record.serial = zone.serial
+                if not increment_serial:
+                    record.serial = zone.serial
+                else:
+                    record.serial = timeutils.utcnow_ts()
 
-        recordset = self.storage.create_recordset(context, zone.id,
-                                                  recordset)
+        new_recordset = self.storage.create_recordset(context, zone.id,
+                                                      recordset)
+        if recordset.records and increment_serial:
+            # update the zone's status and increment the serial
+            zone = self._update_zone_in_storage(
+                context, zone, increment_serial
+            )
 
         # Return the zone too in case it was updated
-        return (recordset, zone)
+        return new_recordset, zone
 
     @rpc.expected_exceptions()
     def get_recordset(self, context, zone_id, recordset_id):
@@ -1553,7 +1551,6 @@ class Service(service.RPCService):
 
     @rpc.expected_exceptions()
     @notification.notify_type('dns.recordset.update')
-    @lock.synchronized_zone()
     def update_recordset(self, context, recordset, increment_serial=True):
         zone_id = recordset.obj_get_original_value('zone_id')
         changes = recordset.obj_get_changes()
@@ -1622,41 +1619,44 @@ class Service(service.RPCService):
         recordset, zone = self._update_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
 
-        self.worker_api.update_zone(context, zone)
-
         return recordset
 
     @transaction
     def _update_recordset_in_storage(self, context, zone, recordset,
-            increment_serial=True, set_delayed_notify=False):
+                                     increment_serial=True,
+                                     set_delayed_notify=False):
 
         self._validate_recordset(context, zone, recordset)
 
-        if increment_serial:
-            # update the zone's status and increment the serial
-            zone = self._update_zone_in_storage(
-                context, zone, increment_serial,
-                set_delayed_notify=set_delayed_notify)
-
         if recordset.records:
             for record in recordset.records:
-                if record.action != 'DELETE':
-                    record.action = 'UPDATE'
-                    record.status = 'PENDING'
+                if record.action == 'DELETE':
+                    continue
+                record.action = 'UPDATE'
+                record.status = 'PENDING'
+                if not increment_serial:
                     record.serial = zone.serial
+                else:
+                    record.serial = timeutils.utcnow_ts()
 
             # Ensure the tenant has enough zone record quotas to
             # create new records
             self._enforce_record_quota(context, zone, recordset)
 
         # Update the recordset
-        recordset = self.storage.update_recordset(context, recordset)
+        new_recordset = self.storage.update_recordset(context, recordset)
 
-        return recordset, zone
+        if increment_serial:
+            # update the zone's status and increment the serial
+            zone = self._update_zone_in_storage(
+                context, zone,
+                increment_serial=increment_serial,
+                set_delayed_notify=set_delayed_notify)
+
+        return new_recordset, zone
 
     @rpc.expected_exceptions()
     @notification.notify_type('dns.recordset.delete')
-    @lock.synchronized_zone()
     def delete_recordset(self, context, zone_id, recordset_id,
                          increment_serial=True):
         # apply_tenant_criteria=False here as we will gate this delete
@@ -1708,8 +1708,6 @@ class Service(service.RPCService):
         recordset, zone = self._delete_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
 
-        self.worker_api.update_zone(context, zone)
-
         recordset.zone_name = zone.name
         recordset.obj_reset_changes(['zone_name'])
 
@@ -1718,23 +1716,26 @@ class Service(service.RPCService):
     @transaction
     def _delete_recordset_in_storage(self, context, zone, recordset,
                                      increment_serial=True):
+        if recordset.records:
+            for record in recordset.records:
+                record.action = 'DELETE'
+                record.status = 'PENDING'
+                if not increment_serial:
+                    record.serial = zone.serial
+                else:
+                    record.serial = timeutils.utcnow_ts()
+
+        # Update the recordset's action/status and then delete it
+        self.storage.update_recordset(context, recordset)
 
         if increment_serial:
             # update the zone's status and increment the serial
             zone = self._update_zone_in_storage(
                 context, zone, increment_serial)
 
-        if recordset.records:
-            for record in recordset.records:
-                record.action = 'DELETE'
-                record.status = 'PENDING'
-                record.serial = zone.serial
+        new_recordset = self.storage.delete_recordset(context, recordset.id)
 
-        # Update the recordset's action/status and then delete it
-        self.storage.update_recordset(context, recordset)
-        recordset = self.storage.delete_recordset(context, recordset.id)
-
-        return (recordset, zone)
+        return new_recordset, zone
 
     @rpc.expected_exceptions()
     def count_recordsets(self, context, criterion=None):

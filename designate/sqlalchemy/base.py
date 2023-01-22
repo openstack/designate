@@ -152,7 +152,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         # Ensure the Object is valid
         # obj.validate()
 
-        values = obj.obj_get_changes()
+        values = dict(obj)
 
         if skip_values is not None:
             for skip_value in skip_values:
@@ -166,7 +166,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
         with sql.get_write_session() as session:
             try:
-                resultproxy = session.execute(query, [dict(values)])
+                resultproxy = session.execute(query, [values])
             except oslo_db_exception.DBDuplicateEntry:
                 raise exc_dup("Duplicate %s" % obj.obj_name())
 

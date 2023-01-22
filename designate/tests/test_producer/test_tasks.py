@@ -15,6 +15,7 @@
 # under the License.
 
 import datetime
+from unittest import mock
 
 from oslo_log import log as logging
 from oslo_utils import timeutils
@@ -24,6 +25,7 @@ from designate.storage.impl_sqlalchemy import tables
 from designate.storage import sql
 from designate.tests import fixtures
 from designate.tests import TestCase
+from designate.worker import rpcapi as worker_api
 
 
 LOG = logging.getLogger(__name__)
@@ -39,7 +41,7 @@ class DeletedZonePurgeTest(TestCase):
         self.config(
             time_threshold=self.time_threshold,
             batch_size=self.batch_size,
-            group="producer_task:zone_purge"
+            group='producer_task:zone_purge'
         )
         self.purge_task_fixture = self.useFixture(
             fixtures.ZoneManagerTaskFixture(tasks.DeletedZonePurgeTask)
@@ -77,7 +79,7 @@ class DeletedZonePurgeTest(TestCase):
             age = index * (self.time_threshold // self.number_of_zones * 2) - 1
             delta = datetime.timedelta(seconds=age)
             deletion_time = now - delta
-            name = "example%d.org." % index
+            name = 'example%d.org.' % index
             self._create_deleted_zone(name, deletion_time)
 
     def test_purge_zones(self):
@@ -101,9 +103,8 @@ class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
         super(PeriodicGenerateDelayedNotifyTaskTest, self).setUp()
         self.config(quota_zones=self.number_of_zones)
         self.config(
-            interval=1,
             batch_size=self.batch_size,
-            group="producer_task:delayed_notify"
+            group='producer_task:delayed_notify'
         )
         self.generate_delayed_notify_task_fixture = self.useFixture(
             fixtures.ZoneManagerTaskFixture(
@@ -123,7 +124,7 @@ class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
     def _create_zones(self):
         # Create a number of zones; half of them with delayed_notify set.
         for index in range(self.number_of_zones):
-            name = "example%d.org." % index
+            name = 'example%d.org.' % index
             delayed_notify = (index % 2 == 0)
             self.create_zone(
                 name=name,
@@ -149,3 +150,43 @@ class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
                 remaining, len(zones),
                 message='Remaining zones: %s' % zones
             )
+
+
+class PeriodicIncrementSerialTaskTest(TestCase):
+    number_of_zones = 20
+    batch_size = 20
+
+    def setUp(self):
+        super(PeriodicIncrementSerialTaskTest, self).setUp()
+        self.worker_api = mock.Mock()
+        mock.patch.object(worker_api.WorkerAPI, 'get_instance',
+                          return_value=self.worker_api).start()
+        self.config(quota_zones=self.number_of_zones)
+        self.config(
+            batch_size=self.batch_size,
+            group='producer_task:increment_serial'
+        )
+        self.increment_serial_task_fixture = self.useFixture(
+            fixtures.ZoneManagerTaskFixture(
+                tasks.PeriodicIncrementSerialTask
+            )
+        )
+
+    def _create_zones(self):
+        for index in range(self.number_of_zones):
+            name = 'example%d.org.' % index
+            increment_serial = (index % 2 == 0)
+            delayed_notify = (index % 4 == 0)
+            self.create_zone(
+                name=name,
+                increment_serial=increment_serial,
+                delayed_notify=delayed_notify,
+            )
+
+    def test_increment_serial(self):
+        self._create_zones()
+
+        self.increment_serial_task_fixture.task()
+
+        self.worker_api.update_zone.assert_called()
+        self.assertEqual(5, self.worker_api.update_zone.call_count)

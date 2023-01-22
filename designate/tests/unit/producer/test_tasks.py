@@ -31,7 +31,9 @@ from designate import context
 from designate.producer import tasks
 from designate import rpc
 from designate.tests.unit import RoObject
+from designate.tests.unit import RwObject
 from designate.utils import generate_uuid
+from designate.worker import rpcapi as worker_api
 
 DUMMY_TASK_GROUP = cfg.OptGroup(
     name='producer_task:dummy',
@@ -244,3 +246,82 @@ class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
             self.task()
 
         self.assertFalse(self.central.xfr_zone.called)
+
+
+class PeriodicIncrementSerialTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super(PeriodicIncrementSerialTest, self).setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+
+        self.central_api = mock.Mock()
+        self.context = mock.Mock()
+        self.worker_api = mock.Mock()
+        mock.patch.object(worker_api.WorkerAPI, 'get_instance',
+                          return_value=self.worker_api).start()
+        mock.patch.object(central_api.CentralAPI, 'get_instance',
+                          return_value=self.central_api).start()
+        mock.patch.object(context.DesignateContext, 'get_admin_context',
+                          return_value=self.context).start()
+        self.central_api.increment_zone_serial.return_value = 123
+        self.task = tasks.PeriodicIncrementSerialTask()
+        self.task.my_partitions = 0, 9
+
+    def test_increment_zone(self):
+        zone = RoObject(
+            id=generate_uuid(),
+            action='CREATE',
+            increment_serial=True,
+            delayed_notify=False,
+        )
+        self.central_api.find_zones.return_value = [zone]
+
+        self.task()
+
+        self.central_api.increment_zone_serial.assert_called()
+        self.worker_api.update_zone.assert_called()
+
+    def test_increment_zone_with_action_none(self):
+        zone = RwObject(
+            id=generate_uuid(),
+            action='NONE',
+            status='ACTIVE',
+            increment_serial=True,
+            delayed_notify=False,
+        )
+        self.central_api.find_zones.return_value = [zone]
+
+        self.task()
+
+        self.central_api.increment_zone_serial.assert_called()
+        self.worker_api.update_zone.assert_called()
+
+        self.assertEqual('UPDATE', zone.action)
+        self.assertEqual('PENDING', zone.status)
+
+    def test_increment_zone_with_delayed_notify(self):
+        zone = RoObject(
+            id=generate_uuid(),
+            action='CREATE',
+            increment_serial=True,
+            delayed_notify=True,
+        )
+        self.central_api.find_zones.return_value = [zone]
+
+        self.task()
+
+        self.central_api.increment_zone_serial.assert_called()
+        self.worker_api.update_zone.assert_not_called()
+
+    def test_increment_zone_skip_deleted(self):
+        zone = RoObject(
+            id=generate_uuid(),
+            action='DELETE',
+            increment_serial=True,
+            delayed_notify=False,
+        )
+        self.central_api.find_zones.return_value = [zone]
+
+        self.task()
+
+        self.central_api.increment_zone_serial.assert_not_called()
+        self.worker_api.update_zone.assert_not_called()

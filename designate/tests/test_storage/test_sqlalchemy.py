@@ -113,6 +113,7 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
             },
             "zones": {
                 "delayed_notify": "CREATE INDEX delayed_notify ON zones (delayed_notify)",  # noqa
+                "increment_serial": "CREATE INDEX increment_serial ON zones (increment_serial)",  # noqa
                 "reverse_name_deleted": "CREATE INDEX reverse_name_deleted ON zones (reverse_name, deleted)",  # noqa
                 "zone_created_at": "CREATE INDEX zone_created_at ON zones (created_at)",  # noqa
                 "zone_deleted": "CREATE INDEX zone_deleted ON zones (deleted)",

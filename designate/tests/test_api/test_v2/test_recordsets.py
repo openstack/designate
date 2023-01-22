@@ -17,6 +17,7 @@ from unittest.mock import patch
 
 from oslo_log import log as logging
 import oslo_messaging as messaging
+from oslo_utils import timeutils
 
 from designate.central import service as central_service
 from designate import exceptions
@@ -438,10 +439,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.client.delete(url, status=202, headers={'X-Test-Role': 'member'})
 
         # Simulate the zone having been deleted on the backend
-        zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, zone['id'], 'SUCCESS', zone_serial, 'UPDATE'
+            self.admin_context, zone['id'], 'SUCCESS', timeutils.utcnow_ts(),
+            'DELETE'
         )
 
         # Try to get the record and ensure that we get a
