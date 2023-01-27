@@ -21,7 +21,8 @@
     required-projects: &base_required_projects
       - openstack/designate
       - openstack/designate-dashboard
-      - openstack/designate-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.16.0
       - openstack/python-designateclient
     timeout: 4200
     irrelevant-files: &base_irrelevant_files
@@ -108,7 +109,8 @@
       - opendev.org/openstack/horizon
       - opendev.org/openstack/designate
       - opendev.org/openstack/designate-dashboard
-      - opendev.org/openstack/designate-tempest-plugin
+      - name: opendev.org/openstack/designate-tempest-plugin
+        override-checkout: 0.16.0
       - opendev.org/openstack/python-designateclient
     post-run: playbooks/designate-pdns4/post.yaml
     vars:
