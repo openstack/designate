@@ -106,3 +106,11 @@ def enforce_new_defaults():
     if CONF.get('oslo_policy'):
         return CONF['oslo_policy'].get('enforce_new_defaults', False)
     return False
+
+
+def get_enforcer():
+    # This method is used by oslopolicy CLI scripts in order to generate policy
+    # files from overrides on disk and defaults in code.
+    cfg.CONF([], project='designate')
+    init()
+    return _ENFORCER
