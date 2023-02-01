@@ -42,7 +42,7 @@ class AlsoNotifyTask(object):
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '1.1'
+    RPC_API_VERSION = '1.2'
 
     target = messaging.Target(version=RPC_API_VERSION)
 

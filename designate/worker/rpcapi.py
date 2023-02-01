@@ -36,15 +36,16 @@ class WorkerAPI(object):
 
         1.0 - Initial version
         1.1 - Added perform_zone_xfr and get_serial_number
+        1.2 - Added hard_delete to delete_zone
     """
-    RPC_API_VERSION = '1.1'
+    RPC_API_VERSION = '1.2'
 
     def __init__(self, topic=None):
         self.topic = topic if topic else cfg.CONF['service:worker'].topic
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='1.1')
+        self.client = rpc.get_client(target, version_cap='1.2')
 
     @classmethod
     def get_instance(cls):
@@ -68,7 +69,7 @@ class WorkerAPI(object):
         return self.client.cast(
             context, 'update_zone', zone=zone)
 
-    def delete_zone(self, context, zone, hard_delete):
+    def delete_zone(self, context, zone, hard_delete=False):
         return self.client.cast(
             context, 'delete_zone', zone=zone, hard_delete=hard_delete)
 
