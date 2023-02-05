@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import warnings
+
 from oslo_log import log as logging
 
 from designate.backend.agent_backend import base
@@ -22,6 +24,14 @@ LOG = logging.getLogger(__name__)
 
 class FakeBackend(base.AgentBackend):
     __plugin_name__ = 'fake'
+
+    def __init__(self, agent_service):
+        super(FakeBackend, self).__init__(agent_service)
+        warning_msg = ('The designate agent framework and backend driver "{}" '
+                       'are deprecated as of the Antelope (2023.1) release '
+                       'and will be removed in the "C" '
+                       'release.'.format(self.__plugin_name__))
+        warnings.warn(warning_msg, DeprecationWarning)
 
     def start(self):
         LOG.info("Started fake backend, Pool Manager will not work!")

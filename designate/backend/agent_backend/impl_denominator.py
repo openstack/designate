@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import itertools
+import warnings
 
 import dns.rdata
 import dns.rdataclass
@@ -92,6 +93,13 @@ class DenominatorBackend(base.AgentBackend):
 
     def __init__(self, agent_service):
         super(DenominatorBackend, self).__init__(agent_service)
+
+        warning_msg = ('The designate agent framework and backend driver "{}" '
+                       'are deprecated as of the Antelope (2023.1) release '
+                       'and will be removed in the "C" '
+                       'release.'.format(self.__plugin_name__))
+        warnings.warn(warning_msg, DeprecationWarning)
+
         self.denominator = Denominator(
             cfg.CONF[CFG_GROUP_NAME])
 

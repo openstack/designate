@@ -37,6 +37,7 @@ Supported Knot versions: >= 2.1, < 3
 
 Configured in [service:agent:knot2]
 """
+import warnings
 
 from oslo_concurrency import lockutils
 from oslo_concurrency.processutils import ProcessExecutionError
@@ -65,6 +66,12 @@ class Knot2Backend(base.AgentBackend):
     def __init__(self, *a, **kw):
         """Configure the backend"""
         super(Knot2Backend, self).__init__(*a, **kw)
+
+        warning_msg = ('The designate agent framework and backend driver "{}" '
+                       'are deprecated as of the Antelope (2023.1) release '
+                       'and will be removed in the "C" '
+                       'release.'.format(self.__plugin_name__))
+        warnings.warn(warning_msg, DeprecationWarning)
 
         self._knotc_cmd_name = cfg.CONF[CFG_GROUP_NAME].knotc_cmd_name
 

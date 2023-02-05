@@ -43,6 +43,7 @@ import glob
 import os
 import random
 import tempfile
+import warnings
 
 import dns
 import dns.resolver
@@ -94,6 +95,13 @@ class DjbdnsBackend(base.AgentBackend):
     def __init__(self, *a, **kw):
         """Configure the backend"""
         super(DjbdnsBackend, self).__init__(*a, **kw)
+
+        warning_msg = ('The designate agent framework and backend driver "{}" '
+                       'are deprecated as of the Antelope (2023.1) release '
+                       'and will be removed in the "C" '
+                       'release.'.format(self.__plugin_name__))
+        warnings.warn(warning_msg, DeprecationWarning)
+
         conf = cfg.CONF[CFG_GROUP_NAME]
 
         self._resolver = dns.resolver.Resolver(configure=False)

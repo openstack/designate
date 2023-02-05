@@ -15,6 +15,8 @@
 # under the License.
 import dns
 
+from debtcollector import removals
+
 """
     backend.private_codes
     ~~~~~~~~~~~~~~~~~~~~~~
@@ -63,6 +65,7 @@ DELETE = 65283
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+@removals.removed_class("OpcodeWith14")
 class OpcodeWith14(dns.enum.IntEnum):
     #: Query
     QUERY = 0

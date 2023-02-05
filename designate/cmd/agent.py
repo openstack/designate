@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import sys
+import warnings
 
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
@@ -34,6 +35,10 @@ def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
     gmr.TextGuruMeditation.setup_autorun(version)
+
+    warnings.warn('The designate agent process is deprecated as of the '
+                  'Antelope (2023.1) release and will be removed in the '
+                  '"C" release.', DeprecationWarning)
 
     server = agent_service.Service()
     heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name)

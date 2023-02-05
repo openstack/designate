@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import warnings
 
 import dns
 import dns.resolver
@@ -32,6 +33,14 @@ LOG = logging.getLogger(__name__)
 class Bind9Backend(base.AgentBackend):
     __plugin_name__ = 'bind9'
     __backend_status__ = 'untested'
+
+    def __init__(self, agent_service):
+        super(Bind9Backend, self).__init__(agent_service)
+        warning_msg = ('The designate agent framework and backend driver "{}" '
+                       'are deprecated as of the Antelope (2023.1) release '
+                       'and will be removed in the "C" '
+                       'release.'.format(self.__plugin_name__))
+        warnings.warn(warning_msg, DeprecationWarning)
 
     def start(self):
         LOG.info("Started bind9 backend")
