@@ -13,13 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import dns
 import dns.flags
 import dns.message
 import dns.opcode
 import dns.rcode
 import dns.rdataclass
 import dns.rdatatype
+import dns.renderer
+import dns.resolver
+import dns.rrset
 from oslo_config import cfg
 from oslo_log import log as logging
 
