@@ -142,7 +142,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                                      dns.rdataclass.IN, msg)
         return answer
 
-    @mock.patch.object(dns.resolver.Resolver, 'query')
+    @mock.patch.object(dns.resolver.Resolver, 'resolve')
     def test_dispatch_opcode_notify_different_serial(self, func):
         # DNS packet with NOTIFY opcode
         payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
@@ -179,7 +179,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
-    @mock.patch.object(dns.resolver.Resolver, 'query')
+    @mock.patch.object(dns.resolver.Resolver, 'resolve')
     def test_dispatch_opcode_notify_same_serial(self, func):
         # DNS packet with NOTIFY opcode
         payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"

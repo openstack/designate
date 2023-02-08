@@ -151,7 +151,7 @@ class RequestHandler(object):
         # According to RFC we should query the server that sent the NOTIFY
         resolver.nameservers = [notify_addr]
 
-        soa_answer = resolver.query(zone.name, 'SOA')
+        soa_answer = resolver.resolve(zone.name, 'SOA')
         soa_serial = soa_answer[0].serial
 
         if soa_serial == zone.serial:
@@ -303,6 +303,7 @@ class RequestHandler(object):
         """Handle a DNS QUERY request for a record"""
         context = request.environ['context']
         response = dns.message.make_response(request)
+        q_rrset = None
 
         try:
             q_rrset = request.question[0]
@@ -371,7 +372,7 @@ class RequestHandler(object):
         yield response
 
     def _create_axfr_renderer(self, request):
-        # Build up a dummy response, we're stealing it's logic for building
+        # Build up a dummy response, we're stealing its logic for building
         # the Flags.
         response = dns.message.make_response(request)
         response.flags |= dns.flags.AA
