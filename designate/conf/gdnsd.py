@@ -22,12 +22,21 @@ GDNSD_GROUP = cfg.OptGroup(
 GDNSD_OPTS = [
     cfg.StrOpt('gdnsd_cmd_name',
                help='gdnsd executable path or rootwrap command name',
-               default='gdnsd'),
+               default='gdnsd',
+               deprecated_for_removal=True,
+               deprecated_since='Antelope(2023.1)',
+               deprecated_reason='The agent framework is deprecated.'),
     cfg.StrOpt('confdir_path',
                help='gdnsd configuration directory path',
-               default='/etc/gdnsd'),
+               default='/etc/gdnsd',
+               deprecated_for_removal=True,
+               deprecated_since='Antelope(2023.1)',
+               deprecated_reason='The agent framework is deprecated.'),
     cfg.StrOpt('query_destination', default='127.0.0.1',
-               help='Host to query when finding zones'),
+               help='Host to query when finding zones',
+               deprecated_for_removal=True,
+               deprecated_since='Antelope(2023.1)',
+               deprecated_reason='The agent framework is deprecated.'),
 ]
 
 

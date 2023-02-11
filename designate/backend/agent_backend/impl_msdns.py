@@ -14,6 +14,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import warnings
 
 from os_win import constants
 from os_win import exceptions as os_win_exc
@@ -35,6 +36,12 @@ class MSDNSBackend(base.AgentBackend):
     def __init__(self, agent_service):
         """Configure the backend"""
         super(MSDNSBackend, self).__init__(agent_service)
+
+        warning_msg = ('The designate agent framework and backend driver "{}" '
+                       'are deprecated as of the Antelope (2023.1) release '
+                       'and will be removed in the "C" '
+                       'release.'.format(self.__plugin_name__))
+        warnings.warn(warning_msg, DeprecationWarning)
 
         self._dnsutils = utilsfactory.get_dnsutils()
 

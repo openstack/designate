@@ -23,6 +23,7 @@
 
     Configured in [service:agent]
 """
+import warnings
 
 from oslo_config import cfg
 
@@ -44,6 +45,10 @@ class Service(service.Service):
         super(Service, self).__init__(
             self.service_name, threads=cfg.CONF['service:agent'].threads
         )
+
+        warnings.warn('The designate agent service is deprecated as of the '
+                      'Antelope (2023.1) release and will be removed in the '
+                      '"C" release.', DeprecationWarning)
 
         self.dns_service = service.DNSService(
             self.dns_application, self.tg,

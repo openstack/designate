@@ -24,25 +24,36 @@ DJDNS_OPTS = [
     cfg.StrOpt(
         'tcpclient_cmd_name',
         help='tcpclient executable path or rootwrap command name',
-        default='tcpclient'
+        default='tcpclient', deprecated_for_removal=True,
+        deprecated_since='Antelope(2023.1)',
+        deprecated_reason='The agent framework is deprecated.'
     ),
     cfg.StrOpt(
         'axfr_get_cmd_name',
         help='axfr-get executable path or rootwrap command name',
-        default='axfr-get'
+        default='axfr-get', deprecated_for_removal=True,
+        deprecated_since='Antelope(2023.1)',
+        deprecated_reason='The agent framework is deprecated.'
     ),
     cfg.StrOpt(
         'tinydns_data_cmd_name',
         help='tinydns-data executable path or rootwrap command name',
-        default='tinydns-data'
+        default='tinydns-data', deprecated_for_removal=True,
+        deprecated_since='Antelope(2023.1)',
+        deprecated_reason='The agent framework is deprecated.'
     ),
     cfg.StrOpt(
         'tinydns_datadir',
         help='TinyDNS data directory',
-        default='/var/lib/djbdns'
+        default='/var/lib/djbdns', deprecated_for_removal=True,
+        deprecated_since='Antelope(2023.1)',
+        deprecated_reason='The agent framework is deprecated.'
     ),
     cfg.StrOpt('query_destination', default='127.0.0.1',
-               help='Host to query when finding zones'),
+               help='Host to query when finding zones',
+               deprecated_for_removal=True,
+               deprecated_since='Antelope(2023.1)',
+               deprecated_reason='The agent framework is deprecated.'),
 ]
 
 

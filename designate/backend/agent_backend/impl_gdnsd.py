@@ -42,6 +42,7 @@ import errno
 import os
 import string
 import tempfile
+import warnings
 
 import dns
 import dns.resolver
@@ -84,6 +85,12 @@ class GdnsdBackend(base.AgentBackend):
     def __init__(self, *a, **kw):
         """Configure the backend"""
         super(GdnsdBackend, self).__init__(*a, **kw)
+
+        warning_msg = ('The designate agent framework and backend driver "{}" '
+                       'are deprecated as of the Antelope (2023.1) release '
+                       'and will be removed in the "C" '
+                       'release.'.format(self.__plugin_name__))
+        warnings.warn(warning_msg, DeprecationWarning)
 
         self._gdnsd_cmd_name = cfg.CONF[CFG_GROUP_NAME].gdnsd_cmd_name
         LOG.info("gdnsd command: %r", self._gdnsd_cmd_name)

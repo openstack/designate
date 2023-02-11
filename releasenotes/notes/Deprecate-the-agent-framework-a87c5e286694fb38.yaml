@@ -1,0 +1,7 @@
+---
+deprecations:
+  - |
+    The backend agent framework and agent based drivers are deprecated for
+    removal in the "C" release. The following backend agent drivers are now
+    deprecated: Bind9 (Agent), Denominator, Microsoft DNS (Agent),
+    Djbdns (Agent), Gdnsd (Agent), Knot2 (Agent).

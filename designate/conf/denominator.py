@@ -22,9 +22,15 @@ DENOMINATOR_GROUP = cfg.OptGroup(
 
 DENOMINATOR_OPTS = [
     cfg.StrOpt('name', default='fake',
-               help='Name of the affected provider'),
+               help='Name of the affected provider',
+               deprecated_for_removal=True,
+               deprecated_since='Antelope(2023.1)',
+               deprecated_reason='The agent framework is deprecated.'),
     cfg.StrOpt('config_file', default='/etc/denominator.conf',
-               help='Path to Denominator configuration file'),
+               help='Path to Denominator configuration file',
+               deprecated_for_removal=True,
+               deprecated_since='Antelope(2023.1)',
+               deprecated_reason='The agent framework is deprecated.'),
 ]
 
 

@@ -15,9 +15,12 @@
 # under the License.
 import abc
 
+from debtcollector import removals
+
 from designate.plugin import DriverPlugin
 
 
+@removals.removed_class('AgentBackend')
 class AgentBackend(DriverPlugin):
     """Base class for backend implementations"""
     __plugin_type__ = 'backend'
