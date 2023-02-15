@@ -45,8 +45,8 @@ class Service(service.Service):
     def _init_extensions():
         """Loads and prepares all enabled extensions"""
 
-        enabled_notification_handlers = \
-            cfg.CONF['service:sink'].enabled_notification_handlers
+        enabled_notification_handlers = cfg.CONF[
+            'service:sink'].enabled_notification_handlers
 
         notification_handlers = notification_handler.get_notification_handlers(
             enabled_notification_handlers)

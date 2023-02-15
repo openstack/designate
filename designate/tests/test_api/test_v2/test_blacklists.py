@@ -148,9 +148,7 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
 
         correct_results = [1, 2]
 
-        for get_url, correct_result in \
-                zip(get_urls, correct_results):
-
+        for get_url, correct_result in zip(get_urls, correct_results):
             self.policy({'find_blacklists': '@'})
             response = self.client.get(get_url)
 

@@ -46,8 +46,8 @@ class RelationNotLoaded(DesignateException):
 
         super(RelationNotLoaded, self).__init__(*args, **kwargs)
 
-        self.error_message = "%(relation)s is not loaded on %(object)s" % \
-            {"relation": self.relation, "object": self.object.obj_name()}
+        self.error_message = ("%(relation)s is not loaded on %(object)s" %
+            {"relation": self.relation, "object": self.object.obj_name()})
 
     def __str__(self):
         return self.error_message
@@ -502,8 +502,8 @@ class ResourceNotFound(NotFound):
 class MissingProjectID(BadRequest):
     # Note: This should be 400, but is 401 for compatibility with
     #       previous versions of the API.
-    # https://github.com/openstack/designate/blob/stable/wallaby/ \
-    # designate/api/middleware.py#L132
+    # https://github.com/openstack/designate/blob/stable/wallaby/
+    #     designate/api/middleware.py#L132
     error_code = 401
     error_type = 'missing_project_id'
 

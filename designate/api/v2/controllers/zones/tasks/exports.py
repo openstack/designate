@@ -42,8 +42,7 @@ class ZoneExportController(rest.RestController):
         export = self.central_api.get_zone_export(context, export_id)
 
         if export.location and export.location.startswith('designate://'):
-            return self.central_api.\
-                export_zone(context, export['zone_id'])
+            return self.central_api.export_zone(context, export['zone_id'])
         else:
             msg = 'Zone can not be exported synchronously'
             raise exceptions.BadRequest(msg)

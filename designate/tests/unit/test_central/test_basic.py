@@ -277,7 +277,7 @@ class CentralBasic(TestCase):
 
 class CentralServiceTestCase(CentralBasic):
     def test_conf_fixture(self):
-        assert 'service:central' in designate.central.service.cfg.CONF
+        assert 'service:central' in cfg.CONF
 
     def test_init(self):
         self.assertTrue(self.service.check_for_tlds)
@@ -616,8 +616,7 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_is_valid_recordset_name_too_long(self):
         zone = RoObject(name='example.org.')
-        designate.central.service.cfg.CONF['service:central'].\
-            max_recordset_name_len = 255
+        cfg.CONF['service:central'].max_recordset_name_len = 255
         rs_name = 'a' * 255 + '.org.'
         with testtools.ExpectedException(exceptions.InvalidRecordSetName) as e:
             self.service._is_valid_recordset_name(self.context, zone, rs_name)
@@ -758,8 +757,8 @@ class CentralZoneTestCase(CentralBasic):
             RoObject(type='PRIMARY', name='example.org.'),
             [RoObject(), RoObject(), RoObject()]
         )
-        ctx, zone, rset = \
-            self.service._create_recordset_in_storage.call_args[0]
+        ctx, zone, rset = (
+            self.service._create_recordset_in_storage.call_args[0])
 
         self.assertEqual('example.org.', rset.name)
         self.assertEqual('NS', rset.type)
@@ -805,8 +804,8 @@ class CentralZoneTestCase(CentralBasic):
             RoObject(name='foo', id=CentralZoneTestCase.zone__id),
             RoObject(name='bar')
         )
-        ctx, zone, rset = \
-            self.service._update_recordset_in_storage.call_args[0]
+        ctx, zone, rset = (
+            self.service._update_recordset_in_storage.call_args[0])
         self.assertEqual(len(rset.records), 1)
         self.assertTrue(rset.records[0].managed)
         self.assertEqual('bar', rset.records[0].data.name)
@@ -922,8 +921,8 @@ class CentralZoneTestCase(CentralBasic):
         self.service.storage.find_zones = mock.Mock()
         self.service.find_zones(self.context)
         self.assertTrue(self.service.storage.find_zones.called)
-        pcheck, ctx, target = \
-            designate.central.service.policy.check.call_args[0]
+        pcheck, ctx, target = (
+            designate.central.service.policy.check.call_args[0])
         self.assertEqual('find_zones', pcheck)
 
     def test_delete_zone_has_subzone(self):
@@ -941,8 +940,8 @@ class CentralZoneTestCase(CentralBasic):
                           self.context,
                           CentralZoneTestCase.zone__id)
 
-        pcheck, ctx, target = \
-            designate.central.service.policy.check.call_args[0]
+        pcheck, ctx, target = (
+            designate.central.service.policy.check.call_args[0])
         self.assertEqual('delete_zone', pcheck)
 
     def test_delete_zone_abandon(self):
@@ -987,13 +986,13 @@ class CentralZoneTestCase(CentralBasic):
         self.assertFalse(self.service.storage.delete_zone.called)
         self.assertTrue(self.service.worker_api.delete_zone.called)
         self.assertTrue(designate.central.service.policy.check.called)
-        ctx, deleted_dom = \
-            self.service.worker_api.delete_zone.call_args[0]
+        ctx, deleted_dom = (
+            self.service.worker_api.delete_zone.call_args[0])
 
         self.assertEqual('foo', deleted_dom.name)
         self.assertEqual('foo', out.name)
-        pcheck, ctx, target = \
-            designate.central.service.policy.check.call_args[0]
+        pcheck, ctx, target = (
+            designate.central.service.policy.check.call_args[0])
 
         self.assertEqual('delete_zone', pcheck)
 
@@ -1016,13 +1015,13 @@ class CentralZoneTestCase(CentralBasic):
         self.assertFalse(self.service.storage.delete_zone.called)
         self.assertTrue(self.service.worker_api.delete_zone.called)
         self.assertTrue(designate.central.service.policy.check.called)
-        ctx, deleted_dom = \
-            self.service.worker_api.delete_zone.call_args[0]
+        ctx, deleted_dom = (
+            self.service.worker_api.delete_zone.call_args[0])
 
         self.assertEqual('foo', deleted_dom.name)
         self.assertEqual('foo', out.name)
-        pcheck, ctx, target = \
-            designate.central.service.policy.check.call_args[0]
+        pcheck, ctx, target = (
+            designate.central.service.policy.check.call_args[0])
 
         self.assertEqual('delete_zone', pcheck)
 
@@ -1725,8 +1724,8 @@ class CentralZoneExportTests(CentralBasic):
         self.service.find_zone_exports(self.context)
 
         self.assertTrue(self.service.storage.find_zone_exports.called)
-        pcheck, ctx, target = \
-            designate.central.service.policy.check.call_args[0]
+        pcheck, ctx, target = (
+            designate.central.service.policy.check.call_args[0])
         self.assertEqual('find_zone_exports', pcheck)
 
     def test_delete_zone_export(self):
@@ -1756,8 +1755,8 @@ class CentralZoneExportTests(CentralBasic):
         self.assertEqual('t', out.tenant_id)
 
         self.assertTrue(designate.central.service.policy.check.called)
-        pcheck, ctx, target = \
-            designate.central.service.policy.check.call_args[0]
+        pcheck, ctx, target = (
+            designate.central.service.policy.check.call_args[0])
         self.assertEqual('delete_zone_export', pcheck)
         self.assertEqual(pcheck, 'delete_zone_export')
 

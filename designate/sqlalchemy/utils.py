@@ -99,8 +99,7 @@ def sort_query(query, table, sort_keys, sort_dir=None, sort_dirs=None):
 
     assert(len(sort_dirs) == len(sort_keys))
 
-    for current_sort_key, current_sort_dir in \
-            zip(sort_keys, sort_dirs):
+    for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
         try:
             sort_dir_func = {
                 'asc': sqlalchemy.asc,

@@ -26,24 +26,24 @@ import jsonschema
 RE_ZONENAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'
 RE_HOSTNAME = r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+\Z'
 
-RE_SRV_HOST_NAME = r'^(?:(?!\-)(?:\_[A-Za-z0-9_\-]{1,63}\.){2})(?!.{255,})' \
-                   r'(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'
+RE_SRV_HOST_NAME = (r'^(?:(?!\-)(?:\_[A-Za-z0-9_\-]{1,63}\.){2})(?!.{255,})'
+                    r'(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z')
 
 # The TLD name will not end in a period.
-RE_TLDNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))' \
-             r'(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*\Z'
+RE_TLDNAME = (r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))'
+              r'(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*\Z')
 
-RE_UUID = r'^(?:[0-9a-fA-F]){8}-(?:[0-9a-fA-F]){4}-(?:[0-9a-fA-F]){4}-' \
-          r'(?:[0-9a-fA-F]){4}-(?:[0-9a-fA-F]){12}\Z'
+RE_UUID = (r'^(?:[0-9a-fA-F]){8}-(?:[0-9a-fA-F]){4}-(?:[0-9a-fA-F]){4}-'
+           r'(?:[0-9a-fA-F]){4}-(?:[0-9a-fA-F]){12}\Z')
 
-RE_IP_AND_PORT = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}' \
-                 r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' \
-                 r'(?::(?:6553[0-5]|655[0-2]\d|65[0-4]\d\d|6[0-4]\d{3}' \
-                 r'|[1-5]\d{4}|[1-9]\d{0,3}|0))?\Z'
+RE_IP_AND_PORT = (r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+                  r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
+                  r'(?::(?:6553[0-5]|655[0-2]\d|65[0-4]\d\d|6[0-4]\d{3}'
+                  r'|[1-5]\d{4}|[1-9]\d{0,3}|0))?\Z')
 
-RE_FIP_ID = r'^(?P<region>[A-Za-z0-9\.\-_]{1,100}):' \
-            r'(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-' \
-            r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\Z'
+RE_FIP_ID = (r'^(?P<region>[A-Za-z0-9\.\-_]{1,100}):'
+             r'(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-'
+             r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\Z')
 
 RE_SSHFP_FINGERPRINT = r'^([0-9A-Fa-f]{10,40}|[0-9A-Fa-f]{64})\Z'
 
@@ -115,9 +115,8 @@ def is_ip_or_host(instance):
     if not isinstance(instance, str):
         return True
 
-    if not re.match(RE_ZONENAME, instance)\
-            and not is_ipv4(instance)\
-            and not is_ipv6(instance):
+    if (not re.match(RE_ZONENAME, instance) and
+            not is_ipv4(instance) and not is_ipv6(instance)):
         return False
 
     return True

@@ -1141,9 +1141,8 @@ class CentralServiceTest(CentralTestCase):
     def _delete_zone(self, zone, mock_deletion_time):
         # Set a zone as deleted
         zid = zone.id.replace('-', '')
-        query = tables.zones.update().\
-            where(tables.zones.c.id == zid).\
-            values(
+        query = tables.zones.update().where(
+            tables.zones.c.id == zid).values(
                 action='NONE',
                 deleted=zid,
                 deleted_at=mock_deletion_time,
@@ -2881,14 +2880,14 @@ class CentralServiceTest(CentralTestCase):
 
         # Compare the actual values of attributes and ns_records
         expected_attributes = values['attributes'][0]
-        actual_attributes = \
-            pools[1]['attributes'][0].to_primitive()['designate_object.data']
+        actual_attributes = pools[1][
+            'attributes'][0].to_primitive()['designate_object.data']
         for k in expected_attributes:
             self.assertEqual(expected_attributes[k], actual_attributes[k])
 
         expected_ns_records = values['ns_records'][0]
-        actual_ns_records = \
-            pools[1]['ns_records'][0].to_primitive()['designate_object.data']
+        actual_ns_records = pools[1][
+            'ns_records'][0].to_primitive()['designate_object.data']
         for k in expected_ns_records:
             self.assertEqual(expected_ns_records[k], actual_ns_records[k])
 
@@ -3370,15 +3369,15 @@ class CentralServiceTest(CentralTestCase):
             zone, context=tenant_1_context)
 
         zone_transfer_accept = objects.ZoneTransferAccept()
-        zone_transfer_accept.zone_transfer_request_id =\
-            zone_transfer_request.id
+        zone_transfer_accept.zone_transfer_request_id = (
+            zone_transfer_request.id)
 
         zone_transfer_accept.key = zone_transfer_request.key
         zone_transfer_accept.zone_id = zone.id
 
-        zone_transfer_accept = \
+        zone_transfer_accept = (
             self.central_service.create_zone_transfer_accept(
-                tenant_2_context, zone_transfer_accept)
+                tenant_2_context, zone_transfer_accept))
 
         result = {}
         result['zone'] = self.central_service.get_zone(
@@ -3422,15 +3421,15 @@ class CentralServiceTest(CentralTestCase):
             target_tenant_id='2')
 
         zone_transfer_accept = objects.ZoneTransferAccept()
-        zone_transfer_accept.zone_transfer_request_id =\
-            zone_transfer_request.id
+        zone_transfer_accept.zone_transfer_request_id = (
+            zone_transfer_request.id)
 
         zone_transfer_accept.key = zone_transfer_request.key
         zone_transfer_accept.zone_id = zone.id
 
-        zone_transfer_accept = \
+        zone_transfer_accept = (
             self.central_service.create_zone_transfer_accept(
-                tenant_2_context, zone_transfer_accept)
+                tenant_2_context, zone_transfer_accept))
 
         result = {}
         result['zone'] = self.central_service.get_zone(
@@ -3473,8 +3472,8 @@ class CentralServiceTest(CentralTestCase):
             target_tenant_id="2")
 
         zone_transfer_accept = objects.ZoneTransferAccept()
-        zone_transfer_accept.zone_transfer_request_id =\
-            zone_transfer_request.id
+        zone_transfer_accept.zone_transfer_request_id = (
+            zone_transfer_request.id)
 
         zone_transfer_accept.key = 'WRONG KEY'
         zone_transfer_accept.zone_id = zone.id
@@ -3500,8 +3499,8 @@ class CentralServiceTest(CentralTestCase):
             target_tenant_id="2")
 
         zone_transfer_accept = objects.ZoneTransferAccept()
-        zone_transfer_accept.zone_transfer_request_id =\
-            zone_transfer_request.id
+        zone_transfer_accept.zone_transfer_request_id = (
+            zone_transfer_request.id)
 
         zone_transfer_accept.key = zone_transfer_request.key
         zone_transfer_accept.zone_id = zone.id

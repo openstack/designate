@@ -194,9 +194,9 @@ class IPABackend(base.Backend):
         self.request = requests.Session()
         authclassname = cfg.CONF[self.name].ipa_auth_driver_class
         authclass = importutils.import_class(authclassname)
-        self.request.auth = \
+        self.request.auth = (
             authclass(cfg.CONF[self.name].ipa_client_keytab,
-                      cfg.CONF[self.name].ipa_host)
+                      cfg.CONF[self.name].ipa_host))
         ipa_base_url = cfg.CONF[self.name].ipa_base_url
         if ipa_base_url.startswith("http"):  # full URL
             self.baseurl = ipa_base_url

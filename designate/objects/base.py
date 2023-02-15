@@ -328,8 +328,8 @@ class ListObjectMixin(base.ObjectListBase):
 
         instance._changed_fields = set(
             primitive.get('designate_object.changes', []))
-        instance._obj_original_values = \
-            primitive.get('designate_object.original_values', {})
+        instance._obj_original_values = primitive.get(
+            'designate_object.original_values', {})
 
         return instance
 

@@ -113,10 +113,9 @@ class ValidationErrorAPIv2Adapter(base.APIv2Adapter):
                 # No need to continue the loop
                 break
 
-            if not isinstance(
-                value.get(
-                    'rename', NotSpecifiedSential()), NotSpecifiedSential)\
-                    and path_segment == value.get('rename'):
+            if (not isinstance(value.get('rename', NotSpecifiedSential()),
+                               NotSpecifiedSential) and
+                    path_segment == value.get('rename')):
                 # Just do the rename
                 path_segment = key
 

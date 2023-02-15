@@ -346,8 +346,8 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             self.gen_response(200, 'Success', {'isComplete': True})
         ]
 
-        with fixtures.random_seed(0), \
-                mock.patch.object(akamai.time, 'sleep') as mock_sleep:
+        with fixtures.random_seed(0), mock.patch.object(akamai.time,
+                                                        'sleep') as mock_sleep:
             mock_sleep.return_value = None
             backend.delete_zone(self.admin_context, self.zone)
 
@@ -396,8 +396,8 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             self.gen_response(200, 'Success', {'isComplete': False})
         ]
 
-        with fixtures.random_seed(0), \
-                mock.patch.object(akamai.time, 'sleep') as mock_sleep:
+        with fixtures.random_seed(0), mock.patch.object(akamai.time,
+                                                        'sleep') as mock_sleep:
             mock_sleep.return_value = None
             self.assertRaisesRegex(
                 exceptions.Backend,

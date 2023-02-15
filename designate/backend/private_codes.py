@@ -43,7 +43,7 @@ DELETE = 65283
 # opcode 14 used in the Designate agent framework until the agent framework
 # can be removed or fixed.
 # [1] https://www.rfc-editor.org/rfc/rfc6895.html#section-2.2
-# [2] https://www.iana.org/assignments/dns-parameters/ \
+# [2] https://www.iana.org/assignments/dns-parameters/
 #     dns-parameters.xhtml#dns-parameters-5
 #
 # Based on dns.opcode.Opcode:

@@ -234,8 +234,8 @@ class Service(service.RPCService):
             except Exception:
                 continue
             else:
-                msg = 'RecordSet belongs in a child zone: %s' % \
-                    child_zone['name']
+                msg = ('RecordSet belongs in a child zone: %s' %
+                    child_zone['name'])
                 raise exceptions.InvalidRecordSetLocation(msg)
 
     def _is_valid_recordset_records(self, recordset):
@@ -2497,9 +2497,9 @@ class Service(service.RPCService):
 
         self._is_valid_project_id(zone_transfer_request.tenant_id)
 
-        created_zone_transfer_request = \
+        created_zone_transfer_request = (
             self.storage.create_zone_transfer_request(
-                context, zone_transfer_request)
+                context, zone_transfer_request))
 
         return created_zone_transfer_request
 
@@ -2622,9 +2622,9 @@ class Service(service.RPCService):
 
         self._is_valid_project_id(zone_transfer_accept.tenant_id)
 
-        created_zone_transfer_accept = \
+        created_zone_transfer_accept = (
             self.storage.create_zone_transfer_accept(
-                context, zone_transfer_accept)
+                context, zone_transfer_accept))
 
         try:
             zone = self.storage.get_zone(

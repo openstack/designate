@@ -289,8 +289,8 @@ COMMIT
                         packet_loss_perc):
         """Setup tc htb entry, netem and filter"""
         assert proto in ('tcp', 'udp')
-        cmd = "class add dev lo parent 1: classid %s htb rate 1000Mbps" % \
-            class_id
+        cmd = ("class add dev lo parent 1: classid %s htb rate 1000Mbps" %
+               class_id)
         self.run_tc(cmd)
         self._setup_netem(class_id, latency_ms, latency_ms, packet_loss_perc)
         self._setup_filter(proto, 'sport %d' % port, class_id)
@@ -316,8 +316,8 @@ COMMIT
         """
         protocol_nums = dict(tcp=6, udp=17)
         pnum = protocol_nums[protocol]
-        cmd = "filter add dev lo protocol ip prio 1 u32 match ip protocol " \
-            "%(pnum)d 0xff match ip %(filter)s 0xffff flowid %(flowid)s"
+        cmd = ("filter add dev lo protocol ip prio 1 u32 match ip protocol "
+               "%(pnum)d 0xff match ip %(filter)s 0xffff flowid %(flowid)s")
 
         self.run_tc(cmd % dict(pnum=pnum, filter=filter, flowid=flowid))
 
@@ -400,8 +400,8 @@ class Digger(object):
         assert self.prober_is_running is True
         self._progress_report_time = 0
         now = time.time()
-        while (self.goals or not self.prober_can_stop) and \
-                now < self.prober_timeout_time:
+        while ((self.goals or not self.prober_can_stop) and
+                now < self.prober_timeout_time):
 
             for goal in tuple(self.goals):
                 goal_type = goal[0]

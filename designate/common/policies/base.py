@@ -80,9 +80,11 @@ RULE_ZONE_TRANSFER = (
 # TODO(johnsom) remove when the deprecated RBAC rules are removed.
 RULE_ADMIN = 'rule:admin'
 RULE_ADMIN_OR_OWNER = 'rule:admin_or_owner'
-LEGACY_RULE_ZONE_TRANSFER = "rule:admin_or_owner OR " \
-                            "project_id:%(target_tenant_id)s " \
-                            "OR None:%(target_tenant_id)s"
+LEGACY_RULE_ZONE_TRANSFER = (
+    "rule:admin_or_owner OR "
+    "project_id:%(target_tenant_id)s "
+    "OR None:%(target_tenant_id)s"
+)
 RULE_ADMIN_OR_OWNER_OR_SHARED = (
         RULE_ADMIN_OR_OWNER + ' or ("True":%(zone_shared)s)'
 )

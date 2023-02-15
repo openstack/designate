@@ -379,9 +379,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         correct_results = [1, 1, 2, 1, 1, 2, 1, 1]
 
-        for get_url, correct_result in \
-                zip(get_urls, correct_results):
-
+        for get_url, correct_result in zip(get_urls, correct_results):
             response = self.client.get(get_url)
 
             # Check the headers are what we expect

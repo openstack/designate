@@ -127,8 +127,8 @@ class Zone(base.DesignateObject, base.DictObjectMixin,
                         e.path = ['type']
                         e.validator = 'not_allowed'
                         e.validator_value = i
-                        e.message = "'%s' can't be specified when type is " \
-                                    "SECONDARY" % i
+                        e.message = ("'%s' can't be specified when type is "
+                                     "SECONDARY" % i)
                         errors.append(e)
                 self._raise(errors)
 
