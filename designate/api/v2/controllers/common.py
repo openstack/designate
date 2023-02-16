@@ -17,11 +17,6 @@ from designate import utils
 
 
 def retrieve_matched_rrsets(context, controller_obj, zone_id, **params):
-    if zone_id:
-        # NOTE: We need to ensure the zone actually exists, otherwise we may
-        #       return deleted recordsets instead of a zone not found
-        controller_obj.central_api.get_zone(context, zone_id)
-
     # Extract the pagination params
     marker, limit, sort_key, sort_dir = utils.get_paging_params(
             context, params, controller_obj.SORT_KEYS)

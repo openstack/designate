@@ -1,0 +1,28 @@
+{
+    "shared_zones": [{
+        "id": "4495ffbb-b7d1-43e0-9423-f0a4172e5f9e",
+        "zone_id": "a3365b47-ee93-43ad-9a60-2b2ca96b1898",
+        "project_id": "16ade46c85a1435bb86d9138d37da57e",
+        "target_project_id": "232e37df46af42089710e2ae39111c2f",
+        "created_at": "2022-12-01T23:02:49.000000",
+        "updated_at": null,
+        "links": {
+            "self": "http://127.0.0.1:60053/v2/zones/a3365b47-ee93-43ad-9a60-2b2ca96b1898/shares/4495ffbb-b7d1-43e0-9423-f0a4172e5f9e",
+            "zone": "http://127.0.0.1:60053/v2/zones/a3365b47-ee93-43ad-9a60-2b2ca96b1898"
+        }
+    }, {
+        "id": "1f278d08-2f6a-462a-bb49-21a4f6e6d32b",
+        "zone_id": "a3365b47-ee93-43ad-9a60-2b2ca96b1898",
+        "project_id": "16ade46c85a1435bb86d9138d37da57e",
+        "target_project_id": "86d78e93698e4b06aad4f62e04afb4c1",
+        "created_at": "2022-12-02T01:51:48.000000",
+        "updated_at": null,
+        "links": {
+            "self": "http://127.0.0.1:60053/v2/zones/a3365b47-ee93-43ad-9a60-2b2ca96b1898/shares/1f278d08-2f6a-462a-bb49-21a4f6e6d32b",
+            "zone": "http://127.0.0.1:60053/v2/zones/a3365b47-ee93-43ad-9a60-2b2ca96b1898"
+        }
+    }],
+    "links": {
+        "self": "http://127.0.0.1:60053/v2/zones/a3365b47-ee93-43ad-9a60-2b2ca96b1898/shares"
+    }
+}

@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    Zones can now be shared with other projects, allowing them to create and
+    manage recordsets and records in the zone.
+other:
+  - |
+    Now that zones can be shared with multiple projects, recordsets and records
+    can have project identifiers that are different than the parent zone.

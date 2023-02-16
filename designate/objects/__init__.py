@@ -34,6 +34,7 @@ from designate.objects.record import Record, RecordList  # noqa
 from designate.objects.recordset import RecordSet, RecordSetList  # noqa
 from designate.objects.server import Server, ServerList  # noqa
 from designate.objects.service_status import ServiceStatus, ServiceStatusList  # noqa
+from designate.objects.shared_zone import SharedZone, SharedZoneList  # noqa
 from designate.objects.tenant import Tenant, TenantList  # noqa
 from designate.objects.tld import Tld, TldList  # noqa
 from designate.objects.tsigkey import TsigKey, TsigKeyList  # noqa

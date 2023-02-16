@@ -23,6 +23,14 @@ x-auth-token:
   required: false
   type: string
 
+x-designate-delete-shares:
+  description: |
+    If enabled, this will delete associated shares along with the resource.
+  in: header
+  required: false
+  type: bool
+  min_version: 2.1
+
 x-designate-edit-managed-records:
   description: |
     If enabled this will all users to edit records flagged as managed
@@ -120,6 +128,14 @@ path_zone_import_id:
   in: path
   required: true
   type: uuid
+
+path_zone_share_id:
+  description: |
+    ID of the zone share.
+  in: path
+  required: true
+  type: uuid
+  min_version: 2.1
 
 path_zone_transfer_accept_id:
   description: |
@@ -254,6 +270,15 @@ sort_key:
   in: query
   required: false
   type: string
+
+target_project_id_filter:
+  description: |
+    Filter results to only show resources that have a matching
+    target_project_id
+  in: query
+  required: false
+  type: string
+  min_version: 2.1
 
 tld_name_filter:
   description: |
@@ -691,6 +716,22 @@ service_statuses:
   required: true
   type: array
 
+shared:
+  description: |
+    True if the zone is shared with another project.
+  in: body
+  required: true
+  type: bool
+  min_version: 2.1
+
+shared_zone_id:
+  description: |
+    ID for the zone being shared.
+  in: body
+  required: true
+  type: uuid
+  min_version: 2.1
+
 stats:
   description: |
     Statistics for the service.
@@ -704,6 +745,14 @@ status:
   in: body
   required: true
   type: enum
+
+target_project_id:
+  description: |
+    The project ID the zone will be shared with.
+  in: body
+  required: true
+  type: string
+  min_version: 2.1
 
 tld_description:
   description: |

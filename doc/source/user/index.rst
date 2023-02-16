@@ -17,6 +17,7 @@ Managing Zones
    importexport
    zone-transfer
    secondary-zones
+   shared-zones
 
 Working with Recordsets
 -----------------------

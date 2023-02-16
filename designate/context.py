@@ -34,17 +34,18 @@ class DesignateContext(context.RequestContext):
     _edit_managed_records = False
     _hard_delete = False
     _client_addr = None
+    _delete_shares = False
     FROM_DICT_EXTRA_KEYS = [
         'original_project_id', 'service_catalog', 'all_tenants', 'abandon',
         'edit_managed_records', 'tsigkey_id', 'hide_counts', 'client_addr',
-        'hard_delete'
+        'hard_delete', 'delete_shares'
     ]
 
     def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
                  tsigkey_id=None, original_project_id=None,
                  edit_managed_records=False, hide_counts=False,
                  client_addr=None, user_auth_plugin=None,
-                 hard_delete=False, **kwargs):
+                 hard_delete=False, delete_shares=False, **kwargs):
         super(DesignateContext, self).__init__(**kwargs)
 
         self.user_auth_plugin = user_auth_plugin
@@ -59,6 +60,7 @@ class DesignateContext(context.RequestContext):
         self.hard_delete = hard_delete
         self.hide_counts = hide_counts
         self.client_addr = client_addr
+        self.delete_shares = delete_shares
 
     def deepcopy(self):
         d = self.to_dict()
@@ -103,6 +105,7 @@ class DesignateContext(context.RequestContext):
             'tsigkey_id': self.tsigkey_id,
             'hide_counts': self.hide_counts,
             'client_addr': self.client_addr,
+            'delete_shares': self.delete_shares,
         })
 
         return copy.deepcopy(d)
@@ -207,6 +210,14 @@ class DesignateContext(context.RequestContext):
     @client_addr.setter
     def client_addr(self, value):
         self._client_addr = value
+
+    @property
+    def delete_shares(self):
+        return self._delete_shares
+
+    @delete_shares.setter
+    def delete_shares(self, value):
+        self._delete_shares = value
 
     def get_auth_plugin(self):
         if self.user_auth_plugin:

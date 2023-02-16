@@ -283,6 +283,14 @@ class TestCase(base.BaseTestCase):
          'port': 53},
     ]
 
+    shared_zone_fixtures = [
+        {
+            "target_project_id": "target_project_id",
+            "zone_id": None,
+            "project_id": "project_id",
+        }
+    ]
+
     zone_transfers_request_fixtures = [{
         "description": "Test Transfer",
     }, {
@@ -628,6 +636,13 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
+    def get_shared_zone_fixture(self, fixture=0, values=None):
+        values = values or {}
+
+        _values = copy.copy(self.shared_zone_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def update_service_status(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
@@ -829,6 +844,16 @@ class TestCase(base.BaseTestCase):
             self.assertEqual('COMPLETE', zone_import.status)
 
         return zone_import
+
+    def share_zone(self, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_shared_zone_fixture(fixture, values=kwargs)
+
+        return self.central_service.share_zone(
+            context, kwargs['zone_id'], objects.SharedZone.from_dict(values)
+        )
 
     def _ensure_interface(self, interface, implementation):
         for name in interface.__abstractmethods__:

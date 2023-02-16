@@ -20,6 +20,7 @@ import pecan
 from designate.api.v2.controllers import rest
 from designate.api.v2.controllers.zones import nameservers
 from designate.api.v2.controllers.zones import recordsets
+from designate.api.v2.controllers.zones import sharedzones
 from designate.api.v2.controllers.zones import tasks
 from designate import exceptions
 from designate import objects
@@ -40,6 +41,7 @@ class ZonesController(rest.RestController):
     recordsets = recordsets.RecordSetsController()
     tasks = tasks.TasksController()
     nameservers = nameservers.NameServersController()
+    shares = sharedzones.SharedZonesController()
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
@@ -101,6 +103,10 @@ class ZonesController(rest.RestController):
 
         # Create the zone
         zone = self.central_api.create_zone(context, zone)
+
+        # Shared is a virtual database column, so inject False here as a
+        # new zone cannot yet be shared.
+        zone.shared = False
 
         LOG.info("Created %(zone)s", {'zone': zone})
 

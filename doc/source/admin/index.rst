@@ -26,4 +26,3 @@ Contents:
    troubleshooting
    samples/index
    support-matrix
-

@@ -10,6 +10,7 @@
 .. include:: dns-api-v2-zone-import.inc
 .. include:: dns-api-v2-zone-export.inc
 .. include:: dns-api-v2-zone-tasks.inc
+.. include:: dns-api-v2-shared-zones.inc
 .. include:: dns-api-v2-zone-ownership-transfer-request.inc
 .. include:: dns-api-v2-zone-ownership-transfer-accept.inc
 .. include:: dns-api-v2-recordset.inc

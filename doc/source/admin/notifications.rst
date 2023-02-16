@@ -58,6 +58,8 @@ They are emitted by Central on the following events:
 * dns.zone_export.create
 * dns.zone_export.update
 * dns.zone_export.delete
+* dns.zone.share
+* dns.zone.unshare
 
 Receivers
 ---------

@@ -233,12 +233,13 @@ class Storage(DriverPlugin, metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def get_zone(self, context, zone_id):
+    def get_zone(self, context, zone_id, apply_tenant_criteria=True):
         """
         Get a Zone via its ID.
 
         :param context: RPC Context.
         :param zone_id: ID of the Zone.
+        :param apply_tenant_criteria: Whether to filter results by project_id.
         """
 
     @abc.abstractmethod
@@ -303,29 +304,28 @@ class Storage(DriverPlugin, metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def create_recordset(self, context, zone_id, recordset):
+    def share_zone(self, context, shared_zone):
         """
-        Create a recordset on a given Zone ID
+        Share zone
 
         :param context: RPC Context.
-        :param zone_id: Zone ID to create the recordset in.
-        :param recordset: RecordSet object with the values to be created.
+        :param shared_zone: Shared Zone dict
         """
 
     @abc.abstractmethod
-    def get_recordset(self, context, recordset_id):
+    def unshare_zone(self, context, zone_id, shared_zone_id):
         """
-        Get a recordset via ID
+        Unshare zone
 
         :param context: RPC Context.
-        :param recordset_id: RecordSet ID to get
+        :param shared_zone_id: Shared Zone Id
         """
 
     @abc.abstractmethod
-    def find_recordsets(self, context, criterion=None, marker=None, limit=None,
-                        sort_key=None, sort_dir=None, force_index=False):
+    def find_shared_zones(self, context, criterion=None, marker=None,
+                          limit=None, sort_key=None, sort_dir=None):
         """
-        Find RecordSets.
+        Find shared zones
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
@@ -338,6 +338,61 @@ class Storage(DriverPlugin, metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
+    def get_shared_zone(self, context, zone_id, shared_zone_id):
+        """
+        Get a shared zone via ID
+
+        :param context: RPC Context.
+        :param shared_zone_id: Shared Zone Id
+        """
+
+    @abc.abstractmethod
+    def is_zone_shared_with_project(self, zone_id, project_id):
+        """
+        Checks if a zone is shared with a project.
+
+        :param zone_id: The zone ID to check.
+        :param project_id: The project ID to check.
+        :returns: Boolean True/False if the zone is shared with the project.
+        """
+
+    @abc.abstractmethod
+    def delete_zone_shares(self, zone_id):
+        """
+        Delete all of the zone shares for a specific zone.
+
+        :param zone_id: The zone ID to check.
+        """
+
+    @abc.abstractmethod
+    def create_recordset(self, context, zone_id, recordset):
+        """
+        Create a recordset on a given Zone ID
+
+        :param context: RPC Context.
+        :param zone_id: Zone ID to create the recordset in.
+        :param recordset: RecordSet object with the values to be created.
+        """
+
+    @abc.abstractmethod
+    def find_recordsets(self, context, criterion=None, marker=None, limit=None,
+                        sort_key=None, sort_dir=None, force_index=False,
+                        apply_tenant_criteria=True):
+        """
+        Find RecordSets.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        :param apply_tenant_criteria: Whether to filter results by project_id.
+        """
+
+    @abc.abstractmethod
     def find_recordsets_axfr(self, context, criterion=None):
         """
         Find RecordSets.
@@ -347,12 +402,13 @@ class Storage(DriverPlugin, metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def find_recordset(self, context, criterion):
+    def find_recordset(self, context, criterion, apply_tenant_criteria=True):
         """
         Find a single RecordSet.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param apply_tenant_criteria: Whether to filter results by project_id.
         """
 
     @abc.abstractmethod

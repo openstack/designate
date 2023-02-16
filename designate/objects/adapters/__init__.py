@@ -33,7 +33,7 @@ from designate.objects.adapters.api_v2.zone_transfer_request import ZoneTransfer
 from designate.objects.adapters.api_v2.validation_error import ValidationErrorAPIv2Adapter, ValidationErrorListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.zone_import import ZoneImportAPIv2Adapter, ZoneImportListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.zone_export import ZoneExportAPIv2Adapter, ZoneExportListAPIv2Adapter  # noqa
-
+from designate.objects.adapters.api_v2.shared_zone import SharedZoneAPIv2Adapter, SharedZoneListAPIv2Adapter  # noqa
 # YAML
 
 from designate.objects.adapters.yaml.pool import PoolYAMLAdapter, PoolListYAMLAdapter  # noqa
