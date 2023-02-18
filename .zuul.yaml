@@ -7,7 +7,7 @@
         DESIGNATE_SERVICE_PORT_DNS: 5322
         TEMPEST_PLUGINS: /opt/stack/designate-tempest-plugin
         USE_PYTHON3: true
-        API_WORKERS: 4
+        API_WORKERS: 2
       devstack_plugins:
         designate: https://opendev.org/openstack/designate
       devstack_services:
@@ -16,7 +16,10 @@
         s-container: false
         s-object: false
         s-proxy: false
+        cinder: false
+        c-api: false
         c-bak: false
+        c-vol: false
       tox_envlist: all
       tempest_test_regex: |
         designate_tempest_plugin.*
