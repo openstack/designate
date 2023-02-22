@@ -15,8 +15,7 @@
 # under the License.
 from unittest import mock
 
-from neutronclient.common import exceptions as neutron_exceptions
-from neutronclient.v2_0 import client as clientv20
+from openstack import exceptions as sdk_exceptions
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
@@ -25,6 +24,7 @@ from designate import context
 from designate import exceptions
 from designate.network_api import get_network_api
 from designate.network_api import neutron
+from designate import version
 
 CONF = cfg.CONF
 
@@ -35,75 +35,94 @@ class NeutronNetworkAPITest(oslotest.base.BaseTestCase):
         self.useFixture(cfg_fixture.Config(CONF))
 
         CONF.set_override(
-            'endpoints', ['RegionOne|http://localhost:9696'],
+            'endpoints', ['RegionOne|http://192.0.2.5:9696'],
             'network_api:neutron'
         )
+        self.ca_certificates_file = 'fake_ca_cert_file'
+        self.client_certificate_file = 'fake_client_cert_file'
+        CONF.set_override('client_certificate_file',
+                          self.client_certificate_file,
+                          'network_api:neutron')
+        self.neutron_timeout = 100
+        CONF.set_override('timeout', self.neutron_timeout,
+                          'network_api:neutron')
 
         self.api = get_network_api('neutron')
         self.context = context.DesignateContext(
             user_id='12345', project_id='54321',
         )
 
-    @mock.patch.object(clientv20, 'Client')
-    def test_get_client(self, mock_client):
-        neutron.get_client(self.context, 'http://localhost:9696')
+    @mock.patch('keystoneauth1.token_endpoint.Token')
+    @mock.patch('keystoneauth1.session.Session')
+    @mock.patch('openstack.connection.Connection')
+    def test_get_client(self, mock_client, mock_session, mock_token):
+        auth_token_mock = mock.MagicMock()
+        mock_token.return_value = auth_token_mock
 
-        _, kwargs = mock_client.call_args
+        user_session_mock = mock.MagicMock()
+        mock_session.return_value = user_session_mock
 
-        self.assertIn('endpoint_url', kwargs)
-        self.assertIn('timeout', kwargs)
-        self.assertIn('insecure', kwargs)
-        self.assertIn('ca_cert', kwargs)
+        connection_mock = mock.MagicMock()
+        mock_client.return_value = connection_mock
 
-        self.assertNotIn('token', kwargs)
-        self.assertNotIn('username', kwargs)
-
-        self.assertEqual('http://localhost:9696', kwargs['endpoint_url'])
-
-    @mock.patch.object(clientv20, 'Client')
-    def test_get_client_using_token(self, mock_client):
         self.context = context.DesignateContext(
             user_id='12345', project_id='54321', auth_token='token',
         )
+        endpoint = 'http://192.0.2.5:9696'
 
-        neutron.get_client(self.context, 'http://localhost:9696')
+        result = neutron.get_client(self.context, endpoint)
 
-        _, kwargs = mock_client.call_args
+        mock_token.assert_called_once_with(endpoint, self.context.auth_token)
 
-        self.assertIn('token', kwargs)
-        self.assertIn('auth_strategy', kwargs)
-        self.assertNotIn('username', kwargs)
+        mock_session.assert_called_once_with(
+            auth=auth_token_mock, verify=True,
+            cert=self.client_certificate_file, timeout=self.neutron_timeout,
+            app_name='designate',
+            app_version=version.version_info.version_string())
 
-        self.assertEqual('http://localhost:9696', kwargs['endpoint_url'])
-        self.assertEqual(self.context.auth_token, kwargs['token'])
+        self.assertEqual(connection_mock, result)
 
-    @mock.patch.object(clientv20, 'Client')
-    def test_get_client_using_admin(self, mock_client):
-        CONF.set_override(
-            'admin_username', 'test',
-            'network_api:neutron'
-        )
+        # Test with CA certs file configuration
+        mock_token.reset_mock()
+        mock_session.reset_mock()
 
-        neutron.get_client(self.context, 'http://localhost:9696')
+        CONF.set_override('ca_certificates_file', self.ca_certificates_file,
+                          'network_api:neutron')
 
-        _, kwargs = mock_client.call_args
+        result = neutron.get_client(self.context, endpoint)
 
-        self.assertIn('auth_strategy', kwargs)
-        self.assertIn('username', kwargs)
-        self.assertIn('project_name', kwargs)
-        self.assertIn('password', kwargs)
-        self.assertIn('auth_url', kwargs)
-        self.assertNotIn('token', kwargs)
+        mock_token.assert_called_once_with(endpoint, self.context.auth_token)
 
-        self.assertEqual('http://localhost:9696', kwargs['endpoint_url'])
-        self.assertEqual(
-            kwargs['username'], CONF['network_api:neutron'].admin_username
-        )
+        mock_session.assert_called_once_with(
+            auth=auth_token_mock, verify=self.ca_certificates_file,
+            cert=self.client_certificate_file, timeout=self.neutron_timeout,
+            app_name='designate',
+            app_version=version.version_info.version_string())
 
-    @mock.patch.object(neutron, 'get_client')
+        self.assertEqual(connection_mock, result)
+
+        # Test with insecure configuration
+        mock_token.reset_mock()
+        mock_session.reset_mock()
+
+        CONF.set_override('insecure', True, 'network_api:neutron')
+
+        result = neutron.get_client(self.context, endpoint)
+
+        mock_token.assert_called_once_with(endpoint, self.context.auth_token)
+
+        mock_session.assert_called_once_with(
+            auth=auth_token_mock, verify=False,
+            cert=self.client_certificate_file, timeout=self.neutron_timeout,
+            app_name='designate',
+            app_version=version.version_info.version_string())
+
+        self.assertEqual(connection_mock, result)
+
+    @mock.patch('designate.network_api.neutron.get_client')
     def test_list_floatingips(self, get_client):
         driver = mock.Mock()
-        driver.list_floatingips.return_value = {'floatingips': [
+        driver.network.ips.return_value = [
             {
                 'id': '123',
                 'floating_ip_address': '192.168.0.100',
@@ -114,24 +133,24 @@ class NeutronNetworkAPITest(oslotest.base.BaseTestCase):
                 'floating_ip_address': '192.168.0.200',
                 'region': 'RegionOne'
             },
-        ]}
+        ]
         get_client.return_value = driver
 
         self.assertEqual(2, len(self.api.list_floatingips(self.context)))
 
-    @mock.patch.object(neutron, 'get_client')
+    @mock.patch('designate.network_api.neutron.get_client')
     def test_list_floatingips_unauthorized(self, get_client):
         driver = mock.Mock()
-        driver.list_floatingips.side_effect = neutron_exceptions.Unauthorized
+        driver.network.ips.side_effect = sdk_exceptions.HttpException
         get_client.return_value = driver
 
         self.assertEqual(0, len(self.api.list_floatingips(self.context)))
 
-    @mock.patch.object(neutron, 'get_client')
+    @mock.patch('designate.network_api.neutron.get_client')
     def test_list_floatingips_communication_failure(self, get_client):
         driver = mock.Mock()
-        driver.list_floatingips.side_effect = (
-            neutron_exceptions.NeutronException
+        driver.network.ips.side_effect = (
+            Exception
         )
         get_client.return_value = driver
 

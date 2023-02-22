@@ -1,0 +1,10 @@
+---
+upgrade:
+  - |
+    Designate will now use the openstacksdk to access neutron instead of the
+    deprecated neutronclient. The python-neutronclient module requirement has
+    been replaced by the openstacksdk module.
+other:
+  - |
+    Designate will now use the openstacksdk to access neutron instead of the
+    deprecated neutronclient.
