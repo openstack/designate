@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-08 23:25+0000\n"
+"POT-Creation-Date: 2023-03-06 16:30+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -28,6 +28,9 @@ msgstr "1.0.2"
 
 msgid "10.0.0"
 msgstr "10.0.0"
+
+msgid "10.0.0.0rc1"
+msgstr "10.0.0.0rc1"
 
 msgid "10.0.2-4"
 msgstr "10.0.2-4"
@@ -65,14 +68,11 @@ msgstr "14.0.0"
 msgid "14.0.1"
 msgstr "14.0.1"
 
-msgid "14.0.1-7"
-msgstr "14.0.1-7"
-
 msgid "15.0.0"
 msgstr "15.0.0"
 
-msgid "15.0.0.0rc1-36"
-msgstr "15.0.0.0rc1-36"
+msgid "15.0.0.0rc1"
+msgstr "15.0.0.0rc1"
 
 msgid "2.0.0"
 msgstr "2.0.0"
