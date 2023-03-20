@@ -25,6 +25,7 @@ COORDINATION_GROUP = cfg.OptGroup(
 COORDINATION_OPTS = [
     cfg.StrOpt(
         'backend_url',
+        secret=True,
         help=(
             'The backend URL to use for distributed coordination. If '
             'unset services that need coordination will function as '
