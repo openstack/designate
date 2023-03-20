@@ -18,7 +18,7 @@ from sqlalchemy import MetaData, Table, select, func
 
 import designate.conf
 from designate.i18n import _
-from designate.sqlalchemy import session
+from designate.sqlalchemy import sql
 # This import is not used, but is needed to register the storage:sqlalchemy
 # group.
 import designate.storage.impl_sqlalchemy  # noqa
@@ -27,14 +27,20 @@ from designate import utils
 
 class Checks(upgradecheck.UpgradeCommands):
     def _duplicate_service_status(self):
-        engine = session.get_engine('storage:sqlalchemy')
-        metadata = MetaData(bind=engine)
-        status = Table('service_statuses', metadata, autoload=True)
-        service_select = (select([func.count()])
-                          .select_from(status)
-                          .group_by('service_name', 'hostname')
-                          )
-        service_counts = engine.execute(service_select).fetchall()
+        engine = sql.get_read_engine()
+        metadata = MetaData()
+        metadata.bind = engine
+
+        status = Table('service_statuses', metadata, autoload_with=engine)
+        service_select = (
+            select(func.count())
+            .select_from(status)
+            .group_by('service_name', 'hostname')
+        )
+
+        with sql.get_read_session() as session:
+            service_counts = session.execute(service_select).fetchall()
+
         duplicated_services = [i for i in service_counts if i[0] > 1]
         if duplicated_services:
             return upgradecheck.Result(upgradecheck.Code.FAILURE,

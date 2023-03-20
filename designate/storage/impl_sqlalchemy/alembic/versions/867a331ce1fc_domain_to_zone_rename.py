@@ -84,19 +84,24 @@ def upgrade() -> None:
         "uq": "uq_%(table_name)s_%(column_0_name)s",
         "ck": "ck_%(table_name)s_%(constraint_name)s",
         "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-        "pk": "pk_%(table_name)s"}
+        "pk": "pk_%(table_name)s"
+    }
 
     metadata = sa.MetaData(naming_convention=convention)
     metadata.bind = op.get_bind()
 
     # Get all the tables
-    domains_table = sa.Table('domains', metadata, autoload=True)
+    domains_table = sa.Table('domains', metadata,
+                             autoload_with=op.get_bind())
     domain_attrib_table = sa.Table('domain_attributes', metadata,
-                                   autoload=True)
-    recordsets_table = sa.Table('recordsets', metadata, autoload=True)
-    records_table = sa.Table('records', metadata, autoload=True)
-    ztr_table = sa.Table('zone_transfer_requests', metadata, autoload=True)
-    zta_table = sa.Table('zone_transfer_accepts', metadata, autoload=True)
+                                   autoload_with=op.get_bind())
+    recordsets_table = sa.Table('recordsets', metadata,
+                                autoload_with=op.get_bind())
+    records_table = sa.Table('records', metadata, autoload_with=op.get_bind())
+    ztr_table = sa.Table('zone_transfer_requests', metadata,
+                         autoload_with=op.get_bind())
+    zta_table = sa.Table('zone_transfer_accepts', metadata,
+                         autoload_with=op.get_bind())
 
     # Remove the affected FKs
     # Define FKs

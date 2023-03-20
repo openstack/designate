@@ -586,8 +586,8 @@ class StorageTestCase(object):
     def test_count_tenants_none_result(self):
         rp = mock.Mock()
         rp.fetchone.return_value = None
-        with mock.patch.object(self.storage.session, 'execute',
-                               return_value=rp):
+        with mock.patch('designate.storage.sql.get_write_session',
+                        return_value=rp):
             tenants = self.storage.count_tenants(self.admin_context)
             self.assertEqual(0, tenants)
 
@@ -870,8 +870,9 @@ class StorageTestCase(object):
     def test_count_zones_none_result(self):
         rp = mock.Mock()
         rp.fetchone.return_value = None
-        with mock.patch.object(self.storage.session, 'execute',
-                               return_value=rp):
+
+        with mock.patch('designate.storage.sql.get_write_session',
+                        return_value=rp):
             zones = self.storage.count_zones(self.admin_context)
             self.assertEqual(0, zones)
 
@@ -1270,8 +1271,8 @@ class StorageTestCase(object):
     def test_count_recordsets_none_result(self):
         rp = mock.Mock()
         rp.fetchone.return_value = None
-        with mock.patch.object(self.storage.session, 'execute',
-                               return_value=rp):
+        with mock.patch('designate.storage.sql.get_write_session',
+                        return_value=rp):
             recordsets = self.storage.count_recordsets(self.admin_context)
             self.assertEqual(0, recordsets)
 
@@ -1501,8 +1502,8 @@ class StorageTestCase(object):
     def test_count_records_none_result(self):
         rp = mock.Mock()
         rp.fetchone.return_value = None
-        with mock.patch.object(self.storage.session, 'execute',
-                               return_value=rp):
+        with mock.patch('designate.storage.sql.get_write_session',
+                        return_value=rp):
             records = self.storage.count_records(self.admin_context)
             self.assertEqual(0, records)
 
@@ -3065,8 +3066,8 @@ class StorageTestCase(object):
     def test_count_zone_tasks_none_result(self):
         rp = mock.Mock()
         rp.fetchone.return_value = None
-        with mock.patch.object(self.storage.session, 'execute',
-                               return_value=rp):
+        with mock.patch('designate.storage.sql.get_write_session',
+                        return_value=rp):
             zones = self.storage.count_zone_tasks(self.admin_context)
             self.assertEqual(0, zones)
 

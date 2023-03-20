@@ -23,7 +23,9 @@ from oslo_db import exception as db_exception
 from oslo_log import log as logging
 from oslo_utils import excutils
 
+from designate.sqlalchemy import sql
 from designate.storage import base
+
 
 LOG = logging.getLogger(__name__)
 RETRY_STATE = threading.local()
@@ -108,17 +110,19 @@ def transaction(f):
     """Transaction decorator, to be used on class instances with a
     self.storage attribute
     """
+
     @retry(cb=_retry_on_deadlock)
     @functools.wraps(f)
     def transaction_wrapper(self, *args, **kwargs):
-        self.storage.begin()
-        try:
-            result = f(self, *args, **kwargs)
-            self.storage.commit()
-            return result
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                self.storage.rollback()
+        with sql.get_write_session() as session:
+            # session.begin()
+            try:
+                result = f(self, *args, **kwargs)
+                # session.commit()
+                return result
+            except Exception:
+                with excutils.save_and_reraise_exception():
+                    session.rollback()
 
     transaction_wrapper.__wrapped_function = f
     transaction_wrapper.__wrapper_name = 'transaction'
@@ -132,14 +136,15 @@ def transaction_shallow_copy(f):
     @retry(cb=_retry_on_deadlock, deep_copy=False)
     @functools.wraps(f)
     def transaction_wrapper(self, *args, **kwargs):
-        self.storage.begin()
-        try:
-            result = f(self, *args, **kwargs)
-            self.storage.commit()
-            return result
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                self.storage.rollback()
+        with sql.get_write_session() as session:
+            # session.begin()
+            try:
+                result = f(self, *args, **kwargs)
+                # session.commit()
+                return result
+            except Exception:
+                with excutils.save_and_reraise_exception():
+                    session.rollback()
 
     transaction_wrapper.__wrapped_function = f
     transaction_wrapper.__wrapper_name = 'transaction_shallow_copy'

@@ -21,11 +21,11 @@ from oslo_db import exception as oslo_db_exception
 from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_log import log as logging
 from oslo_utils import timeutils
-from sqlalchemy import select, or_, between, func, distinct, inspect
+from sqlalchemy import select, or_, between, func, distinct
 
 from designate import exceptions
 from designate import objects
-from designate.sqlalchemy import session
+from designate.sqlalchemy import sql
 from designate.sqlalchemy import utils
 
 
@@ -66,38 +66,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
     def __init__(self):
         super(SQLAlchemy, self).__init__()
-
-        self.engine = session.get_engine(self.get_name())
-
         self.local_store = threading.local()
-
-    @abc.abstractmethod
-    def get_name(self):
-        """Get the name."""
-
-    @property
-    def session(self):
-        # NOTE: This uses a thread local store, allowing each greenthread to
-        #       have its own session stored correctly. Without this, each
-        #       greenthread may end up using a single global session, which
-        #       leads to bad things happening.
-
-        if not hasattr(self.local_store, 'session'):
-            self.local_store.session = session.get_session(self.get_name())
-
-        return self.local_store.session
-
-    def begin(self):
-        self.session.begin(subtransactions=True)
-
-    def commit(self):
-        self.session.commit()
-
-    def rollback(self):
-        self.session.rollback()
-
-    def get_inspector(self):
-        return inspect(self.engine)
 
     @staticmethod
     def _apply_criterion(table, query, criterion):
@@ -195,17 +164,18 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
         query = table.insert()
 
-        try:
-            resultproxy = self.session.execute(query, [dict(values)])
-        except oslo_db_exception.DBDuplicateEntry:
-            raise exc_dup("Duplicate %s" % obj.obj_name())
+        with sql.get_write_session() as session:
+            try:
+                resultproxy = session.execute(query, [dict(values)])
+            except oslo_db_exception.DBDuplicateEntry:
+                raise exc_dup("Duplicate %s" % obj.obj_name())
 
-        # Refetch the row, for generated columns etc
-        query = select([table]).where(
-            table.c.id == resultproxy.inserted_primary_key[0])
-        resultproxy = self.session.execute(query)
+            # Refetch the row, for generated columns etc
+            query = select(table).where(
+                table.c.id == resultproxy.inserted_primary_key[0])
+            resultproxy = session.execute(query)
 
-        return _set_object_from_model(obj, resultproxy.fetchone())
+            return _set_object_from_model(obj, resultproxy.fetchone())
 
     def _find(self, context, table, cls, list_cls, exc_notfound, criterion,
               one=False, marker=None, limit=None, sort_key=None,
@@ -216,11 +186,10 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
         # Build the query
         if query is None:
-            query = select([table])
+            query = select(table)
         query = self._apply_criterion(table, query, criterion)
         if apply_tenant_criteria:
             query = self._apply_tenant_criteria(context, table, query)
-
         query = self._apply_deleted_criteria(context, table, query)
 
         # Execute the Query
@@ -229,8 +198,9 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
             #              a NotFound. Limiting to 2 allows us to determine
             #              when we need to raise, while selecting the minimal
             #              number of rows.
-            resultproxy = self.session.execute(query.limit(2))
-            results = resultproxy.fetchall()
+            with sql.get_read_session() as session:
+                resultproxy = session.execute(query.limit(2))
+                results = resultproxy.fetchall()
 
             if len(results) != 1:
                 raise exc_notfound("Could not find %s" % cls.obj_name())
@@ -238,7 +208,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                 return _set_object_from_model(cls(), results[0])
         else:
             if marker is not None:
-                marker = utils.check_marker(table, marker, self.session)
+                marker = utils.check_marker(table, marker)
 
             try:
                 query = utils.paginate_query(
@@ -246,8 +216,9 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                     [sort_key, 'id'], marker=marker,
                     sort_dir=sort_dir)
 
-                resultproxy = self.session.execute(query)
-                results = resultproxy.fetchall()
+                with sql.get_read_session() as session:
+                    resultproxy = session.execute(query)
+                    results = resultproxy.fetchall()
 
                 return _set_listobject_from_models(list_cls(), results)
             except oslodb_utils.InvalidSortKey as sort_key_error:
@@ -286,14 +257,14 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                     recordsets_table.c.id == records_table.c.recordset_id)
 
         inner_q = (
-            select([recordsets_table.c.id,      # 0 - RS ID
-                    zones_table.c.name]).       # 1 - ZONE NAME
+            select(recordsets_table.c.id,      # 0 - RS ID
+                   zones_table.c.name).       # 1 - ZONE NAME
             select_from(rzjoin).
             where(zones_table.c.deleted == '0')
         )
 
         count_q = (
-            select([func.count(distinct(recordsets_table.c.id))]).
+            select(func.count(distinct(recordsets_table.c.id))).
             select_from(rzjoin).where(zones_table.c.deleted == '0')
         )
 
@@ -302,8 +273,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                                         dialect_name='mysql')
 
         if marker is not None:
-            marker = utils.check_marker(recordsets_table, marker,
-                                        self.session)
+            marker = utils.check_marker(recordsets_table, marker)
 
         try:
             inner_q = utils.paginate_query(
@@ -348,8 +318,9 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         # This is a separate call due to
         # http://dev.mysql.com/doc/mysql-reslimits-excerpt/5.6/en/subquery-restrictions.html  # noqa
 
-        inner_rproxy = self.session.execute(inner_q)
-        rows = inner_rproxy.fetchall()
+        with sql.get_read_session() as session:
+            inner_rproxy = session.execute(inner_q)
+            rows = inner_rproxy.fetchall()
         if len(rows) == 0:
             return 0, objects.RecordSetList()
         id_zname_map = {}
@@ -362,8 +333,9 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         if context.hide_counts:
             total_count = None
         else:
-            resultproxy = self.session.execute(count_q)
-            result = resultproxy.fetchone()
+            with sql.get_read_session() as session:
+                resultproxy = session.execute(count_q)
+                result = resultproxy.fetchone()
             total_count = 0 if result is None else result[0]
 
         # Join the 2 required tables
@@ -372,39 +344,38 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
             records_table.c.recordset_id == recordsets_table.c.id)
 
         query = select(
-            [
-                # RS Info
-                recordsets_table.c.id,                     # 0 - RS ID
-                recordsets_table.c.version,                # 1 - RS Version
-                recordsets_table.c.created_at,             # 2 - RS Created
-                recordsets_table.c.updated_at,             # 3 - RS Updated
-                recordsets_table.c.tenant_id,              # 4 - RS Tenant
-                recordsets_table.c.zone_id,                # 5 - RS Zone
-                recordsets_table.c.name,                   # 6 - RS Name
-                recordsets_table.c.type,                   # 7 - RS Type
-                recordsets_table.c.ttl,                    # 8 - RS TTL
-                recordsets_table.c.description,            # 9 - RS Desc
-                # R Info
-                records_table.c.id,                        # 10 - R ID
-                records_table.c.version,                   # 11 - R Version
-                records_table.c.created_at,                # 12 - R Created
-                records_table.c.updated_at,                # 13 - R Updated
-                records_table.c.tenant_id,                 # 14 - R Tenant
-                records_table.c.zone_id,                   # 15 - R Zone
-                records_table.c.recordset_id,              # 16 - R RSet
-                records_table.c.data,                      # 17 - R Data
-                records_table.c.description,               # 18 - R Desc
-                records_table.c.hash,                      # 19 - R Hash
-                records_table.c.managed,                   # 20 - R Mngd Flg
-                records_table.c.managed_plugin_name,       # 21 - R Mngd Plg
-                records_table.c.managed_resource_type,     # 22 - R Mngd Type
-                records_table.c.managed_resource_region,   # 23 - R Mngd Rgn
-                records_table.c.managed_resource_id,       # 24 - R Mngd ID
-                records_table.c.managed_tenant_id,         # 25 - R Mngd T ID
-                records_table.c.status,                    # 26 - R Status
-                records_table.c.action,                    # 27 - R Action
-                records_table.c.serial                     # 28 - R Serial
-            ]).select_from(rjoin)
+            # RS Info
+            recordsets_table.c.id,                     # 0 - RS ID
+            recordsets_table.c.version,                # 1 - RS Version
+            recordsets_table.c.created_at,             # 2 - RS Created
+            recordsets_table.c.updated_at,             # 3 - RS Updated
+            recordsets_table.c.tenant_id,              # 4 - RS Tenant
+            recordsets_table.c.zone_id,                # 5 - RS Zone
+            recordsets_table.c.name,                   # 6 - RS Name
+            recordsets_table.c.type,                   # 7 - RS Type
+            recordsets_table.c.ttl,                    # 8 - RS TTL
+            recordsets_table.c.description,            # 9 - RS Desc
+            # R Info
+            records_table.c.id,                        # 10 - R ID
+            records_table.c.version,                   # 11 - R Version
+            records_table.c.created_at,                # 12 - R Created
+            records_table.c.updated_at,                # 13 - R Updated
+            records_table.c.tenant_id,                 # 14 - R Tenant
+            records_table.c.zone_id,                   # 15 - R Zone
+            records_table.c.recordset_id,              # 16 - R RSet
+            records_table.c.data,                      # 17 - R Data
+            records_table.c.description,               # 18 - R Desc
+            records_table.c.hash,                      # 19 - R Hash
+            records_table.c.managed,                   # 20 - R Mngd Flg
+            records_table.c.managed_plugin_name,       # 21 - R Mngd Plg
+            records_table.c.managed_resource_type,     # 22 - R Mngd Type
+            records_table.c.managed_resource_region,   # 23 - R Mngd Rgn
+            records_table.c.managed_resource_id,       # 24 - R Mngd ID
+            records_table.c.managed_tenant_id,         # 25 - R Mngd T ID
+            records_table.c.status,                    # 26 - R Status
+            records_table.c.action,                    # 27 - R Action
+            records_table.c.serial                     # 28 - R Serial
+        ).select_from(rjoin)
 
         query = query.where(
             recordsets_table.c.id.in_(formatted_ids)
@@ -453,8 +424,9 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                                             sort_dir=sort_dir)
 
         try:
-            resultproxy = self.session.execute(query)
-            raw_rows = resultproxy.fetchall()
+            with sql.get_read_session() as session:
+                resultproxy = session.execute(query)
+                raw_rows = resultproxy.fetchall()
 
         # Any ValueErrors are propagated back to the user as is.
         # If however central or storage is called directly, invalid values
@@ -538,19 +510,20 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         query = self._apply_deleted_criteria(context, table, query)
         query = self._apply_version_increment(context, table, query)
 
-        try:
-            resultproxy = self.session.execute(query)
-        except oslo_db_exception.DBDuplicateEntry:
-            raise exc_dup("Duplicate %s" % obj.obj_name())
+        with sql.get_write_session() as session:
+            try:
+                resultproxy = session.execute(query)
+            except oslo_db_exception.DBDuplicateEntry:
+                raise exc_dup("Duplicate %s" % obj.obj_name())
 
-        if resultproxy.rowcount != 1:
-            raise exc_notfound("Could not find %s" % obj.obj_name())
+            if resultproxy.rowcount != 1:
+                raise exc_notfound("Could not find %s" % obj.obj_name())
 
-        # Refetch the row, for generated columns etc
-        query = select([table]).where(table.c.id == obj.id)
-        resultproxy = self.session.execute(query)
+            # Refetch the row, for generated columns etc
+            query = select(table).where(table.c.id == obj.id)
+            resultproxy = session.execute(query)
 
-        return _set_object_from_model(obj, resultproxy.fetchone())
+            return _set_object_from_model(obj, resultproxy.fetchone())
 
     def _delete(self, context, table, obj, exc_notfound, hard_delete=False):
         """Perform item deletion or soft-delete.
@@ -584,28 +557,30 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         query = self._apply_tenant_criteria(context, table, query)
         query = self._apply_deleted_criteria(context, table, query)
 
-        resultproxy = self.session.execute(query)
+        with sql.get_write_session() as session:
+            resultproxy = session.execute(query)
 
-        if resultproxy.rowcount != 1:
-            raise exc_notfound("Could not find %s" % obj.obj_name())
+            if resultproxy.rowcount != 1:
+                raise exc_notfound("Could not find %s" % obj.obj_name())
 
-        # Refetch the row, for generated columns etc
-        query = select([table]).where(table.c.id == obj.id)
-        resultproxy = self.session.execute(query)
+            # Refetch the row, for generated columns etc
+            query = select(table).where(table.c.id == obj.id)
+            resultproxy = session.execute(query)
 
-        return _set_object_from_model(obj, resultproxy.fetchone())
+            return _set_object_from_model(obj, resultproxy.fetchone())
 
     def _select_raw(self, context, table, criterion, query=None):
         # Build the query
         if query is None:
-            query = select([table])
+            query = select(table)
 
         query = self._apply_criterion(table, query, criterion)
         query = self._apply_deleted_criteria(context, table, query)
 
         try:
-            resultproxy = self.session.execute(query)
-            return resultproxy.fetchall()
+            with sql.get_read_session() as session:
+                resultproxy = session.execute(query)
+                return resultproxy.fetchall()
         # Any ValueErrors are propagated back to the user as is.
         # If however central or storage is called directly, invalid values
         # show up as ValueError
