@@ -70,6 +70,12 @@ setup_develop $DESIGNATE_DIR
 
 install_designateclient
 
+# The designateclient may have changed location
+# (/opt/stack/new/python-designateclient) so we need to restart neutron
+if is_service_enabled q-svc; then
+   restart_service devstack@q-svc.service
+fi
+
 # calls upgrade-designate for specific release
 upgrade_project designate $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
