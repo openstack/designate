@@ -25,7 +25,6 @@ from oslo_db.sqlalchemy import enginefacade
 from oslo_log import log as logging
 from oslo_utils import importutils
 from osprofiler import opts as profiler
-import osprofiler.sqlalchemy
 from sqlalchemy import inspect
 
 osprofiler_sqlalchemy = importutils.try_import('osprofiler.sqlalchemy')
@@ -77,7 +76,7 @@ def _wrap_session(sess):
     if not osprofiler_sqlalchemy:
         return sess
     if CONF.profiler.enabled and CONF.profiler.trace_sqlalchemy:
-        sess = osprofiler.sqlalchemy.wrap_session(sqlalchemy, sess)
+        sess = osprofiler_sqlalchemy.wrap_session(sqlalchemy, sess)
     return sess
 
 
