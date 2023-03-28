@@ -36,7 +36,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_create_zone(self):
         # Create a zone
         fixture = self.get_zone_fixture(fixture=0)
-        response = self.client.post_json('/zones/', fixture)
+        response = self.client.post_json('/zones/', fixture,
+                                         headers={'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -61,7 +62,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         fixture = self.get_zone_fixture(fixture=0)
         del fixture['type']
 
-        response = self.client.post_json('/zones/', fixture)
+        response = self.client.post_json('/zones/', fixture,
+                                         headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -95,14 +97,16 @@ class ApiV2ZonesTest(ApiV2TestCase):
         body = fixture
 
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_email_too_long(self):
         fixture = self.get_zone_fixture(fixture=0)
         fixture.update({'email': 'a' * 255 + '@abc.com'})
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_invalid_email(self):
         invalid_emails = [
@@ -117,29 +121,32 @@ class ApiV2ZonesTest(ApiV2TestCase):
         for email in invalid_emails:
             fixture.update({'email': email})
             body = fixture
-            self._assert_exception('invalid_object', 400,
-                                   self.client.post_json,
-                                   '/zones', body)
+            self._assert_exception(
+                'invalid_object', 400, self.client.post_json,
+                '/zones', body, headers={'X-Test-Role': 'member'})
 
     def test_create_zone_email_missing(self):
         fixture = self.get_zone_fixture(fixture=0)
         del fixture['email']
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_ttl_less_than_zero(self):
         fixture = self.get_zone_fixture(fixture=0)
         fixture['ttl'] = -1
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_ttl_is_zero(self):
         fixture = self.get_zone_fixture(fixture=0)
         fixture['ttl'] = 0
         body = fixture
-        response = self.client.post_json('/zones', body)
+        response = self.client.post_json('/zones', body,
+                                         headers={'X-Test-Role': 'member'})
         self.assertEqual(202, response.status_int)
 
     def test_create_zone_ttl_is_greater_than_max(self):
@@ -147,19 +154,22 @@ class ApiV2ZonesTest(ApiV2TestCase):
         fixture['ttl'] = 2174483648
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_ttl_is_invalid(self):
         fixture = self.get_zone_fixture(fixture=0)
         fixture['ttl'] = "!@?>"
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_ttl_is_not_required_field(self):
         fixture = self.get_zone_fixture(fixture=0)
         body = fixture
-        response = self.client.post_json('/zones', body)
+        response = self.client.post_json('/zones', body,
+                                         headers={'X-Test-Role': 'member'})
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
@@ -168,21 +178,24 @@ class ApiV2ZonesTest(ApiV2TestCase):
         fixture['description'] = "a" * 161
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_name_is_missing(self):
         fixture = self.get_zone_fixture(fixture=0)
         del fixture['name']
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_name_too_long(self):
         fixture = self.get_zone_fixture(fixture=0)
         fixture['name'] = 'x' * 255 + ".com"
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_body_validation(self):
         fixture = self.get_zone_fixture(fixture=0)
@@ -191,7 +204,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Ensure it fails with a 400
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
         fixture = self.get_zone_fixture(fixture=0)
         # Add created_at to the body
@@ -199,7 +213,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Ensure it fails with a 400
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
+                               '/zones', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_invalid_name(self):
         # Try to create a zone with an invalid name
@@ -207,7 +222,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', fixture)
+                               '/zones', fixture,
+                               headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'create_zone',
                   side_effect=messaging.MessagingTimeout())
@@ -217,7 +233,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         body = fixture
 
         self._assert_exception('timeout', 504, self.client.post_json,
-                               '/zones/', body)
+                               '/zones/', body,
+                               headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'create_zone',
                   side_effect=exceptions.DuplicateZone())
@@ -227,30 +244,38 @@ class ApiV2ZonesTest(ApiV2TestCase):
         body = fixture
 
         self._assert_exception('duplicate_zone', 409, self.client.post_json,
-                               '/zones/', body)
+                               '/zones/', body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_missing_content_type(self):
         self._assert_exception('unsupported_content_type', 415,
-                               self.client.post, '/zones')
+                               self.client.post, '/zones',
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_zone_bad_content_type(self):
         self._assert_exception(
             'unsupported_content_type', 415, self.client.post, '/zones',
-            headers={'Content-type': 'test/goat'})
+            headers={'Content-type': 'test/goat',
+                     'X-Test-Role': 'member'})
 
     def test_zone_invalid_url(self):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/invalid'
         self._assert_exception('not_found', 404, self.client.get, url,
-                               headers={'Accept': 'application/json'})
-        self._assert_exception('not_found', 404, self.client.patch_json, url)
-        self._assert_exception('not_found', 404, self.client.delete, url)
+                               headers={'Accept': 'application/json',
+                                        'X-Test-Role': 'member'})
+        self._assert_exception('not_found', 404, self.client.patch_json, url,
+                               headers={'X-Test-Role': 'member'})
+        self._assert_exception('not_found', 404, self.client.delete, url,
+                               headers={'X-Test-Role': 'member'})
 
         # Pecan returns a 405 for post
-        response = self.client.post(url, status=405)
+        response = self.client.post(url, status=405,
+                                    headers={'X-Test-Role': 'member'})
         self.assertEqual(405, response.status_int)
 
     def test_get_zones(self):
-        response = self.client.get('/zones/')
+        response = self.client.get('/zones/',
+                                   headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -276,14 +301,16 @@ class ApiV2ZonesTest(ApiV2TestCase):
     @patch.object(central_service.Service, 'find_zones',
                   side_effect=messaging.MessagingTimeout())
     def test_get_zones_timeout(self, _):
-        self._assert_exception('timeout', 504, self.client.get, '/zones/')
+        self._assert_exception('timeout', 504, self.client.get, '/zones/',
+                               headers={'X-Test-Role': 'member'})
 
     def test_get_zone(self):
         # Create a zone
         zone = self.create_zone()
 
         response = self.client.get('/zones/%s' % zone['id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -302,26 +329,30 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual(zone['email'], response.json['email'])
 
     def test_get_zone_invalid_id(self):
-        self._assert_invalid_uuid(self.client.get, '/zones/%s')
+        self._assert_invalid_uuid(self.client.get, '/zones/%s',
+                                  headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_get_zone_timeout(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
         self._assert_exception('timeout', 504, self.client.get, url,
-                               headers={'Accept': 'application/json'})
+                               headers={'Accept': 'application/json',
+                                        'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_zone',
                   side_effect=exceptions.ZoneNotFound())
     def test_get_zone_missing(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
         self._assert_exception('zone_not_found', 404, self.client.get, url,
-                               headers={'Accept': 'application/json'})
+                               headers={'Accept': 'application/json',
+                                        'X-Test-Role': 'member'})
 
     def test_get_zone_bad_accept(self):
         url = '/zones/6e2146f3-87bc-4f47-adc5-4df0a5c78218'
 
-        self.client.get(url, headers={'Accept': 'test/goat'}, status=406)
+        self.client.get(url, status=406, headers={'Accept': 'test/goat',
+                                                  'X-Test-Role': 'member'})
 
     def test_update_zone(self):
         # Create a zone
@@ -331,7 +362,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         body = {'email': 'prefix-%s' % zone['email']}
 
         response = self.client.patch_json('/zones/%s' % zone['id'], body,
-                                          status=202)
+                                          status=202,
+                                          headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -349,7 +381,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
                          response.json['email'])
 
     def test_update_zone_invalid_id(self):
-        self._assert_invalid_uuid(self.client.patch_json, '/zones/%s')
+        self._assert_invalid_uuid(self.client.patch_json, '/zones/%s',
+                                  headers={'X-Test-Role': 'member'})
 
     def test_update_zone_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we
@@ -365,7 +398,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.patch_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
         # Prepare an update body with negative ttl in the body
         body = {'email': 'prefix-%s' % zone['email'],
@@ -373,7 +406,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.patch_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
         # Prepare an update body with ttl > maximum (2147483647) in the body
         body = {'email': 'prefix-%s' % zone['email'],
@@ -381,7 +414,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.patch_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_zone',
                   side_effect=exceptions.DuplicateZone())
@@ -393,7 +426,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Ensure it fails with a 409
         self._assert_exception('duplicate_zone', 409, self.client.patch_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_zone',
                   side_effect=messaging.MessagingTimeout())
@@ -405,7 +438,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Ensure it fails with a 504
         self._assert_exception('timeout', 504, self.client.patch_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_zone',
                   side_effect=exceptions.ZoneNotFound())
@@ -417,12 +450,13 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Ensure it fails with a 404
         self._assert_exception('zone_not_found', 404, self.client.patch_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
     def test_delete_zone(self):
         zone = self.create_zone()
 
-        response = self.client.delete('/zones/%s' % zone['id'], status=202)
+        response = self.client.delete('/zones/%s' % zone['id'], status=202,
+                                      headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -431,18 +465,20 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual('PENDING', response.json['status'])
 
         # The deleted zone should still be listed
-        zones = self.client.get('/zones/')
+        zones = self.client.get('/zones/', headers={'X-Test-Role': 'member'})
         self.assertEqual(1, len(zones.json['zones']))
 
     def test_delete_zone_invalid_id(self):
-        self._assert_invalid_uuid(self.client.delete, '/zones/%s')
+        self._assert_invalid_uuid(self.client.delete, '/zones/%s',
+                                  headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'delete_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_delete_zone_timeout(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
-        self._assert_exception('timeout', 504, self.client.delete, url)
+        self._assert_exception('timeout', 504, self.client.delete, url,
+                               headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'delete_zone',
                   side_effect=exceptions.ZoneNotFound())
@@ -450,42 +486,48 @@ class ApiV2ZonesTest(ApiV2TestCase):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
         self._assert_exception('zone_not_found', 404, self.client.delete,
-                               url)
+                               url, headers={'X-Test-Role': 'member'})
 
     def test_post_abandon_zone(self):
         zone = self.create_zone()
         url = '/zones/%s/tasks/abandon' % zone.id
 
         # Ensure that we get permission denied
-        self._assert_exception('forbidden', 403, self.client.post_json, url)
+        self._assert_exception('forbidden', 403, self.client.post_json, url,
+                               headers={'X-Test-Role': 'member'})
 
         # Ensure that abandon zone succeeds with the right policy
         self.policy({'abandon_zone': '@'})
-        response = self.client.post_json(url)
+        response = self.client.post_json(url,
+                                         headers={'X-Test-Role': 'member'})
         self.assertEqual(204, response.status_int)
 
     def test_get_abandon_zone(self):
         zone = self.create_zone()
         url = '/zones/%s/tasks/abandon' % zone.id
-        self._assert_exception('method_not_allowed', 405, self.client.get, url)
+        self._assert_exception('method_not_allowed', 405, self.client.get, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_get_invalid_abandon(self):
         # This is an invalid endpoint - should return 404
         url = '/zones/tasks/abandon'
-        self._assert_exception('not_found', 404, self.client.get, url)
+        self._assert_exception('not_found', 404, self.client.get, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_get_zone_tasks(self):
         # This is an invalid endpoint - should return 404
         zone = self.create_zone()
         url = '/zones/%s/tasks' % zone.id
-        self._assert_exception('not_found', 404, self.client.get, url)
+        self._assert_exception('not_found', 404, self.client.get, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_secondary(self):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['masters'] = ["10.0.0.1"]
 
-        response = self.client.post_json('/zones/', fixture)
+        response = self.client.post_json('/zones/', fixture,
+                                         headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -516,7 +558,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         fixture = self.get_zone_fixture('SECONDARY', 0)
 
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones/', fixture)
+                               '/zones/', fixture,
+                               headers={'X-Test-Role': 'member'})
 
     def test_update_secondary(self):
         # Create a zone
@@ -538,8 +581,9 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Prepare an update body
         body = {'masters': masters}
 
-        response = self.client.patch_json('/zones/%s' % zone['id'], body,
-                                          status=202)
+        response = self.client.patch_json(
+            '/zones/%s' % zone['id'], body, status=202,
+            headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -573,7 +617,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
             response = self.client.post_json(
                 '/zones/%s/tasks/xfr' % zone['id'],
-                None, status=202)
+                None, status=202, headers={'X-Test-Role': 'member'})
 
         self.assertTrue(worker.perform_zone_xfr.called)
 
@@ -588,7 +632,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         response = self.client.post_json(
             '/zones/%s/tasks/xfr' % zone['id'],
-            None, status=400)
+            None, status=400, headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(400, response.status_int)
@@ -605,27 +649,32 @@ class ApiV2ZonesTest(ApiV2TestCase):
         body = {'email': 'foo@bar.io'}
 
         self._assert_exception('invalid_object', 400, self.client.patch_json,
-                               '/zones/%s' % zone['id'], body)
+                               '/zones/%s' % zone['id'], body,
+                               headers={'X-Test-Role': 'member'})
 
     # Metadata tests
     def test_metadata_exists(self):
-        response = self.client.get('/zones/')
+        response = self.client.get('/zones/',
+                                   headers={'X-Test-Role': 'member'})
 
         # Make sure the fields exist
         self.assertIn('metadata', response.json)
         self.assertIn('total_count', response.json['metadata'])
 
     def test_total_count(self):
-        response = self.client.get('/zones/')
+        response = self.client.get('/zones/',
+                                   headers={'X-Test-Role': 'member'})
 
         # There are no zones by default
         self.assertEqual(0, response.json['metadata']['total_count'])
 
         # Create a zone
         fixture = self.get_zone_fixture(fixture=0)
-        response = self.client.post_json('/zones/', fixture)
+        response = self.client.post_json('/zones/', fixture,
+                                         headers={'X-Test-Role': 'member'})
 
-        response = self.client.get('/zones/')
+        response = self.client.get('/zones/',
+                                   headers={'X-Test-Role': 'member'})
 
         # Make sure total_count picked it up
         self.assertEqual(1, response.json['metadata']['total_count'])
@@ -633,13 +682,16 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_total_count_pagination(self):
         # Create two zones
         fixture = self.get_zone_fixture(fixture=0)
-        response = self.client.post_json('/zones/', fixture)
+        response = self.client.post_json('/zones/', fixture,
+                                         headers={'X-Test-Role': 'member'})
 
         fixture = self.get_zone_fixture(fixture=1)
-        response = self.client.post_json('/zones/', fixture)
+        response = self.client.post_json('/zones/', fixture,
+                                         headers={'X-Test-Role': 'member'})
 
         # Paginate so that there is only one zone returned
-        response = self.client.get('/zones?limit=1')
+        response = self.client.get('/zones?limit=1',
+                                   headers={'X-Test-Role': 'member'})
 
         self.assertEqual(1, len(response.json['zones']))
 
@@ -653,9 +705,11 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Prepare an update body
         body = {'zone': {'email': 'prefix-%s' % zone['email']}}
 
-        self.client.delete('/zones/%s' % zone['id'], status=202)
+        self.client.delete('/zones/%s' % zone['id'], status=202,
+                           headers={'X-Test-Role': 'member'})
         self._assert_exception('bad_request', 400, self.client.patch_json,
-                               '/zones/%s' % zone['id'], body)
+                               '/zones/%s' % zone['id'], body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_get_nameservers(self):
         # Create a zone
@@ -664,7 +718,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Prepare an update body
 
         response = self.client.get('/zones/%s/nameservers' % zone['id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
 
         self.assertIn('nameservers', response.json)
         self.assertEqual(1, len(response.json['nameservers']))
@@ -689,7 +744,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         ]
 
         for fixture in fixtures:
-            response = self.client.post_json('/zones/', fixture)
+            response = self.client.post_json('/zones/', fixture,
+                                             headers={'X-Test-Role': 'member'})
 
         get_urls = [
             # Filter by Type
@@ -714,7 +770,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         for get_url, correct_result in zip(get_urls, correct_results):
 
-            response = self.client.get(get_url)
+            response = self.client.get(get_url,
+                                       headers={'X-Test-Role': 'member'})
 
             # Check the headers are what we expect
             self.assertEqual(200, response.status_int)
@@ -726,4 +783,5 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_invalid_zones_filter(self):
         invalid_url = '/zones?id=155477ef-e6c5-4b94-984d-8fc68c0c1a14'
         self._assert_exception(
-            'bad_request', 400, self.client.get, invalid_url)
+            'bad_request', 400, self.client.get, invalid_url,
+            headers={'X-Test-Role': 'member'})

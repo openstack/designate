@@ -27,7 +27,7 @@ class ApiV2SharedZonesTest(ApiV2TestCase):
             self.endpoint_url.format(self.zone.id),
             {
                 'target_project_id': self.target_project_id,
-            }
+            }, headers={'X-Test-Role': 'member'}
         )
 
     def test_share_zone(self):
@@ -55,19 +55,22 @@ class ApiV2SharedZonesTest(ApiV2TestCase):
     def test_share_zone_with_no_target_id_no_zone_id(self):
         self._assert_exception(
             'invalid_uuid', 400, self.client.post_json,
-            self.endpoint_url.format(""), {"target_project_id": ""}
+            self.endpoint_url.format(""), {"target_project_id": ""},
+            headers={'X-Test-Role': 'member'}
         )
 
     def test_share_zone_with_target_id_no_zone_id(self):
         self._assert_exception(
             'invalid_uuid', 400, self.client.post_json,
-            self.endpoint_url.format(""), {"target_project_id": "2"}
+            self.endpoint_url.format(""), {"target_project_id": "2"},
+            headers={'X-Test-Role': 'member'}
         )
 
     def test_share_zone_with_invalid_zone_id(self):
         self._assert_exception(
             'invalid_uuid', 400, self.client.post_json,
-            self.endpoint_url.format("invalid"), {"target_project_id": "2"}
+            self.endpoint_url.format("invalid"), {"target_project_id": "2"},
+            headers={'X-Test-Role': 'member'}
         )
 
     def test_get_zone_share(self):
@@ -75,7 +78,8 @@ class ApiV2SharedZonesTest(ApiV2TestCase):
 
         response = self.client.get(
             '{}/{}'.format(self.endpoint_url.format(self.zone.id),
-                           shared_zone.json['id'])
+                           shared_zone.json['id']),
+            headers={'X-Test-Role': 'member'}
         )
 
         # Check the headers are what we expect
@@ -98,7 +102,8 @@ class ApiV2SharedZonesTest(ApiV2TestCase):
         self.assertIn('updated_at', response.json)
 
     def test_list_zone_shares(self):
-        response = self.client.get(self.endpoint_url.format(self.zone.id))
+        response = self.client.get(self.endpoint_url.format(self.zone.id),
+                                   headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -114,7 +119,8 @@ class ApiV2SharedZonesTest(ApiV2TestCase):
 
         self._create_valid_shared_zone()
 
-        data = self.client.get(self.endpoint_url.format(self.zone.id))
+        data = self.client.get(self.endpoint_url.format(self.zone.id),
+                               headers={'X-Test-Role': 'member'})
 
         self.assertEqual(1, len(data.json['shared_zones']))
 
@@ -123,7 +129,8 @@ class ApiV2SharedZonesTest(ApiV2TestCase):
 
         response = self.client.delete(
             '{}/{}'.format(self.endpoint_url.format(self.zone.id),
-                           shared_zone.json['id'])
+                           shared_zone.json['id']),
+            headers={'X-Test-Role': 'member'}
         )
 
         # Check the headers are what we expect

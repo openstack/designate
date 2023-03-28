@@ -16,6 +16,7 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+from designate.common import constants
 from designate.common.policies import base
 
 DEPRECATED_REASON = """
@@ -58,7 +59,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="create_tsigkey",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Create Tsigkey",
         operations=[
             {
@@ -71,7 +72,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="find_tsigkeys",
         check_str=base.SYSTEM_READER,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="List Tsigkeys",
         operations=[
             {
@@ -84,7 +85,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="get_tsigkey",
         check_str=base.SYSTEM_READER,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Show a Tsigkey",
         operations=[
             {
@@ -97,7 +98,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="update_tsigkey",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Update Tsigkey",
         operations=[
             {
@@ -110,7 +111,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="delete_tsigkey",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Delete a Tsigkey",
         operations=[
             {

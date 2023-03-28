@@ -2982,8 +2982,10 @@ class StorageTestCase(object):
         self.assertEqual(result.id, accept.id)
 
     def test_transfer_zone_ownership(self):
-        tenant_1_context = self.get_context(project_id='1')
-        tenant_2_context = self.get_context(project_id='2')
+        tenant_1_context = self.get_context(project_id='1',
+                                            roles=['member', 'reader'])
+        tenant_2_context = self.get_context(project_id='2',
+                                            roles=['member', 'reader'])
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 

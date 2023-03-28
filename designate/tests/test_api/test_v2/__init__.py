@@ -120,7 +120,8 @@ class ApiV2TestCase(ApiTestCase):
             if marker is not None:
                 params['marker'] = marker
 
-            r = self.client.get(url, params, status=expected_status)
+            r = self.client.get(url, params, status=expected_status,
+                                headers={'X-Test-Role': 'member'})
             if expected_status != 200:
                 if expected_type:
                     self._assert_exception(expected_type, expected_status, r)

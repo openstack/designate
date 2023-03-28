@@ -16,6 +16,7 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+from designate.common import constants
 from designate.common.policies import base
 
 
@@ -54,31 +55,31 @@ rules = [
     policy.RuleDefault(
         name="all_tenants",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Action on all tenants.',
         deprecated_rule=deprecated_all_tenants),
     policy.RuleDefault(
         name="edit_managed_records",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Edit managed records.',
         deprecated_rule=deprecated_edit_managed_records),
     policy.RuleDefault(
         name="use_low_ttl",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Use low TTL.',
         deprecated_rule=deprecated_use_low_ttl),
     policy.RuleDefault(
         name="use_sudo",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Accept sudo from user to tenant.',
         deprecated_rule=deprecated_use_sudo),
     policy.RuleDefault(
         name="hard_delete",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Clean backend resources associated with zone",
         deprecated_rule=deprecated_hard_delete),
 ]

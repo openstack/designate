@@ -27,13 +27,13 @@ RULE_ANY = "@"
 # They're allowed to create, read, update, or delete any system-specific
 # resource. They can also operate on project-specific resources where
 # applicable (e.g., cleaning up blacklists)
-SYSTEM_ADMIN = 'role:admin and system_scope:all'
+SYSTEM_ADMIN = 'role:admin'
 
 # Generic policy check string for read-only access to system-level resources.
 # This persona is useful for someone who needs access for auditing or even
 # support. These uses are also able to view project-specific resources where
 # applicable (e.g., listing all pools)
-SYSTEM_READER = 'role:reader and system_scope:all'
+SYSTEM_READER = 'role:admin'
 
 # This check string is reserved for actions that require the highest level of
 # authorization on a project or resources within the project

@@ -16,6 +16,7 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+from designate.common import constants
 from designate.common.policies import base
 
 DEPRECATED_REASON = """
@@ -58,7 +59,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="create_tld",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Create Tld",
         operations=[
             {
@@ -71,7 +72,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="find_tlds",
         check_str=base.SYSTEM_READER,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="List Tlds",
         operations=[
             {
@@ -84,7 +85,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="get_tld",
         check_str=base.SYSTEM_READER,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Show Tld",
         operations=[
             {
@@ -97,7 +98,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="update_tld",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Update Tld",
         operations=[
             {
@@ -110,7 +111,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="delete_tld",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description="Delete Tld",
         operations=[
             {

@@ -151,7 +151,6 @@ class DesignateContext(context.RequestContext):
         # TODO(kiall): Remove Me
         kwargs['is_admin'] = True
         kwargs['roles'] = ['admin', 'reader']
-        kwargs['system_scope'] = 'all'
 
         return cls(None, **kwargs)
 

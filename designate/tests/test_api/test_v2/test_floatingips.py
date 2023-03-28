@@ -202,7 +202,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         response = self.client.patch_json(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
             fixture.to_dict(),
-            headers={'X-Test-Tenant-Id': 'tenant'})
+            headers={'X-Test-Tenant-Id': 'tenant',
+                     'X-Test-Role': 'member'})
 
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)

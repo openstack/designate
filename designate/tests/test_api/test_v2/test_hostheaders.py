@@ -30,7 +30,8 @@ class ApiV2HostHeadersTest(ApiV2TestCase):
         fixture = self.get_zone_fixture(fixture=0)
         response = self.client.post_json('/zones/',
                                          fixture,
-                                         headers={'Host': 'testhost.com'})
+                                         headers={'Host': 'testhost.com',
+                                                  'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -41,7 +42,8 @@ class ApiV2HostHeadersTest(ApiV2TestCase):
 
         # Get zone with host header
         response = self.client.get('/zones/',
-                                   headers={'Host': 'testhost.com'})
+                                   headers={'Host': 'testhost.com',
+                                            'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)

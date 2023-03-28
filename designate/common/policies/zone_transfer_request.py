@@ -16,6 +16,7 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+from designate.common import constants
 from designate.common.policies import base
 
 DEPRECATED_REASON = """
@@ -58,7 +59,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="create_zone_transfer_request",
         check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Create Zone Transfer Accept",
         operations=[
             {
@@ -71,7 +72,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="get_zone_transfer_request",
         check_str=base.RULE_ZONE_TRANSFER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Show a Zone Transfer Request",
         operations=[
             {
@@ -84,7 +85,7 @@ rules = [
     policy.RuleDefault(
         name="get_zone_transfer_request_detailed",
         check_str=base.SYSTEM_OR_PROJECT_READER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_create_zone_transfer_request
     ),
     policy.DocumentedRuleDefault(
@@ -101,7 +102,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="update_zone_transfer_request",
         check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Update a Zone Transfer Request",
         operations=[
             {
@@ -114,7 +115,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="delete_zone_transfer_request",
         check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Delete a Zone Transfer Request",
         operations=[
             {
