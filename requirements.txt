@@ -13,6 +13,7 @@ Jinja2>=2.10 # BSD License (3 clause)
 jsonschema>=3.2.0 # MIT
 keystoneauth1>=3.4.0 # Apache-2.0
 keystonemiddleware>=4.17.0 # Apache-2.0
+openstacksdk>=0.103.0 # Apache-2.0
 oslo.config>=6.8.0 # Apache-2.0
 oslo.concurrency>=4.2.0 # Apache-2.0
 oslo.messaging>=14.1.0 # Apache-2.0
@@ -31,7 +32,6 @@ PasteDeploy>=1.5.0 # MIT
 pbr>=3.1.1 # Apache-2.0
 pecan!=1.0.2,!=1.0.3,!=1.0.4,!=1.2,>=1.0.0 # BSD
 python-designateclient>=2.12.0 # Apache-2.0
-python-neutronclient>=6.7.0 # Apache-2.0
 requests>=2.23.0 # Apache-2.0
 tenacity>=6.0.0 # Apache-2.0
 SQLAlchemy>=1.4.41 # MIT
