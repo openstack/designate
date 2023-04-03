@@ -37,7 +37,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Prepare a RecordSet fixture
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
         response = self.client.post_json(
-            '/zones/%s/recordsets' % self.zone['id'], fixture)
+            '/zones/%s/recordsets' % self.zone['id'], fixture,
+            headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(201, response.status_int)
@@ -60,7 +61,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
         fixture['ttl'] = 0
         response = self.client.post_json(
-            '/zones/%s/recordsets' % self.zone['id'], fixture)
+            '/zones/%s/recordsets' % self.zone['id'], fixture,
+            headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(201, response.status_int)
@@ -75,7 +77,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        response = self.client.put_json(url, body, status=200)
+        response = self.client.put_json(url, body, status=200,
+                                        headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -89,7 +92,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Check the zone's status is as expected
         response = self.client.get('/zones/%s/recordsets/%s' %
                                    (recordset['zone_id'], recordset['id']),
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -106,7 +110,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         )
 
         response = self.client.post_json(
-            '/zones/%s/recordsets' % self.zone['id'], fixture)
+            '/zones/%s/recordsets' % self.zone['id'], fixture,
+            headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -120,7 +125,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Check the zone's status is as expected
         response = self.client.get('/zones/%s' % self.zone['id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -147,7 +153,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_with_name_too_long(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -155,7 +162,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = fixture
         url = '/zones/%s/recordsets' % self.zone['id']
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_with_name_missing(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -163,7 +171,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = fixture
         url = '/zones/%s/recordsets' % self.zone['id']
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_type_is_missing(self):
         # Prepare a RecordSet fixture
@@ -186,7 +195,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_with_invalid_type(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -194,7 +204,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = fixture
         url = '/zones/%s/recordsets' % self.zone['id']
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_description_too_long(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -202,7 +213,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = fixture
         url = '/zones/%s/recordsets' % self.zone['id']
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_with_negative_ttl(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -210,7 +222,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = fixture
         url = '/zones/%s/recordsets' % self.zone['id']
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_with_ttl_greater_than_max(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -218,7 +231,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = fixture
         url = '/zones/%s/recordsets' % self.zone['id']
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_with_invalid_ttl(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -226,10 +240,12 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = fixture
         url = '/zones/%s/recordsets' % self.zone['id']
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_invalid_id(self):
-        self._assert_invalid_uuid(self.client.post, '/zones/%s/recordsets')
+        self._assert_invalid_uuid(self.client.post, '/zones/%s/recordsets',
+                                  headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we
@@ -245,7 +261,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception(
-            'invalid_object', 400, self.client.post_json, url, body)
+            'invalid_object', 400, self.client.post_json, url, body,
+            headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'create_recordset',
                   side_effect=messaging.MessagingTimeout())
@@ -257,7 +274,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets' % self.zone['id']
 
         self._assert_exception('timeout', 504, self.client.post_json, url,
-                               body)
+                               body, headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'create_recordset',
                   side_effect=exceptions.DuplicateRecordSet())
@@ -269,7 +286,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets' % self.zone['id']
 
         self._assert_exception('duplicate_recordset', 409,
-                               self.client.post_json, url, body)
+                               self.client.post_json, url, body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_invalid_zone(self):
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -279,24 +297,28 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets'
 
         self._assert_exception('zone_not_found', 404, self.client.post_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
     def test_recordsets_invalid_url(self):
         url = '/zones/recordsets'
-        self._assert_exception('not_found', 404, self.client.get, url)
-        self._assert_exception('not_found', 404, self.client.post_json, url)
+        self._assert_exception('not_found', 404, self.client.get, url,
+                               headers={'X-Test-Role': 'member'})
+        self._assert_exception('not_found', 404, self.client.post_json, url,
+                               headers={'X-Test-Role': 'member'})
 
         # Pecan returns a 405 for Patch and delete operations
-        response = self.client.patch_json(url, status=405)
+        response = self.client.patch_json(url, status=405,
+                                          headers={'X-Test-Role': 'member'})
         self.assertEqual(405, response.status_int)
 
-        response = self.client.delete(url, status=405)
+        response = self.client.delete(url, status=405,
+                                      headers={'X-Test-Role': 'member'})
         self.assertEqual(405, response.status_int)
 
     def test_get_recordsets(self):
         url = '/zones/%s/recordsets' % self.zone['id']
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -352,7 +374,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         for fixture in fixtures:
             response = self.client.post_json(
                 '/zones/%s/recordsets' % self.zone['id'],
-                fixture)
+                fixture, headers={'X-Test-Role': 'member'})
 
         get_urls = [
             # Filter by Name
@@ -380,7 +402,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         correct_results = [1, 1, 2, 1, 1, 2, 1, 1]
 
         for get_url, correct_result in zip(get_urls, correct_results):
-            response = self.client.get(get_url)
+            response = self.client.get(get_url,
+                                       headers={'X-Test-Role': 'member'})
 
             # Check the headers are what we expect
             self.assertEqual(200, response.status_int)
@@ -397,21 +420,22 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     def test_get_recordsets_timeout(self, _):
         url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets'
 
-        self._assert_exception('timeout', 504, self.client.get, url)
+        self._assert_exception('timeout', 504, self.client.get, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_get_deleted_recordsets(self):
         zone = self.create_zone(fixture=1)
         recordset = self.create_recordset(zone, records=[])
         url = '/zones/%s/recordsets' % zone['id']
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
 
         # Now delete the recordset
         url = '/zones/%s/recordsets/%s' % (zone['id'], recordset.id)
-        self.client.delete(url, status=202)
+        self.client.delete(url, status=202, headers={'X-Test-Role': 'member'})
 
         # Simulate the zone having been deleted on the backend
         zone_serial = self.central_service.get_zone(
@@ -423,20 +447,21 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Try to get the record and ensure that we get a
         # recordset_not_found error
         self._assert_exception('recordset_not_found', 404, self.client.get,
-                               url)
+                               url, headers={'X-Test-Role': 'member'})
 
     def test_get_deleted_recordset_after_deleting_zone(self):
         zone = self.create_zone(fixture=1)
         self.create_recordset(zone)
         url = '/zones/%s/recordsets' % zone['id']
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
 
         # Now delete the zone
-        self.client.delete('/zones/%s' % zone['id'], status=202)
+        self.client.delete('/zones/%s' % zone['id'], status=202,
+                           headers={'X-Test-Role': 'member'})
 
         # Simulate the zone having been deleted on the backend
         zone_serial = self.central_service.get_zone(
@@ -447,14 +472,15 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Try to get the record and ensure that we get a
         # zone_not_found error
-        self._assert_exception('zone_not_found', 404, self.client.get, url)
+        self._assert_exception('zone_not_found', 404, self.client.get, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_get_recordset(self):
         # Create a recordset
         recordset = self.create_recordset(self.zone, records=[])
 
         url = '/zones/%s/recordsets/%s' % (self.zone['id'], recordset['id'])
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -474,7 +500,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual('ACTIVE', response.json['status'])
 
     def test_get_recordset_invalid_id(self):
-        self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets/%s')
+        self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets/%s',
+                                  headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=messaging.MessagingTimeout())
@@ -483,7 +510,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
             self.zone['id'])
 
         self._assert_exception('timeout', 504, self.client.get, url,
-                               headers={'Accept': 'application/json'})
+                               headers={'Accept': 'application/json',
+                                        'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=exceptions.RecordSetNotFound())
@@ -493,7 +521,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         self._assert_exception('recordset_not_found', 404,
                                self.client.get, url,
-                               headers={'Accept': 'application/json'})
+                               headers={'Accept': 'application/json',
+                                        'X-Test-Role': 'member'})
 
     def test_update_recordset(self):
         # Create a recordset
@@ -504,7 +533,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        response = self.client.put_json(url, body, status=200)
+        response = self.client.put_json(url, body, status=200,
+                                        headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -524,7 +554,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Check the zone's status is as expected
         response = self.client.get('/zones/%s' % recordset['zone_id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -547,7 +578,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        response = self.client.put_json(url, body, status=202)
+        response = self.client.put_json(url, body, status=202,
+                                        headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -563,7 +595,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Check the zone's status is as expected
         response = self.client.get('/zones/%s' % recordset['zone_id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -581,7 +614,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        response = self.client.put_json(url, body, status=202)
+        response = self.client.put_json(url, body, status=202,
+                                        headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -595,7 +629,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Check the zone's status is as expected
         response = self.client.get('/zones/%s' % recordset['zone_id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -611,7 +646,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        self.client.put_json(url, body, status=202)
+        self.client.put_json(url, body, status=202,
+                             headers={'X-Test-Role': 'member'})
 
     def test_create_txt_record_too_long(self):
         # See bug #1474012
@@ -621,7 +657,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
         self._assert_exception('invalid_object', 400,
-                               self.client.put_json, url, body)
+                               self.client.put_json, url, body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_create_txt_record_multiple_strings(self):
         # create TXT record with string split in 2
@@ -631,7 +668,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = {'description': 'Tester', 'records': [record]}
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        self.client.put_json(url, body, status=202)
+        self.client.put_json(url, body, status=202,
+                             headers={'X-Test-Role': 'member'})
 
     def test_update_recordset_with_record_clear(self):
         # Create a recordset with one record
@@ -642,7 +680,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        response = self.client.put_json(url, body, status=200)
+        response = self.client.put_json(url, body, status=200,
+                                        headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -654,7 +693,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Check the zone's status is as expected
         response = self.client.get('/zones/%s' % recordset['zone_id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -664,7 +704,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
     def test_update_recordset_invalid_id(self):
         self._assert_invalid_uuid(
-            self.client.put_json, '/zones/%s/recordsets/%s')
+            self.client.put_json, '/zones/%s/recordsets/%s',
+            headers={'X-Test-Role': 'member'})
 
     def test_update_recordset_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we
@@ -682,14 +723,14 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                                            recordset['id'])
 
         self._assert_exception('invalid_object', 400, self.client.put_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
         # Prepare an update body with junk in the body
         body = {'description': 'Tester', 'junk': 'Junk Field'}
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.put_json,
-                               url, body)
+                               url, body, headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=exceptions.DuplicateRecordSet())
@@ -702,7 +743,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                % (self.zone['id']))
 
         self._assert_exception('duplicate_recordset', 409,
-                               self.client.put_json, url, body)
+                               self.client.put_json, url, body,
+                               headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=messaging.MessagingTimeout())
@@ -715,7 +757,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                % (self.zone['id']))
 
         self._assert_exception('timeout', 504, self.client.put_json, url,
-                               body)
+                               body, headers={'X-Test-Role': 'member'})
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=exceptions.RecordSetNotFound())
@@ -728,7 +770,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                % (self.zone['id']))
 
         self._assert_exception('recordset_not_found', 404,
-                               self.client.put_json, url, body)
+                               self.client.put_json, url, body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_update_recordset_invalid_ttl(self):
         recordset = self.create_recordset(self.zone)
@@ -736,7 +779,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
         self._assert_exception('invalid_object', 400,
-                               self.client.put_json, url, body)
+                               self.client.put_json, url, body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_update_recordset_negative_ttl(self):
         recordset = self.create_recordset(self.zone)
@@ -744,7 +788,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
         self._assert_exception('invalid_object', 400,
-                               self.client.put_json, url, body)
+                               self.client.put_json, url, body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_update_recordset_ttl_greater_than_max(self):
         recordset = self.create_recordset(self.zone)
@@ -752,7 +797,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
         self._assert_exception('invalid_object', 400,
-                               self.client.put_json, url, body)
+                               self.client.put_json, url, body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_update_recordset_description_too_long(self):
         recordset = self.create_recordset(self.zone)
@@ -760,14 +806,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
         self._assert_exception('invalid_object', 400,
-                               self.client.put_json, url, body)
+                               self.client.put_json, url, body,
+                               headers={'X-Test-Role': 'member'})
 
     def test_delete_recordset(self):
         recordset = self.create_recordset(self.zone, records=[])
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        response = self.client.delete(url, status=202)
+        response = self.client.delete(url, status=202,
+                                      headers={'X-Test-Role': 'member'})
 
         self.assertEqual('application/json', response.content_type)
         # Currently recordset does not have a status field. As there are no
@@ -777,7 +825,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Check the zone's status is as expected
         response = self.client.get('/zones/%s' % recordset['zone_id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -791,7 +840,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        response = self.client.delete(url, status=202)
+        response = self.client.delete(url, status=202,
+                                      headers={'X-Test-Role': 'member'})
 
         self.assertEqual('application/json', response.content_type)
         self.assertEqual('DELETE', response.json['action'])
@@ -799,7 +849,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Check the zone's status is as expected
         response = self.client.get('/zones/%s' % recordset['zone_id'],
-                                   headers=[('Accept', 'application/json')])
+                                   headers={'Accept': 'application/json',
+                                            'X-Test-Role': 'member'})
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -814,16 +865,18 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                % (self.zone['id']))
 
         self._assert_exception('recordset_not_found', 404,
-                               self.client.delete, url)
+                               self.client.delete, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_delete_recordset_invalid_id(self):
         self._assert_invalid_uuid(
-            self.client.delete, '/zones/%s/recordsets/%s')
+            self.client.delete, '/zones/%s/recordsets/%s',
+            headers={'X-Test-Role': 'member'})
 
     def test_metadata_exists(self):
         url = '/zones/%s/recordsets' % self.zone['id']
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Make sure the fields exist
         self.assertIn('metadata', response.json)
@@ -832,7 +885,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     def test_total_count(self):
         url = '/zones/%s/recordsets' % self.zone['id']
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # The NS and SOA records are there by default
         self.assertEqual(2, response.json['metadata']['total_count'])
@@ -840,9 +893,10 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Create a recordset
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
         response = self.client.post_json(
-            '/zones/%s/recordsets' % self.zone['id'], fixture)
+            '/zones/%s/recordsets' % self.zone['id'], fixture,
+            headers={'X-Test-Role': 'member'})
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Make sure total_count picked up the change
         self.assertEqual(3, response.json['metadata']['total_count'])
@@ -854,19 +908,20 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Create a recordset
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
         response = self.client.post_json(
-            '/zones/%s/recordsets' % self.zone['id'], fixture)
+            '/zones/%s/recordsets' % self.zone['id'], fixture,
+            headers={'X-Test-Role': 'member'})
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Make sure total_count picked up the change
         self.assertEqual(3, response.json['metadata']['total_count'])
 
         url = '/zones/%s/recordsets?data=nyan' % self.zone['id']
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
         self.assertEqual(0, response.json['metadata']['total_count'])
 
         url = '/zones/%s/recordsets?data=ns1.example.org.' % self.zone['id']
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
         self.assertEqual(1, response.json['metadata']['total_count'])
 
         # Test paging
@@ -885,23 +940,25 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Even with paging enabled, total_count is still the total number of
         # recordsets matching the "data" filter
         url = '/zones/%s/recordsets?limit=1&data=nyan' % new_zone.id
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
         self.assertEqual(2, response.json['metadata']['total_count'])
 
     def test_total_count_pagination(self):
         # Create two recordsets
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
         response = self.client.post_json(
-            '/zones/%s/recordsets' % self.zone['id'], fixture)
+            '/zones/%s/recordsets' % self.zone['id'], fixture,
+            headers={'X-Test-Role': 'member'})
 
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=1)
         response = self.client.post_json(
-            '/zones/%s/recordsets' % self.zone['id'], fixture)
+            '/zones/%s/recordsets' % self.zone['id'], fixture,
+            headers={'X-Test-Role': 'member'})
 
         # Paginate the recordsets to two, there should be four now
         url = '/zones/%s/recordsets?limit=2' % self.zone['id']
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # There are two recordsets returned
         self.assertEqual(2, len(response.json['recordsets']))
@@ -919,7 +976,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         recordset = self.create_recordset(secondary)
 
         url = '/zones/%s/recordsets/%s' % (secondary['id'], recordset['id'])
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -942,7 +999,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets' % secondary['id']
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -977,7 +1034,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets' % secondary['id']
         self._assert_exception('forbidden', 403, self.client.post_json, url,
-                               fixture)
+                               fixture, headers={'X-Test-Role': 'member'})
 
     def test_update_secondary_zone_recordset(self):
         fixture = self.get_zone_fixture('SECONDARY', 1)
@@ -991,7 +1048,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                                            recordset['id'])
 
         self._assert_exception('forbidden', 403, self.client.put_json, url,
-                               {'ttl': 100})
+                               {'ttl': 100}, headers={'X-Test-Role': 'member'})
 
     def test_delete_secondary_zone_recordset(self):
         fixture = self.get_zone_fixture('SECONDARY', 1)
@@ -1004,17 +1061,19 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
 
-        self._assert_exception('forbidden', 403, self.client.delete, url)
+        self._assert_exception('forbidden', 403, self.client.delete, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_no_create_rs_deleting_zone(self):
         # Prepare a create
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
         body = fixture
 
-        self.client.delete('/zones/%s' % self.zone['id'], status=202)
+        self.client.delete('/zones/%s' % self.zone['id'], status=202,
+                           headers={'X-Test-Role': 'member'})
         self._assert_exception('bad_request', 400, self.client.post_json,
                                '/zones/%s/recordsets' % self.zone['id'],
-                               body)
+                               body, headers={'X-Test-Role': 'member'})
 
     def test_no_update_rs_deleting_zone(self):
         # Create a recordset
@@ -1024,9 +1083,10 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         body = {'description': 'Tester'}
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
-        self.client.delete('/zones/%s' % self.zone['id'], status=202)
+        self.client.delete('/zones/%s' % self.zone['id'], status=202,
+                           headers={'X-Test-Role': 'member'})
         self._assert_exception('bad_request', 400, self.client.put_json, url,
-                               body)
+                               body, headers={'X-Test-Role': 'member'})
 
     def test_no_delete_rs_deleting_zone(self):
         # Create a recordset
@@ -1035,10 +1095,13 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
 
-        self.client.delete('/zones/%s' % self.zone['id'], status=202)
-        self._assert_exception('bad_request', 400, self.client.delete, url)
+        self.client.delete('/zones/%s' % self.zone['id'], status=202,
+                           headers={'X-Test-Role': 'member'})
+        self._assert_exception('bad_request', 400, self.client.delete, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_invalid_recordset_filter(self):
         invalid_url = '/zones/%s/recordsets?action=NONE' % self.zone['id']
         self._assert_exception(
-            'bad_request', 400, self.client.get, invalid_url)
+            'bad_request', 400, self.client.get, invalid_url,
+            headers={'X-Test-Role': 'member'})

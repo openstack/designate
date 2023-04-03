@@ -24,12 +24,10 @@ class ApiV2QuotasTest(ApiV2TestCase):
     def test_get_quotas(self):
         self.config(quota_api_export_size=1)
 
-        context = self.get_context(project_id='a')
+        result = self.client.get('/quotas/a', status=200,
+                                 headers={'X-Test-Tenant-Id': 'a',
+                                          'X-Test-Role': 'member'})
 
-        result = self.client.get(
-            '/quotas/%s' % context.project_id, status=200,
-            headers={'X-Test-Tenant-Id': context.project_id}
-        )
         self.assertEqual(
             {
                 'zones': 10,
@@ -44,9 +42,8 @@ class ApiV2QuotasTest(ApiV2TestCase):
     def test_get_all_quotas(self):
         self.config(quota_zone_recordsets=1)
 
-        result = self.client.get(
-            '/quotas', status=200,
-        )
+        result = self.client.get('/quotas', status=200,
+                                 headers={'X-Test-Role': 'member'})
 
         self.assertEqual(
             {
@@ -62,16 +59,14 @@ class ApiV2QuotasTest(ApiV2TestCase):
     def test_set_quotas(self):
         self.policy({'set_quota': '@'})
 
-        context = self.get_context(project_id='a')
-        self.client.patch_json(
-            '/quotas/%s' % context.project_id, {'zones': 123}, status=200,
-            headers={'X-Test-Tenant-Id': context.project_id}
-        )
+        self.client.patch_json('/quotas/a', {'zones': 123}, status=200,
+                               headers={'X-Test-Tenant-Id': 'a',
+                                        'X-Test-Role': 'member'})
 
-        result = self.client.get(
-            '/quotas/%s' % context.project_id, status=200,
-            headers={'X-Test-Tenant-Id': context.project_id}
-        )
+        result = self.client.get('/quotas/a', status=200,
+                                 headers={'X-Test-Tenant-Id': 'a',
+                                          'X-Test-Role': 'member'})
+
         self.assertEqual(
             {
                 'zones': 123,
@@ -91,16 +86,14 @@ class ApiV2QuotasTest(ApiV2TestCase):
 
         self.policy({'set_quota': '@'})
 
-        context = self.get_context(project_id='a')
-        self.client.patch_json(
-            '/quotas/%s' % context.project_id, {'zones': 123}, status=200,
-            headers={'X-Test-Tenant-Id': context.project_id}
-        )
+        self.client.patch_json('/quotas/a', {'zones': 123}, status=200,
+                               headers={'X-Test-Tenant-Id': 'a',
+                                        'X-Test-Role': 'member'})
 
-        result = self.client.get(
-            '/quotas/%s' % context.project_id, status=200,
-            headers={'X-Test-Tenant-Id': context.project_id}
-        )
+        result = self.client.get('/quotas/a', status=200,
+                                 headers={'X-Test-Tenant-Id': 'a',
+                                          'X-Test-Role': 'member'})
+
         self.assertEqual(
             {
                 'zones': 123,
@@ -117,13 +110,11 @@ class ApiV2QuotasTest(ApiV2TestCase):
 
         self.policy({'set_quota': '@'})
 
-        context = self.get_context(project_id='a')
-
         # Update recordset_records quota.
         result = self.client.patch_json(
-            '/quotas/%s' % context.project_id, {'recordset_records': 123},
-            status=200,
-            headers={'X-Test-Tenant-Id': context.project_id}
+            '/quotas/a', {'recordset_records': 123},
+            status=200, headers={'X-Test-Tenant-Id': 'a',
+                                 'X-Test-Role': 'member'}
         )
         self.assertEqual(
             {
@@ -137,16 +128,15 @@ class ApiV2QuotasTest(ApiV2TestCase):
         )
 
         # Delete quota.
-        self.client.delete(
-            '/quotas/%s' % context.project_id, status=204,
-            headers={'X-Test-Tenant-Id': context.project_id}
-        )
+        self.client.delete('/quotas/a', status=204,
+                           headers={'X-Test-Tenant-Id': 'a',
+                                    'X-Test-Role': 'member'})
 
         # Make sure we are back to the default quotas.
-        result = self.client.get(
-            '/quotas/%s' % context.project_id, status=200,
-            headers={'X-Test-Tenant-Id': context.project_id}
-        )
+        result = self.client.get('/quotas/a', status=200,
+                                 headers={'X-Test-Tenant-Id': 'a',
+                                          'X-Test-Role': 'member'})
+
         self.assertEqual(
             {
                 'zones': 10,

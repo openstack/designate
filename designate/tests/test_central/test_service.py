@@ -424,8 +424,10 @@ class CentralServiceTest(CentralTestCase):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
-        tenant_one_context = self.get_context(project_id='1')
-        tenant_two_context = self.get_context(project_id='2')
+        tenant_one_context = self.get_context(project_id='1',
+                                              roles=['member', 'reader'])
+        tenant_two_context = self.get_context(project_id='2',
+                                              roles=['member', 'reader'])
 
         # in the beginning, there should be nothing
         tenants = self.central_service.count_tenants(admin_context)
@@ -799,8 +801,10 @@ class CentralServiceTest(CentralTestCase):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
-        tenant_one_context = self.get_context(project_id='1')
-        tenant_two_context = self.get_context(project_id='2')
+        tenant_one_context = self.get_context(project_id='1',
+                                              roles=['member', 'reader'])
+        tenant_two_context = self.get_context(project_id='2',
+                                              roles=['member', 'reader'])
 
         # Ensure we have no zones to start with.
         zones = self.central_service.find_zones(admin_context)
@@ -1776,7 +1780,7 @@ class CentralServiceTest(CentralTestCase):
     def test_find_recordsets_shared_zone(self):
         zone = self.create_zone()
 
-        context = self.get_context(project_id='1')
+        context = self.get_context(project_id='1', roles=['member', 'reader'])
         self.share_zone(context=self.admin_context, zone_id=zone.id,
                         target_project_id='1')
 
@@ -2064,7 +2068,7 @@ class CentralServiceTest(CentralTestCase):
         zone = self.create_zone()
         original_serial = zone.serial
 
-        context = self.get_context(project_id='1')
+        context = self.get_context(project_id='1', roles=['member', 'reader'])
         self.share_zone(context=self.admin_context, zone_id=zone.id,
                         target_project_id='1')
 
@@ -3312,9 +3316,12 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(zt_request.key, retrived_zt.key)
 
     def test_get_zone_transfer_request_scoped(self):
-        tenant_1_context = self.get_context(project_id='1')
-        tenant_2_context = self.get_context(project_id='2')
-        tenant_3_context = self.get_context(project_id='3')
+        tenant_1_context = self.get_context(project_id='1',
+                                            roles=['member', 'reader'])
+        tenant_2_context = self.get_context(project_id='2',
+                                            roles=['member', 'reader'])
+        tenant_3_context = self.get_context(project_id='3',
+                                            roles=['member', 'reader'])
         zone = self.create_zone(context=tenant_1_context)
         zt_request = self.create_zone_transfer_request(
             zone,
@@ -3363,8 +3370,10 @@ class CentralServiceTest(CentralTestCase):
                          exc.exc_info[0])
 
     def test_create_zone_transfer_accept(self):
-        tenant_1_context = self.get_context(project_id='1')
-        tenant_2_context = self.get_context(project_id="2")
+        tenant_1_context = self.get_context(project_id='1',
+                                            roles=['member', 'reader'])
+        tenant_2_context = self.get_context(project_id="2",
+                                            roles=['member', 'reader'])
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
@@ -3413,8 +3422,10 @@ class CentralServiceTest(CentralTestCase):
             'COMPLETE', result['zt_request'].status)
 
     def test_create_zone_transfer_accept_scoped(self):
-        tenant_1_context = self.get_context(project_id='1')
-        tenant_2_context = self.get_context(project_id="2")
+        tenant_1_context = self.get_context(project_id='1',
+                                            roles=['member', 'reader'])
+        tenant_2_context = self.get_context(project_id="2",
+                                            roles=['member', 'reader'])
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
@@ -3465,7 +3476,8 @@ class CentralServiceTest(CentralTestCase):
             'COMPLETE', result['zt_request'].status)
 
     def test_create_zone_transfer_accept_failed_key(self):
-        tenant_1_context = self.get_context(project_id='1')
+        tenant_1_context = self.get_context(project_id='1',
+                                            roles=['member', 'reader'])
         tenant_2_context = self.get_context(project_id="2")
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
@@ -3492,8 +3504,10 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.IncorrectZoneTransferKey, exc.exc_info[0])
 
     def test_create_zone_tarnsfer_accept_out_of_tenant_scope(self):
-        tenant_1_context = self.get_context(project_id='1')
-        tenant_3_context = self.get_context(project_id="3")
+        tenant_1_context = self.get_context(project_id='1',
+                                            roles=['member', 'reader'])
+        tenant_3_context = self.get_context(project_id="3",
+                                            roles=['member', 'reader'])
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
@@ -3522,7 +3536,8 @@ class CentralServiceTest(CentralTestCase):
     # Zone Import Tests
     def test_create_zone_import(self):
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=utils.generate_uuid(),
+                                   roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(context,
                                                               request_body)
@@ -3536,14 +3551,16 @@ class CentralServiceTest(CentralTestCase):
         self.wait_for_import(zone_import.id)
 
     def test_create_zone_import_duplicate_threading(self):
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=utils.generate_uuid(),
+                                   roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(context,
                                                               request_body)
         self.wait_for_import(zone_import.id)
 
         def create_zone_import():
-            context = self.get_context(project_id=utils.generate_uuid())
+            context = self.get_context(project_id=utils.generate_uuid(),
+                                       roles=['member', 'reader'])
             request_body = self.get_zonefile_fixture()
             zone_import = self.central_service.create_zone_import(context,
                                                             request_body)
@@ -3653,7 +3670,8 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=utils.generate_uuid(),
+                                   roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(context,
                                                               request_body)
@@ -3671,7 +3689,8 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual('ERROR', zone_import.status)
 
     def test_find_zone_imports(self):
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=utils.generate_uuid(),
+                                   roles=['member', 'reader'])
 
         # Ensure we have no zone_imports to start with.
         zone_imports = self.central_service.find_zone_imports(
@@ -3708,7 +3727,8 @@ class CentralServiceTest(CentralTestCase):
 
     def test_get_zone_import(self):
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=utils.generate_uuid(),
+                                   roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(
                     context, request_body)
@@ -3726,7 +3746,8 @@ class CentralServiceTest(CentralTestCase):
 
     def test_update_zone_import(self):
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=utils.generate_uuid(),
+                                   roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(
                     context, request_body)
@@ -3749,7 +3770,8 @@ class CentralServiceTest(CentralTestCase):
 
     def test_delete_zone_import(self):
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=utils.generate_uuid(),
+                                   roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(
                     context, request_body)
@@ -3769,7 +3791,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_share_zone(self):
         # Create a Shared Zone
-        context = self.get_context(project_id='1')
+        context = self.get_context(project_id='1', roles=['member', 'reader'])
         zone = self.create_zone(context=context)
         shared_zone = self.share_zone(context=context, zone_id=zone.id)
 
@@ -3796,7 +3818,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(zone.id, shared_zone.zone_id)
 
     def test_unshare_zone(self):
-        context = self.get_context(project_id='1')
+        context = self.get_context(project_id='1', roles=['member', 'reader'])
         zone = self.create_zone(context=context)
         shared_zone = self.share_zone(context=context, zone_id=zone.id)
 
@@ -3831,7 +3853,7 @@ class CentralServiceTest(CentralTestCase):
                          new_shared_zone_obj.project_id)
 
     def test_unshare_zone_with_child_objects(self):
-        context = self.get_context(project_id='1')
+        context = self.get_context(project_id='1', roles=['member', 'reader'])
         zone = self.create_zone(context=context)
         shared_zone = self.share_zone(context=context, zone_id=zone.id)
 
@@ -3855,7 +3877,7 @@ class CentralServiceTest(CentralTestCase):
             )
 
     def test_find_shared_zones(self):
-        context = self.get_context(project_id='1')
+        context = self.get_context(project_id='1', roles=['member', 'reader'])
         zone = self.create_zone(context=context)
 
         # Ensure we have no shared zones to start with.
@@ -3923,7 +3945,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(second_shared_zone.id, shared_zones[1].id)
 
     def test_get_shared_zone(self):
-        context = self.get_context(project_id='1')
+        context = self.get_context(project_id='1', roles=['member', 'reader'])
         zone = self.create_zone(context=context)
 
         shared_zone = self.share_zone(context=context, zone_id=zone.id)

@@ -16,6 +16,7 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+from designate.common import constants
 from designate.common.policies import base
 
 DEPRECATED_REASON = """
@@ -45,7 +46,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="get_quotas",
         check_str=base.SYSTEM_OR_PROJECT_READER_OR_ALL_TENANTS_READER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="View Current Project's Quotas.",
         operations=[
             {
@@ -58,7 +59,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="set_quota",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Set Quotas.',
         operations=[
             {
@@ -71,7 +72,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="reset_quotas",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Reset Quotas.',
         operations=[
             {

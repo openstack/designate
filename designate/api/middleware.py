@@ -202,11 +202,22 @@ class TestContextMiddleware(ContextMiddleware):
         all_tenants = strutils.bool_from_string(
             headers.get('X-Test-All-Tenants', 'False'))
 
+        role_header = headers.get('X-Test-Role', None)
+        role_header = role_header.lower() if role_header else None
+        if role_header == 'admin':
+            roles = ['admin', 'member', 'reader']
+        elif role_header == 'member':
+            roles = ['member', 'reader']
+        elif role_header == 'reader':
+            roles = ['reader']
+        else:
+            roles = []
+
         self.make_context(
             request,
             user_id=headers.get('X-Test-User-ID', self.default_user_id),
             project_id=headers.get('X-Test-Tenant-ID', self.default_tenant_id),
-            all_tenants=all_tenants
+            all_tenants=all_tenants, roles=roles
         )
 
 

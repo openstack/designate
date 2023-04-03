@@ -62,7 +62,7 @@
       nslookup_target: 'opendev.org'
 
 - job:
-    name: designate-bind9-scoped-tokens
+    name: designate-bind9-keystone-default-roles
     post-run: playbooks/designate-bind9/post.yaml
     parent: designate-base
     vars:
@@ -70,12 +70,9 @@
         post-config:
           $DESIGNATE_CONF:
             oslo_policy:
-              enforce_scope: True
               enforce_new_defaults: True
         test-config:
           "$TEMPEST_CONFIG":
-            enforce_scope:
-              designate: True
             dns_feature_enabled:
               enforce_new_defaults: True
 
@@ -189,7 +186,7 @@
             voting: false
         - designate-bind9-centos-9-stream:
             voting: false
-        - designate-bind9-scoped-tokens
+        - designate-bind9-keystone-default-roles
         - designate-pdns4
         - designate-grenade-bind9
         - designate-grenade-pdns4
@@ -199,7 +196,7 @@
       fail-fast: true
       jobs:
         - designate-bind9
-        - designate-bind9-scoped-tokens
+        - designate-bind9-keystone-default-roles
         - designate-pdns4
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4

@@ -16,6 +16,7 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+from designate.common import constants
 from designate.common.policies import base
 
 DEPRECATED_REASON = """
@@ -70,14 +71,14 @@ rules = [
     policy.RuleDefault(
         name="create_pool",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Create pool.',
         deprecated_rule=deprecated_create_pool
     ),
     policy.DocumentedRuleDefault(
         name="find_pools",
         check_str=base.SYSTEM_READER,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Find pool.',
         operations=[
             {
@@ -90,7 +91,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="find_pool",
         check_str=base.SYSTEM_READER,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Find pools.',
         operations=[
             {
@@ -103,7 +104,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="get_pool",
         check_str=base.SYSTEM_READER,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Get pool.',
         operations=[
             {
@@ -116,21 +117,21 @@ rules = [
     policy.RuleDefault(
         name="update_pool",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Update pool.',
         deprecated_rule=deprecated_update_pool
     ),
     policy.RuleDefault(
         name="delete_pool",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='Delete pool.',
         deprecated_rule=deprecated_delete_pool
     ),
     policy.DocumentedRuleDefault(
         name="zone_create_forced_pool",
         check_str=base.SYSTEM_ADMIN,
-        scope_types=['system'],
+        scope_types=[constants.PROJECT],
         description='load and set the pool to the one provided in the Zone attributes.',  # noqa
         operations=[
             {

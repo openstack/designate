@@ -50,14 +50,15 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         fixture = self.get_zonefile_fixture(variant='noorigin')
 
         response = self.client.post_json('/zones/tasks/imports', fixture,
-                        headers={'Content-type': 'text/dns'})
+                        headers={'Content-type': 'text/dns',
+                                 'X-Test-Role': 'member'})
 
         import_id = response.json_body['id']
         self.wait_for_import(import_id, error_is_ok=True)
 
         url = '/zones/tasks/imports/%s' % import_id
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
         self.assertEqual('ERROR', response.json['status'])
         origin_msg = ("The $ORIGIN statement is required and must be the"
                      " first statement in the zonefile.")
@@ -67,14 +68,15 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         fixture = self.get_zonefile_fixture(variant='nosoa')
 
         response = self.client.post_json('/zones/tasks/imports', fixture,
-                        headers={'Content-type': 'text/dns'})
+                        headers={'Content-type': 'text/dns',
+                                 'X-Test-Role': 'member'})
 
         import_id = response.json_body['id']
         self.wait_for_import(import_id, error_is_ok=True)
 
         url = '/zones/tasks/imports/%s' % import_id
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
         self.assertEqual('ERROR', response.json['status'])
         origin_msg = ("Malformed zonefile.")
         self.assertEqual(origin_msg, response.json['message'])
@@ -83,14 +85,15 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         fixture = self.get_zonefile_fixture(variant='malformed')
 
         response = self.client.post_json('/zones/tasks/imports', fixture,
-                        headers={'Content-type': 'text/dns'})
+                        headers={'Content-type': 'text/dns',
+                                 'X-Test-Role': 'member'})
 
         import_id = response.json_body['id']
         self.wait_for_import(import_id, error_is_ok=True)
 
         url = '/zones/tasks/imports/%s' % import_id
 
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
         self.assertEqual('ERROR', response.json['status'])
         origin_msg = ("Malformed zonefile.")
         self.assertEqual(origin_msg, response.json['message'])
@@ -100,13 +103,14 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         # fixture, making sure they're the same according to dnspython
         post_response = self.client.post('/zones/tasks/imports',
                                          self.get_zonefile_fixture(),
-                                         headers={'Content-type': 'text/dns'})
+                                         headers={'Content-type': 'text/dns',
+                                                  'X-Test-Role': 'member'})
 
         import_id = post_response.json_body['id']
         self.wait_for_import(import_id)
 
         url = '/zones/tasks/imports/%s' % import_id
-        response = self.client.get(url)
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
 
         self.policy({'zone_export': '@'})
         get_response = self.adminclient.get('/zones/export/%s' %
@@ -134,7 +138,8 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
     def test_delete_import(self):
         post_response = self.client.post('/zones/tasks/imports',
                                          self.get_zonefile_fixture(),
-                                         headers={'Content-type': 'text/dns'})
+                                         headers={'Content-type': 'text/dns',
+                                                  'X-Test-Role': 'member'})
 
         import_id = post_response.json_body['id']
 
@@ -142,6 +147,7 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
 
         delete_response = self.client.delete(
             '/zones/tasks/imports/%s' % import_id,
+            headers={'X-Test-Role': 'member'}
         )
 
         self.assertEqual('', delete_response.text)
@@ -151,14 +157,16 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
 
     # Metadata tests
     def test_metadata_exists_imports(self):
-        response = self.client.get('/zones/tasks/imports')
+        response = self.client.get('/zones/tasks/imports',
+                                   headers={'X-Test-Role': 'member'})
 
         # Make sure the fields exist
         self.assertIn('metadata', response.json)
         self.assertIn('total_count', response.json['metadata'])
 
     def test_metadata_exists_exports(self):
-        response = self.client.get('/zones/tasks/imports')
+        response = self.client.get('/zones/tasks/imports',
+                                   headers={'X-Test-Role': 'member'})
 
         # Make sure the fields exist
         self.assertIn('metadata', response.json)
@@ -166,7 +174,8 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
 
     @unittest.skip("See bug 1582241 and 1570859")
     def test_total_count_imports(self):
-        response = self.client.get('/zones/tasks/imports')
+        response = self.client.get('/zones/tasks/imports',
+                                   headers={'X-Test-Role': 'member'})
 
         # There are no imported zones by default
         self.assertEqual(0, response.json['metadata']['total_count'])
@@ -174,15 +183,18 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         # Create a zone import
         self.client.post('/zones/tasks/imports',
                          self.get_zonefile_fixture(),
-                         headers={'Content-type': 'text/dns'})
+                         headers={'Content-type': 'text/dns',
+                                  'X-Test-Role': 'member'})
 
-        response = self.client.get('/zones/tasks/imports')
+        response = self.client.get('/zones/tasks/imports',
+                                   headers={'X-Test-Role': 'member'})
 
         # Make sure total_count picked it up
         self.assertEqual(1, response.json['metadata']['total_count'])
 
     def test_total_count_exports(self):
-        response = self.client.get('/zones/tasks/exports')
+        response = self.client.get('/zones/tasks/exports',
+                                   headers={'X-Test-Role': 'member'})
 
         # There are no exported zones by default
         self.assertEqual(0, response.json['metadata']['total_count'])
@@ -190,14 +202,16 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
     def test_create_export(self):
         zone = self.create_zone()
         create_response = self.client.post(
-            '/zones/%s/tasks/export' % zone['id']
+            '/zones/%s/tasks/export' % zone['id'],
+            headers={'X-Test-Role': 'member'}
         )
 
         self.assertEqual('PENDING', create_response.json_body['status'])
         self.assertEqual(zone['id'], create_response.json_body['zone_id'])
 
         get_response = self.client.get(
-            '/zones/tasks/exports/%s' % create_response.json_body['id']
+            '/zones/tasks/exports/%s' % create_response.json_body['id'],
+            headers={'X-Test-Role': 'member'}
         )
 
         self.assertEqual('PENDING', get_response.json_body['status'])
@@ -206,39 +220,45 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
     def test_update_export(self):
         zone = self.create_zone()
         create_response = self.client.post(
-            '/zones/%s/tasks/export' % zone['id']
+            '/zones/%s/tasks/export' % zone['id'],
+            headers={'X-Test-Role': 'member'}
         )
 
         self.assertEqual('PENDING', create_response.json_body['status'])
         self.assertEqual(zone['id'], create_response.json_body['zone_id'])
 
         delete_response = self.client.delete(
-            '/zones/tasks/exports/%s' % create_response.json_body['id']
+            '/zones/tasks/exports/%s' % create_response.json_body['id'],
+            headers={'X-Test-Role': 'member'}
         )
 
         self.assertEqual('', delete_response.text)
 
         self._assert_exception(
             'zone_export_not_found', 404, self.client.get,
-            '/zones/tasks/exports/%s' % create_response.json_body['id']
+            '/zones/tasks/exports/%s' % create_response.json_body['id'],
+            headers={'X-Test-Role': 'member'}
         )
 
     def test_delete_export(self):
         zone = self.create_zone()
         create_response = self.client.post(
-            '/zones/%s/tasks/export' % zone['id']
+            '/zones/%s/tasks/export' % zone['id'],
+            headers={'X-Test-Role': 'member'}
         )
 
         self.assertEqual('PENDING', create_response.json_body['status'])
         self.assertEqual(zone['id'], create_response.json_body['zone_id'])
 
         delete_response = self.client.delete(
-            '/zones/tasks/exports/%s' % create_response.json_body['id']
+            '/zones/tasks/exports/%s' % create_response.json_body['id'],
+            headers={'X-Test-Role': 'member'}
         )
 
         self.assertEqual('', delete_response.text)
 
         self._assert_exception(
             'zone_export_not_found', 404, self.client.get,
-            '/zones/tasks/exports/%s' % create_response.json_body['id']
+            '/zones/tasks/exports/%s' % create_response.json_body['id'],
+            headers={'X-Test-Role': 'member'}
         )

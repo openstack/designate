@@ -16,6 +16,7 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+from designate.common import constants
 from designate.common.policies import base
 
 DEPRECATED_REASON = """
@@ -125,7 +126,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="create_recordset",
         check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Create Recordset",
         operations=[
             {
@@ -138,13 +139,13 @@ rules = [
     policy.RuleDefault(
         name="get_recordsets",
         check_str=base.SYSTEM_OR_PROJECT_READER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_get_recordsets
     ),
     policy.DocumentedRuleDefault(
         name="get_recordset",
         check_str=base.SYSTEM_OR_PROJECT_READER_OR_SHARED,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Get recordset",
         operations=[
             {
@@ -157,14 +158,14 @@ rules = [
     policy.RuleDefault(
         name="find_recordset",
         check_str=base.SYSTEM_OR_PROJECT_READER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="List a Recordset in a Zone",
         deprecated_rule=deprecated_find_recordset
     ),
     policy.DocumentedRuleDefault(
         name="find_recordsets",
         check_str=base.SYSTEM_OR_PROJECT_READER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="List Recordsets in a Zone",
         operations=[
             {
@@ -177,7 +178,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="update_recordset",
         check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Update recordset",
         operations=[
             {
@@ -190,7 +191,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name="delete_recordset",
         check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Delete RecordSet",
         operations=[
             {
@@ -203,7 +204,7 @@ rules = [
     policy.RuleDefault(
         name="count_recordset",
         check_str=base.SYSTEM_OR_PROJECT_READER,
-        scope_types=['system', 'project'],
+        scope_types=[constants.PROJECT],
         description="Count recordsets",
         deprecated_rule=deprecated_count_recordset,
     )
