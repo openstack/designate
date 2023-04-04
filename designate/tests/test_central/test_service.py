@@ -3817,6 +3817,17 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(context.project_id, shared_zone.project_id)
         self.assertEqual(zone.id, shared_zone.zone_id)
 
+    def test_share_zone_with_zone_owner(self):
+        # Create a Shared Zone
+        context = self.get_context(project_id='1')
+        zone = self.create_zone(context=context)
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException, self.share_zone,
+            context=context, zone_id=zone.id,
+            target_project_id=zone.tenant_id)
+
+        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
+
     def test_unshare_zone(self):
         context = self.get_context(project_id='1', roles=['member', 'reader'])
         zone = self.create_zone(context=context)

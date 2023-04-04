@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Fixed a bug that allowed users to create a zone share for the zone owner.
