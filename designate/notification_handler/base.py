@@ -99,26 +99,32 @@ class NotificationHandler(ExtensionPlugin):
         return recordset
 
     def _update_or_delete_recordset(self, context, zone_id, recordset_id,
-                                    record_to_delete):
+                                    record_to_delete_id):
         LOG.debug(
             'Deleting record in %s / %s',
-            zone_id, record_to_delete['id']
+            zone_id, record_to_delete_id
         )
-        try:
-            recordset = self.central_api.get_recordset(
-                context, zone_id, recordset_id
-            )
 
-            # Record not longer in recordset. Lets abort.
-            if record_to_delete not in recordset.records:
+        try:
+            recordset = self.central_api.find_recordset(
+                context, {'id': recordset_id, 'zone_id': zone_id}
+            )
+            record_ids = [record['id'] for record in recordset.records]
+
+            # Record no longer in recordset. Let's abort.
+            if record_to_delete_id not in record_ids:
                 LOG.debug(
                     'Record %s not found in recordset %s',
-                    record_to_delete['id'], recordset_id
+                    record_to_delete_id, recordset_id
                 )
                 return
 
             # Remove the record from the recordset.
-            recordset.records.remove(record_to_delete)
+            for record in list(recordset.records):
+                if record['id'] != record_to_delete_id:
+                    continue
+                recordset.records.remove(record)
+                break
 
             if not recordset.records:
                 # Recordset is now empty. Remove it.
@@ -133,7 +139,7 @@ class NotificationHandler(ExtensionPlugin):
         except exceptions.RecordSetNotFound:
             LOG.info(
                 'Recordset %s for record %s was already removed',
-                recordset_id, record_to_delete['id']
+                recordset_id, record_to_delete_id
             )
 
 
@@ -252,5 +258,5 @@ class BaseAddressHandler(NotificationHandler):
         records = self.central_api.find_records(context, criterion)
         for record in records:
             self._update_or_delete_recordset(
-                context, zone_id, record['recordset_id'], record
+                context, zone_id, record['recordset_id'], record['id']
             )

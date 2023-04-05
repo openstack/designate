@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Fixed `bug 2015762`_ which could cause managed records to
+    occasionally fail to delete due to a race condition.
+
+    .. _Bug 2015762: https://bugs.launchpad.net/designate/+bug/2015762
