@@ -16,7 +16,6 @@ import jinja2
 from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
-from oslo_utils import timeutils
 import oslotest.base
 
 from designate import exceptions
@@ -212,22 +211,6 @@ class TestUtils(oslotest.base.BaseTestCase):
         result = utils.render_template(template, name='World')
 
         self.assertEqual('Hello World', result)
-
-    @mock.patch.object(timeutils, 'utcnow_ts')
-    def test_increment_serial_lower_than_ts(self, mock_utcnow_ts):
-        mock_utcnow_ts.return_value = 1561698354
-
-        ret_serial = utils.increment_serial(serial=1)
-
-        self.assertEqual(1561698354, ret_serial)
-
-    @mock.patch.object(timeutils, 'utcnow_ts')
-    def test_increment_serial_higher_than_ts(self, mock_utcnow_ts):
-        mock_utcnow_ts.return_value = 1561698354
-
-        ret_serial = utils.increment_serial(serial=1561698354 * 2)
-
-        self.assertEqual(1561698354 * 2 + 1, ret_serial)
 
     def test_is_uuid_like(self):
         self.assertTrue(

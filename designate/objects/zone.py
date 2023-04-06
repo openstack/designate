@@ -66,6 +66,7 @@ class Zone(base.DesignateObject, base.DictObjectMixin,
                                  ),
         'transferred_at': fields.DateTimeField(nullable=True, read_only=False),
         'delayed_notify': fields.BooleanField(nullable=True),
+        'increment_serial': fields.BooleanField(nullable=True),
     }
 
     STRING_KEYS = [

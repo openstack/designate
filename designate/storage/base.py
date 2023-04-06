@@ -745,6 +745,15 @@ class Storage(DriverPlugin, metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
+    def increment_serial(self, context, zone_id):
+        """
+        Increment serial of a Zone
+
+        :param context: RPC Context.
+        :param zone_id: ID of the Zone.
+        """
+
+    @abc.abstractmethod
     def delete_zone_import(self, context, zone_import_id):
         """
         Delete a Zone Import via ID.

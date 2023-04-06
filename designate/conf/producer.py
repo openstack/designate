@@ -20,6 +20,11 @@ PRODUCER_GROUP = cfg.OptGroup(
     title='Configuration for Producer Service'
 )
 
+PRODUCER_TASK_INCREMENT_SERIAL_GROUP = cfg.OptGroup(
+    name='producer_task:increment_serial',
+    title='Configuration for Producer Task: Increment Serial'
+)
+
 PRODUCER_TASK_DELAYED_NOTIFY_GROUP = cfg.OptGroup(
     name='producer_task:delayed_notify',
     title='Configuration for Producer Task: Delayed Notify'
@@ -60,6 +65,15 @@ PRODUCER_OPTS = [
                 deprecated_reason='Migrated to designate-worker'),
     cfg.StrOpt('topic', default='producer',
                help='RPC topic name for producer'),
+]
+
+PRODUCER_TASK_INCREMENT_SERIAL_OPTS = [
+    cfg.IntOpt('interval', default=5,
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+    cfg.IntOpt('batch_size', default=100,
+               help='How many zones to increment serial for on each run'),
 ]
 
 PRODUCER_TASK_DELAYED_NOTIFY_OPTS = [
@@ -111,6 +125,9 @@ def register_opts(conf):
     conf.register_group(PRODUCER_TASK_DELAYED_NOTIFY_GROUP)
     conf.register_opts(PRODUCER_TASK_DELAYED_NOTIFY_OPTS,
                        group=PRODUCER_TASK_DELAYED_NOTIFY_GROUP)
+    conf.register_group(PRODUCER_TASK_INCREMENT_SERIAL_GROUP)
+    conf.register_opts(PRODUCER_TASK_INCREMENT_SERIAL_OPTS,
+                       group=PRODUCER_TASK_INCREMENT_SERIAL_GROUP)
     conf.register_group(PRODUCER_TASK_PERIODIC_EXISTS_GROUP)
     conf.register_opts(PRODUCER_TASK_PERIODIC_EXISTS_OPTS,
                        group=PRODUCER_TASK_PERIODIC_EXISTS_GROUP)
