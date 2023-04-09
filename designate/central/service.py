@@ -1844,7 +1844,8 @@ class Service(service.RPCService):
             LOG.debug('Deleting record %s for FIP %s',
                       record['id'], record['managed_resource_id'])
             self._delete_ptr_record(
-                elevated_context, record
+                elevated_context, record.zone_id, record.recordset_id,
+                record['id']
             )
 
     def _list_floatingips(self, context, region=None):
@@ -2018,7 +2019,8 @@ class Service(service.RPCService):
             raise exceptions.NotFound(msg)
 
         self._delete_ptr_record(
-            elevated_context, record
+            elevated_context, record.zone_id, record.recordset_id,
+            record['id']
         )
 
     def _create_floating_ip(self, context, fip, record,
@@ -2098,24 +2100,30 @@ class Service(service.RPCService):
         return fips
 
     @transaction
-    def _delete_ptr_record(self, context, record):
+    def _delete_ptr_record(self, context, zone_id, recordset_id,
+                           record_to_delete_id):
         try:
-            recordset = self.get_recordset(
-                context, record.zone_id, record.recordset_id
+            recordset = self.storage.find_recordset(
+                context, {'id': recordset_id, 'zone_id': zone_id}
             )
+            record_ids = [record['id'] for record in recordset.records]
 
-            if record not in recordset.records:
+            if record_to_delete_id not in record_ids:
                 LOG.debug(
                     'PTR Record %s not found in recordset %s',
-                    record.id, record.recordset_id
+                    record_to_delete_id, recordset_id
                 )
                 return
 
-            recordset.records.remove(record)
+            for record in list(recordset.records):
+                if record['id'] != record_to_delete_id:
+                    continue
+                recordset.records.remove(record)
+                break
 
             if not recordset.records:
                 self.delete_recordset(
-                    context, record.zone_id, record.recordset_id
+                    context, zone_id, recordset_id
                 )
                 return
 
