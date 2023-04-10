@@ -52,7 +52,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.7'
+    RPC_API_VERSION = '6.8'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1547,6 +1547,21 @@ class Service(service.RPCService):
         return recordset
 
     @rpc.expected_exceptions()
+    def create_managed_records(self, context, zone_id, records_values,
+                               recordset_values):
+        return self._create_or_update_managed_recordset(
+            context, zone_id, records_values, recordset_values
+        )
+
+    @rpc.expected_exceptions()
+    def delete_managed_records(self, context, zone_id, criterion):
+        records = self.storage.find_records(context, criterion)
+        for record in records:
+            self._delete_or_update_managed_recordset(
+                context, zone_id, record['recordset_id'], record['id']
+            )
+
+    @rpc.expected_exceptions()
     def export_zone(self, context, zone_id):
         zone = self.get_zone(context, zone_id)
 
@@ -1848,7 +1863,7 @@ class Service(service.RPCService):
         for record in records:
             LOG.debug('Deleting record %s for FIP %s',
                       record['id'], record['managed_resource_id'])
-            self._delete_ptr_record(
+            self._delete_or_update_managed_recordset(
                 elevated_context, record.zone_id, record.recordset_id,
                 record['id']
             )
@@ -1969,13 +1984,11 @@ class Service(service.RPCService):
             'managed_resource_type': 'ptr:floatingip',
             'managed_tenant_id': context.project_id
         }
-        record = objects.Record(**record_values)
-        recordset = self._replace_or_create_ptr_recordset(
-            elevated_context, record,
-            **recordset_values
+        recordset = self._create_or_update_managed_recordset(
+            elevated_context, zone['id'], [record_values], recordset_values
         )
         return self._create_floating_ip(
-            context, fip, record, zone=zone, recordset=recordset
+            context, fip, recordset.records[0], zone=zone, recordset=recordset
         )
 
     def _create_ptr_zone(self, elevated_context, zone_name):
@@ -2023,7 +2036,7 @@ class Service(service.RPCService):
             msg = 'No such FloatingIP %s:%s' % (region, floatingip_id)
             raise exceptions.NotFound(msg)
 
-        self._delete_ptr_record(
+        self._delete_or_update_managed_recordset(
             elevated_context, record.zone_id, record.recordset_id,
             record['id']
         )
@@ -2105,17 +2118,20 @@ class Service(service.RPCService):
         return fips
 
     @transaction
-    def _delete_ptr_record(self, context, zone_id, recordset_id,
-                           record_to_delete_id):
+    def _delete_or_update_managed_recordset(self, context, zone_id,
+                                            recordset_id,
+                                            record_to_delete_id):
+        criterion = {'id': recordset_id}
+        if zone_id is not None:
+            criterion['zone_id'] = zone_id
+
         try:
-            recordset = self.storage.find_recordset(
-                context, {'id': recordset_id, 'zone_id': zone_id}
-            )
+            recordset = self.storage.find_recordset(context, criterion)
             record_ids = [record['id'] for record in recordset.records]
 
             if record_to_delete_id not in record_ids:
                 LOG.debug(
-                    'PTR Record %s not found in recordset %s',
+                    'Managed record %s not found in recordset %s',
                     record_to_delete_id, recordset_id
                 )
                 return
@@ -2128,7 +2144,7 @@ class Service(service.RPCService):
 
             if not recordset.records:
                 self.delete_recordset(
-                    context, zone_id, recordset_id
+                    context, zone_id or recordset.zone_id, recordset_id
                 )
                 return
 
@@ -2138,16 +2154,22 @@ class Service(service.RPCService):
             pass
 
     @transaction
-    def _replace_or_create_ptr_recordset(self, context, record, zone_id,
-                                         name, type, ttl=None):
+    def _create_or_update_managed_recordset(self, context, zone_id,
+                                            records_values, recordset_values):
+        name = recordset_values['name'].encode('idna').decode('utf-8')
+        records = []
+        for record_values in records_values:
+            records.append(objects.Record(**record_values))
+
         try:
+
             recordset = self.storage.find_recordset(context, {
                 'zone_id': zone_id,
                 'name': name,
-                'type': type,
+                'type': recordset_values['type'],
             })
-            recordset.ttl = ttl
-            recordset.records = objects.RecordList(objects=[record])
+            recordset.ttl = recordset_values.get('ttl')
+            recordset.records = objects.RecordList(objects=records)
             recordset.validate()
             recordset = self.update_recordset(
                 context, recordset
@@ -2155,11 +2177,11 @@ class Service(service.RPCService):
         except exceptions.RecordSetNotFound:
             values = {
                 'name': name,
-                'type': type,
-                'ttl': ttl,
+                'type': recordset_values['type'],
+                'ttl': recordset_values.get('ttl')
             }
             recordset = objects.RecordSet(**values)
-            recordset.records = objects.RecordList(objects=[record])
+            recordset.records = objects.RecordList(objects=records)
             recordset.validate()
             recordset = self.create_recordset(
                 context, zone_id, recordset

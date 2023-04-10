@@ -69,8 +69,9 @@ class CentralAPI(object):
         6.5 - Removed additional unused methods
         6.6 - Add methods for shared zones
         6.7 - Add increment_zone_serial
+        6.8 - Add managed recordset methods
     """
-    RPC_API_VERSION = '6.7'
+    RPC_API_VERSION = '6.8'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -83,7 +84,7 @@ class CentralAPI(object):
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.7')
+        self.client = rpc.get_client(target, version_cap='6.8')
 
     @classmethod
     def get_instance(cls):
@@ -230,6 +231,17 @@ class CentralAPI(object):
 
     def find_recordset(self, context, criterion=None):
         return self.client.call(context, 'find_recordset', criterion=criterion)
+
+    def create_managed_records(self, context, zone_id, records_values,
+                               recordset_values):
+        return self.client.call(context, 'create_managed_records',
+                                zone_id=zone_id, records_values=records_values,
+                                recordset_values=recordset_values)
+
+    def delete_managed_records(self, context, zone_id=None, criterion=None):
+        return self.client.call(context, 'delete_managed_records',
+                                zone_id=zone_id,
+                                criterion=criterion)
 
     def export_zone(self, context, zone_id):
         return self.client.call(context, 'export_zone', zone_id=zone_id)

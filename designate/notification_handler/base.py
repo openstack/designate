@@ -23,10 +23,6 @@ import re
 
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
-from designate import exceptions
-from designate.objects import Record
-from designate.objects import RecordList
-from designate.objects import RecordSet
 from designate.plugin import ExtensionPlugin
 
 LOG = logging.getLogger(__name__)
@@ -64,83 +60,6 @@ class NotificationHandler(ExtensionPlugin):
         """
         context = DesignateContext.get_admin_context(all_tenants=True)
         return self.central_api.get_zone(context, zone_id)
-
-    def _create_or_update_recordset(self, context, records, zone_id, name,
-                                    type, ttl=None):
-        name = name.encode('idna').decode('utf-8')
-
-        try:
-            # Attempt to create a new recordset.
-            values = {
-                'name': name,
-                'type': type,
-                'ttl': ttl,
-            }
-            recordset = RecordSet(**values)
-            recordset.records = RecordList(objects=records)
-            recordset.validate()
-            recordset = self.central_api.create_recordset(
-                context, zone_id, recordset
-            )
-        except exceptions.DuplicateRecordSet:
-            # Fetch and update the existing recordset.
-            recordset = self.central_api.find_recordset(context, {
-                'zone_id': zone_id,
-                'name': name,
-                'type': type,
-            })
-            for record in records:
-                recordset.records.append(record)
-            recordset.validate()
-            recordset = self.central_api.update_recordset(
-                context, recordset
-            )
-        LOG.debug('Creating record in %s / %s', zone_id, recordset['id'])
-        return recordset
-
-    def _update_or_delete_recordset(self, context, zone_id, recordset_id,
-                                    record_to_delete_id):
-        LOG.debug(
-            'Deleting record in %s / %s',
-            zone_id, record_to_delete_id
-        )
-
-        try:
-            recordset = self.central_api.find_recordset(
-                context, {'id': recordset_id, 'zone_id': zone_id}
-            )
-            record_ids = [record['id'] for record in recordset.records]
-
-            # Record no longer in recordset. Let's abort.
-            if record_to_delete_id not in record_ids:
-                LOG.debug(
-                    'Record %s not found in recordset %s',
-                    record_to_delete_id, recordset_id
-                )
-                return
-
-            # Remove the record from the recordset.
-            for record in list(recordset.records):
-                if record['id'] != record_to_delete_id:
-                    continue
-                recordset.records.remove(record)
-                break
-
-            if not recordset.records:
-                # Recordset is now empty. Remove it.
-                self.central_api.delete_recordset(
-                    context, zone_id, recordset_id
-                )
-                return
-
-            # Recordset still has records, validate it and update it.
-            recordset.validate()
-            self.central_api.update_recordset(context, recordset)
-        except exceptions.RecordSetNotFound:
-            LOG.info(
-                'Recordset %s for record %s was already removed',
-                recordset_id, record_to_delete_id
-            )
 
 
 class BaseAddressHandler(NotificationHandler):
@@ -226,11 +145,13 @@ class BaseAddressHandler(NotificationHandler):
                     'managed_resource_type': resource_type,
                     'managed_resource_id': resource_id
                 }
-                self._create_or_update_recordset(
-                    context, [Record(**record_values)], **recordset_values
+                self.central_api.create_managed_records(
+                    context, zone['id'],
+                    records_values=[record_values],
+                    recordset_values=recordset_values,
                 )
 
-    def _delete(self, zone_id, resource_id=None, resource_type='instance',
+    def _delete(self, zone_id=None, resource_id=None, resource_type='instance',
                 criterion=None):
         """
         Handle a generic delete of a fixed ip within a zone
@@ -247,16 +168,15 @@ class BaseAddressHandler(NotificationHandler):
         context.edit_managed_records = True
 
         criterion.update({
-            'zone_id': zone_id,
             'managed': True,
             'managed_plugin_name': self.get_plugin_name(),
             'managed_plugin_type': self.get_plugin_type(),
             'managed_resource_id': resource_id,
             'managed_resource_type': resource_type
         })
+        if zone_id is not None:
+            criterion['zone_id'] = zone_id
 
-        records = self.central_api.find_records(context, criterion)
-        for record in records:
-            self._update_or_delete_recordset(
-                context, zone_id, record['recordset_id'], record['id']
-            )
+        self.central_api.delete_managed_records(
+            context, zone_id, criterion
+        )

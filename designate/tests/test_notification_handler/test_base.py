@@ -13,8 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest import expectedFailure
-
 from designate.notification_handler import base
 from designate.tests import TestCase
 
@@ -100,7 +98,6 @@ class BaseAddressHandlerTest(TestCase):
             self.admin_context, criterion)
         self.assertEqual(0, len(recordsets))
 
-    @expectedFailure
     def test_delete_record_with_no_zone_id(self):
         self.base._create([
             {'address': '172.16.0.15', 'version': 4}],
@@ -114,15 +111,17 @@ class BaseAddressHandlerTest(TestCase):
             'zone_id': self.zone_id,
             'type': 'A',
         }
-
         recordsets = self.central_service.find_recordsets(
             self.admin_context, criterion)
 
         self.assertEqual('test01.example.com.', recordsets[0].name)
         self.assertEqual('A', recordsets[0].type)
 
-        # NOTE(eandersson): _delete should succeed even without a zone_id.
-        self.base._delete(None, '6d6deb76-e4e7-492e-8f9d-4d906653c511')
+        self.base._delete(
+            zone_id=None,
+            resource_id='6d6deb76-e4e7-492e-8f9d-4d906653c511',
+            resource_type='instance'
+        )
 
         recordsets = self.central_service.find_recordsets(
             self.admin_context, criterion)
