@@ -127,6 +127,13 @@ designate optional arguments
 designate-manage pool
 =====================
 
+.. code-block:: console
+
+    usage: designate pool [-h] {generate_file,show_config,update} ...
+
+    positional arguments:
+      {generate_file,show_config,update}
+
 .. _designate_manage_pool_generate_file:
 
 designate-manage pool generate_file
@@ -177,6 +184,29 @@ Update the running pool config from a YAML file
 ``--dry-run``
   This will simulate what will happen when you run this command
 
+.. _designate_manage_pool_show:
+
+designate-manage pool show
+--------------------------
+
+.. code-block:: console
+
+    usage: designate-manage pool show_config [-h] [--pool_id POOL_ID]
+                                             [--all_pools]
+
+
+Show the deployed pools configuration
+
+**Optional arguments:**
+
+``-h, --help``
+  show this help message and exit
+
+``--pool_id POOL_ID``
+  ID of the pool to be examined
+
+``--all_pools``
+  show the config of all the pools
 
 .. _designate_manage_database:
 
