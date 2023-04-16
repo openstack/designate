@@ -26,8 +26,8 @@ from oslo_utils import timeutils
 import sqlalchemy as sa
 
 from designate.conf import central
-from designate.sqlalchemy.types import UUID
-from designate.storage.impl_sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.types import UUID
 
 # revision identifiers, used by Alembic.
 revision = 'c9f427f7180a'

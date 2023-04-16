@@ -9,7 +9,7 @@ Storage
 Storage Base
 =============
 
-.. automodule:: designate.storage.base
+.. automodule:: designate.storage.sqlalchemy
     :members:
     :undoc-members:
     :show-inheritance:

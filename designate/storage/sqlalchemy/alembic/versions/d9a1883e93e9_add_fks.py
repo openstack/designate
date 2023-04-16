@@ -22,7 +22,7 @@ Create Date: 2022-07-29 20:41:51.855014
 """
 from alembic import op
 
-from designate.storage.impl_sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.alembic import legacy_utils
 
 # revision identifiers, used by Alembic.
 revision = 'd9a1883e93e9'

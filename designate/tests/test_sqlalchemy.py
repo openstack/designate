@@ -19,7 +19,7 @@ from unittest import mock
 import sqlalchemy as sa
 from sqlalchemy.sql import operators
 
-from designate.sqlalchemy import base
+from designate.storage.sqlalchemy import base
 from designate.tests import TestCase
 
 metadata = sa.MetaData()

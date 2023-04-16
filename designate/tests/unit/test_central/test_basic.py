@@ -29,6 +29,7 @@ import designate.central.service
 from designate.central.service import Service
 from designate import exceptions
 from designate import objects
+from designate.storage import sqlalchemy
 from designate.tests.fixtures import random_seed
 from designate.tests import TestCase
 
@@ -223,7 +224,7 @@ class CentralBasic(TestCase):
         super(CentralBasic, self).setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.CONF([], project='designate')
-        mock_storage = mock.Mock(spec=designate.storage.base.Storage)
+        mock_storage = mock.Mock(spec=sqlalchemy.SQLAlchemyStorage)
 
         pool_list = objects.PoolList.from_list(
             [

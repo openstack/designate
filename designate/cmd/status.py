@@ -18,10 +18,10 @@ from sqlalchemy import MetaData, Table, select, func
 
 import designate.conf
 from designate.i18n import _
-from designate.sqlalchemy import sql
+from designate.storage import sql
 # This import is not used, but is needed to register the storage:sqlalchemy
 # group.
-import designate.storage.impl_sqlalchemy  # noqa
+import designate.storage.sqlalchemy  # noqa
 from designate import utils
 
 

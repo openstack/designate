@@ -111,8 +111,7 @@ class Service(service.RPCService):
     @property
     def storage(self):
         if not self._storage:
-            storage_driver = cfg.CONF['service:worker'].storage_driver
-            self._storage = storage.get_storage(storage_driver)
+            self._storage = storage.get_storage()
         return self._storage
 
     @property

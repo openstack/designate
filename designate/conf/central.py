@@ -26,6 +26,9 @@ CENTRAL_OPTS = [
     cfg.IntOpt('threads', default=1000,
                help='Number of central greenthreads to spawn'),
     cfg.StrOpt('storage_driver', default='sqlalchemy',
+               deprecated_for_removal=True,
+               deprecated_reason='Alternative storage drivers are no longer'
+                                 'supported.',
                help='The storage driver to use'),
     cfg.IntOpt('max_zone_name_len', default=255,
                help="Maximum zone name length"),

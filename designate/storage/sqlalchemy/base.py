@@ -25,11 +25,79 @@ from sqlalchemy import select, or_, between, func, distinct
 
 from designate import exceptions
 from designate import objects
-from designate.sqlalchemy import sql
-from designate.sqlalchemy import utils
+from designate.storage import sql
+from designate.storage.sqlalchemy import tables
+from designate.storage.sqlalchemy import utils
 
 
 LOG = logging.getLogger(__name__)
+
+RECORDSET_QUERY_TABLES = (
+    # RS Info
+    tables.recordsets.c.id,                    # 0 - RS ID
+    tables.recordsets.c.version,               # 1 - RS Version
+    tables.recordsets.c.created_at,            # 2 - RS Created
+    tables.recordsets.c.updated_at,            # 3 - RS Updated
+    tables.recordsets.c.tenant_id,             # 4 - RS Tenant
+    tables.recordsets.c.zone_id,               # 5 - RS Zone
+    tables.recordsets.c.name,                  # 6 - RS Name
+    tables.recordsets.c.type,                  # 7 - RS Type
+    tables.recordsets.c.ttl,                   # 8 - RS TTL
+    tables.recordsets.c.description,           # 9 - RS Desc
+    # R Info
+    tables.records.c.id,                       # 10 - R ID
+    tables.records.c.version,                  # 11 - R Version
+    tables.records.c.created_at,               # 12 - R Created
+    tables.records.c.updated_at,               # 13 - R Updated
+    tables.records.c.tenant_id,                # 14 - R Tenant
+    tables.records.c.zone_id,                  # 15 - R Zone
+    tables.records.c.recordset_id,             # 16 - R RSet
+    tables.records.c.data,                     # 17 - R Data
+    tables.records.c.description,              # 18 - R Desc
+    tables.records.c.hash,                     # 19 - R Hash
+    tables.records.c.managed,                  # 20 - R Mngd Flg
+    tables.records.c.managed_plugin_name,      # 21 - R Mngd Plg
+    tables.records.c.managed_resource_type,    # 22 - R Mngd Type
+    tables.records.c.managed_resource_region,  # 23 - R Mngd Rgn
+    tables.records.c.managed_resource_id,      # 24 - R Mngd ID
+    tables.records.c.managed_tenant_id,        # 25 - R Mngd T ID
+    tables.records.c.status,                   # 26 - R Status
+    tables.records.c.action,                   # 27 - R Action
+    tables.records.c.serial                    # 28 - R Serial
+)
+RECORDSET_MAP = {
+    'id': 0,
+    'version': 1,
+    'created_at': 2,
+    'updated_at': 3,
+    'tenant_id': 4,
+    'zone_id': 5,
+    'name': 6,
+    'type': 7,
+    'ttl': 8,
+    'description': 9,
+}
+RECORD_MAP = {
+    'id': 10,
+    'version': 11,
+    'created_at': 12,
+    'updated_at': 13,
+    'tenant_id': 14,
+    'zone_id': 15,
+    'recordset_id': 16,
+    'data': 17,
+    'description': 18,
+    'hash': 19,
+    'managed': 20,
+    'managed_plugin_name': 21,
+    'managed_resource_type': 22,
+    'managed_resource_region': 23,
+    'managed_resource_id': 24,
+    'managed_tenant_id': 25,
+    'status': 26,
+    'action': 27,
+    'serial': 28,
+}
 
 
 def _set_object_from_model(obj, model, **extra):
@@ -230,13 +298,11 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
             except ValueError as value_error:
                 raise exceptions.ValueError(str(value_error))
 
-    def _find_recordsets_with_records(self, context, criterion, zones_table,
-                                      recordsets_table, records_table,
-                                      one=False, marker=None, limit=None,
-                                      sort_key=None, sort_dir=None, query=None,
+    def _find_recordsets_with_records(self, context, criterion,
+                                      marker=None, limit=None,
+                                      sort_key=None, sort_dir=None,
                                       apply_tenant_criteria=True,
                                       force_index=False):
-
         sort_key = sort_key or 'created_at'
         sort_dir = sort_dir or 'asc'
         data = criterion.pop('data', None)
@@ -247,37 +313,39 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         # needs to use the correct table index for different sort keys
         index_hint = utils.get_rrset_index(sort_key) if force_index else None
 
-        rzjoin = recordsets_table.join(
-                zones_table,
-                recordsets_table.c.zone_id == zones_table.c.id)
+        rzjoin = tables.recordsets.join(
+                tables.zones,
+                tables.recordsets.c.zone_id == tables.zones.c.id
+        )
 
         if filtering_records:
             rzjoin = rzjoin.join(
-                    records_table,
-                    recordsets_table.c.id == records_table.c.recordset_id)
+                    tables.records,
+                    tables.recordsets.c.id == tables.records.c.recordset_id
+            )
 
         inner_q = (
-            select(recordsets_table.c.id,      # 0 - RS ID
-                   zones_table.c.name).       # 1 - ZONE NAME
+            select(tables.recordsets.c.id,     # 0 - RS ID
+                   tables.zones.c.name).       # 1 - ZONE NAME
             select_from(rzjoin).
-            where(zones_table.c.deleted == '0')
+            where(tables.zones.c.deleted == '0')
         )
 
         count_q = (
-            select(func.count(distinct(recordsets_table.c.id))).
-            select_from(rzjoin).where(zones_table.c.deleted == '0')
+            select(func.count(distinct(tables.recordsets.c.id))).
+            select_from(rzjoin).where(tables.zones.c.deleted == '0')
         )
 
         if index_hint:
-            inner_q = inner_q.with_hint(recordsets_table, index_hint,
+            inner_q = inner_q.with_hint(tables.recordsets, index_hint,
                                         dialect_name='mysql')
 
         if marker is not None:
-            marker = utils.check_marker(recordsets_table, marker)
+            marker = utils.check_marker(tables.recordsets, marker)
 
         try:
             inner_q = utils.paginate_query(
-                inner_q, recordsets_table, limit,
+                inner_q, tables.recordsets, limit,
                 [sort_key, 'id'], marker=marker,
                 sort_dir=sort_dir)
 
@@ -292,26 +360,26 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
         if apply_tenant_criteria:
             inner_q = self._apply_tenant_criteria(
-                    context, recordsets_table, inner_q,
+                    context, tables.recordsets, inner_q,
                     include_null_tenant=False)
-            count_q = self._apply_tenant_criteria(context, recordsets_table,
+            count_q = self._apply_tenant_criteria(context, tables.recordsets,
                                                   count_q,
                                                   include_null_tenant=False)
 
-        inner_q = self._apply_criterion(recordsets_table, inner_q, criterion)
-        count_q = self._apply_criterion(recordsets_table, count_q, criterion)
+        inner_q = self._apply_criterion(tables.recordsets, inner_q, criterion)
+        count_q = self._apply_criterion(tables.recordsets, count_q, criterion)
 
         if filtering_records:
             records_criterion = dict((k, v) for k, v in (
                 ('data', data), ('status', status)) if v is not None)
-            inner_q = self._apply_criterion(records_table, inner_q,
+            inner_q = self._apply_criterion(tables.records, inner_q,
                                             records_criterion)
-            count_q = self._apply_criterion(records_table, count_q,
+            count_q = self._apply_criterion(tables.records, count_q,
                                             records_criterion)
 
-        inner_q = self._apply_deleted_criteria(context, recordsets_table,
+        inner_q = self._apply_deleted_criteria(context, tables.recordsets,
                                                inner_q)
-        count_q = self._apply_deleted_criteria(context, recordsets_table,
+        count_q = self._apply_deleted_criteria(context, tables.recordsets,
                                                count_q)
 
         # Get the list of IDs needed.
@@ -339,87 +407,18 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
             total_count = 0 if result is None else result[0]
 
         # Join the 2 required tables
-        rjoin = recordsets_table.outerjoin(
-            records_table,
-            records_table.c.recordset_id == recordsets_table.c.id)
-
-        query = select(
-            # RS Info
-            recordsets_table.c.id,                     # 0 - RS ID
-            recordsets_table.c.version,                # 1 - RS Version
-            recordsets_table.c.created_at,             # 2 - RS Created
-            recordsets_table.c.updated_at,             # 3 - RS Updated
-            recordsets_table.c.tenant_id,              # 4 - RS Tenant
-            recordsets_table.c.zone_id,                # 5 - RS Zone
-            recordsets_table.c.name,                   # 6 - RS Name
-            recordsets_table.c.type,                   # 7 - RS Type
-            recordsets_table.c.ttl,                    # 8 - RS TTL
-            recordsets_table.c.description,            # 9 - RS Desc
-            # R Info
-            records_table.c.id,                        # 10 - R ID
-            records_table.c.version,                   # 11 - R Version
-            records_table.c.created_at,                # 12 - R Created
-            records_table.c.updated_at,                # 13 - R Updated
-            records_table.c.tenant_id,                 # 14 - R Tenant
-            records_table.c.zone_id,                   # 15 - R Zone
-            records_table.c.recordset_id,              # 16 - R RSet
-            records_table.c.data,                      # 17 - R Data
-            records_table.c.description,               # 18 - R Desc
-            records_table.c.hash,                      # 19 - R Hash
-            records_table.c.managed,                   # 20 - R Mngd Flg
-            records_table.c.managed_plugin_name,       # 21 - R Mngd Plg
-            records_table.c.managed_resource_type,     # 22 - R Mngd Type
-            records_table.c.managed_resource_region,   # 23 - R Mngd Rgn
-            records_table.c.managed_resource_id,       # 24 - R Mngd ID
-            records_table.c.managed_tenant_id,         # 25 - R Mngd T ID
-            records_table.c.status,                    # 26 - R Status
-            records_table.c.action,                    # 27 - R Action
-            records_table.c.serial                     # 28 - R Serial
-        ).select_from(rjoin)
-
-        query = query.where(
-            recordsets_table.c.id.in_(formatted_ids)
+        rjoin = tables.recordsets.outerjoin(
+            tables.records,
+            tables.records.c.recordset_id == tables.recordsets.c.id
         )
 
-        # These make looking up indexes for the Raw Rows much easier,
-        # and maintainable
+        query = select(RECORDSET_QUERY_TABLES).select_from(rjoin)
 
-        rs_map = {
-            "id": 0,
-            "version": 1,
-            "created_at": 2,
-            "updated_at": 3,
-            "tenant_id": 4,
-            "zone_id": 5,
-            "name": 6,
-            "type": 7,
-            "ttl": 8,
-            "description": 9,
-        }
+        query = query.where(
+            tables.recordsets.c.id.in_(formatted_ids)
+        )
 
-        r_map = {
-            "id": 10,
-            "version": 11,
-            "created_at": 12,
-            "updated_at": 13,
-            "tenant_id": 14,
-            "zone_id": 15,
-            "recordset_id": 16,
-            "data": 17,
-            "description": 18,
-            "hash": 19,
-            "managed": 20,
-            "managed_plugin_name": 21,
-            "managed_resource_type": 22,
-            "managed_resource_region": 23,
-            "managed_resource_id": 24,
-            "managed_tenant_id": 25,
-            "status": 26,
-            "action": 27,
-            "serial": 28,
-        }
-
-        query, sort_dirs = utils.sort_query(query, recordsets_table,
+        query, sort_dirs = utils.sort_query(query, tables.recordsets,
                                             [sort_key, 'id'],
                                             sort_dir=sort_dir)
 
@@ -447,11 +446,11 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                 # Set up a new rrset
                 current_rrset = objects.RecordSet()
 
-                rrset_id = record[rs_map['id']]
+                rrset_id = record[RECORDSET_MAP['id']]
 
                 # Add all the loaded vars into RecordSet object
 
-                for key, value in rs_map.items():
+                for key, value in RECORDSET_MAP.items():
                     setattr(current_rrset, key, record[value])
 
                 current_rrset.zone_name = id_zname_map[current_rrset.id]
@@ -459,20 +458,20 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
                 current_rrset.records = objects.RecordList()
 
-                if record[r_map['id']] is not None:
+                if record[RECORD_MAP['id']] is not None:
                     rrdata = objects.Record()
 
-                    for key, value in r_map.items():
+                    for key, value in RECORD_MAP.items():
                         setattr(rrdata, key, record[value])
 
                     current_rrset.records.append(rrdata)
 
             else:
                 # We've already got a rrset, add the rdata
-                if record[r_map['id']] is not None:
+                if record[RECORD_MAP['id']] is not None:
                     rrdata = objects.Record()
 
-                    for key, value in r_map.items():
+                    for key, value in RECORD_MAP.items():
                         setattr(rrdata, key, record[value])
 
                     current_rrset.records.append(rrdata)

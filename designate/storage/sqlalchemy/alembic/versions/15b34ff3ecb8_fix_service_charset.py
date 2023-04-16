@@ -1,4 +1,4 @@
-# Copyright 2016 Rackspace
+# Copyright 2016 Hewlett Packard Enterprise Development Company LP
 # Copyright 2022 Red Hat
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,34 +13,36 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""add_rrset_indexes_for_filtering_perf
+"""fix_service_charset
 
-Revision ID: 7977deaa5167
-Revises: 15b34ff3ecb8
-Create Date: 2022-08-01 17:13:01.429689
+Revision ID: 15b34ff3ecb8
+Revises: 304d41c3847a
+Create Date: 2022-08-01 16:53:34.612019
 
 """
 from alembic import op
 
-from designate.storage.impl_sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.alembic import legacy_utils
 
 # revision identifiers, used by Alembic.
-revision = '7977deaa5167'
-down_revision = '15b34ff3ecb8'
+revision = '15b34ff3ecb8'
+down_revision = '304d41c3847a'
 branch_labels = None
 depends_on = None
 
-# Equivalent to legacy sqlalchemy-migrate revision
-# 099_add_rrset_indexes_for_filtering_perf
+# Equivalent to legacy sqlalchemy-migrate revision 098_fix_service_charset
 
 
 def upgrade() -> None:
     # Check if the equivalent legacy migration has already run
-    if not legacy_utils.is_migration_needed(99):
+    if not legacy_utils.is_migration_needed(98):
         return
 
-    op.create_index('rrset_updated_at', 'recordsets', ['updated_at'])
-    op.create_index('rrset_zoneid', 'recordsets', ['zone_id'])
-    op.create_index('rrset_type', 'recordsets', ['type'])
-    op.create_index('rrset_ttl', 'recordsets', ['ttl'])
-    op.create_index('rrset_tenant_id', 'recordsets', ['tenant_id'])
+    current_bind = op.get_bind()
+    if current_bind.dialect.name != 'mysql':
+        return
+
+    op.execute('SET foreign_key_checks = 0;')
+    op.execute('ALTER TABLE service_statuses CONVERT TO CHARACTER SET utf8;')
+    op.execute('SET foreign_key_checks = 1;')
+    op.execute('ALTER DATABASE DEFAULT CHARACTER SET utf8;')

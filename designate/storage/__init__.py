@@ -23,19 +23,17 @@ from oslo_db import exception as db_exception
 from oslo_log import log as logging
 from oslo_utils import excutils
 
-from designate.sqlalchemy import sql
-from designate.storage import base
+from designate.storage import sql
+from designate.storage import sqlalchemy
 
 
 LOG = logging.getLogger(__name__)
 RETRY_STATE = threading.local()
 
 
-def get_storage(storage_driver):
-    """Return the engine class from the provided engine name"""
-    cls = base.Storage.get_driver(storage_driver)
-
-    return cls()
+def get_storage():
+    """Return the engine class"""
+    return sqlalchemy.SQLAlchemyStorage()
 
 
 def _retry_on_deadlock(exc):

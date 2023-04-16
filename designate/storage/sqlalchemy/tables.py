@@ -21,7 +21,7 @@ from oslo_config import cfg
 from oslo_db.sqlalchemy import types
 from oslo_utils import timeutils
 
-from designate.sqlalchemy.types import UUID
+from designate.storage.sqlalchemy.types import UUID
 from designate import utils
 
 

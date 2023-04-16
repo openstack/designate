@@ -54,9 +54,7 @@ class Service(service.Service):
     @property
     def storage(self):
         if not self._storage:
-            self._storage = storage.get_storage(
-                CONF['service:mdns'].storage_driver
-            )
+            self._storage = storage.get_storage()
         return self._storage
 
     @property
