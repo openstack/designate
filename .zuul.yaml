@@ -78,17 +78,42 @@
 
 - job:
     name: designate-grenade-pdns4
-    parent: legacy-dsvm-base
+    parent: grenade
     required-projects:
-      - openstack/grenade
-      - openstack/devstack-gate
-      - openstack/designate
-      - openstack/designate-dashboard
-      - name: openstack/designate-tempest-plugin
+      - opendev.org/openstack/grenade
+      - opendev.org/openstack/designate
+      - name: opendev.org/openstack/designate-tempest-plugin
         override-checkout: 0.8.0
-      - openstack/python-designateclient
-    run: playbooks/legacy/grenade-devstack-designate-pdns4/run.yaml
-    post-run: playbooks/legacy/grenade-devstack-designate-pdns4/post.yaml
+      - opendev.org/openstack/python-designateclient
+    vars:
+      grenade_devstack_localrc:
+        shared:
+          DESIGNATE_SERVICE_PORT_DNS: 5322
+          DESIGNATE_BACKEND_DRIVER: pdns4
+      devstack_plugins:
+        designate: https://opendev.org/openstack/designate.git
+        designate-tempest-plugin: https://opendev.org/openstack/designate-tempest-plugin.git
+      devstack_services:
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        c-api: false
+        c-bak: false
+        c-vol: false
+        cinder: false
+        designate: true
+        designate-api: true
+        designate-central: true
+        designate-producer: true
+        designate-mdns: true
+        designate-sink: true
+        designate-agent: true
+        designate-worker: true
+      tempest_plugins:
+        - designate-tempest-plugin
+      tempest_test_regex: ^designate_tempest_plugin.*\[.*\bsmoke\b.*\]
+      tox_envlist: all
     timeout: 10800
     irrelevant-files:
       - ^.*\.rst$
