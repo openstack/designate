@@ -144,8 +144,8 @@ class NotificationHandler(ExtensionPlugin):
 
 
 class BaseAddressHandler(NotificationHandler):
-    default_formatv4 = ('%(hostname)s.%(domain)s',)
-    default_formatv6 = ('%(hostname)s.%(domain)s',)
+    default_formatv4 = ('%(hostname)s.%(zone)s',)
+    default_formatv6 = ('%(hostname)s.%(zone)s',)
 
     def _get_ip_data(self, addr_dict):
         ip = addr_dict['address']
@@ -193,7 +193,7 @@ class BaseAddressHandler(NotificationHandler):
         """
         LOG.debug('Using Zone ID: %s', zone_id)
         zone = self.get_zone(zone_id)
-        LOG.debug('Domain: %r', zone)
+        LOG.debug('Zone: %r', zone)
 
         data = extra.copy()
         LOG.debug('Event data: %s', data)
