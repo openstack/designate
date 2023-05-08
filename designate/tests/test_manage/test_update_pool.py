@@ -17,8 +17,8 @@ from oslo_log import log as logging
 from designate.manage import base
 from designate.manage import pool
 from designate import objects
+import designate.tests
 from designate.tests import fixtures
-from designate.tests.test_manage import DesignateManageTestCase
 
 LOG = logging.getLogger(__name__)
 
@@ -34,9 +34,9 @@ def hydrate_pool_targets(target_masters):
     return pool_targets
 
 
-class UpdatePoolTestCase(DesignateManageTestCase):
+class UpdatePoolTestCase(designate.tests.TestCase):
     def setUp(self):
-        super(DesignateManageTestCase, self).setUp()
+        super(UpdatePoolTestCase, self).setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

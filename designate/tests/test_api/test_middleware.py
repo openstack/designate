@@ -23,7 +23,7 @@ from designate.api import middleware
 from designate import context
 from designate import exceptions
 from designate import rpc
-from designate.tests.test_api import ApiTestCase
+import designate.tests
 
 
 class FakeRequest(object):
@@ -43,7 +43,7 @@ class FakeRequest(object):
         return "FakeResponse"
 
 
-class KeystoneContextMiddlewareTest(ApiTestCase):
+class KeystoneContextMiddlewareTest(designate.tests.TestCase):
     def test_process_request(self):
         app = middleware.KeystoneContextMiddleware({})
 
@@ -106,7 +106,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         self.assertEqual(response, 'FakeResponse')
 
 
-class NoAuthContextMiddlewareTest(ApiTestCase):
+class NoAuthContextMiddlewareTest(designate.tests.TestCase):
     def test_process_request(self):
         app = middleware.NoAuthContextMiddleware({})
 
@@ -125,7 +125,7 @@ class NoAuthContextMiddlewareTest(ApiTestCase):
         self.assertEqual(['admin'], ctxt.roles)
 
 
-class MaintenanceMiddlewareTest(ApiTestCase):
+class MaintenanceMiddlewareTest(designate.tests.TestCase):
     def test_process_request_disabled(self):
         self.config(maintenance_mode=False, group='service:api')
 
@@ -197,7 +197,7 @@ class MaintenanceMiddlewareTest(ApiTestCase):
         self.assertEqual('FakeResponse', response)
 
 
-class NormalizeURIMiddlewareTest(ApiTestCase):
+class NormalizeURIMiddlewareTest(designate.tests.TestCase):
     def test_strip_trailing_slases(self):
         request = FakeRequest()
         request.environ['PATH_INFO'] = 'resource/'
@@ -223,7 +223,7 @@ class NormalizeURIMiddlewareTest(ApiTestCase):
         self.assertEqual('resource', request.environ['PATH_INFO'])
 
 
-class FaultMiddlewareTest(ApiTestCase):
+class FaultMiddlewareTest(designate.tests.TestCase):
     @mock.patch.object(notifier.Notifier, "error")
     def test_notify_of_fault(self, mock_notifier):
         self.config(notify_api_faults=True)

@@ -28,7 +28,7 @@ import testtools
 from designate import context
 from designate.mdns import handler
 from designate import objects
-from designate.tests.test_mdns import MdnsTestCase
+import designate.tests
 
 CONF = cfg.CONF
 default_pool_id = CONF['service:central'].default_pool_id
@@ -49,7 +49,7 @@ ANSWER = [
 ]
 
 
-class MdnsRequestHandlerTest(MdnsTestCase):
+class MdnsRequestHandlerTest(designate.tests.TestCase):
     def setUp(self):
         super(MdnsRequestHandlerTest, self).setUp()
         self.mock_tg = mock.Mock()
