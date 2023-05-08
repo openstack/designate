@@ -202,11 +202,11 @@ class DynClient(object):
             self._http_log_req(method, url, kwargs)
 
         if self.timings:
-            start_time = time.time()
+            start_time = time.monotonic()
         resp = self.http.request(method, url, **kwargs)
         if self.timings:
             self.times.append(("%s %s" % (method, url),
-                               start_time, time.time()))
+                               start_time, time.monotonic()))
         self._http_log_resp(resp)
 
         if resp.status_code >= 400:

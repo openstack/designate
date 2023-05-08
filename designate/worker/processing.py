@@ -70,9 +70,9 @@ class Executor(object):
         if callable(tasks):
             tasks = [tasks]
 
-        start_time = time.time()
+        start_time = time.monotonic()
         results = [r for r in self._executor.map(self.do, tasks)]
-        elapsed_time = time.time() - start_time
+        elapsed_time = time.monotonic() - start_time
 
         LOG.debug(
             'Finished Task(s): %(tasks)s in %(time)fs',
