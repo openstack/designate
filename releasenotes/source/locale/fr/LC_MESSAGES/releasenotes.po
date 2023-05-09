@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-06 16:30+0000\n"
+"POT-Creation-Date: 2023-05-02 19:37+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -25,15 +25,6 @@ msgstr "2.0.0"
 
 msgid "3.0.0"
 msgstr "3.0.0"
-
-msgid "3.0.0.0b1"
-msgstr "3.0.0.0b1"
-
-msgid "3.0.0.0b2"
-msgstr "3.0.0.0b2"
-
-msgid "3.0.0.0rc1"
-msgstr "3.0.0.0rc1"
 
 msgid "ASync Export"
 msgstr "Export Async"
