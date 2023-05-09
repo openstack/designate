@@ -203,12 +203,12 @@ class ZoneLock(object):
         with self.lock:
             # If no one holds the lock for the zone, grant it
             if zone not in self.data:
-                self.data[zone] = time.time()
+                self.data[zone] = time.monotonic()
                 return True
 
             # Otherwise, get the time that it was locked
             locktime = self.data[zone]
-            now = time.time()
+            now = time.monotonic()
 
             period = now - locktime
 

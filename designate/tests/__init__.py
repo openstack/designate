@@ -820,7 +820,7 @@ class TestCase(base.BaseTestCase):
            Zone imports spawn a thread to parse the zone file and
            insert the data. This waits for this process before continuing
         """
-        start_time = time.time()
+        start_time = time.monotonic()
         while True:
             # Retrieve it, and ensure it's the same
             zone_import = self.central_service.get_zone_import(
@@ -835,7 +835,7 @@ class TestCase(base.BaseTestCase):
             if error_is_ok and zone_import.status != 'PENDING':
                 break
 
-            if (time.time() - start_time) > max_wait:
+            if (time.monotonic() - start_time) > max_wait:
                 break
 
             time.sleep(0.5)
@@ -870,8 +870,8 @@ class TestCase(base.BaseTestCase):
         Poll every `interval` seconds.  `condition` can be a callable.
         (Caution: some mocks behave both as values and callables.)
         """
-        t_max = time.time() + timeout
-        while time.time() < t_max:
+        t_max = time.monotonic() + timeout
+        while time.monotonic() < t_max:
             if callable(condition):
                 result = condition()
             else:
