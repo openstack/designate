@@ -1211,6 +1211,8 @@ class Service(service.RPCService):
 
         policy.check('share_zone', context, target)
 
+        self._is_valid_project_id(context.project_id)
+
         if zone.tenant_id == shared_zone.target_project_id:
             raise exceptions.BadRequest(
                 'Cannot share the zone with the zone owner.')
