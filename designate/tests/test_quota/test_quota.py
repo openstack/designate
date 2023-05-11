@@ -17,16 +17,17 @@ from unittest import mock
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
+import testscenarios
 
 from designate import exceptions
 from designate import quota
-from designate import tests
+import designate.tests
 
 LOG = logging.getLogger(__name__)
+load_tests = testscenarios.load_tests_apply_scenarios
 
 
-class QuotaTestCase(tests.TestCase):
+class QuotaTestCase(designate.tests.TestCase):
     scenarios = [
         ('noop', dict(quota_driver='noop')),
         ('storage', dict(quota_driver='storage'))

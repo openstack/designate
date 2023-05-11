@@ -39,15 +39,15 @@ from designate import exceptions
 from designate import objects
 from designate.storage.impl_sqlalchemy import tables
 from designate.storage import sql
+import designate.tests
 from designate.tests import fixtures
-from designate.tests.test_central import CentralTestCase
 from designate import utils
 from designate.worker import rpcapi as worker_api
 
 LOG = logging.getLogger(__name__)
 
 
-class CentralServiceTest(CentralTestCase):
+class CentralServiceTest(designate.tests.TestCase):
     def setUp(self):
         super(CentralServiceTest, self).setUp()
         self.stdlog = fixtures.StandardLogging()

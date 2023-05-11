@@ -15,14 +15,14 @@ from io import StringIO
 from unittest import mock
 
 from designate.manage import database
-from designate import tests as designate_tests
+import designate.tests
 
 
-class TestManageDatabase(designate_tests.TestCase):
+class TestManageDatabase(designate.tests.TestCase):
 
     def setUp(self):
         super(TestManageDatabase, self).setUp()
-        self.stdlog = designate_tests.fixtures.StandardLogging()
+        self.stdlog = designate.tests.fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
         self.db_cmds = database.DatabaseCommands()

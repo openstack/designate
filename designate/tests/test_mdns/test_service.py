@@ -24,7 +24,7 @@ import dns
 import dns.message
 from oslo_log import log as logging
 
-from designate.tests.test_mdns import MdnsTestCase
+import designate.tests
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def hex_wire(response):
     return binascii.b2a_hex(response.to_wire())
 
 
-class MdnsServiceTest(MdnsTestCase):
+class MdnsServiceTest(designate.tests.TestCase):
     # DNS packet with IQUERY opcode
     query_payload = binascii.a2b_hex(
         "271209000001000000000000076578616d706c6503636f6d0000010001"

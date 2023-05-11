@@ -20,10 +20,10 @@ from paste import urlmap
 
 from designate.api import service
 from designate import exceptions
-from designate.tests.test_api import ApiTestCase
+import designate.tests
 
 
-class ApiServiceTest(ApiTestCase):
+class ApiServiceTest(designate.tests.TestCase):
     def setUp(self):
         super(ApiServiceTest, self).setUp()
 

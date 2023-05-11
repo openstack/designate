@@ -20,9 +20,9 @@ import oslo_messaging
 from designate.central import service
 from designate.manage import base
 from designate.manage import pool
+import designate.tests
 from designate.tests import fixtures
 from designate.tests import resources
-from designate.tests.test_manage import DesignateManageTestCase
 
 LOG = logging.getLogger(__name__)
 
@@ -36,9 +36,9 @@ def get_pools(name='pools.yaml'):
         return yaml.safe_load(pool_obj)
 
 
-class ManagePoolTestCase(DesignateManageTestCase):
+class ManagePoolTestCase(designate.tests.TestCase):
     def setUp(self):
-        super(DesignateManageTestCase, self).setUp()
+        super(ManagePoolTestCase, self).setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

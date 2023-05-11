@@ -20,7 +20,7 @@ from webtest import TestApp
 
 from designate.api import middleware
 from designate.api import v2 as api_v2
-from designate.tests.test_api import ApiTestCase
+import designate.tests
 
 
 LOG = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ INVALID_ID = [
 ]
 
 
-class ApiV2TestCase(ApiTestCase):
+class ApiV2TestCase(designate.tests.TestCase):
     def setUp(self):
         super(ApiV2TestCase, self).setUp()
 
