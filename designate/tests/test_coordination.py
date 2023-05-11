@@ -15,33 +15,9 @@
 # under the License.
 from unittest import mock
 
-from oslo_config import cfg
-
 from designate import coordination
-from designate import service
 from designate.tests import fixtures
 from designate.tests import TestCase
-
-cfg.CONF.register_group(cfg.OptGroup("service:dummy"))
-
-cfg.CONF.register_opts([
-], group="service:dummy")
-
-
-class CoordinatedService(service.Service):
-    def __init__(self):
-        super(CoordinatedService, self).__init__()
-        self.coordination = coordination.Coordination(
-            self.service_name, self.tg
-        )
-
-    def start(self):
-        super(CoordinatedService, self).start()
-        self.coordination.start()
-
-    @property
-    def service_name(self):
-        return "dummy"
 
 
 class TestCoordination(TestCase):
