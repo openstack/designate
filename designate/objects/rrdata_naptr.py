@@ -35,15 +35,22 @@ class NAPTR(Record):
         'replacement': fields.DomainField(maxLength=255)
     }
 
+    @staticmethod
+    def _strip_double_quotes(value):
+        if value.startswith('"') and value.endswith('"'):
+            return value[1:-1]
+        else:
+            return value
+
     def from_string(self, value):
         order, preference, flags, service, regexp, replacement = (
             value.split(' ')
         )
         self.order = int(order)
         self.preference = int(preference)
-        self.flags = flags
-        self.service = service
-        self.regexp = regexp
+        self.flags = self._strip_double_quotes(flags)
+        self.service = self._strip_double_quotes(service)
+        self.regexp = self._strip_double_quotes(regexp)
         self.replacement = replacement
 
     # The record type is defined in the RFC. This will be used when the record
