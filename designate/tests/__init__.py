@@ -49,7 +49,7 @@ CONF.import_opt('storage_driver', 'designate.central',
                 group='service:central')
 CONF.import_opt('auth_strategy', 'designate.api',
                 group='service:api')
-CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
+CONF.import_opt('connection', 'designate.storage.sqlalchemy',
                 group='storage:sqlalchemy')
 CONF.import_opt('emitter_type', 'designate.heartbeat_emitter',
                 group="heartbeat_emitter")
@@ -397,8 +397,7 @@ class TestCase(base.BaseTestCase):
         self.admin_context = self.get_admin_context()
         self.admin_context_all_tenants = self.get_admin_context(
             all_tenants=True)
-        storage_driver = CONF['service:central'].storage_driver
-        self.storage = storage.get_storage(storage_driver)
+        self.storage = storage.get_storage()
 
         # Setup the Default Pool with some useful settings
         self._setup_default_pool()

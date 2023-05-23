@@ -21,8 +21,8 @@ from oslo_log import log as logging
 from oslo_utils import timeutils
 
 from designate.producer import tasks
-from designate.storage.impl_sqlalchemy import tables
 from designate.storage import sql
+from designate.storage.sqlalchemy import tables
 from designate.tests import fixtures
 from designate.tests import TestCase
 from designate.worker import rpcapi as worker_api

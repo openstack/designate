@@ -26,7 +26,7 @@ from sqlalchemy import select
 
 from designate import exceptions
 from designate.i18n import _
-from designate.sqlalchemy import sql
+from designate.storage import sql
 
 LOG = log.getLogger(__name__)
 

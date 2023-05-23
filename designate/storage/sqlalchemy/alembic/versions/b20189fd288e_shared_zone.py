@@ -20,7 +20,7 @@ Create Date: 2022-09-22 20:50:03.056609
 from alembic import op
 import sqlalchemy as sa
 
-from designate.sqlalchemy.types import UUID
+from designate.storage.sqlalchemy.types import UUID
 from designate import utils
 
 # revision identifiers, used by Alembic.

@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
@@ -31,10 +30,7 @@ class StorageQuota(base.Quota):
 
     def __init__(self):
         super(StorageQuota, self).__init__()
-
-        # TODO(kiall): Should this be tied to central's config?
-        storage_driver = cfg.CONF['service:central'].storage_driver
-        self.storage = storage.get_storage(storage_driver)
+        self.storage = storage.get_storage()
 
     def _get_quotas(self, context, tenant_id):
         quotas = self.storage.find_quotas(context, {

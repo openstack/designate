@@ -37,8 +37,8 @@ import testtools
 
 from designate import exceptions
 from designate import objects
-from designate.storage.impl_sqlalchemy import tables
 from designate.storage import sql
+from designate.storage.sqlalchemy import tables
 import designate.tests
 from designate.tests import fixtures
 from designate import utils

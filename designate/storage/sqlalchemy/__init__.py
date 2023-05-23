@@ -21,10 +21,9 @@ from sqlalchemy.sql.expression import or_, literal_column
 
 from designate import exceptions
 from designate import objects
-from designate.sqlalchemy import base as sqlalchemy_base
-from designate.sqlalchemy import sql
-from designate.storage import base as storage_base
-from designate.storage.impl_sqlalchemy import tables
+from designate.storage import sql
+from designate.storage.sqlalchemy import base
+from designate.storage.sqlalchemy import tables
 
 
 LOG = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ LOG = logging.getLogger(__name__)
 MAXIMUM_SUBZONE_DEPTH = 128
 
 
-class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
+class SQLAlchemyStorage(base.SQLAlchemy):
     """SQLAlchemy connection"""
     __plugin_name__ = 'sqlalchemy'
 
@@ -61,6 +60,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             sort_key, sort_dir)
 
     def create_quota(self, context, quota):
+        """
+        Create a Quota.
+
+        :param context: RPC Context.
+        :param quota: Quota object with the values to be created.
+        """
         if not isinstance(quota, objects.Quota):
             # TODO(kiall): Quotas should always use Objects
             quota = objects.Quota(**quota)
@@ -69,23 +74,59 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.quotas, quota, exceptions.DuplicateQuota)
 
     def get_quota(self, context, quota_id):
+        """
+        Get a Quota via ID.
+
+        :param context: RPC Context.
+        :param quota_id: Quota ID to get.
+        """
         return self._find_quotas(context, {'id': quota_id}, one=True)
 
     def find_quotas(self, context, criterion=None, marker=None, limit=None,
                     sort_key=None, sort_dir=None):
+        """
+        Find Quotas
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_quotas(context, criterion, marker=marker,
                                  limit=limit, sort_key=sort_key,
                                  sort_dir=sort_dir)
 
     def find_quota(self, context, criterion):
+        """
+        Find a single Quota.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_quotas(context, criterion, one=True)
 
     def update_quota(self, context, quota):
+        """
+        Update a Quota
+
+        :param context: RPC Context.
+        :param quota: Quota to update.
+        """
         return self._update(
             context, tables.quotas, quota, exceptions.DuplicateQuota,
             exceptions.QuotaNotFound)
 
     def delete_quota(self, context, quota_id):
+        """
+        Delete a Quota via ID.
+
+        :param context: RPC Context.
+        :param quota_id: Delete a Quota via ID
+        """
         # Fetch the existing quota, we'll need to return it.
         quota = self._find_quotas(context, {'id': quota_id}, one=True)
         return self._delete(context, tables.quotas, quota,
@@ -100,26 +141,68 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             sort_key, sort_dir)
 
     def create_tld(self, context, tld):
+        """
+        Create a TLD.
+
+        :param context: RPC Context.
+        :param tld: Tld object with the values to be created.
+        """
         return self._create(
             tables.tlds, tld, exceptions.DuplicateTld)
 
     def get_tld(self, context, tld_id):
+        """
+        Get a TLD via ID.
+
+        :param context: RPC Context.
+        :param tld_id: TLD ID to get.
+        """
         return self._find_tlds(context, {'id': tld_id}, one=True)
 
     def find_tlds(self, context, criterion=None, marker=None, limit=None,
                   sort_key=None, sort_dir=None):
+        """
+        Find TLDs
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_tlds(context, criterion, marker=marker, limit=limit,
                                sort_key=sort_key, sort_dir=sort_dir)
 
     def find_tld(self, context, criterion):
+        """
+        Find a single TLD.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_tlds(context, criterion, one=True)
 
     def update_tld(self, context, tld):
+        """
+        Update a TLD
+
+        :param context: RPC Context.
+        :param tld: TLD to update.
+        """
         return self._update(
             context, tables.tlds, tld, exceptions.DuplicateTld,
             exceptions.TldNotFound)
 
     def delete_tld(self, context, tld_id):
+        """
+        Delete a TLD via ID.
+
+        :param context: RPC Context.
+        :param tld_id: Delete a TLD via ID
+        """
         # Fetch the existing tld, we'll need to return it.
         tld = self._find_tlds(context, {'id': tld_id}, one=True)
         return self._delete(context, tables.tlds, tld, exceptions.TldNotFound)
@@ -133,27 +216,69 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             sort_key, sort_dir)
 
     def create_tsigkey(self, context, tsigkey):
+        """
+        Create a TSIG Key.
+
+        :param context: RPC Context.
+        :param tsigkey: TsigKey object with the values to be created.
+        """
         return self._create(
             tables.tsigkeys, tsigkey, exceptions.DuplicateTsigKey)
 
     def get_tsigkey(self, context, tsigkey_id):
+        """
+        Get a TSIG Key via ID.
+
+        :param context: RPC Context.
+        :param tsigkey_id: Server ID to get.
+        """
         return self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
 
     def find_tsigkeys(self, context, criterion=None, marker=None, limit=None,
                       sort_key=None, sort_dir=None):
+        """
+        Find TSIG Keys.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_tsigkeys(context, criterion, marker=marker,
                                    limit=limit, sort_key=sort_key,
                                    sort_dir=sort_dir)
 
     def find_tsigkey(self, context, criterion):
+        """
+        Find TSIG Key.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_tsigkeys(context, criterion, one=True)
 
     def update_tsigkey(self, context, tsigkey):
+        """
+        Update a TSIG Key
+
+        :param context: RPC Context.
+        :param tsigkey: TSIG Keyto update.
+        """
         return self._update(
             context, tables.tsigkeys, tsigkey, exceptions.DuplicateTsigKey,
             exceptions.TsigKeyNotFound)
 
     def delete_tsigkey(self, context, tsigkey_id):
+        """
+        Delete a TSIG Key via ID.
+
+        :param context: RPC Context.
+        :param tsigkey_id: Delete a TSIG Key via ID
+        """
         # Fetch the existing tsigkey, we'll need to return it.
         tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
         return self._delete(context, tables.tsigkeys, tsigkey,
@@ -163,6 +288,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     # Tenant Methods
     ##
     def find_tenants(self, context):
+        """
+        Find all Tenants.
+
+        :param context: RPC Context.
+        """
         # returns an array of tenant_id & count of their zones
         query = select(tables.zones.c.tenant_id, func.count(tables.zones.c.id))
         query = self._apply_tenant_criteria(context, tables.zones, query)
@@ -182,6 +312,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return tenant_list
 
     def get_tenant(self, context, tenant_id):
+        """
+        Get Tenant.
+
+        :param context: RPC Context.
+        :param tenant_id: ID of the Tenant.
+        """
         # get list & count of all zones owned by given tenant_id
         query = select(tables.zones.c.name)
         query = self._apply_tenant_criteria(context, tables.zones, query)
@@ -198,6 +334,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             zones=[r[0] for r in results])
 
     def count_tenants(self, context):
+        """
+        Count tenants
+
+        :param context: RPC Context.
+        """
         # tenants are the owner of zones, count the number of unique tenants
         # select count(distinct tenant_id) from zones
         query = select(func.count(distinct(tables.zones.c.tenant_id)))
@@ -264,6 +405,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return zones
 
     def create_zone(self, context, zone):
+        """
+        Create a new Zone.
+
+        :param context: RPC Context.
+        :param zone: Zone object with the values to be created.
+        """
         # Patch in the reverse_name column
         extra_values = {'reverse_name': zone.name[::-1]}
 
@@ -288,22 +435,53 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return zone
 
     def get_zone(self, context, zone_id, apply_tenant_criteria=True):
+        """
+        Get a Zone via its ID.
+
+        :param context: RPC Context.
+        :param zone_id: ID of the Zone.
+        :param apply_tenant_criteria: Whether to filter results by project_id.
+        """
         zone = self._find_zones(context, {'id': zone_id}, one=True,
                                 apply_tenant_criteria=apply_tenant_criteria)
         return zone
 
     def find_zones(self, context, criterion=None, marker=None, limit=None,
                    sort_key=None, sort_dir=None):
+        """
+        Find zones
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         zones = self._find_zones(context, criterion, marker=marker,
                                  limit=limit, sort_key=sort_key,
                                  sort_dir=sort_dir)
         return zones
 
     def find_zone(self, context, criterion):
+        """
+        Find a single Zone.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         zone = self._find_zones(context, criterion, one=True)
         return zone
 
     def update_zone(self, context, zone):
+        """
+        Update a Zone
+
+        :param context: RPC Context.
+        :param zone: Zone object.
+        """
         tenant_id_changed = False
         if 'tenant_id' in zone.obj_what_changed():
             tenant_id_changed = True
@@ -451,6 +629,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def delete_zone(self, context, zone_id):
         """
+        Delete a Zone
+
+        :param context: RPC Context.
+        :param zone_id: Zone ID to delete.
         """
         # Fetch the existing zone, we'll need to return it.
         zone = self._find_zones(context, {'id': zone_id}, one=True)
@@ -458,7 +640,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                             exceptions.ZoneNotFound)
 
     def purge_zone(self, context, zone):
-        """Effectively remove a zone database record.
+        """
+        Purge a Zone, effectively removing the zone database record.
+
+        :param context: RPC Context.
+        :param zone: Zone to delete.
         """
         return self._delete(context, tables.zones, zone,
                             exceptions.ZoneNotFound, hard_delete=True)
@@ -479,10 +665,16 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return current.parent_zone_id
 
     def purge_zones(self, context, criterion, limit):
-        """Purge deleted zones.
+        """
+        Purge Zones, effectively removing the zones database records.
+
         Reparent orphan childrens, if any.
         Transactions/locks are not needed.
-        :returns: number of purged zones
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param limit: Integer limit of objects of the page size after the
+                      marker
         """
         if 'deleted' in criterion:
             context.show_deleted = True
@@ -520,6 +712,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return len(zones)
 
     def count_zones(self, context, criterion=None):
+        """
+        Count zones
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         query = select(func.count(tables.zones.c.id))
         query = self._apply_criterion(tables.zones, query, criterion)
         query = self._apply_tenant_criteria(context, tables.zones, query)
@@ -570,10 +768,22 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             return None
 
     def share_zone(self, context, shared_zone):
+        """
+        Share zone
+
+        :param context: RPC Context.
+        :param shared_zone: Shared Zone dict
+        """
         return self._create(tables.shared_zones, shared_zone,
                             exceptions.DuplicateSharedZone)
 
     def unshare_zone(self, context, zone_id, shared_zone_id):
+        """
+        Unshare zone
+
+        :param context: RPC Context.
+        :param shared_zone_id: Shared Zone Id
+        """
         shared_zone = self._find_shared_zones(
             context, {'id': shared_zone_id, 'zone_id': zone_id}, one=True
         )
@@ -582,17 +792,42 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def find_shared_zones(self, context, criterion=None, marker=None,
                           limit=None, sort_key=None, sort_dir=None):
+        """
+        Find shared zones
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_shared_zones(
             context, criterion, marker=marker,
             limit=limit, sort_key=sort_key, sort_dir=sort_dir
         )
 
     def get_shared_zone(self, context, zone_id, shared_zone_id):
+        """
+        Get a shared zone via ID
+
+        :param context: RPC Context.
+        :param shared_zone_id: Shared Zone Id
+        """
         return self._find_shared_zones(
             context, {'id': shared_zone_id, 'zone_id': zone_id}, one=True
         )
 
     def is_zone_shared_with_project(self, zone_id, project_id):
+        """
+        Checks if a zone is shared with a project.
+
+        :param zone_id: The zone ID to check.
+        :param project_id: The project ID to check.
+        :returns: Boolean True/False if the zone is shared with the project.
+        """
         query = select(literal_column('true'))
         query = query.where(tables.shared_zones.c.zone_id == zone_id)
         query = query.where(
@@ -601,6 +836,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             return session.scalar(query) is not None
 
     def delete_zone_shares(self, zone_id):
+        """
+        Delete all of the zone shares for a specific zone.
+
+        :param zone_id: The zone ID to check.
+        """
         query = tables.shared_zones.delete().where(
             tables.shared_zones.c.zone_id == zone_id)
         with sql.get_write_session() as session:
@@ -713,8 +953,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         else:
             tc, recordsets = self._find_recordsets_with_records(
-                    context, criterion, tables.zones, tables.recordsets,
-                    tables.records, limit=limit, marker=marker,
+                    context, criterion, limit=limit, marker=marker,
                     sort_key=sort_key, sort_dir=sort_dir,
                     force_index=force_index,
                     apply_tenant_criteria=apply_tenant_criteria,
@@ -725,8 +964,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return recordsets
 
     def find_recordsets_axfr(self, context, criterion=None):
-        query = None
+        """
+        Find RecordSets.
 
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         # Check to see if the criterion can use the reverse_name column
         criterion = self._rname_check(criterion)
 
@@ -749,6 +992,13 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return raw_rows
 
     def create_recordset(self, context, zone_id, recordset):
+        """
+        Create a recordset on a given Zone ID
+
+        :param context: RPC Context.
+        :param zone_id: Zone ID to create the recordset in.
+        :param recordset: RecordSet object with the values to be created.
+        """
         recordset.tenant_id = context.project_id
         recordset.zone_id = zone_id
 
@@ -795,17 +1045,43 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
                         sort_key=None, sort_dir=None, force_index=False,
                         apply_tenant_criteria=True):
+        """
+        Find RecordSets.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        :param apply_tenant_criteria: Whether to filter results by project_id.
+        """
         return self._find_recordsets(
             context, criterion, marker=marker, sort_dir=sort_dir,
             sort_key=sort_key, limit=limit, force_index=force_index,
             apply_tenant_criteria=apply_tenant_criteria)
 
     def find_recordset(self, context, criterion, apply_tenant_criteria=True):
+        """
+        Find a single RecordSet.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param apply_tenant_criteria: Whether to filter results by project_id.
+        """
         return self._find_recordsets(
             context, criterion, one=True,
             apply_tenant_criteria=apply_tenant_criteria)
 
     def update_recordset(self, context, recordset):
+        """
+        Update a recordset
+
+        :param context: RPC Context.
+        :param recordset: RecordSet to update
+        """
         recordset = self._update(
             context, tables.recordsets, recordset,
             exceptions.DuplicateRecordSet, exceptions.RecordSetNotFound,
@@ -852,6 +1128,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return recordset
 
     def delete_recordset(self, context, recordset_id):
+        """
+        Delete a recordset
+
+        :param context: RPC Context.
+        :param recordset_id: RecordSet ID to delete
+        """
         # Fetch the existing recordset, we'll need to return it.
         recordset = self._find_recordsets(
             context, {'id': recordset_id}, one=True)
@@ -860,6 +1142,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                             exceptions.RecordSetNotFound)
 
     def count_recordsets(self, context, criterion=None):
+        """
+        Count recordsets
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         # Ensure that we return only active recordsets
         rjoin = tables.recordsets.join(
             tables.zones,
@@ -906,6 +1194,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return md5sum.hexdigest()
 
     def create_record(self, context, zone_id, recordset_id, record):
+        """
+        Create a record on a given Zone ID
+
+        :param context: RPC Context.
+        :param zone_id: Zone ID to create the record in.
+        :param recordset_id: RecordSet ID to create the record in.
+        :param record: Record object with the values to be created.
+        """
         record.tenant_id = context.project_id
         record.zone_id = zone_id
         record.recordset_id = recordset_id
@@ -915,18 +1211,48 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tables.records, record, exceptions.DuplicateRecord)
 
     def get_record(self, context, record_id):
+        """
+        Get a record via ID
+
+        :param context: RPC Context.
+        :param record_id: Record ID to get
+        """
         return self._find_records(context, {'id': record_id}, one=True)
 
     def find_records(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
+        """
+        Find Records.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_records(context, criterion, marker=marker,
                                   limit=limit, sort_key=sort_key,
                                   sort_dir=sort_dir)
 
     def find_record(self, context, criterion):
+        """
+        Find a single Record.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_records(context, criterion, one=True)
 
     def update_record(self, context, record):
+        """
+        Update a record
+
+        :param context: RPC Context.
+        :param record: Record to update
+        """
         if record.obj_what_changed():
             record.hash = self._recalculate_record_hash(record)
 
@@ -935,12 +1261,24 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             exceptions.RecordNotFound)
 
     def delete_record(self, context, record_id):
+        """
+        Delete a record
+
+        :param context: RPC Context.
+        :param record_id: Record ID to delete
+        """
         # Fetch the existing record, we'll need to return it.
         record = self._find_records(context, {'id': record_id}, one=True)
         return self._delete(context, tables.records, record,
                             exceptions.RecordNotFound)
 
     def count_records(self, context, criterion=None):
+        """
+        Count records
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         # Ensure that we return only active records
         rjoin = tables.records.join(
             tables.zones,
@@ -974,27 +1312,69 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             one, marker, limit, sort_key, sort_dir)
 
     def create_blacklist(self, context, blacklist):
+        """
+        Create a Blacklist.
+
+        :param context: RPC Context.
+        :param blacklist: Blacklist object with the values to be created.
+        """
         return self._create(
             tables.blacklists, blacklist, exceptions.DuplicateBlacklist)
 
     def get_blacklist(self, context, blacklist_id):
+        """
+        Get a Blacklist via ID.
+
+        :param context: RPC Context.
+        :param blacklist_id: Blacklist ID to get.
+        """
         return self._find_blacklists(context, {'id': blacklist_id}, one=True)
 
     def find_blacklists(self, context, criterion=None, marker=None, limit=None,
                         sort_key=None, sort_dir=None):
+        """
+        Find Blacklists
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_blacklists(context, criterion, marker=marker,
                                      limit=limit, sort_key=sort_key,
                                      sort_dir=sort_dir)
 
     def find_blacklist(self, context, criterion):
+        """
+        Find a single Blacklist.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_blacklists(context, criterion, one=True)
 
     def update_blacklist(self, context, blacklist):
+        """
+        Update a Blacklist
+
+        :param context: RPC Context.
+        :param blacklist: Blacklist to update.
+        """
         return self._update(
             context, tables.blacklists, blacklist,
             exceptions.DuplicateBlacklist, exceptions.BlacklistNotFound)
 
     def delete_blacklist(self, context, blacklist_id):
+        """
+        Delete a Blacklist via ID.
+
+        :param context: RPC Context.
+        :param blacklist_id: Delete a Blacklist via ID
+        """
         # Fetch the existing blacklist, we'll need to return it.
         blacklist = self._find_blacklists(
             context, {'id': blacklist_id}, one=True)
@@ -1039,6 +1419,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return pools
 
     def create_pool(self, context, pool):
+        """
+        Create a Pool.
+
+        :param context: RPC Context.
+        :param pool: Pool object with the values to be created.
+        """
         pool = self._create(
             tables.pools, pool, exceptions.DuplicatePool,
             ['attributes', 'ns_records', 'nameservers', 'targets',
@@ -1080,18 +1466,47 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return pool
 
     def get_pool(self, context, pool_id):
+        """
+        Get a Pool via the id
+
+        :param context: RPC Context.
+        :param pool_id: The ID of the pool to get
+        """
         return self._find_pools(context, {'id': pool_id}, one=True)
 
     def find_pools(self, context, criterion=None, marker=None,
                    limit=None, sort_key=None, sort_dir=None):
+        """
+        Find all Pools
+
+        :param context: RPC Context.
+        :param criterion: Criteria by which to filter
+        :param marker: Resource ID used by paging. The next page will start
+                       at the next resource after the marker
+        :param limit: Integer limit of objects on the page
+        :param sort_key: Key used to sort the returned list
+        :param sort_dir: Directions to sort after using sort_key
+        """
         return self._find_pools(context, criterion, marker=marker,
                                 limit=limit, sort_key=sort_key,
                                 sort_dir=sort_dir)
 
     def find_pool(self, context, criterion):
+        """
+        Find a single Pool.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_pools(context, criterion, one=True)
 
     def update_pool(self, context, pool):
+        """
+        Update the specified pool
+
+        :param context: RPC Context.
+        :param pool: Pool to update.
+        """
         pool = self._update(context, tables.pools, pool,
                             exceptions.DuplicatePool, exceptions.PoolNotFound,
                             ['attributes', 'ns_records', 'nameservers',
@@ -1109,6 +1524,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return updated_pool
 
     def delete_pool(self, context, pool_id):
+        """
+        Delete the pool with the matching id
+
+        :param context: RPC Context.
+        :param pool_id: The ID of the pool to be deleted
+        """
         pool = self._find_pools(context, {'id': pool_id}, one=True)
 
         return self._delete(context, tables.pools, pool,
@@ -1123,30 +1544,72 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                           marker, limit, sort_key, sort_dir)
 
     def create_pool_attribute(self, context, pool_id, pool_attribute):
+        """
+        Create a PoolAttribute.
+
+        :param context: RPC Context.
+        :param pool_id: The ID of the pool to which the attribute belongs.
+        :param pool_attribute: PoolAttribute object with the values created.
+        """
         pool_attribute.pool_id = pool_id
 
         return self._create(tables.pool_attributes, pool_attribute,
                             exceptions.DuplicatePoolAttribute)
 
     def get_pool_attribute(self, context, pool_attribute_id):
+        """
+        Get a PoolAttribute via the ID
+
+        :param context: RPC Context.
+        :param pool_attribute_id: The ID of the PoolAttribute to get
+        """
         return self._find_pool_attributes(
             context, {'id': pool_attribute_id}, one=True)
 
     def find_pool_attributes(self, context, criterion=None, marker=None,
                              limit=None, sort_key=None, sort_dir=None):
+        """
+        Find all PoolAttributes
+
+        :param context: RPC Context
+        :param criterion: Criteria by which to filer
+        :param marker: Resource ID used by paging. The next page will start
+                       at the next resource after the marker
+        :param limit: Integer limit of objects on the page
+        :param sort_key: Key used to sort the returned list
+        :param sort_dir: Directions to sort after using sort_key
+        """
         return self._find_pool_attributes(context, criterion, marker=marker,
                                           limit=limit, sort_key=sort_key,
                                           sort_dir=sort_dir)
 
     def find_pool_attribute(self, context, criterion):
+        """
+        Find a single PoolAttribute
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_pool_attributes(context, criterion, one=True)
 
     def update_pool_attribute(self, context, pool_attribute):
+        """
+        Update the specified pool
+
+        :param context: RPC Context.
+        :param pool_attribute: PoolAttribute to update
+        """
         return self._update(context, tables.pool_attributes, pool_attribute,
                             exceptions.DuplicatePoolAttribute,
                             exceptions.PoolAttributeNotFound)
 
     def delete_pool_attribute(self, context, pool_attribute_id):
+        """
+        Delete the pool with the matching id
+
+        :param context: RPC Context.
+        :param pool_attribute_id: The ID of the PoolAttribute to be deleted
+        """
         pool_attribute = self._find_pool_attributes(
             context, {'id': pool_attribute_id}, one=True)
         deleted_pool_attribute = self._delete(
@@ -1733,28 +2196,70 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return zone_imports
 
     def create_zone_import(self, context, zone_import):
+        """
+        Create a Zone Import.
+
+        :param context: RPC Context.
+        :param zone_import: Zone Import object with the values to be created.
+        """
         return self._create(
             tables.zone_tasks, zone_import, exceptions.DuplicateZoneImport)
 
     def get_zone_import(self, context, zone_import_id):
+        """
+        Get a Zone Import via ID.
+
+        :param context: RPC Context.
+        :param zone_import_id: Zone Import ID to get.
+        """
         return self._find_zone_imports(context, {'id': zone_import_id},
                                        one=True)
 
     def find_zone_imports(self, context, criterion=None, marker=None,
                   limit=None, sort_key=None, sort_dir=None):
+        """
+        Find Zone Imports
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_zone_imports(context, criterion, marker=marker,
                                        limit=limit, sort_key=sort_key,
                                        sort_dir=sort_dir)
 
     def find_zone_import(self, context, criterion):
+        """
+        Find a single Zone Import.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_zone_imports(context, criterion, one=True)
 
     def update_zone_import(self, context, zone_import):
+        """
+        Update a Zone Import
+
+        :param context: RPC Context.
+        :param zone_import: Zone Import to update.
+        """
         return self._update(
             context, tables.zone_tasks, zone_import,
             exceptions.DuplicateZoneImport, exceptions.ZoneImportNotFound)
 
     def delete_zone_import(self, context, zone_import_id):
+        """
+        Delete a Zone Import via ID.
+
+        :param context: RPC Context.
+        :param zone_import_id: Delete a Zone Import via ID
+        """
         # Fetch the existing zone_import, we'll need to return it.
         zone_import = self._find_zone_imports(context, {'id': zone_import_id},
                                               one=True)
@@ -1778,28 +2283,70 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return zone_exports
 
     def create_zone_export(self, context, zone_export):
+        """
+        Create a Zone Export.
+
+        :param context: RPC Context.
+        :param zone_export: Zone Export object with the values to be created.
+        """
         return self._create(
             tables.zone_tasks, zone_export, exceptions.DuplicateZoneExport)
 
     def get_zone_export(self, context, zone_export_id):
+        """
+        Get a Zone Export via ID.
+
+        :param context: RPC Context.
+        :param zone_export_id: Zone Export ID to get.
+        """
         return self._find_zone_exports(context, {'id': zone_export_id},
                                        one=True)
 
     def find_zone_exports(self, context, criterion=None, marker=None,
                           limit=None, sort_key=None, sort_dir=None):
+        """
+        Find Zone Exports
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_zone_exports(context, criterion, marker=marker,
                                        limit=limit, sort_key=sort_key,
                                        sort_dir=sort_dir)
 
     def find_zone_export(self, context, criterion):
+        """
+        Find a single Zone Export.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_zone_exports(context, criterion, one=True)
 
     def update_zone_export(self, context, zone_export):
+        """
+        Update a Zone Export
+
+        :param context: RPC Context.
+        :param zone_export: Zone Export to update.
+        """
         return self._update(
             context, tables.zone_tasks, zone_export,
             exceptions.DuplicateZoneExport, exceptions.ZoneExportNotFound)
 
     def delete_zone_export(self, context, zone_export_id):
+        """
+        Delete a Zone Export via ID.
+
+        :param context: RPC Context.
+        :param zone_export_id: Delete a Zone Export via ID
+        """
         # Fetch the existing zone_export, we'll need to return it.
         zone_export = self._find_zone_exports(context, {'id': zone_export_id},
                                               one=True)
@@ -1831,20 +2378,50 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             criterion, one, marker, limit, sort_key, sort_dir)
 
     def find_service_status(self, context, criterion):
+        """
+        Find a single Service Status.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
         return self._find_service_statuses(context, criterion, one=True)
 
     def find_service_statuses(self, context, criterion=None, marker=None,
                               limit=None, sort_key=None, sort_dir=None):
+        """
+        Retrieve status for services
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
         return self._find_service_statuses(context, criterion, marker=marker,
                                            limit=limit, sort_key=sort_key,
                                            sort_dir=sort_dir)
 
     def create_service_status(self, context, service_status):
+        """
+        Create a Service status for a service.
+
+        :param context: RPC Context.
+        :param service_status: The status of a service.
+        """
         return self._create(
             tables.service_status, service_status,
             exceptions.DuplicateServiceStatus)
 
     def update_service_status(self, context, service_status):
+        """
+        Update the Service status for a service.
+
+        :param context: RPC Context.
+        :param service_status: Set the status for a service.
+        """
         return self._update(
             context, tables.service_status, service_status,
             exceptions.DuplicateServiceStatus,

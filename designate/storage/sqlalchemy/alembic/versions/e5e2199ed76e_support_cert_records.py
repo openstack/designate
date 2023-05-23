@@ -1,4 +1,4 @@
-# Copyright 2018 Canonical Ltd.
+# Copyright 2021 Cloudification GmbH
 # Copyright 2022 Red Hat
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,34 +13,34 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""support_caa_records
+"""support_cert_records
 
-Revision ID: 91eb1eb7c882
-Revises: b8999fd10721
-Create Date: 2022-08-01 17:32:21.386556
+Revision ID: e5e2199ed76e
+Revises: 91eb1eb7c882
+Create Date: 2022-08-01 17:34:45.569101
 
 """
 from alembic import op
 import sqlalchemy as sa
 
-from designate.storage.impl_sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.alembic import legacy_utils
 
 # revision identifiers, used by Alembic.
-revision = '91eb1eb7c882'
-down_revision = 'b8999fd10721'
+revision = 'e5e2199ed76e'
+down_revision = '91eb1eb7c882'
 branch_labels = None
 depends_on = None
 
-# Equivalent to legacy sqlalchemy-migrate revision 102_support_caa_records
+# Equivalent to legacy sqlalchemy-migrate revision 103_support_cert_records
 
 
 def upgrade() -> None:
     # Check if the equivalent legacy migration has already run
-    if not legacy_utils.is_migration_needed(102):
+    if not legacy_utils.is_migration_needed(103):
         return
 
     RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
-                    'PTR', 'SSHFP', 'SOA', 'NAPTR', 'CAA']
+                    'PTR', 'SSHFP', 'SOA', 'NAPTR', 'CAA', 'CERT']
 
     with op.batch_alter_table('recordsets') as batch_op:
         batch_op.alter_column('type', type_=sa.Enum(name='record_types',

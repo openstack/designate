@@ -31,11 +31,11 @@ LOG = logging.getLogger(__name__)
 class DatabaseCommands(base.Commands):
     def _get_alembic_config(self, db_url=None, stringio_buffer=sys.stdout):
         alembic_dir = os.path.join(os.path.dirname(__file__),
-                                   os.pardir, 'storage/impl_sqlalchemy')
+                                   os.pardir, 'storage/sqlalchemy')
         alembic_cfg = Config(os.path.join(alembic_dir, 'alembic.ini'),
                              stdout=stringio_buffer)
         alembic_cfg.set_main_option(
-            'script_location', 'designate.storage.impl_sqlalchemy:alembic')
+            'script_location', 'designate.storage.sqlalchemy:alembic')
         if db_url:
             alembic_cfg.set_main_option('sqlalchemy.url', db_url)
         else:

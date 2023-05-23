@@ -1,5 +1,5 @@
 Please use the "designate-manage database" command for database management.
 
 Developers adding new migrations can run 'alembic -m "<migration title>"' from
-the designate/storage/impl_sqlalchemy directory where the alembic.ini file is
+the designate/storage/sqlalchemy directory where the alembic.ini file is
 located.

@@ -18,7 +18,7 @@ from sqlalchemy.schema import MetaData
 from sqlalchemy.schema import Table
 
 from designate.cmd import status
-from designate.sqlalchemy import sql
+from designate.storage import sql
 from designate import tests
 
 
@@ -69,7 +69,7 @@ class TestDuplicateServiceStatus(tests.TestCase):
             self.assertEqual(upgradecheck.Code.SUCCESS,
                              checks._duplicate_service_status().code)
 
-    @mock.patch('designate.sqlalchemy.sql.get_read_session')
+    @mock.patch('designate.storage.sql.get_read_session')
     @mock.patch('designate.storage.sql.get_read_engine')
     def test_failure(self, mock_get_engine, mock_get_read):
         mock_sql_execute = mock.Mock()

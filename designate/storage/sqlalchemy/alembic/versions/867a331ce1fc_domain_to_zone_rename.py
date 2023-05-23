@@ -23,8 +23,8 @@ Create Date: 2022-07-29 18:41:19.427853
 from alembic import op
 import sqlalchemy as sa
 
-from designate.sqlalchemy.types import UUID
-from designate.storage.impl_sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.types import UUID
 
 # revision identifiers, used by Alembic.
 revision = '867a331ce1fc'

@@ -1,4 +1,4 @@
-# Copyright 2015 Hewlett-Packard Development Company, L.P.
+# Copyright 2016 Rackspace
 # Copyright 2022 Red Hat
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,33 +13,34 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""add_delayed_notify_column
+"""add_rrset_indexes_for_filtering_perf
 
-Revision ID: a69b45715cc1
-Revises: f9f969f9d85e
-Create Date: 2022-07-29 21:30:12.127816
+Revision ID: 7977deaa5167
+Revises: 15b34ff3ecb8
+Create Date: 2022-08-01 17:13:01.429689
 
 """
 from alembic import op
-import sqlalchemy as sa
 
-from designate.storage.impl_sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.alembic import legacy_utils
 
 # revision identifiers, used by Alembic.
-revision = 'a69b45715cc1'
-down_revision = 'f9f969f9d85e'
+revision = '7977deaa5167'
+down_revision = '15b34ff3ecb8'
 branch_labels = None
 depends_on = None
 
 # Equivalent to legacy sqlalchemy-migrate revision
-# 084_add_delayed_notify_column
+# 099_add_rrset_indexes_for_filtering_perf
 
 
 def upgrade() -> None:
     # Check if the equivalent legacy migration has already run
-    if not legacy_utils.is_migration_needed(84):
+    if not legacy_utils.is_migration_needed(99):
         return
 
-    op.add_column('zones',
-                  sa.Column('delayed_notify', sa.Boolean, default=False))
-    op.create_index('delayed_notify', 'zones', ['delayed_notify'])
+    op.create_index('rrset_updated_at', 'recordsets', ['updated_at'])
+    op.create_index('rrset_zoneid', 'recordsets', ['zone_id'])
+    op.create_index('rrset_type', 'recordsets', ['type'])
+    op.create_index('rrset_ttl', 'recordsets', ['ttl'])
+    op.create_index('rrset_tenant_id', 'recordsets', ['tenant_id'])

@@ -15,7 +15,7 @@ from unittest import mock
 
 import oslotest.base
 
-from designate.storage.impl_sqlalchemy.alembic import legacy_utils
+from designate.storage.sqlalchemy.alembic import legacy_utils
 
 
 class TestLegacyUtils(oslotest.base.BaseTestCase):
