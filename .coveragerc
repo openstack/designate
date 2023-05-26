@@ -1,7 +1,7 @@
 [run]
 branch = True
 source = designate
-omit = designate/tests/*
+omit = designate/tests/*,designate/hacking/*
 
 [report]
 ignore_errors = True
