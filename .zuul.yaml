@@ -181,26 +181,27 @@
     queue: designate
     check:
       jobs:
-        - designate-bind9
+#        - designate-bind9
         - designate-bind9-centos9stream-fips:
             voting: false
         - designate-bind9-centos-9-stream:
             voting: false
-        - designate-bind9-keystone-default-roles
-        - designate-pdns4
-        - designate-grenade-bind9
-        - designate-grenade-pdns4
-        - designate-ipv6-only-pdns4
-        - designate-ipv6-only-bind9
-    gate:
-      fail-fast: true
-      jobs:
-        - designate-bind9
-        - designate-bind9-keystone-default-roles
-        - designate-pdns4
-        - designate-grenade-pdns4
-        - designate-ipv6-only-pdns4
-        - designate-ipv6-only-bind9
+# Temporary disable to fix circular dependency
+#        - designate-bind9-keystone-default-roles
+#        - designate-pdns4
+#        - designate-grenade-bind9
+#        - designate-grenade-pdns4
+#        - designate-ipv6-only-pdns4
+#        - designate-ipv6-only-bind9
+#    gate:
+#      fail-fast: true
+#      jobs:
+#        - designate-bind9
+#        - designate-bind9-keystone-default-roles
+#        - designate-pdns4
+#        - designate-grenade-pdns4
+#        - designate-ipv6-only-pdns4
+#        - designate-ipv6-only-bind9
 
 - project:
     templates:
