@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Fixed an issue where zones shared with other projects may not be visible
+    when a zone list or zone show request is made by the other projects.

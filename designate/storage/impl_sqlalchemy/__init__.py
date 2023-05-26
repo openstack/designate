@@ -214,7 +214,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     ##
     def _find_zones(self, context, criterion, one=False, marker=None,
                     limit=None, sort_key=None, sort_dir=None,
-                    apply_tenant_criteria=True):
+                    apply_tenant_criteria=True, include_shared=False):
         # Check to see if the criterion can use the reverse_name column
         criterion = self._rname_check(criterion)
 
@@ -229,7 +229,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             context, tables.zones, objects.Zone, objects.ZoneList,
             exceptions.ZoneNotFound, criterion, one, marker, limit,
             sort_key, sort_dir, query=query,
-            apply_tenant_criteria=apply_tenant_criteria)
+            apply_tenant_criteria=apply_tenant_criteria,
+            include_shared=include_shared)
 
         def _load_relations(zone):
             if zone.type == 'SECONDARY':
@@ -285,18 +286,26 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def get_zone(self, context, zone_id, apply_tenant_criteria=True):
         zone = self._find_zones(context, {'id': zone_id}, one=True,
-                                apply_tenant_criteria=apply_tenant_criteria)
+                                apply_tenant_criteria=apply_tenant_criteria,
+                                include_shared=True)
         return zone
 
     def find_zones(self, context, criterion=None, marker=None, limit=None,
                    sort_key=None, sort_dir=None):
         zones = self._find_zones(context, criterion, marker=marker,
                                  limit=limit, sort_key=sort_key,
-                                 sort_dir=sort_dir)
+                                 sort_dir=sort_dir, include_shared=True)
         return zones
 
     def find_zone(self, context, criterion):
-        zone = self._find_zones(context, criterion, one=True)
+        """
+        Find a single Zone.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+        zone = self._find_zones(context, criterion, one=True,
+                                include_shared=True)
         return zone
 
     def update_zone(self, context, zone):

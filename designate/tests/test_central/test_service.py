@@ -3773,6 +3773,36 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(context.project_id, shared_zone.project_id)
         self.assertEqual(zone.id, shared_zone.zone_id)
 
+    def test_share_zone_visibility(self):
+        context1 = self.get_context(project_id='1', roles=['member', 'reader'])
+        context2 = self.get_context(project_id='2', roles=['member', 'reader'])
+        context3 = self.get_context(project_id='3', roles=['member', 'reader'])
+
+        # Create zone for project_id '1'.
+        zone = self.create_zone(context=context1)
+
+        self.assertEqual(1, len(self.central_service.find_zones(context1)))
+        self.assertEqual(0, len(self.central_service.find_zones(context2)))
+        self.assertEqual(0, len(self.central_service.find_zones(context3)))
+
+        # Share with project_id '2'.
+        share_zone = self.central_service.share_zone(
+            context1, zone['id'], objects.SharedZone.from_dict({
+                'target_project_id': context2.project_id
+            })
+        )
+
+        self.assertEqual(1, len(self.central_service.find_zones(context1)))
+        self.assertEqual(1, len(self.central_service.find_zones(context2)))
+        self.assertEqual(0, len(self.central_service.find_zones(context3)))
+
+        # Unshare zone.
+        self.central_service.unshare_zone(context1, zone['id'], share_zone.id)
+
+        self.assertEqual(1, len(self.central_service.find_zones(context1)))
+        self.assertEqual(0, len(self.central_service.find_zones(context2)))
+        self.assertEqual(0, len(self.central_service.find_zones(context3)))
+
     def test_share_zone_new_policy_defaults(self):
         # Configure designate for enforcing the new policy defaults
         self.useFixture(cfg_fixture.Config(cfg.CONF))

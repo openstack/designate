@@ -27,6 +27,7 @@ from designate import exceptions
 from designate import objects
 from designate.sqlalchemy import session
 from designate.sqlalchemy import utils
+from designate.storage.impl_sqlalchemy import tables
 
 
 LOG = logging.getLogger(__name__)
@@ -137,19 +138,33 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         return query
 
     def _apply_tenant_criteria(self, context, table, query,
-                               include_null_tenant=True):
+                               include_null_tenant=True,
+                               include_shared=False):
+        shared_zone_project_id = tables.shared_zones.c.target_project_id
         if hasattr(table.c, 'tenant_id'):
             if not context.all_tenants:
                 # NOTE: The query doesn't work with table.c.tenant_id is None,
                 # so I had to force flake8 to skip the check
                 if include_null_tenant:
-                    query = query.where(or_(
-                            table.c.tenant_id == context.project_id,
-                            table.c.tenant_id == None))  # NOQA
+                    if include_shared:
+                        query = query.where(or_(
+                                table.c.tenant_id == context.project_id,
+                                shared_zone_project_id == context.project_id,
+                                table.c.tenant_id == None))  # NOQA
+                    else:
+                        query = query.where(or_(
+                                table.c.tenant_id == context.project_id,
+                                table.c.tenant_id == None))  # NOQA
                 else:
-                    query = query.where(
-                        table.c.tenant_id == context.project_id
-                    )
+                    if include_shared:
+                        query = query.where(or_(
+                            table.c.tenant_id == context.project_id,
+                            shared_zone_project_id == context.project_id
+                        ))
+                    else:
+                        query = query.where(
+                            table.c.tenant_id == context.project_id
+                        )
 
         return query
 
@@ -209,7 +224,8 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
     def _find(self, context, table, cls, list_cls, exc_notfound, criterion,
               one=False, marker=None, limit=None, sort_key=None,
-              sort_dir=None, query=None, apply_tenant_criteria=True):
+              sort_dir=None, query=None, apply_tenant_criteria=True,
+              include_shared=False):
 
         sort_key = sort_key or 'created_at'
         sort_dir = sort_dir or 'asc'
@@ -219,8 +235,8 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
             query = select([table])
         query = self._apply_criterion(table, query, criterion)
         if apply_tenant_criteria:
-            query = self._apply_tenant_criteria(context, table, query)
-
+            query = self._apply_tenant_criteria(context, table, query,
+                                                include_shared=include_shared)
         query = self._apply_deleted_criteria(context, table, query)
 
         # Execute the Query
