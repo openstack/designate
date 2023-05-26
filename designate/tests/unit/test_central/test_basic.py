@@ -1702,6 +1702,7 @@ class CentralZoneExportTests(CentralBasic):
             name='example.com.',
             id=CentralZoneTestCase.zone__id,
             shared=False,
+            tenant_id='t',
         )
 
         self.service.storage.create_zone_export = mock.Mock(

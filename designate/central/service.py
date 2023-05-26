@@ -2892,9 +2892,9 @@ class Service(service.RPCService):
         zone = self.storage.get_zone(context, zone_id)
 
         if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
+            target = {constants.RBAC_PROJECT_ID: zone.tenant_id}
         else:
-            target = {'tenant_id': context.project_id}
+            target = {'tenant_id': zone.tenant_id}
 
         policy.check('create_zone_export', context, target)
 
