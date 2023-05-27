@@ -899,7 +899,6 @@ class Service(service.RPCService):
 
     @rpc.expected_exceptions()
     def get_zone_ns_records(self, context, zone_id=None, criterion=None):
-
         if zone_id is None:
             policy.check('get_zone_ns_records', context)
             pool_id = cfg.CONF['service:central'].default_pool_id
@@ -1386,14 +1385,8 @@ class Service(service.RPCService):
         return recordset
 
     def _validate_recordset(self, context, zone, recordset):
-
-        # See if we're validating an existing or new recordset
-        recordset_id = None
-        if hasattr(recordset, 'id'):
-            recordset_id = recordset.id
-
         # Ensure TTL is above the minimum
-        if not recordset_id:
+        if not recordset.id:
             ttl = getattr(recordset, 'ttl', None)
         else:
             changes = recordset.obj_get_changes()
@@ -1405,7 +1398,7 @@ class Service(service.RPCService):
         self._is_valid_recordset_name(context, zone, recordset.name)
 
         self._is_valid_recordset_placement(
-            context, zone, recordset.name, recordset.type, recordset_id)
+            context, zone, recordset.name, recordset.type, recordset.id)
 
         self._is_valid_recordset_placement_subzone(
             context, zone, recordset.name)
@@ -1989,6 +1982,7 @@ class Service(service.RPCService):
             context, fip, recordset.records[0], zone=zone, recordset=recordset
         )
 
+    @rpc.expected_exceptions()
     def _create_ptr_zone(self, elevated_context, zone_name):
         zone_values = {
             'type': 'PRIMARY',
@@ -2039,6 +2033,7 @@ class Service(service.RPCService):
             record['id']
         )
 
+    @rpc.expected_exceptions()
     def _create_floating_ip(self, context, fip, record,
                             zone=None, recordset=None):
         """
