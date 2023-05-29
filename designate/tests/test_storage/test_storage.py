@@ -20,7 +20,6 @@ from unittest import mock
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
-import testtools
 
 from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate import exceptions
@@ -159,29 +158,43 @@ class SqlalchemyStorageTest(TestCase):
                 item_number += 1
 
     def test_paging_marker_not_found(self):
-        with testtools.ExpectedException(exceptions.MarkerNotFound):
-            self.storage.find_pool_attributes(
-                self.admin_context, marker=generate_uuid(), limit=5)
+        self.assertRaisesRegex(
+            exceptions.MarkerNotFound,
+            'Marker None could not be found',
+            self.storage.find_pool_attributes, self.admin_context,
+            marker=generate_uuid(), limit=5
+        )
 
     def test_paging_marker_invalid(self):
-        with testtools.ExpectedException(exceptions.InvalidMarker):
-            self.storage.find_pool_attributes(
-                self.admin_context, marker='4')
+        self.assertRaises(
+            exceptions.InvalidMarker,
+            self.storage.find_pool_attributes, self.admin_context,
+            marker='4'
+        )
 
     def test_paging_limit_invalid(self):
-        with testtools.ExpectedException(exceptions.ValueError):
-            self.storage.find_pool_attributes(
-                self.admin_context, limit='z')
+        self.assertRaisesRegex(
+            exceptions.ValueError,
+            r'invalid literal for int\(\) with base 10: \'z\'',
+            self.storage.find_pool_attributes, self.admin_context,
+            limit='z'
+        )
 
     def test_paging_sort_dir_invalid(self):
-        with testtools.ExpectedException(exceptions.ValueError):
-            self.storage.find_pool_attributes(
-                self.admin_context, sort_dir='invalid_sort_dir')
+        self.assertRaisesRegex(
+            exceptions.ValueError,
+            r'Unknown sort direction, must be \'desc\' or \'asc\'',
+            self.storage.find_pool_attributes, self.admin_context,
+            sort_dir='invalid_sort_dir'
+        )
 
     def test_paging_sort_key_invalid(self):
-        with testtools.ExpectedException(exceptions.InvalidSortKey):
-            self.storage.find_pool_attributes(
-                self.admin_context, sort_key='invalid_sort_key')
+        self.assertRaisesRegex(
+            exceptions.InvalidSortKey,
+            'Sort key supplied is invalid: None',
+            self.storage.find_pool_attributes, self.admin_context,
+            sort_key='invalid_sort_key'
+        )
 
     # Quota Tests
     def test_create_quota(self):
@@ -202,8 +215,10 @@ class SqlalchemyStorageTest(TestCase):
         # Create the initial quota
         self.create_quota()
 
-        with testtools.ExpectedException(exceptions.DuplicateQuota):
-            self.create_quota()
+        self.assertRaisesRegex(
+            exceptions.DuplicateQuota, 'Duplicate Quota',
+            self.create_quota
+        )
 
     def test_find_quotas(self):
         actual = self.storage.find_quotas(self.admin_context)
@@ -269,9 +284,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['hard_limit'], actual['hard_limit'])
 
     def test_get_quota_missing(self):
-        with testtools.ExpectedException(exceptions.QuotaNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.get_quota(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.QuotaNotFound, 'Could not find Quota',
+            self.storage.get_quota, self.admin_context, uuid
+        )
 
     def test_find_quota_criterion(self):
         quota_one = self.create_quota()
@@ -303,11 +321,13 @@ class SqlalchemyStorageTest(TestCase):
         expected = self.create_quota()
 
         criterion = dict(
-            tenant_id=expected['tenant_id'] + "NOT FOUND"
+            tenant_id=expected['tenant_id'] + 'NOT FOUND'
         )
 
-        with testtools.ExpectedException(exceptions.QuotaNotFound):
-            self.storage.find_quota(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.QuotaNotFound, 'Could not find Quota',
+            self.storage.find_quota, self.admin_context, criterion
+        )
 
     def test_update_quota(self):
         # Create a quota
@@ -333,27 +353,38 @@ class SqlalchemyStorageTest(TestCase):
         # Update the Q2 object to be a duplicate of Q1
         quota_two.resource = quota_one.resource
 
-        with testtools.ExpectedException(exceptions.DuplicateQuota):
-            self.storage.update_quota(self.admin_context, quota_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicateQuota, 'Duplicate Quota',
+            self.storage.update_quota, self.admin_context, quota_two
+        )
 
     def test_update_quota_missing(self):
-        quota = objects.Quota(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
+        quota = objects.Quota(
+            id='caf771fc-6b05-4891-bee1-c2a48621f57b'
+        )
 
-        with testtools.ExpectedException(exceptions.QuotaNotFound):
-            self.storage.update_quota(self.admin_context, quota)
+        self.assertRaisesRegex(
+            exceptions.QuotaNotFound, 'Could not find Quota',
+            self.storage.update_quota, self.admin_context, quota
+        )
 
     def test_delete_quota(self):
         quota = self.create_quota()
 
         self.storage.delete_quota(self.admin_context, quota['id'])
 
-        with testtools.ExpectedException(exceptions.QuotaNotFound):
-            self.storage.get_quota(self.admin_context, quota['id'])
+        self.assertRaisesRegex(
+            exceptions.QuotaNotFound, 'Could not find Quota',
+            self.storage.get_quota, self.admin_context, quota['id']
+        )
 
     def test_delete_quota_missing(self):
-        with testtools.ExpectedException(exceptions.QuotaNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.delete_quota(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.QuotaNotFound, 'Could not find Quota',
+            self.storage.delete_quota, self.admin_context, uuid
+        )
 
     # TSIG Key Tests
     def test_create_tsigkey(self):
@@ -458,9 +489,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['scope'], actual['scope'])
 
     def test_get_tsigkey_missing(self):
-        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.get_tsigkey(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.TsigKeyNotFound, 'Could not find TsigKey',
+            self.storage.get_tsigkey, self.admin_context, uuid
+        )
 
     def test_update_tsigkey(self):
         # Create a tsigkey
@@ -486,27 +520,38 @@ class SqlalchemyStorageTest(TestCase):
         # Update the T2 object to be a duplicate of T1
         tsigkey_two.name = tsigkey_one.name
 
-        with testtools.ExpectedException(exceptions.DuplicateTsigKey):
-            self.storage.update_tsigkey(self.admin_context, tsigkey_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicateTsigKey, 'Duplicate TsigKey',
+            self.storage.update_tsigkey, self.admin_context, tsigkey_two
+        )
 
     def test_update_tsigkey_missing(self):
-        tsigkey = objects.TsigKey(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
+        tsigkey = objects.TsigKey(
+            id='caf771fc-6b05-4891-bee1-c2a48621f57b'
+        )
 
-        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
-            self.storage.update_tsigkey(self.admin_context, tsigkey)
+        self.assertRaisesRegex(
+            exceptions.TsigKeyNotFound, 'Could not find TsigKey',
+            self.storage.update_tsigkey, self.admin_context, tsigkey
+        )
 
     def test_delete_tsigkey(self):
         tsigkey = self.create_tsigkey()
 
         self.storage.delete_tsigkey(self.admin_context, tsigkey['id'])
 
-        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
-            self.storage.get_tsigkey(self.admin_context, tsigkey['id'])
+        self.assertRaisesRegex(
+            exceptions.TsigKeyNotFound, 'Could not find TsigKey',
+            self.storage.get_tsigkey, self.admin_context, tsigkey['id']
+        )
 
     def test_delete_tsigkey_missing(self):
-        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.delete_tsigkey(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.TsigKeyNotFound, 'Could not find TsigKey',
+            self.storage.delete_tsigkey, self.admin_context, uuid
+        )
 
     # Tenant Tests
     def test_find_tenants(self):
@@ -585,13 +630,24 @@ class SqlalchemyStorageTest(TestCase):
         tenants = self.storage.count_tenants(context)
         self.assertEqual(2, tenants)
 
-    def test_count_tenants_none_result(self):
-        rp = mock.Mock()
-        rp.fetchone.return_value = None
-        with mock.patch('designate.storage.sql.get_write_session',
-                        return_value=rp):
-            tenants = self.storage.count_tenants(self.admin_context)
-            self.assertEqual(0, tenants)
+    def test_count_tenants_no_results(self):
+        tenants = self.storage.count_tenants(self.admin_context)
+        self.assertEqual(0, tenants)
+
+    @mock.patch('designate.storage.sql.get_read_session')
+    def test_count_tenants_none_result(self, mock_read_session):
+        mock_sql_execute = mock.Mock()
+        mock_sql_fetchone = mock.Mock()
+
+        mock_read_session().__enter__.return_value = mock_sql_execute
+        mock_sql_execute.execute.return_value = mock_sql_fetchone
+        mock_sql_fetchone.fetchone.return_value = None
+
+        tenants = self.storage.count_tenants(self.admin_context)
+
+        mock_read_session.assert_called()
+
+        self.assertEqual(0, tenants)
 
     # Zone Tests
     def test_create_zone(self):
@@ -718,9 +774,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertIn('status', actual)
 
     def test_get_zone_missing(self):
-        with testtools.ExpectedException(exceptions.ZoneNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.get_zone(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.ZoneNotFound, 'Could not find Zone',
+            self.storage.get_zone, self.admin_context, uuid
+        )
 
     def test_get_deleted_zone(self):
         context = self.get_admin_context()
@@ -760,11 +819,13 @@ class SqlalchemyStorageTest(TestCase):
         expected = self.create_zone()
 
         criterion = dict(
-            name=expected['name'] + "NOT FOUND"
+            name=expected['name'] + 'NOT FOUND'
         )
 
-        with testtools.ExpectedException(exceptions.ZoneNotFound):
-            self.storage.find_zone(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.ZoneNotFound, 'Could not find Zone',
+            self.storage.find_zone, self.admin_context, criterion
+        )
 
     def test_find_zone_criterion_lessthan(self):
         zone = self.create_zone()
@@ -775,8 +836,10 @@ class SqlalchemyStorageTest(TestCase):
             serial='<%s' % zone['serial'],
         )
 
-        with testtools.ExpectedException(exceptions.ZoneNotFound):
-            self.storage.find_zone(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.ZoneNotFound, 'Could not find Zone',
+            self.storage.find_zone, self.admin_context, criterion
+        )
 
         # Test Finding 1 Result (serial is < serial + 1)
         criterion = dict(
@@ -797,8 +860,10 @@ class SqlalchemyStorageTest(TestCase):
             serial='>%s' % zone['serial'],
         )
 
-        with testtools.ExpectedException(exceptions.ZoneNotFound):
-            self.storage.find_zone(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.ZoneNotFound, 'Could not find Zone',
+            self.storage.find_zone, self.admin_context, criterion
+        )
 
         # Test Finding 1 Result (serial is > serial - 1)
         criterion = dict(
@@ -816,6 +881,13 @@ class SqlalchemyStorageTest(TestCase):
 
         # Update the Object
         zone.name = 'example.net.'
+        zone.recordsets = objects.RecordSetList(objects=[])
+        zone.attributes = objects.ZoneAttributeList(
+            objects=[objects.ZoneAttribute(key='foo', value='bar')]
+        )
+        zone.masters = objects.ZoneMasterList(
+            objects=[objects.ZoneMaster(host='127.0.0.1', port=80)]
+        )
 
         # Perform the update
         zone = self.storage.update_zone(self.admin_context, zone)
@@ -826,6 +898,46 @@ class SqlalchemyStorageTest(TestCase):
         # Ensure the version column was incremented
         self.assertEqual(2, zone.version)
 
+    def test_update_zone_secondary(self):
+        # Create a zone
+        fixture = self.get_zone_fixture('SECONDARY', 1)
+        fixture['email'] = 'root@example.com'
+        zone = self.create_zone(**fixture)
+
+        # Update the Object
+        zone.name = 'example.net.'
+        zone.recordsets = objects.RecordSetList()
+
+        # Perform the update
+        zone = self.storage.update_zone(self.admin_context, zone)
+
+        # Ensure the new valie took
+        self.assertEqual('example.net.', zone.name)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, zone.version)
+
+    def test_update_zone_new_recordset(self):
+        zone = self.create_zone(name='example.org.')
+
+        recordset = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1'),
+            ])
+        )
+
+        zone.name = 'example.net.'
+        zone.recordsets = objects.RecordSetList(objects=[recordset])
+
+        # Perform the update
+        self.storage.update_zone(self.admin_context, zone)
+
+        recordsets = self.storage.find_recordsets(
+            self.admin_context, {'zone_id': zone['id']}
+        )
+        self.assertEqual(3, len(recordsets))
+
     def test_update_zone_duplicate(self):
         # Create two zones
         zone_one = self.create_zone(fixture=0)
@@ -834,26 +946,38 @@ class SqlalchemyStorageTest(TestCase):
         # Update the D2 object to be a duplicate of D1
         zone_two.name = zone_one.name
 
-        with testtools.ExpectedException(exceptions.DuplicateZone):
-            self.storage.update_zone(self.admin_context, zone_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicateZone, 'Duplicate Zone',
+            self.storage.update_zone, self.admin_context, zone_two
+        )
 
     def test_update_zone_missing(self):
-        zone = objects.Zone(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
-        with testtools.ExpectedException(exceptions.ZoneNotFound):
-            self.storage.update_zone(self.admin_context, zone)
+        zone = objects.Zone(
+            id='caf771fc-6b05-4891-bee1-c2a48621f57b'
+        )
+
+        self.assertRaisesRegex(
+            exceptions.ZoneNotFound, 'Could not find Zone',
+            self.storage.update_zone, self.admin_context, zone
+        )
 
     def test_delete_zone(self):
         zone = self.create_zone()
 
         self.storage.delete_zone(self.admin_context, zone['id'])
 
-        with testtools.ExpectedException(exceptions.ZoneNotFound):
-            self.storage.get_zone(self.admin_context, zone['id'])
+        self.assertRaisesRegex(
+            exceptions.ZoneNotFound, 'Could not find Zone',
+            self.storage.get_zone, self.admin_context, zone['id']
+        )
 
     def test_delete_zone_missing(self):
-        with testtools.ExpectedException(exceptions.ZoneNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.delete_zone(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.ZoneNotFound, 'Could not find Zone',
+            self.storage.delete_zone, self.admin_context, uuid
+        )
 
     def test_count_zones(self):
         # in the beginning, there should be nothing
@@ -869,14 +993,20 @@ class SqlalchemyStorageTest(TestCase):
         # well, did we get 1?
         self.assertEqual(1, zones)
 
-    def test_count_zones_none_result(self):
-        rp = mock.Mock()
-        rp.fetchone.return_value = None
+    @mock.patch('designate.storage.sql.get_read_session')
+    def test_count_zones_none_result(self, mock_read_session):
+        mock_sql_execute = mock.Mock()
+        mock_sql_fetchone = mock.Mock()
 
-        with mock.patch('designate.storage.sql.get_write_session',
-                        return_value=rp):
-            zones = self.storage.count_zones(self.admin_context)
-            self.assertEqual(0, zones)
+        mock_read_session().__enter__.return_value = mock_sql_execute
+        mock_sql_execute.execute.return_value = mock_sql_fetchone
+        mock_sql_fetchone.fetchone.return_value = None
+
+        zones = self.storage.count_zones(self.admin_context)
+
+        mock_read_session.assert_called()
+
+        self.assertEqual(0, zones)
 
     def test_create_recordset(self):
         zone = self.create_zone()
@@ -973,10 +1103,10 @@ class SqlalchemyStorageTest(TestCase):
         # Add in the SOA and NS recordsets that are automatically created
         soa = self.storage.find_recordset(self.admin_context,
                                           criterion={'zone_id': zone['id'],
-                                                     'type': "SOA"})
+                                                     'type': 'SOA'})
         ns = self.storage.find_recordset(self.admin_context,
                                          criterion={'zone_id': zone['id'],
-                                                    'type': "NS"})
+                                                    'type': 'NS'})
         created.insert(0, ns)
         created.insert(0, soa)
 
@@ -1018,7 +1148,7 @@ class SqlalchemyStorageTest(TestCase):
 
         criterion = dict(
             zone_id=zone['id'],
-            name="%%%(name)s" % {"name": zone['name']},
+            name='%%%(name)s' % {'name': zone['name']},
         )
 
         results = self.storage.find_recordsets(self.admin_context, criterion)
@@ -1030,9 +1160,9 @@ class SqlalchemyStorageTest(TestCase):
         zone = self.create_zone()
 
         records = [
-            objects.Record.from_dict({"data": "10.0.0.1"}),
-            objects.Record.from_dict({"data": "10.0.0.2"}),
-            objects.Record.from_dict({"data": "10.0.0.3"})
+            objects.Record.from_dict({'data': '192.0.2.1'}),
+            objects.Record.from_dict({'data': '192.0.2.2'}),
+            objects.Record.from_dict({'data': '192.0.2.3'})
         ]
 
         recordset = self.create_recordset(zone, records=records)
@@ -1080,11 +1210,13 @@ class SqlalchemyStorageTest(TestCase):
         expected = self.create_recordset(zone)
 
         criterion = dict(
-            name=expected['name'] + "NOT FOUND"
+            name=expected['name'] + 'NOT FOUND'
         )
 
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.storage.find_recordset(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.RecordSetNotFound, 'Could not find RecordSet',
+            self.storage.find_recordset, self.admin_context, criterion
+        )
 
     def test_find_recordset_criterion_with_records(self):
         zone = self.create_zone()
@@ -1120,7 +1252,7 @@ class SqlalchemyStorageTest(TestCase):
         recordset.ttl = 1800
 
         # Change records as well
-        recordset.records.append(objects.Record(data="10.0.0.1"))
+        recordset.records.append(objects.Record(data='192.0.2.2'))
 
         # Perform the update
         recordset = self.storage.update_recordset(self.admin_context,
@@ -1142,15 +1274,20 @@ class SqlalchemyStorageTest(TestCase):
         # Update the R2 object to be a duplicate of R1
         recordset_two.name = recordset_one.name
 
-        with testtools.ExpectedException(exceptions.DuplicateRecordSet):
-            self.storage.update_recordset(self.admin_context, recordset_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicateRecordSet, 'Duplicate RecordSet',
+            self.storage.update_recordset, self.admin_context, recordset_two
+        )
 
     def test_update_recordset_missing(self):
         recordset = objects.RecordSet(
-            id='caf771fc-6b05-4891-bee1-c2a48621f57b')
+            id='caf771fc-6b05-4891-bee1-c2a48621f57b'
+        )
 
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.storage.update_recordset(self.admin_context, recordset)
+        self.assertRaisesRegex(
+            exceptions.RecordSetNotFound, 'Could not find RecordSet',
+            self.storage.update_recordset, self.admin_context, recordset
+        )
 
     def test_update_recordset_with_record_create(self):
         zone = self.create_zone()
@@ -1252,14 +1389,19 @@ class SqlalchemyStorageTest(TestCase):
 
         self.storage.delete_recordset(self.admin_context, recordset['id'])
 
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.storage.find_recordset(self.admin_context,
-                                        criterion={'id': recordset['id']})
+        self.assertRaisesRegex(
+            exceptions.RecordSetNotFound, 'Could not find RecordSet',
+            self.storage.find_recordset, self.admin_context,
+            criterion={'id': recordset['id']}
+        )
 
     def test_delete_recordset_missing(self):
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.delete_recordset(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.RecordSetNotFound, 'Could not find RecordSet',
+            self.storage.delete_recordset, self.admin_context, uuid
+        )
 
     def test_count_recordsets(self):
         # in the beginning, there should be nothing
@@ -1279,13 +1421,20 @@ class SqlalchemyStorageTest(TestCase):
         recordsets = self.storage.count_recordsets(self.admin_context)
         self.assertEqual(0, recordsets)
 
-    def test_count_recordsets_none_result(self):
-        rp = mock.Mock()
-        rp.fetchone.return_value = None
-        with mock.patch('designate.storage.sql.get_write_session',
-                        return_value=rp):
-            recordsets = self.storage.count_recordsets(self.admin_context)
-            self.assertEqual(0, recordsets)
+    @mock.patch('designate.storage.sql.get_read_session')
+    def test_count_recordsets_none_result(self, mock_read_session):
+        mock_sql_execute = mock.Mock()
+        mock_sql_fetchone = mock.Mock()
+
+        mock_read_session().__enter__.return_value = mock_sql_execute
+        mock_sql_execute.execute.return_value = mock_sql_fetchone
+        mock_sql_fetchone.fetchone.return_value = None
+
+        recordsets = self.storage.count_recordsets(self.admin_context)
+
+        mock_read_session.assert_called()
+
+        self.assertEqual(0, recordsets)
 
     def test_find_records(self):
         zone = self.create_zone()
@@ -1331,10 +1480,10 @@ class SqlalchemyStorageTest(TestCase):
         # Add in the SOA and NS records that are automatically created
         soa = self.storage.find_recordset(self.admin_context,
                                           criterion={'zone_id': zone['id'],
-                                                     'type': "SOA"})
+                                                     'type': 'SOA'})
         ns = self.storage.find_recordset(self.admin_context,
                                          criterion={'zone_id': zone['id'],
-                                                    'type': "NS"})
+                                                    'type': 'NS'})
         for r in ns['records']:
             records.insert(0, r)
         records.insert(0, soa['records'][0])
@@ -1380,7 +1529,7 @@ class SqlalchemyStorageTest(TestCase):
         criterion = dict(
             zone_id=zone['id'],
             recordset_id=recordset['id'],
-            data="%.0.0.1",
+            data='%.0.0.1',
         )
 
         results = self.storage.find_records(self.admin_context, criterion)
@@ -1398,9 +1547,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertIn('status', actual)
 
     def test_get_record_missing(self):
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.get_record(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.RecordNotFound, 'Could not find Record',
+            self.storage.get_record, self.admin_context, uuid
+        )
 
     def test_find_record_criterion(self):
         zone = self.create_zone()
@@ -1425,11 +1577,13 @@ class SqlalchemyStorageTest(TestCase):
 
         criterion = dict(
             zone_id=zone['id'],
-            data=expected['data'] + "NOT FOUND",
+            data=expected['data'] + 'NOT FOUND',
         )
 
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.storage.find_record(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.RecordNotFound, 'Could not find Record',
+            self.storage.find_record, self.admin_context, criterion
+        )
 
     def test_update_record(self):
         zone = self.create_zone()
@@ -1468,14 +1622,20 @@ class SqlalchemyStorageTest(TestCase):
         # Update the R2 object to be a duplicate of R1
         record_two.data = record_one.data
 
-        with testtools.ExpectedException(exceptions.DuplicateRecord):
-            self.storage.update_record(self.admin_context, record_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicateRecord, 'Duplicate Record',
+            self.storage.update_record, self.admin_context, record_two
+        )
 
     def test_update_record_missing(self):
-        record = objects.Record(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
+        record = objects.Record(
+            id='caf771fc-6b05-4891-bee1-c2a48621f57b'
+        )
 
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.storage.update_record(self.admin_context, record)
+        self.assertRaisesRegex(
+            exceptions.RecordNotFound, 'Could not find Record',
+            self.storage.update_record, self.admin_context, record
+        )
 
     def test_delete_record(self):
         zone = self.create_zone()
@@ -1484,13 +1644,18 @@ class SqlalchemyStorageTest(TestCase):
 
         self.storage.delete_record(self.admin_context, record['id'])
 
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.storage.get_record(self.admin_context, record['id'])
+        self.assertRaisesRegex(
+            exceptions.RecordNotFound, 'Could not find Record',
+            self.storage.get_record, self.admin_context, record['id']
+        )
 
     def test_delete_record_missing(self):
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.delete_record(self.admin_context, uuid)
+        uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+
+        self.assertRaisesRegex(
+            exceptions.RecordNotFound, 'Could not find Record',
+            self.storage.delete_record, self.admin_context, uuid
+        )
 
     def test_count_records(self):
         # in the beginning, there should be nothing
@@ -1510,13 +1675,20 @@ class SqlalchemyStorageTest(TestCase):
         records = self.storage.count_records(self.admin_context)
         self.assertEqual(0, records)
 
-    def test_count_records_none_result(self):
-        rp = mock.Mock()
-        rp.fetchone.return_value = None
-        with mock.patch('designate.storage.sql.get_write_session',
-                        return_value=rp):
-            records = self.storage.count_records(self.admin_context)
-            self.assertEqual(0, records)
+    @mock.patch('designate.storage.sql.get_read_session')
+    def test_count_records_none_result(self, mock_read_session):
+        mock_sql_execute = mock.Mock()
+        mock_sql_fetchone = mock.Mock()
+
+        mock_read_session().__enter__.return_value = mock_sql_execute
+        mock_sql_execute.execute.return_value = mock_sql_fetchone
+        mock_sql_fetchone.fetchone.return_value = None
+
+        records = self.storage.count_records(self.admin_context)
+
+        mock_read_session.assert_called()
+
+        self.assertEqual(0, records)
 
     # TLD Tests
     def test_create_tld(self):
@@ -1595,9 +1767,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['name'], actual['name'])
 
     def test_get_tld_missing(self):
-        with testtools.ExpectedException(exceptions.TldNotFound):
-            uuid = '4c8e7f82-3519-4bf7-8940-a66a4480f223'
-            self.storage.get_tld(self.admin_context, uuid)
+        uuid = '4c8e7f82-3519-4bf7-8940-a66a4480f223'
+
+        self.assertRaisesRegex(
+            exceptions.TldNotFound, 'Could not find Tld',
+            self.storage.get_tld, self.admin_context, uuid
+        )
 
     def test_find_tld_criterion(self):
         # Create two tlds
@@ -1622,10 +1797,12 @@ class SqlalchemyStorageTest(TestCase):
     def test_find_tld_criterion_missing(self):
         expected = self.create_tld()
 
-        criterion = dict(name=expected['name'] + "NOT FOUND")
+        criterion = dict(name=expected['name'] + 'NOT FOUND')
 
-        with testtools.ExpectedException(exceptions.TldNotFound):
-            self.storage.find_tld(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.TldNotFound, 'Could not find Tld',
+            self.storage.find_tld, self.admin_context, criterion
+        )
 
     def test_update_tld(self):
         # Create a tld
@@ -1651,13 +1828,20 @@ class SqlalchemyStorageTest(TestCase):
         # Update tld_two to be a duplicate of tld_ond
         tld_two.name = tld_one.name
 
-        with testtools.ExpectedException(exceptions.DuplicateTld):
-            self.storage.update_tld(self.admin_context, tld_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicateTld, 'Duplicate Tld',
+            self.storage.update_tld, self.admin_context, tld_two
+        )
 
     def test_update_tld_missing(self):
-        tld = objects.Tld(id='486f9cbe-b8b6-4d8c-8275-1a6e47b13e00')
-        with testtools.ExpectedException(exceptions.TldNotFound):
-            self.storage.update_tld(self.admin_context, tld)
+        tld = objects.Tld(
+            id='486f9cbe-b8b6-4d8c-8275-1a6e47b13e00'
+        )
+
+        self.assertRaisesRegex(
+            exceptions.TldNotFound, 'Could not find Tld',
+            self.storage.update_tld, self.admin_context, tld
+        )
 
     def test_delete_tld(self):
         # Create a tld
@@ -1667,18 +1851,23 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.delete_tld(self.admin_context, tld['id'])
 
         # Verify that it's deleted
-        with testtools.ExpectedException(exceptions.TldNotFound):
-            self.storage.get_tld(self.admin_context, tld['id'])
+        self.assertRaisesRegex(
+            exceptions.TldNotFound, 'Could not find Tld',
+            self.storage.get_tld, self.admin_context, tld['id']
+        )
 
     def test_delete_tld_missing(self):
-        with testtools.ExpectedException(exceptions.TldNotFound):
-            uuid = 'cac1fc02-79b2-4e62-a1a4-427b6790bbe6'
-            self.storage.delete_tld(self.admin_context, uuid)
+        uuid = 'cac1fc02-79b2-4e62-a1a4-427b6790bbe6'
+
+        self.assertRaisesRegex(
+            exceptions.TldNotFound, 'Could not find Tld',
+            self.storage.delete_tld, self.admin_context, uuid
+        )
 
     # Blacklist tests
     def test_create_blacklist(self):
         values = {
-            'pattern': "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
+            'pattern': '^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$',
             'description': 'This is a comment.'
         }
 
@@ -1752,9 +1941,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['pattern'], actual['pattern'])
 
     def test_get_blacklist_missing(self):
-        with testtools.ExpectedException(exceptions.BlacklistNotFound):
-            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
-            self.storage.get_blacklist(self.admin_context, uuid)
+        uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+
+        self.assertRaisesRegex(
+            exceptions.BlacklistNotFound, 'Could not find Blacklist',
+            self.storage.get_blacklist, self.admin_context, uuid
+        )
 
     def test_find_blacklist_criterion(self):
         blacklist_one = self.create_blacklist(fixture=0)
@@ -1775,10 +1967,12 @@ class SqlalchemyStorageTest(TestCase):
     def test_find_blacklist_criterion_missing(self):
         expected = self.create_blacklist(fixture=0)
 
-        criterion = dict(pattern=expected['pattern'] + "NOT FOUND")
+        criterion = dict(pattern=expected['pattern'] + 'NOT FOUND')
 
-        with testtools.ExpectedException(exceptions.BlacklistNotFound):
-            self.storage.find_blacklist(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.BlacklistNotFound, 'Could not find Blacklist',
+            self.storage.find_blacklist, self.admin_context, criterion
+        )
 
     def test_update_blacklist(self):
         blacklist = self.create_blacklist(pattern='^example.uk.')
@@ -1802,29 +1996,38 @@ class SqlalchemyStorageTest(TestCase):
         # Update the second one to be a duplicate of the first
         blacklist_two.pattern = blacklist_one.pattern
 
-        with testtools.ExpectedException(exceptions.DuplicateBlacklist):
-            self.storage.update_blacklist(self.admin_context,
-                                          blacklist_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicateBlacklist, 'Duplicate Blacklist',
+            self.storage.update_blacklist, self.admin_context, blacklist_two
+        )
 
     def test_update_blacklist_missing(self):
         blacklist = objects.Blacklist(
-            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08')
+            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08'
+        )
 
-        with testtools.ExpectedException(exceptions.BlacklistNotFound):
-            self.storage.update_blacklist(self.admin_context, blacklist)
+        self.assertRaisesRegex(
+            exceptions.BlacklistNotFound, 'Could not find Blacklist',
+            self.storage.update_blacklist, self.admin_context, blacklist
+        )
 
     def test_delete_blacklist(self):
         blacklist = self.create_blacklist(fixture=0)
 
         self.storage.delete_blacklist(self.admin_context, blacklist['id'])
 
-        with testtools.ExpectedException(exceptions.BlacklistNotFound):
-            self.storage.get_blacklist(self.admin_context, blacklist['id'])
+        self.assertRaisesRegex(
+            exceptions.BlacklistNotFound, 'Could not find Blacklist',
+            self.storage.get_blacklist, self.admin_context, blacklist['id']
+        )
 
     def test_delete_blacklist_missing(self):
-        with testtools.ExpectedException(exceptions.BlacklistNotFound):
-            uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
-            self.storage.delete_blacklist(self.admin_context, uuid)
+        uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
+
+        self.assertRaisesRegex(
+            exceptions.BlacklistNotFound, 'Could not find Blacklist',
+            self.storage.delete_blacklist, self.admin_context, uuid
+        )
 
     # Pool Tests
     def test_create_pool(self):
@@ -1851,15 +2054,15 @@ class SqlalchemyStorageTest(TestCase):
             'description': 'Pool description',
             'attributes': [{'key': 'scope', 'value': 'public'}],
             'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
-            'nameservers': [{'host': "192.0.2.1", 'port': 53}],
+            'nameservers': [{'host': '192.0.2.1', 'port': 53}],
             'targets': [{
-                'type': "fake",
+                'type': 'fake',
                 'description': 'FooBar',
-                'masters': [{'host': "192.0.2.2",
+                'masters': [{'host': '192.0.2.2',
                              'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
             }],
-            'also_notifies': [{'host': "192.0.2.3", 'port': 53}]
+            'also_notifies': [{'host': '192.0.2.3', 'port': 53}]
         }
 
         # Create the Pool, and check all values are OK
@@ -1945,9 +2148,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['provisioner'], actual['provisioner'])
 
     def test_get_pool_missing(self):
-        with testtools.ExpectedException(exceptions.PoolNotFound):
-            uuid = 'c28893e3-eb87-4562-aa29-1f0e835d749b'
-            self.storage.get_pool(self.admin_context, uuid)
+        uuid = 'c28893e3-eb87-4562-aa29-1f0e835d749b'
+
+        self.assertRaisesRegex(
+            exceptions.PoolNotFound, 'Could not find Pool',
+            self.storage.get_pool, self.admin_context, uuid
+        )
 
     def test_find_pool_criterion(self):
         pool_one = self.create_pool(fixture=0)
@@ -1970,10 +2176,12 @@ class SqlalchemyStorageTest(TestCase):
     def test_find_pool_criterion_missing(self):
         expected = self.create_pool()
 
-        criterion = dict(name=expected['name'] + "NOT FOUND")
+        criterion = dict(name=expected['name'] + 'NOT FOUND')
 
-        with testtools.ExpectedException(exceptions.PoolNotFound):
-            self.storage.find_pool(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.PoolNotFound, 'Could not find Pool',
+            self.storage.find_pool, self.admin_context, criterion
+        )
 
     def test_update_pool(self):
         # Create a pool
@@ -1996,14 +2204,20 @@ class SqlalchemyStorageTest(TestCase):
         # Update pool_two to be a duplicate of pool_one
         pool_two.name = pool_one.name
 
-        with testtools.ExpectedException(exceptions.DuplicatePool):
-            self.storage.update_pool(self.admin_context, pool_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicatePool, 'Duplicate Pool',
+            self.storage.update_pool, self.admin_context, pool_two
+        )
 
     def test_update_pool_missing(self):
-        pool = objects.Pool(id='8806f871-5140-43f4-badd-2bbc5715b013')
+        pool = objects.Pool(
+            id='8806f871-5140-43f4-badd-2bbc5715b013'
+        )
 
-        with testtools.ExpectedException(exceptions.PoolNotFound):
-            self.storage.update_pool(self.admin_context, pool)
+        self.assertRaisesRegex(
+            exceptions.PoolNotFound, 'Could not find Pool',
+            self.storage.update_pool, self.admin_context, pool
+        )
 
     def test_update_pool_with_all_relations(self):
         values = {
@@ -2011,15 +2225,15 @@ class SqlalchemyStorageTest(TestCase):
             'description': 'Pool-A description',
             'attributes': [{'key': 'scope', 'value': 'public'}],
             'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
-            'nameservers': [{'host': "192.0.2.1", 'port': 53}],
+            'nameservers': [{'host': '192.0.2.1', 'port': 53}],
             'targets': [{
-                'type': "fake",
+                'type': 'fake',
                 'description': 'FooBar',
-                'masters': [{'host': "192.0.2.2",
+                'masters': [{'host': '192.0.2.2',
                              'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
             }],
-            'also_notifies': [{'host': "192.0.2.3", 'port': 53}]
+            'also_notifies': [{'host': '192.0.2.3', 'port': 53}]
         }
 
         # Create the Pool
@@ -2036,17 +2250,17 @@ class SqlalchemyStorageTest(TestCase):
             'description': 'Pool-B description',
             'attributes': [{'key': 'scope', 'value': 'private'}],
             'ns_records': [{'priority': 1, 'hostname': 'ns2.example.org.'}],
-            'nameservers': [{'host': "192.0.2.5", 'port': 53}],
+            'nameservers': [{'host': '192.0.2.5', 'port': 53}],
             'targets': [{
-                'type': "fake",
+                'type': 'fake',
                 'description': 'NewFooBar',
-                'masters': [{'host': "192.0.2.2",
+                'masters': [{'host': '192.0.2.2',
                              'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
             }, {
-                'type': "fake",
+                'type': 'fake',
                 'description': 'FooBar2',
-                'masters': [{'host': "192.0.2.7", 'port': 5355}],
+                'masters': [{'host': '192.0.2.7', 'port': 5355}],
                 'options': [{'key': 'fake_option', 'value': 'new_fake_value'}],
             }],
             'also_notifies': []
@@ -2066,49 +2280,58 @@ class SqlalchemyStorageTest(TestCase):
 
         self.storage.delete_pool(self.admin_context, pool['id'])
 
-        with testtools.ExpectedException(exceptions.PoolNotFound):
-            self.storage.get_pool(self.admin_context, pool['id'])
+        self.assertRaisesRegex(
+            exceptions.PoolNotFound, 'Could not find Pool',
+            self.storage.delete_pool, self.admin_context, pool['id']
+        )
 
     def test_delete_pool_missing(self):
-        with testtools.ExpectedException(exceptions.PoolNotFound):
-            uuid = '203ca44f-c7e7-4337-9a02-0d735833e6aa'
-            self.storage.delete_pool(self.admin_context, uuid)
+        uuid = '203ca44f-c7e7-4337-9a02-0d735833e6aa'
+
+        self.assertRaisesRegex(
+            exceptions.PoolNotFound, 'Could not find Pool',
+            self.storage.delete_pool, self.admin_context, uuid
+        )
 
     def test_create_pool_ns_record_duplicate(self):
         # Create a pool
         pool = self.create_pool(name='test1')
 
-        ns = objects.PoolNsRecord(priority=1, hostname="ns.example.io.")
+        ns = objects.PoolNsRecord(priority=1, hostname='ns.example.io.')
         self.storage.create_pool_ns_record(
             self.admin_context, pool.id, ns)
 
-        ns2 = objects.PoolNsRecord(priority=2, hostname="ns.example.io.")
-        with testtools.ExpectedException(exceptions.DuplicatePoolNsRecord):
-            self.storage.create_pool_ns_record(
-                self.admin_context, pool.id, ns2)
+        ns2 = objects.PoolNsRecord(priority=2, hostname='ns.example.io.')
+
+        self.assertRaisesRegex(
+            exceptions.DuplicatePoolNsRecord, 'Duplicate PoolNsRecord',
+            self.storage.create_pool_ns_record, self.admin_context, pool.id,
+            ns2
+        )
 
     def test_update_pool_ns_record_duplicate(self):
         # Create a pool
         pool = self.create_pool(name='test1')
 
-        ns1 = objects.PoolNsRecord(priority=1, hostname="ns1.example.io.")
+        ns1 = objects.PoolNsRecord(priority=1, hostname='ns1.example.io.')
         self.storage.create_pool_ns_record(
             self.admin_context, pool.id, ns1)
 
-        ns2 = objects.PoolNsRecord(priority=2, hostname="ns2.example.io.")
+        ns2 = objects.PoolNsRecord(priority=2, hostname='ns2.example.io.')
         self.storage.create_pool_ns_record(
             self.admin_context, pool.id, ns2)
 
-        with testtools.ExpectedException(exceptions.DuplicatePoolNsRecord):
-            ns2.hostname = ns1.hostname
-            self.storage.update_pool_ns_record(
-                self.admin_context, ns2)
+        ns2.hostname = ns1.hostname
+        self.assertRaisesRegex(
+            exceptions.DuplicatePoolNsRecord, 'Duplicate PoolNsRecord',
+            self.storage.update_pool_ns_record, self.admin_context, ns2
+        )
 
     # PoolAttribute tests
     def test_create_pool_attribute(self):
         values = {
-            'pool_id': "d5d10661-0312-4ae1-8664-31188a4310b7",
-            'key': "test-attribute",
+            'pool_id': 'd5d10661-0312-4ae1-8664-31188a4310b7',
+            'key': 'test-attribute',
             'value': 'test-value'
         }
 
@@ -2165,7 +2388,7 @@ class SqlalchemyStorageTest(TestCase):
 
         # Verify pool_attribute_two
         criterion = dict(key=pool_attribute_two['key'])
-        LOG.debug("Criterion is %r " % criterion)
+        LOG.debug('Criterion is %r ' % criterion)
 
         results = self.storage.find_pool_attributes(self.admin_context,
                                                     criterion)
@@ -2184,9 +2407,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['value'], actual['value'])
 
     def test_get_pool_attribute_missing(self):
-        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
-            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
-            self.storage.get_pool_attribute(self.admin_context, uuid)
+        uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+
+        self.assertRaisesRegex(
+            exceptions.PoolAttributeNotFound, 'Could not find PoolAttribute',
+            self.storage.get_pool_attribute, self.admin_context, uuid
+        )
 
     def test_find_pool_attribute_criterion(self):
         pool_attribute_one = self.create_pool_attribute(fixture=0)
@@ -2213,10 +2439,12 @@ class SqlalchemyStorageTest(TestCase):
     def test_find_pool_attribute_criterion_missing(self):
         expected = self.create_pool_attribute(fixture=0)
 
-        criterion = dict(key=expected['key'] + "NOT FOUND")
+        criterion = dict(key=expected['key'] + 'NOT FOUND')
 
-        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
-            self.storage.find_pool_attribute(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.PoolAttributeNotFound, 'Could not find PoolAttribute',
+            self.storage.find_pool_attribute, self.admin_context, criterion
+        )
 
     def test_update_pool_attribute(self):
         pool_attribute = self.create_pool_attribute(value='ns1.example.org')
@@ -2234,11 +2462,14 @@ class SqlalchemyStorageTest(TestCase):
 
     def test_update_pool_attribute_missing(self):
         pool_attribute = objects.PoolAttribute(
-            id='728a329a-83b1-4573-82dc-45dceab435d4')
+            id='728a329a-83b1-4573-82dc-45dceab435d4'
+        )
 
-        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
-            self.storage.update_pool_attribute(self.admin_context,
-                                               pool_attribute)
+        self.assertRaisesRegex(
+            exceptions.PoolAttributeNotFound, 'Could not find PoolAttribute',
+            self.storage.update_pool_attribute, self.admin_context,
+            pool_attribute
+        )
 
     def test_update_pool_attribute_duplicate(self):
         # Create two PoolAttributes
@@ -2250,9 +2481,11 @@ class SqlalchemyStorageTest(TestCase):
         pool_attribute_two.key = pool_attribute_one.key
         pool_attribute_two.value = pool_attribute_one.value
 
-        with testtools.ExpectedException(exceptions.DuplicatePoolAttribute):
-            self.storage.update_pool_attribute(self.admin_context,
-                                               pool_attribute_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicatePoolAttribute, 'Duplicate PoolAttribute',
+            self.storage.update_pool_attribute, self.admin_context,
+            pool_attribute_two
+        )
 
     def test_delete_pool_attribute(self):
         pool_attribute = self.create_pool_attribute(fixture=0)
@@ -2260,21 +2493,28 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.delete_pool_attribute(self.admin_context,
                                            pool_attribute['id'])
 
-        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
-            self.storage.get_pool_attribute(self.admin_context,
-                                            pool_attribute['id'])
+        self.assertRaisesRegex(
+            exceptions.PoolAttributeNotFound, 'Could not find PoolAttribute',
+            self.storage.get_pool_attribute, self.admin_context,
+            pool_attribute['id']
+        )
 
     def test_delete_oool_attribute_missing(self):
-        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
-            uuid = '464e9250-4fe0-4267-9993-da639390bb04'
-            self.storage.delete_pool_attribute(self.admin_context, uuid)
+        uuid = '464e9250-4fe0-4267-9993-da639390bb04'
+
+        self.assertRaisesRegex(
+            exceptions.PoolAttributeNotFound, 'Could not find PoolAttribute',
+            self.storage.delete_pool_attribute, self.admin_context, uuid
+        )
 
     def test_create_pool_attribute_duplicate(self):
         # Create the initial PoolAttribute
         self.create_pool_attribute(fixture=0)
 
-        with testtools.ExpectedException(exceptions.DuplicatePoolAttribute):
-            self.create_pool_attribute(fixture=0)
+        self.assertRaisesRegex(
+            exceptions.DuplicatePoolAttribute, 'Duplicate PoolAttribute',
+            self.create_pool_attribute, fixture=0
+        )
 
     # PoolNameserver tests
     def test_create_pool_nameserver(self):
@@ -2282,7 +2522,7 @@ class SqlalchemyStorageTest(TestCase):
 
         values = {
             'pool_id': pool.id,
-            'host': "192.0.2.1",
+            'host': '192.0.2.1',
             'port': 53
         }
 
@@ -2306,8 +2546,10 @@ class SqlalchemyStorageTest(TestCase):
         # Create the initial PoolNameserver
         self.create_pool_nameserver(pool, fixture=0)
 
-        with testtools.ExpectedException(exceptions.DuplicatePoolNameserver):
-            self.create_pool_nameserver(pool, fixture=0)
+        self.assertRaisesRegex(
+            exceptions.DuplicatePoolNameserver, 'Duplicate PoolNameserver',
+            self.create_pool_nameserver, pool, fixture=0
+        )
 
     def test_find_pool_nameservers(self):
         pool = self.create_pool(fixture=0)
@@ -2371,9 +2613,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['host'], actual['host'])
 
     def test_get_pool_nameserver_missing(self):
-        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
-            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
-            self.storage.get_pool_nameserver(self.admin_context, uuid)
+        uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+
+        self.assertRaisesRegex(
+            exceptions.PoolNameserverNotFound, 'Could not find PoolNameserver',
+            self.storage.get_pool_nameserver, self.admin_context, uuid
+        )
 
     def test_find_pool_nameserver_criterion(self):
         pool = self.create_pool(fixture=0)
@@ -2403,10 +2648,12 @@ class SqlalchemyStorageTest(TestCase):
 
         expected = self.create_pool_nameserver(pool, fixture=0)
 
-        criterion = dict(host=expected['host'] + "NOT FOUND")
+        criterion = dict(host=expected['host'] + 'NOT FOUND')
 
-        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
-            self.storage.find_pool_nameserver(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.PoolNameserverNotFound, 'Could not find PoolNameserver',
+            self.storage.find_pool_nameserver, self.admin_context, criterion
+        )
 
     def test_update_pool_nameserver(self):
         pool = self.create_pool(fixture=0)
@@ -2437,17 +2684,22 @@ class SqlalchemyStorageTest(TestCase):
         # Update the second one to be a duplicate of the first
         pool_nameserver_two.host = pool_nameserver_one.host
 
-        with testtools.ExpectedException(exceptions.DuplicatePoolNameserver):
-            self.storage.update_pool_nameserver(
-                self.admin_context, pool_nameserver_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicatePoolNameserver, 'Duplicate PoolNameserver',
+            self.storage.update_pool_nameserver, self.admin_context,
+            pool_nameserver_two
+        )
 
     def test_update_pool_nameserver_missing(self):
         pool_nameserver = objects.PoolNameserver(
-            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08')
+            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08'
+        )
 
-        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
-            self.storage.update_pool_nameserver(
-                self.admin_context, pool_nameserver)
+        self.assertRaisesRegex(
+            exceptions.PoolNameserverNotFound, 'Could not find PoolNameserver',
+            self.storage.update_pool_nameserver, self.admin_context,
+            pool_nameserver
+        )
 
     def test_delete_pool_nameserver(self):
         pool = self.create_pool(fixture=0)
@@ -2456,14 +2708,19 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.delete_pool_nameserver(
             self.admin_context, pool_nameserver['id'])
 
-        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
-            self.storage.get_pool_nameserver(
-                self.admin_context, pool_nameserver['id'])
+        self.assertRaisesRegex(
+            exceptions.PoolNameserverNotFound, 'Could not find PoolNameserver',
+            self.storage.get_pool_nameserver, self.admin_context,
+            pool_nameserver['id']
+        )
 
     def test_delete_pool_nameserver_missing(self):
-        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
-            uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
-            self.storage.delete_pool_nameserver(self.admin_context, uuid)
+        uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
+
+        self.assertRaisesRegex(
+            exceptions.PoolNameserverNotFound, 'Could not find PoolNameserver',
+            self.storage.delete_pool_nameserver, self.admin_context, uuid
+        )
 
     # PoolTarget tests
     def test_create_pool_target(self):
@@ -2471,7 +2728,7 @@ class SqlalchemyStorageTest(TestCase):
 
         values = {
             'pool_id': pool.id,
-            'type': "fake"
+            'type': 'fake'
         }
 
         result = self.storage.create_pool_target(
@@ -2557,9 +2814,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['type'], actual['type'])
 
     def test_get_pool_target_missing(self):
-        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
-            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
-            self.storage.get_pool_target(self.admin_context, uuid)
+        uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+
+        self.assertRaisesRegex(
+            exceptions.PoolTargetNotFound, 'Could not find PoolTarget',
+            self.storage.get_pool_target, self.admin_context, uuid
+        )
 
     def test_find_pool_target_criterion(self):
         pool = self.create_pool(fixture=0)
@@ -2591,11 +2851,12 @@ class SqlalchemyStorageTest(TestCase):
 
         expected = self.create_pool_target(pool, fixture=0)
 
-        criterion = dict(description=expected['description'] + ''
-                                                               'NOT FOUND')
+        criterion = dict(description=expected['description'] + 'NOT FOUND')
 
-        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
-            self.storage.find_pool_target(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.PoolTargetNotFound, 'Could not find PoolTarget',
+            self.storage.find_pool_target, self.admin_context, criterion
+        )
 
     def test_update_pool_target(self):
         pool = self.create_pool(fixture=0)
@@ -2604,6 +2865,12 @@ class SqlalchemyStorageTest(TestCase):
 
         # Update the pool_target
         pool_target.description = 'Two'
+        pool_target.masters = objects.PoolTargetMasterList(
+            objects=[objects.PoolTargetMaster(host='127.0.0.1', port=80)]
+        )
+        pool_target.options = objects.PoolTargetOptionList(
+            objects=[objects.PoolTargetOption(key='foo', value='bar')]
+        )
 
         pool_target = self.storage.update_pool_target(
             self.admin_context, pool_target)
@@ -2616,11 +2883,13 @@ class SqlalchemyStorageTest(TestCase):
 
     def test_update_pool_target_missing(self):
         pool_target = objects.PoolTarget(
-            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08')
+            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08'
+        )
 
-        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
-            self.storage.update_pool_target(
-                self.admin_context, pool_target)
+        self.assertRaisesRegex(
+            exceptions.PoolTargetNotFound, 'Could not find PoolTarget',
+            self.storage.update_pool_target, self.admin_context, pool_target
+        )
 
     def test_delete_pool_target(self):
         pool = self.create_pool(fixture=0)
@@ -2629,14 +2898,265 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.delete_pool_target(
             self.admin_context, pool_target['id'])
 
-        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
-            self.storage.get_pool_target(
-                self.admin_context, pool_target['id'])
+        self.assertRaisesRegex(
+            exceptions.PoolTargetNotFound, 'Could not find PoolTarget',
+            self.storage.get_pool_target, self.admin_context, pool_target['id']
+        )
 
     def test_delete_pool_target_missing(self):
-        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
-            uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
-            self.storage.delete_pool_target(self.admin_context, uuid)
+        uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
+
+        self.assertRaisesRegex(
+            exceptions.PoolTargetNotFound, 'Could not find PoolTarget',
+            self.storage.delete_pool_target, self.admin_context, uuid
+        )
+
+    def test_create_pool_target_option(self):
+        pool = self.create_pool(fixture=0)
+        pool_target = self.create_pool_target(pool, fixture=0)
+
+        target = self.storage.create_pool_target_option(
+            self.admin_context, pool_target['id'],
+            objects.PoolTargetOption(key='foo', value='bar')
+        )
+
+        result = self.storage._find_pool_target_options(
+            self.admin_context, {'id': target['id']}
+        )
+        self.assertEqual(1, len(result))
+
+    def test_update_pool_target_option(self):
+        pool = self.create_pool(fixture=0)
+        pool_target = self.create_pool_target(pool, fixture=0)
+
+        target = self.storage.create_pool_target_option(
+            self.admin_context, pool_target['id'],
+            objects.PoolTargetOption(key='foo', value='bar')
+        )
+
+        target.value = 'baz'
+        self.storage.update_pool_target_option(self.admin_context, target)
+
+        result = self.storage._find_pool_target_options(
+            self.admin_context, {'id': target['id']}
+        )
+        self.assertEqual('baz', result[0].value)
+
+    def test_delete_pool_target_option(self):
+        pool = self.create_pool(fixture=0)
+        pool_target = self.create_pool_target(pool, fixture=0)
+
+        target = self.storage.create_pool_target_option(
+            self.admin_context, pool_target['id'],
+            objects.PoolTargetOption(key='foo', value='bar')
+        )
+
+        self.storage.delete_pool_target_option(
+            self.admin_context, target['id']
+        )
+
+        result = self.storage._find_pool_target_options(
+            self.admin_context, {'id': target['id']}
+        )
+        self.assertEqual(0, len(result))
+
+    def test_create_pool_target_master(self):
+        pool = self.create_pool(fixture=0)
+        pool_target = self.create_pool_target(pool, fixture=0)
+
+        target = self.storage.create_pool_target_master(
+            self.admin_context, pool_target['id'],
+            objects.PoolTargetMaster(host='127.0.0.1', port=80)
+        )
+
+        result = self.storage._find_pool_target_masters(
+            self.admin_context, {'id': target['id']}
+        )
+        self.assertEqual(1, len(result))
+
+    def test_update_pool_target_master(self):
+        pool = self.create_pool(fixture=0)
+        pool_target = self.create_pool_target(pool, fixture=0)
+
+        target = self.storage.create_pool_target_master(
+            self.admin_context, pool_target['id'],
+            objects.PoolTargetMaster(host='127.0.0.1', port=80)
+        )
+
+        target.port = 443
+        self.storage.update_pool_target_master(self.admin_context, target)
+
+        result = self.storage._find_pool_target_masters(
+            self.admin_context, {'id': target['id']}
+        )
+        self.assertEqual(443, result[0].port)
+
+    def test_delete_pool_target_master(self):
+        pool = self.create_pool(fixture=0)
+        pool_target = self.create_pool_target(pool, fixture=0)
+
+        target = self.storage.create_pool_target_master(
+            self.admin_context, pool_target['id'],
+            objects.PoolTargetMaster(host='127.0.0.1', port=80)
+        )
+
+        self.storage.delete_pool_target_master(
+            self.admin_context, target['id']
+        )
+
+        result = self.storage._find_pool_target_masters(
+            self.admin_context, {'id': target['id']}
+        )
+        self.assertEqual(0, len(result))
+
+    def test_create_zone_attribute(self):
+        zone = self.create_zone()
+
+        zone_attribute = self.storage.create_zone_attribute(
+            self.admin_context, zone['id'],
+            objects.ZoneAttribute(key='foo', value='bar')
+        )
+
+        result = self.storage.find_zone_attributes(
+            self.admin_context, {'id': zone_attribute['id']}
+        )
+        self.assertEqual(1, len(result))
+
+    def test_update_zone_attribute(self):
+        zone = self.create_zone()
+
+        zone_attribute = self.storage.create_zone_attribute(
+            self.admin_context, zone['id'],
+            objects.ZoneAttribute(key='foo', value='bar')
+        )
+
+        zone_attribute.value = 'baz'
+        self.storage.update_zone_attribute(
+            self.admin_context, zone_attribute
+        )
+
+        result = self.storage.get_zone_attributes(
+            self.admin_context, zone_attribute['id']
+        )
+        self.assertEqual('baz', result.value)
+
+    def test_delete_zone_attribute(self):
+        zone = self.create_zone()
+
+        zone_attribute = self.storage.create_zone_attribute(
+            self.admin_context, zone['id'],
+            objects.ZoneAttribute(key='foo', value='bar')
+        )
+
+        self.storage.delete_zone_attribute(
+            self.admin_context, zone_attribute['id']
+        )
+
+        result = self.storage.find_zone_attributes(
+            self.admin_context, {'id': zone_attribute['id']}
+        )
+        self.assertEqual(0, len(result))
+
+    def test_create_zone_master(self):
+        zone = self.create_zone()
+
+        zone_master = self.storage.create_zone_master(
+            self.admin_context, zone['id'],
+            objects.ZoneMaster(host='127.0.0.1', port='80')
+        )
+
+        result = self.storage._find_zone_masters(
+            self.admin_context, {'id': zone_master['id']}
+        )
+        self.assertEqual(1, len(result))
+
+    def test_update_zone_master(self):
+        zone = self.create_zone()
+
+        zone_master = self.storage.create_zone_master(
+            self.admin_context, zone['id'],
+            objects.ZoneMaster(host='127.0.0.1', port='80')
+        )
+
+        zone_master.port = 443
+        self.storage.update_zone_master(
+            self.admin_context, zone_master
+        )
+
+        result = self.storage._find_zone_masters(
+            self.admin_context, {'id': zone_master['id']}
+        )
+        self.assertEqual(443, result[0].port)
+
+    def test_delete_zone_master(self):
+        zone = self.create_zone()
+
+        zone_master = self.storage.create_zone_master(
+            self.admin_context, zone['id'],
+            objects.ZoneMaster(host='127.0.0.1', port='80')
+        )
+
+        self.storage.delete_zone_master(
+            self.admin_context, zone_master['id']
+        )
+
+        result = self.storage._find_zone_masters(
+            self.admin_context, {'id': zone_master['id']}
+        )
+        self.assertEqual(0, len(result))
+
+    def test_create_zone_export(self):
+        zone_export = self.storage.create_zone_export(
+            self.admin_context,
+            objects.ZoneExport(status='ACTIVE', task_type='EXPORT')
+        )
+
+        result = self.storage.find_zone_exports(
+            self.admin_context, {'id': zone_export['id']}
+        )
+        self.assertEqual(1, len(result))
+
+    def test_find_zone_exports_with_no_criterion(self):
+        self.storage.create_zone_export(
+            self.admin_context,
+            objects.ZoneExport(status='ACTIVE', task_type='EXPORT')
+        )
+
+        result = self.storage._find_zone_exports(
+            self.admin_context, None
+        )
+        self.assertEqual(1, len(result))
+
+    def test_update_zone_export(self):
+        zone_export = self.storage.create_zone_export(
+            self.admin_context,
+            objects.ZoneExport(status='ACTIVE', task_type='EXPORT')
+        )
+
+        zone_export.message = 'foo'
+        self.storage.update_zone_export(
+            self.admin_context, zone_export
+        )
+
+        result = self.storage.find_zone_export(
+            self.admin_context, {'id': zone_export['id']}
+        )
+        self.assertEqual('foo', result.message)
+
+    def test_delete_zone_export(self):
+        zone_export = self.storage.create_zone_export(
+            self.admin_context,
+            objects.ZoneExport(status='ACTIVE', task_type='EXPORT')
+        )
+
+        self.storage.delete_zone_export(
+            self.admin_context, zone_export['id']
+        )
+
+        result = self.storage.find_zone_exports(
+            self.admin_context, {'id': zone_export['id']}
+        )
+        self.assertEqual(0, len(result))
 
     # PoolAlsoNotify tests
     def test_create_pool_also_notify(self):
@@ -2644,7 +3164,7 @@ class SqlalchemyStorageTest(TestCase):
 
         values = {
             'pool_id': pool.id,
-            'host': "192.0.2.1",
+            'host': '192.0.2.1',
             'port': 53
         }
 
@@ -2668,8 +3188,10 @@ class SqlalchemyStorageTest(TestCase):
         # Create the initial PoolAlsoNotify
         self.create_pool_also_notify(pool, fixture=0)
 
-        with testtools.ExpectedException(exceptions.DuplicatePoolAlsoNotify):
-            self.create_pool_also_notify(pool, fixture=0)
+        self.assertRaisesRegex(
+            exceptions.DuplicatePoolAlsoNotify, 'Duplicate PoolAlsoNotify',
+            self.create_pool_also_notify, pool, fixture=0
+        )
 
     def test_find_pool_also_notifies(self):
         pool = self.create_pool(fixture=0)
@@ -2733,9 +3255,12 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['host'], actual['host'])
 
     def test_get_pool_also_notify_missing(self):
-        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
-            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
-            self.storage.get_pool_also_notify(self.admin_context, uuid)
+        uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+
+        self.assertRaisesRegex(
+            exceptions.PoolAlsoNotifyNotFound, 'Could not find PoolAlsoNotify',
+            self.storage.get_pool_also_notify, self.admin_context, uuid
+        )
 
     def test_find_pool_also_notify_criterion(self):
         pool = self.create_pool(fixture=0)
@@ -2765,10 +3290,12 @@ class SqlalchemyStorageTest(TestCase):
 
         expected = self.create_pool_also_notify(pool, fixture=0)
 
-        criterion = dict(host=expected['host'] + "NOT FOUND")
+        criterion = dict(host=expected['host'] + 'NOT FOUND')
 
-        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
-            self.storage.find_pool_also_notify(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.PoolAlsoNotifyNotFound, 'Could not find PoolAlsoNotify',
+            self.storage.find_pool_also_notify, self.admin_context, criterion
+        )
 
     def test_update_pool_also_notify(self):
         pool = self.create_pool(fixture=0)
@@ -2799,17 +3326,22 @@ class SqlalchemyStorageTest(TestCase):
         # Update the second one to be a duplicate of the first
         pool_also_notify_two.host = pool_also_notify_one.host
 
-        with testtools.ExpectedException(exceptions.DuplicatePoolAlsoNotify):
-            self.storage.update_pool_also_notify(
-                self.admin_context, pool_also_notify_two)
+        self.assertRaisesRegex(
+            exceptions.DuplicatePoolAlsoNotify, 'Duplicate PoolAlsoNotify',
+            self.storage.update_pool_also_notify, self.admin_context,
+            pool_also_notify_two
+        )
 
     def test_update_pool_also_notify_missing(self):
         pool_also_notify = objects.PoolAlsoNotify(
-            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08')
+            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08'
+        )
 
-        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
-            self.storage.update_pool_also_notify(
-                self.admin_context, pool_also_notify)
+        self.assertRaisesRegex(
+            exceptions.PoolAlsoNotifyNotFound, 'Could not find PoolAlsoNotify',
+            self.storage.update_pool_also_notify, self.admin_context,
+            pool_also_notify
+        )
 
     def test_delete_pool_also_notify(self):
         pool = self.create_pool(fixture=0)
@@ -2818,14 +3350,19 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.delete_pool_also_notify(
             self.admin_context, pool_also_notify['id'])
 
-        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
-            self.storage.get_pool_also_notify(
-                self.admin_context, pool_also_notify['id'])
+        self.assertRaisesRegex(
+            exceptions.PoolAlsoNotifyNotFound, 'Could not find PoolAlsoNotify',
+            self.storage.get_pool_also_notify, self.admin_context,
+            pool_also_notify['id']
+        )
 
     def test_delete_pool_also_notify_missing(self):
-        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
-            uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
-            self.storage.delete_pool_also_notify(self.admin_context, uuid)
+        uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
+
+        self.assertRaisesRegex(
+            exceptions.PoolAlsoNotifyNotFound, 'Could not find PoolAlsoNotify',
+            self.storage.delete_pool_also_notify, self.admin_context, uuid
+        )
 
     def test_create_service_status_duplicate(self):
         values = self.get_service_status_fixture(fixture=0)
@@ -2833,9 +3370,11 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.create_service_status(
             self.admin_context, objects.ServiceStatus.from_dict(values))
 
-        with testtools.ExpectedException(exceptions.DuplicateServiceStatus):
-            self.storage.create_service_status(
-                self.admin_context, objects.ServiceStatus.from_dict(values))
+        self.assertRaisesRegex(
+            exceptions.DuplicateServiceStatus, 'Duplicate ServiceStatus',
+            self.storage.create_service_status, self.admin_context,
+            objects.ServiceStatus.from_dict(values)
+        )
 
     # Zone Transfer Accept tests
     def test_create_zone_transfer_request(self):
@@ -2886,10 +3425,11 @@ class SqlalchemyStorageTest(TestCase):
         )
         self.assertEqual(stored_ztr['id'], result['id'])
 
-        with testtools.ExpectedException(
-                exceptions.ZoneTransferRequestNotFound):
-            self.storage.get_zone_transfer_request(
-                tenant_3_context, result.id)
+        self.assertRaisesRegex(
+            exceptions.ZoneTransferRequestNotFound,
+            'Could not find ZoneTransferRequest',
+            self.storage.get_zone_transfer_request, tenant_3_context, result.id
+        )
 
     def test_find_zone_transfer_requests(self):
         zone = self.create_zone()
@@ -2904,7 +3444,7 @@ class SqlalchemyStorageTest(TestCase):
             self.admin_context, objects.ZoneTransferRequest.from_dict(values))
 
         requests = self.storage.find_zone_transfer_requests(
-            self.admin_context, {"tenant_id": self.admin_context.project_id})
+            self.admin_context, {'tenant_id': self.admin_context.project_id})
         self.assertEqual(1, len(requests))
 
     def test_delete_zone_transfer_request(self):
@@ -2914,10 +3454,12 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.delete_zone_transfer_request(
             self.admin_context, zt_request.id)
 
-        with testtools.ExpectedException(
-                exceptions.ZoneTransferRequestNotFound):
-            self.storage.get_zone_transfer_request(
-                self.admin_context, zt_request.id)
+        self.assertRaisesRegex(
+            exceptions.ZoneTransferRequestNotFound,
+            'Could not find ZoneTransferRequest',
+            self.storage.get_zone_transfer_request, self.admin_context,
+            zt_request.id
+        )
 
     def test_update_zone_transfer_request(self):
         zone = self.create_zone()
@@ -2936,6 +3478,31 @@ class SqlalchemyStorageTest(TestCase):
             self.admin_context, zt_request.id)
         self.assertEqual(zt_request.id, result.id)
         self.assertEqual(zt_request.zone_id, result.zone_id)
+
+    def test_get_zone_transfer_request_no_project_id(self):
+        context1 = self.get_context(project_id='1',
+                                   roles=['member', 'reader'])
+        context2 = self.get_context(roles=['member', 'reader'])
+
+        zone = self.create_zone(context=context1)
+        zt_request = self.create_zone_transfer_request(zone, context=context1)
+
+        result = self.storage.get_zone_transfer_request(context2,
+                                                        zt_request.id)
+        self.assertEqual(objects.ZoneTransferRequest(), result)
+
+    def test_find_zone_transfer_requests_no_project_id(self):
+        context1 = self.get_context(project_id='1',
+                                   roles=['member', 'reader'])
+        context2 = self.get_context(roles=['member', 'reader'])
+
+        zone = self.create_zone(context=context1)
+        zt_request = self.create_zone_transfer_request(zone, context=context1)
+
+        result = self.storage.find_zone_transfer_requests(context2,
+                                                          zt_request.id)
+        self.assertEqual(objects.ZoneTransferRequestList(), result)
+        self.assertEqual(0, len(result))
 
     # Zone Transfer Accept tests
     def test_create_zone_transfer_accept(self):
@@ -2972,7 +3539,7 @@ class SqlalchemyStorageTest(TestCase):
             self.admin_context, objects.ZoneTransferAccept.from_dict(values))
 
         accepts = self.storage.find_zone_transfer_accepts(
-            self.admin_context, {"tenant_id": self.admin_context.project_id})
+            self.admin_context, {'tenant_id': self.admin_context.project_id})
         self.assertEqual(1, len(accepts))
 
     def test_find_zone_transfer_accept(self):
@@ -2989,7 +3556,7 @@ class SqlalchemyStorageTest(TestCase):
             self.admin_context, objects.ZoneTransferAccept.from_dict(values))
 
         accept = self.storage.find_zone_transfer_accept(
-            self.admin_context, {"id": result.id})
+            self.admin_context, {'id': result.id})
         self.assertEqual(result.id, accept.id)
 
     def test_transfer_zone_ownership(self):
@@ -3032,10 +3599,12 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.delete_zone_transfer_accept(
             self.admin_context, zt_accept.id)
 
-        with testtools.ExpectedException(
-                exceptions.ZoneTransferAcceptNotFound):
-            self.storage.get_zone_transfer_accept(
-                self.admin_context, zt_accept.id)
+        self.assertRaisesRegex(
+            exceptions.ZoneTransferAcceptNotFound,
+            'Could not find ZoneTransferAccept',
+            self.storage.get_zone_transfer_accept, self.admin_context,
+            zt_accept.id
+        )
 
     def test_update_zone_transfer_accept(self):
         zone = self.create_zone()
@@ -3076,13 +3645,37 @@ class SqlalchemyStorageTest(TestCase):
         # well, did we get 1?
         self.assertEqual(1, zones)
 
-    def test_count_zone_tasks_none_result(self):
-        rp = mock.Mock()
-        rp.fetchone.return_value = None
-        with mock.patch('designate.storage.sql.get_write_session',
-                        return_value=rp):
-            zones = self.storage.count_zone_tasks(self.admin_context)
-            self.assertEqual(0, zones)
+    @mock.patch('designate.storage.sql.get_read_session')
+    def test_count_zone_tasks_none_result(self, mock_read_session):
+        mock_sql_execute = mock.Mock()
+        mock_sql_fetchone = mock.Mock()
+
+        mock_read_session().__enter__.return_value = mock_sql_execute
+        mock_sql_execute.execute.return_value = mock_sql_fetchone
+        mock_sql_fetchone.fetchone.return_value = None
+
+        zone_tasks = self.storage.count_zone_tasks(self.admin_context)
+
+        mock_read_session.assert_called()
+
+        self.assertEqual(0, zone_tasks)
+
+    @mock.patch('designate.storage.sql.get_read_session')
+    def test_count_zone_transfer_accept_none_result(self, mock_read_session):
+        mock_sql_execute = mock.Mock()
+        mock_sql_fetchone = mock.Mock()
+
+        mock_read_session().__enter__.return_value = mock_sql_execute
+        mock_sql_execute.execute.return_value = mock_sql_fetchone
+        mock_sql_fetchone.fetchone.return_value = None
+
+        zone_transfer_accepts = self.storage.count_zone_transfer_accept(
+            self.admin_context
+        )
+
+        mock_read_session.assert_called()
+
+        self.assertEqual(0, zone_transfer_accepts)
 
     # Zone Import Tests
     def test_create_zone_import(self):
@@ -3153,17 +3746,22 @@ class SqlalchemyStorageTest(TestCase):
         self.assertEqual(expected['status'], actual['status'])
 
     def test_get_zone_import_missing(self):
-        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
-            uuid = '4c8e7f82-3519-4bf7-8940-a66a4480f223'
-            self.storage.get_zone_import(self.admin_context, uuid)
+        uuid = '4c8e7f82-3519-4bf7-8940-a66a4480f223'
+
+        self.assertRaisesRegex(
+            exceptions.ZoneImportNotFound, 'Could not find ZoneImport',
+            self.storage.get_zone_import, self.admin_context, uuid
+        )
 
     def test_find_zone_import_criterion_missing(self):
         expected = self.create_zone_import()
 
-        criterion = dict(status=expected['status'] + "NOT FOUND")
+        criterion = dict(status=expected['status'] + 'NOT FOUND')
 
-        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
-            self.storage.find_zone_import(self.admin_context, criterion)
+        self.assertRaisesRegex(
+            exceptions.ZoneImportNotFound, 'Could not find ZoneImport',
+            self.storage.find_zone_import, self.admin_context, criterion
+        )
 
     def test_update_zone_import(self):
         # Create a zone_import
@@ -3185,9 +3783,13 @@ class SqlalchemyStorageTest(TestCase):
 
     def test_update_zone_import_missing(self):
         zone_import = objects.ZoneImport(
-                        id='486f9cbe-b8b6-4d8c-8275-1a6e47b13e00')
-        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
-            self.storage.update_zone_import(self.admin_context, zone_import)
+            id='486f9cbe-b8b6-4d8c-8275-1a6e47b13e00'
+        )
+
+        self.assertRaisesRegex(
+            exceptions.ZoneImportNotFound, 'Could not find ZoneImport',
+            self.storage.update_zone_import, self.admin_context, zone_import
+        )
 
     def test_delete_zone_import(self):
         # Create a zone_import
@@ -3197,13 +3799,18 @@ class SqlalchemyStorageTest(TestCase):
         self.storage.delete_zone_import(self.admin_context, zone_import['id'])
 
         # Verify that it's deleted
-        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
-            self.storage.get_zone_import(self.admin_context, zone_import['id'])
+        self.assertRaisesRegex(
+            exceptions.ZoneImportNotFound, 'Could not find ZoneImport',
+            self.storage.get_zone_import, self.admin_context, zone_import['id']
+        )
 
     def test_delete_zone_import_missing(self):
-        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
-            uuid = 'cac1fc02-79b2-4e62-a1a4-427b6790bbe6'
-            self.storage.delete_zone_import(self.admin_context, uuid)
+        uuid = 'cac1fc02-79b2-4e62-a1a4-427b6790bbe6'
+
+        self.assertRaisesRegex(
+            exceptions.ZoneImportNotFound, 'Could not find ZoneImport',
+            self.storage.delete_zone_import, self.admin_context, uuid
+        )
 
     def test_schema_table_names(self):
         table_names = [
