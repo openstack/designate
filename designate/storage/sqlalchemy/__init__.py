@@ -751,22 +751,6 @@ class SQLAlchemyStorage(base.SQLAlchemy):
             one, marker, limit, sort_key, sort_dir, query=query,
             apply_tenant_criteria=False)
 
-    def _find_zone_share(self, context, zone):
-        criterion = {
-            "target_project_id": context.project_id,
-            "zone_id": zone.id
-        }
-
-        try:
-            return self._find(
-                context, tables.shared_zones, objects.SharedZone,
-                objects.SharedZoneList, exceptions.SharedZoneNotFound,
-                criterion,
-                one=True
-            )
-        except exceptions.SharedZoneNotFound:
-            return None
-
     def share_zone(self, context, shared_zone):
         """
         Share zone
