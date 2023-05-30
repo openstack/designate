@@ -574,28 +574,26 @@ class SQLAlchemyStorage(base.SQLAlchemy):
                 self.create_zone_master(context, zone.id, attr)
 
         if zone.obj_attr_is_set('recordsets'):
-            existing = self.find_recordsets(context, {'zone_id': zone.id})
-
-            data = {}
-            for rrset in existing:
-                data[rrset.name, rrset.type] = rrset
+            existing = {}
+            for rrset in self.find_recordsets(context, {'zone_id': zone.id}):
+                existing[rrset.name, rrset.type] = rrset
 
             keep = set()
             for rrset in zone.recordsets:
-                current = data.get((rrset.name, rrset.type))
-
-                if current:
-                    current.update(rrset)
-                    current.records = rrset.records
-                    self.update_recordset(context, current)
-                    keep.add(current.id)
+                existing_recordset = existing.get((rrset.name, rrset.type))
+                if existing_recordset:
+                    existing_recordset.update(rrset)
+                    existing_recordset.records = rrset.records
+                    existing_recordset.obj_reset_changes(['zone_name'])
+                    self.update_recordset(context, existing_recordset)
+                    keep.add(existing_recordset.id)
                 else:
                     self.create_recordset(context, zone.id, rrset)
                     keep.add(rrset.id)
 
             if zone.type == 'SECONDARY':
                 # Purge anything that shouldn't be there :P
-                for i in set([i.id for i in data.values()]) - keep:
+                for i in set([i.id for i in existing.values()]) - keep:
                     self.delete_recordset(context, i)
 
         if tenant_id_changed:
