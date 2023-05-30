@@ -565,32 +565,44 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_is_valid_zone_name_invalid(self):
         self.service._is_blacklisted_zone_name = mock.Mock()
-        with testtools.ExpectedException(exceptions.InvalidZoneName):
-            self.service._is_valid_zone_name(self.context,
-                                             'example^org.')
+        self.assertRaisesRegex(
+            exceptions.InvalidZoneName,
+            'More than one label is required',
+            self.service._is_valid_zone_name, self.context, 'example^org.'
+        )
 
     def test_is_valid_zone_name_invalid_2(self):
         self.service._is_blacklisted_zone_name = mock.Mock()
-        with testtools.ExpectedException(exceptions.InvalidZoneName):
-            self.service._is_valid_zone_name(self.context,
-                                             'example.tld.')
+        self.assertRaisesRegex(
+            exceptions.InvalidZoneName,
+            'Invalid TLD',
+            self.service._is_valid_zone_name, self.context, 'example.tld.'
+        )
 
     def test_is_valid_zone_name_invalid_same_as_tld(self):
         self.service._is_blacklisted_zone_name = mock.Mock()
-        with testtools.ExpectedException(exceptions.InvalidZoneName):
-            self.service._is_valid_zone_name(self.context, 'com.com.')
+        self.assertRaisesRegex(
+            exceptions.InvalidZoneName,
+            'Invalid TLD',
+            self.service._is_valid_zone_name, self.context, 'com.com.'
+        )
 
     def test_is_valid_zone_name_invalid_tld(self):
         self.service._is_blacklisted_zone_name = mock.Mock()
-        with testtools.ExpectedException(exceptions.InvalidZoneName):
-            self.service._is_valid_zone_name(self.context, 'tld.')
+        self.assertRaisesRegex(
+            exceptions.InvalidZoneName,
+            'More than one label is required',
+            self.service._is_valid_zone_name, self.context, 'tld.'
+        )
 
     def test_is_valid_zone_name_blacklisted(self):
         self.service._is_blacklisted_zone_name = mock.Mock(
             side_effect=exceptions.InvalidZoneName)
-        with testtools.ExpectedException(exceptions.InvalidZoneName):
-            self.service._is_valid_zone_name(self.context,
-                                             'valid.com.')
+        self.assertRaisesRegex(
+            exceptions.InvalidZoneName,
+            'Invalid TLD',
+            self.service._is_valid_zone_name, self.context, 'valid.com.'
+        )
 
     def test_is_blacklisted_zone_name(self):
         self.service.storage.find_blacklists.return_value = [
@@ -1763,6 +1775,20 @@ class CentralZoneExportTests(CentralBasic):
         self.service.storage.find_zone_exports = mock.Mock()
 
         self.service.find_zone_exports(self.context)
+
+        self.assertTrue(self.service.storage.find_zone_exports.called)
+        pcheck, ctx, target = (
+            designate.central.service.policy.check.call_args[0])
+        self.assertEqual('find_zone_exports', pcheck)
+
+    def test_find_zone_exports_with_custom_criterion(self):
+        self.context = mock.Mock()
+        self.context.project_id = 't'
+        self.service.storage.find_zone_exports = mock.Mock()
+
+        self.service.find_zone_exports(
+            self.context, criterion={'project_id': 't'}
+        )
 
         self.assertTrue(self.service.storage.find_zone_exports.called)
         pcheck, ctx, target = (

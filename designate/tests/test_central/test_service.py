@@ -35,6 +35,7 @@ from oslo_utils import timeutils
 from oslo_versionedobjects import exception as ovo_exc
 import testtools
 
+from designate.common import constants
 from designate import exceptions
 from designate import objects
 from designate.storage import sql
@@ -886,6 +887,12 @@ class CentralServiceTest(designate.tests.TestCase):
 
         self.assertGreater(len(servers), 0)
 
+    def test_get_zone_ns_records_no_zone_provided(self):
+        result = self.central_service.get_zone_ns_records(
+            self.admin_context, None
+        )
+        self.assertEqual(1, len(result))
+
     @mock.patch.object(notifier.Notifier, "info")
     def test_update_zone(self, mock_notifier):
         # Create a zone
@@ -917,6 +924,14 @@ class CentralServiceTest(designate.tests.TestCase):
         self.assertIsInstance(notified_zone, objects.Zone)
         self.assertEqual(zone.id, notified_zone.id)
 
+    def test_update_zone_do_not_allow_tenant_id_update(self):
+        zone = self.create_zone(email='info@example.org')
+        zone.tenant_id = '1'
+        self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.update_zone, self.admin_context, zone
+        )
+
     def test_update_zone_without_id(self):
         # Create a zone
         zone = self.create_zone(email='info@example.org')
@@ -924,9 +939,13 @@ class CentralServiceTest(designate.tests.TestCase):
         # Update the object
         zone.email = 'info@example.net'
         zone.id = None
+
         # Perform the update
-        with testtools.ExpectedException(Exception):
-            self.central_service.update_zone(self.admin_context, zone)
+        self.assertRaisesRegex(
+            Exception,
+            'Failed to determine zone id for synchronized operation',
+            self.central_service.update_zone, self.admin_context, zone
+        )
 
     def test_update_zone_without_incrementing_serial(self):
         # Create a zone
@@ -3782,6 +3801,158 @@ class CentralServiceTest(designate.tests.TestCase):
                                 context, zone_import['id'])
 
         self.assertEqual(exceptions.ZoneImportNotFound, exc.exc_info[0])
+
+    def test_update_zone_export(self):
+        self.central_service.tg = mock.Mock()
+
+        new_zone_export = self.central_service.create_zone_import(
+            self.admin_context, objects.ZoneExport()
+        )
+        self.assertIsNone(new_zone_export.message)
+
+        new_zone_export.message = 'foo'
+        result = self.central_service.update_zone_export(
+            self.admin_context, new_zone_export
+        )
+        self.assertEqual('foo', result.message)
+
+    def test_create_ptr_zone(self):
+        cfg.CONF.set_override(
+            'managed_resource_tenant_id',
+            self.admin_context.project_id,
+            'service:central'
+        )
+
+        self.central_service._create_ptr_zone(
+            self.admin_context, 'example.org.'
+        )
+
+        zones = self.central_service.find_zones(self.admin_context)
+        self.assertEqual(1, len(zones))
+        self.assertEqual('example.org.', zones[0]['name'])
+
+    def test_create_duplicate_ptr_zone(self):
+        cfg.CONF.set_override(
+            'managed_resource_tenant_id',
+            self.admin_context.project_id,
+            'service:central'
+        )
+
+        self.central_service._create_ptr_zone(
+            self.admin_context, 'example.org.'
+        )
+        self.central_service._create_ptr_zone(
+            self.admin_context, 'example.org.'
+        )
+
+        zones = self.central_service.find_zones(self.admin_context)
+        self.assertEqual(1, len(zones))
+        self.assertEqual('example.org.', zones[0]['name'])
+
+    def test_create_floating_ip_with_record(self):
+        zone = self.create_zone()
+
+        record = objects.PTR(data='srv1.example.com.')
+        recordset = objects.RecordSet()
+        record.action = constants.CREATE
+        recordset.records = [record]
+        recordset.ttl = 3600
+        fip = {
+            'address': '127.0.0.1',
+            'id': '1',
+            'region': 'region',
+        }
+        result = self.central_service._create_floating_ip(
+            self.admin_context, fip, record, zone, recordset
+        )
+        self.assertEqual('srv1.example.com.', result.ptrdname)
+        self.assertEqual('127.0.0.1', result.address)
+
+    def test_create_floating_ip_with_no_record(self):
+        fip = {
+            'address': '127.0.0.1',
+            'id': '1',
+            'region': 'region',
+        }
+        self.central_service._create_floating_ip(self.admin_context, fip, None)
+
+    def test_create_floating_ip_zone_not_found(self):
+        fip = {
+            'address': '127.0.0.1',
+            'id': '1',
+            'region': 'region',
+        }
+        record = objects.PTR(data='srv1.example.com.')
+        recordset = objects.RecordSet()
+        recordset.records = [record]
+        self.central_service._create_floating_ip(
+            self.admin_context, fip, record=record, recordset=recordset
+        )
+
+    def test_delete_or_update_managed_recordset(self):
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
+        record = recordset.records[0]
+
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+        self.assertEqual(1, len(recordsets))
+
+        self.central_service._delete_or_update_managed_recordset(
+            self.admin_context, zone.id, recordset.id, record.id
+        )
+
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+        self.assertEqual(0, len(recordsets), recordsets)
+
+    def test_delete_or_update_managed_recordset_with_multiple_records(self):
+        zone = self.create_zone()
+
+        recordset = self.create_recordset(
+            zone,
+            records=[objects.A(data='192.0.2.1'), objects.A(data='192.0.2.2')]
+        )
+        record = recordset.records[1]
+
+        records = self.central_service.find_records(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'recordset_id': recordset.id}
+        )
+        self.assertEqual(2, len(records))
+
+        self.central_service._delete_or_update_managed_recordset(
+            self.admin_context, zone.id, recordset.id, record.id
+        )
+
+        records = self.central_service.find_records(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'recordset_id': recordset.id}
+        )
+        self.assertEqual(1, len(records), records)
+
+    def test_delete_or_update_managed_recordset_record_not_found(self):
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
+
+        self.central_service._delete_or_update_managed_recordset(
+            self.admin_context, zone.id, recordset.id, '1'
+        )
+
+    def test_delete_or_update_managed_recordset_not_found(self):
+        zone = self.create_zone()
+
+        record = objects.A()
+        recordset = objects.RecordSet()
+        recordset.records = [record]
+
+        self.central_service._delete_or_update_managed_recordset(
+            self.admin_context, zone.id, recordset.id, record.id
+        )
 
     def test_share_zone(self):
         # Create a Shared Zone
