@@ -917,6 +917,29 @@ class SqlalchemyStorageTest(TestCase):
         # Ensure the version column was incremented
         self.assertEqual(2, zone.version)
 
+    def test_update_zone_new_recordset_with_existing(self):
+        zone = self.create_zone(name='example.org.')
+        recordset1 = self.create_recordset(zone)
+        recordset2 = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1'),
+            ])
+        )
+
+        zone.name = 'example.net.'
+        zone.recordsets = objects.RecordSetList(
+            objects=[recordset1, recordset2]
+        )
+
+        # Perform the update
+        self.storage.update_zone(self.admin_context, zone)
+
+        recordsets = self.storage.find_recordsets(
+            self.admin_context, {'zone_id': zone['id']}
+        )
+        self.assertEqual(4, len(recordsets))
+
     def test_update_zone_new_recordset(self):
         zone = self.create_zone(name='example.org.')
 
