@@ -186,8 +186,7 @@
             voting: false
         - designate-bind9-centos-9-stream:
             voting: false
-        - designate-bind9-keystone-default-roles:
-            voting: false
+        - designate-bind9-keystone-default-roles
         - designate-pdns4
         - designate-grenade-bind9
         - designate-grenade-pdns4
@@ -197,8 +196,7 @@
       fail-fast: true
       jobs:
         - designate-bind9
-        - designate-bind9-keystone-default-roles:
-            voting: false
+        - designate-bind9-keystone-default-roles
         - designate-pdns4
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4

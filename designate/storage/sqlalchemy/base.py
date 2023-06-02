@@ -182,7 +182,8 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                 # NOTE: The query doesn't work with table.c.tenant_id is None,
                 # so I had to force flake8 to skip the check
                 if include_null_tenant:
-                    if include_shared:
+                    # Account for scoped tokens with no project_id
+                    if include_shared and context.project_id is not None:
                         query = query.where(or_(
                                 table.c.tenant_id == context.project_id,
                                 shared_zone_project_id == context.project_id,
@@ -192,7 +193,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
                                 table.c.tenant_id == context.project_id,
                                 table.c.tenant_id == None))  # NOQA
                 else:
-                    if include_shared:
+                    if include_shared and context.project_id is not None:
                         query = query.where(or_(
                             table.c.tenant_id == context.project_id,
                             shared_zone_project_id == context.project_id
