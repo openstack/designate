@@ -32,7 +32,7 @@ class RRDataAAAATest(oslotest.base.BaseTestCase):
         recordset = objects.RecordSet(
             name='www.example.test.', type='AAAA',
             records=objects.RecordList(objects=[
-                objects.Record(data='192.168.0.1'),
+                objects.Record(data='192.0.2.1'),
             ])
         )
         self.assertRaisesRegex(

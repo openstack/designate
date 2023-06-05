@@ -171,7 +171,7 @@ class AuditNotificationTest(unittest.TestCase):
         )
 
         rrset.records = objects.RecordList.from_list(
-            [{'data': '192.168.1.1'}])
+            [{'data': '192.0.2.1'}])
 
         result = rrset
         event = 'dns.recordset.create'
@@ -180,7 +180,7 @@ class AuditNotificationTest(unittest.TestCase):
 
         expected = [{
             'changed_field': 'records',
-            'new_data': '192.168.1.1',
+            'new_data': '192.0.2.1',
             'old_data': '',
             'recordset_name': 'foo.example.com.',
             'zone_id': None,
@@ -200,7 +200,7 @@ class AuditNotificationTest(unittest.TestCase):
         )
 
         rrset.records = objects.RecordList.from_list(
-            [{'data': '192.168.1.1'}])
+            [{'data': '192.0.2.1'}])
 
         result = rrset
         event = 'dns.recordset.create'
@@ -209,7 +209,7 @@ class AuditNotificationTest(unittest.TestCase):
 
         expected = [{
             'changed_field': 'records',
-            'new_data': '192.168.1.1',
+            'new_data': '192.0.2.1',
             'old_data': '',
             'recordset_name': 'foo.example.com.',
             'zone_id': AuditNotificationTest.zone__id,
@@ -224,13 +224,13 @@ class AuditNotificationTest(unittest.TestCase):
                 name='foo.example.com.',
                 type='PRIMARY',
                 records=objects.RecordList.from_list(
-                    [{'data': '192.168.1.1'}]),
+                    [{'data': '192.0.2.1'}]),
                 zone_id=AuditNotificationTest.zone__id,
                 zone_name='example.com.'
         )
 
         rrset.records = objects.RecordList.from_list(
-            [{'data': '192.168.1.2'}])
+            [{'data': '192.0.2.2'}])
 
         result = rrset
         event = 'dns.recordset.update'
@@ -239,8 +239,8 @@ class AuditNotificationTest(unittest.TestCase):
 
         expected = [{
             'changed_field': 'records',
-            'new_data': '192.168.1.2',
-            'old_data': '192.168.1.1',
+            'new_data': '192.0.2.2',
+            'old_data': '192.0.2.1',
             'recordset_name': 'foo.example.com.',
             'zone_id': AuditNotificationTest.zone__id,
             'zone_name': 'example.com.'
@@ -254,7 +254,7 @@ class AuditNotificationTest(unittest.TestCase):
                 name='foo.example.com.',
                 type='PRIMARY',
                 records=objects.RecordList.from_list(
-                    [{'data': '192.168.1.1'}]),
+                    [{'data': '192.0.2.1'}]),
                 zone_id=AuditNotificationTest.zone__id,
                 zone_name='example.com.',
                 ttl=300

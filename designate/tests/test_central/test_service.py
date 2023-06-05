@@ -1411,7 +1411,7 @@ class CentralServiceTest(designate.tests.TestCase):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
-        fixture['masters'] = [{"host": "10.0.0.10", "port": 53}]
+        fixture['masters'] = [{"host": "192.0.2.10", "port": 53}]
 
         # Create a zone
         secondary = self.create_zone(**fixture)
@@ -1430,7 +1430,7 @@ class CentralServiceTest(designate.tests.TestCase):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
-        fixture['masters'] = [{"host": "10.0.0.10", "port": 53}]
+        fixture['masters'] = [{"host": "192.0.2.10", "port": 53}]
 
         # Create a zone
         secondary = self.create_zone(**fixture)
@@ -1448,7 +1448,7 @@ class CentralServiceTest(designate.tests.TestCase):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
-        fixture['masters'] = [{"host": "10.0.0.10", "port": 53}]
+        fixture['masters'] = [{"host": "192.0.2.10", "port": 53}]
         fixture['serial'] = 10
 
         # Create a zone

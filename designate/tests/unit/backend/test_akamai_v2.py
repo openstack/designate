@@ -45,11 +45,11 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'akamai_v2',
             'masters': [
-                {'host': '192.168.1.1', 'port': 53},
-                {'host': '192.168.1.2', 'port': 35}
+                {'host': '192.0.2.1', 'port': 53},
+                {'host': '192.0.2.2', 'port': 35}
             ],
             'options': [
-                {'key': 'host', 'value': '192.168.2.3'},
+                {'key': 'host', 'value': '192.0.2.3'},
                 {'key': 'port', 'value': '53'},
                 {'key': 'akamai_client_secret', 'value': 'client_secret'},
                 {'key': 'akamai_host', 'value': 'host_value'},
@@ -108,7 +108,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
         mock_post.assert_called_once_with(
             json={
                 'comment': 'Created by Designate for Tenant %s' % project_id,
-                'masters': ['192.168.1.1', '192.168.1.2'],
+                'masters': ['192.0.2.1', '192.0.2.2'],
                 'type': 'secondary', 'zone': 'example.com.'
             },
             params={
@@ -139,7 +139,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
         mock_post.assert_called_once_with(
             json={
                 'comment': 'Created by Designate for Tenant %s' % project_id,
-                'masters': ['192.168.1.1', '192.168.1.2'],
+                'masters': ['192.0.2.1', '192.0.2.2'],
                 'type': 'secondary', 'zone': 'example.com.'
             },
             params={
@@ -173,7 +173,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
         mock_post.assert_called_once_with(
             json={
                 'comment': 'Created by Designate for Tenant %s' % project_id,
-                'masters': ['192.168.1.1', '192.168.1.2'],
+                'masters': ['192.0.2.1', '192.0.2.2'],
                 'type': 'secondary',
                 'zone': 'example.com.',
                 'tsigKey': {
@@ -219,7 +219,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
         mock_post.assert_called_once_with(
             json={
                 'comment': 'Created by Designate for Tenant %s' % project_id,
-                'masters': ['192.168.1.1', '192.168.1.2'],
+                'masters': ['192.0.2.1', '192.0.2.2'],
                 'type': 'secondary', 'zone': 'example.com.'
             },
             params={

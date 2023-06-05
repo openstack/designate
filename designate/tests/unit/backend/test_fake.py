@@ -40,8 +40,8 @@ class FakeBackendTestCase(oslotest.base.BaseTestCase):
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'fake',
             'masters': [
-                {'host': '192.168.1.1', 'port': 53},
-                {'host': '192.168.1.2', 'port': 35}
+                {'host': '192.0.2.1', 'port': 53},
+                {'host': '192.0.2.2', 'port': 35}
             ],
             'options': [
             ],

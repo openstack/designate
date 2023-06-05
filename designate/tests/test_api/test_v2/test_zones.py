@@ -524,7 +524,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_create_secondary(self):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
-        fixture['masters'] = ["10.0.0.1"]
+        fixture['masters'] = ["192.0.2.1"]
 
         response = self.client.post_json('/zones/', fixture,
                                          headers={'X-Test-Role': 'member'})
@@ -567,8 +567,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
             name='example.com.',
             type='SECONDARY',
             masters=objects.ZoneMasterList.from_list([
-                {'host': '1.0.0.0', 'port': 69},
-                {'host': '2.0.0.0', 'port': 69}
+                {'host': '192.0.2.1', 'port': 69},
+                {'host': '192.0.2.2', 'port': 69}
             ])
         )
         zone.email = cfg.CONF['service:central'].managed_resource_email
@@ -576,7 +576,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a zone
         zone = self.central_service.create_zone(self.admin_context, zone)
 
-        masters = ['10.0.0.1', '10.0.0.2']
+        masters = ['192.0.2.1', '192.0.2.2']
 
         # Prepare an update body
         body = {'masters': masters}
@@ -604,7 +604,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
-        fixture['masters'] = [{"host": "10.0.0.10", "port": 53}]
+        fixture['masters'] = [{"host": "192.0.2.10", "port": 53}]
 
         # Create a zone
         zone = self.create_zone(**fixture)

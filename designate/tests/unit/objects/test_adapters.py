@@ -104,7 +104,7 @@ class DesignateAdapterTest(oslotest.base.BaseTestCase):
             'Provided object does not match schema. '
             'Keys \\[\'address\'\\] are not valid for test_obj',
             adapters.DesignateAdapter.parse,
-            'TEST_API', {'address': '192.168.0.1'}, DesignateTestObject(),
+            'TEST_API', {'address': '192.0.2.1'}, DesignateTestObject(),
         )
 
     def test_get_object_adapter(self):

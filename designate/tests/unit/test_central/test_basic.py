@@ -1056,7 +1056,7 @@ class CentralZoneTestCase(CentralBasic):
             name='example.org.',
             tenant_id='2',
             type='SECONDARY',
-            masters=[RoObject(host='10.0.0.1', port=53)],
+            masters=[RoObject(host='192.0.2.1', port=53)],
             serial=1,
         )
         with fx_worker:

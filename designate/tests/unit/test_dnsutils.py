@@ -92,8 +92,8 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
         mock_from_xfr.return_value = 'raw_zone'
 
         masters = [
-            {'host': '192.168.0.1', 'port': 53},
-            {'host': '192.168.0.2', 'port': 53},
+            {'host': '192.0.2.1', 'port': 53},
+            {'host': '192.0.2.2', 'port': 53},
         ]
 
         self.assertEqual(
@@ -122,10 +122,10 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
         mock_from_xfr.side_effect = eventlet.Timeout()
 
         masters = [
-            {'host': '192.168.0.1', 'port': 53},
-            {'host': '192.168.0.2', 'port': 53},
-            {'host': '192.168.0.3', 'port': 53},
-            {'host': '192.168.0.4', 'port': 53},
+            {'host': '192.0.2.1', 'port': 53},
+            {'host': '192.0.2.2', 'port': 53},
+            {'host': '192.0.2.3', 'port': 53},
+            {'host': '192.0.2.4', 'port': 53},
         ]
 
         self.assertRaises(
@@ -143,7 +143,7 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
         mock_from_xfr.side_effect = dns.exception.FormError()
 
         masters = [
-            {'host': '192.168.0.1', 'port': 53},
+            {'host': '192.0.2.1', 'port': 53},
         ]
 
         self.assertRaises(
@@ -160,7 +160,7 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
         mock_from_xfr.side_effect = socket.error()
 
         masters = [
-            {'host': '192.168.0.1', 'port': 53},
+            {'host': '192.0.2.1', 'port': 53},
         ]
 
         self.assertRaises(
@@ -177,7 +177,7 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
         mock_from_xfr.side_effect = Exception()
 
         masters = [
-            {'host': '192.168.0.1', 'port': 53},
+            {'host': '192.0.2.1', 'port': 53},
         ]
 
         self.assertRaises(

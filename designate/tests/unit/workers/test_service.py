@@ -231,7 +231,7 @@ class TestService(oslotest.base.BaseTestCase):
         pool = mock.Mock()
         pool.also_notifies = mock.MagicMock()
         pool.also_notifies.__iter__.return_value = [
-            mock.Mock(host='192.168.1.1', port=53),
+            mock.Mock(host='192.0.2.1', port=53),
         ]
         self.service.get_pool.return_value = pool
         self.zone_params = {}

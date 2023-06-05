@@ -60,7 +60,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             serial=2,
             masters=objects.ZoneMasterList.from_list([
-                {'host': '1.0.0.0', 'port': 53},
+                {'host': '192.0.2.1', 'port': 53},
             ])
         )
         mock_query.return_value = [
@@ -70,7 +70,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         request = dns.message.make_query(
             'www.example.org.', dns.rdatatype.SOA
         )
-        request.environ = dict(addr=['1.0.0.0'], context=self.context)
+        request.environ = dict(addr=['192.0.2.1'], context=self.context)
 
         response = self.handler._handle_notify(request)
 
@@ -78,7 +78,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
 
         self.assertIn(
             'Scheduling AXFR for e2bed4dc-9d01-11e4-89d3-123b93f75cba '
-            'from 1.0.0.0:53',
+            'from 192.0.2.1:53',
             self.stdlog.logger.output
         )
 
@@ -88,7 +88,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             serial=1,
             masters=objects.ZoneMasterList.from_list([
-                {'host': '1.0.0.0', 'port': 53},
+                {'host': '192.0.2.1', 'port': 53},
             ])
         )
         mock_query.return_value = [
@@ -98,7 +98,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         request = dns.message.make_query(
             'www.example.org.', dns.rdatatype.SOA
         )
-        request.environ = dict(addr=['1.0.0.0'], context=self.context)
+        request.environ = dict(addr=['192.0.2.1'], context=self.context)
 
         response = self.handler._handle_notify(request)
 
@@ -136,7 +136,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
     def test_notify_no_master_addr(self):
         self.storage.find_zone.return_value = objects.Zone(
             masters=objects.ZoneMasterList.from_list([
-                {'host': '1.0.0.0', 'port': 53},
+                {'host': '192.0.2.1', 'port': 53},
             ])
         )
 
