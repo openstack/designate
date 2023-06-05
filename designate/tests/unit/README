@@ -2,5 +2,5 @@ This directory contains pure unit tests.
 
 Examples:
 
-tox -e py27 -- tests.unit
-tox -e py37 -- tests.unit.backend
+tox -e py3 -- tests.unit
+tox -e py3 -- tests.unit.backend
