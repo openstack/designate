@@ -4166,6 +4166,174 @@ class CentralServiceTest(designate.tests.TestCase):
         self.assertEqual(shared_zone.project_id,
                          retrived_shared_zone.project_id)
 
+    def test_create_managed_records(self):
+        zone = self.create_zone()
+
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+        self.assertEqual(0, len(recordsets))
+
+        recordset_values = {
+            'zone_id': zone['id'],
+            'name': 'test.example.com.',
+            'type': 'A'
+        }
+        record_values = {
+            'data': '192.0.2.1',
+            'managed': True,
+            'managed_plugin_name': 'plugin',
+            'managed_plugin_type': 'plugin',
+            'managed_resource_type': 'instance',
+            'managed_resource_id': '521935cf-d5be-44a2-9f64-fb5a316a61d3'
+        }
+        self.central_service.create_managed_records(
+            self.admin_context, zone['id'],
+            records_values=[record_values],
+            recordset_values=recordset_values,
+        )
+
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+        self.assertEqual(1, len(recordsets))
+        self.assertEqual('test.example.com.', recordsets[0].name)
+        self.assertEqual('A', recordsets[0].type)
+
+    def test_create_managed_records_without_managed_data(self):
+        zone = self.create_zone()
+
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+        self.assertEqual(0, len(recordsets))
+
+        recordset_values = {
+            'zone_id': zone['id'],
+            'name': 'test.example.com.',
+            'type': 'A'
+        }
+        record_values = {
+            'data': '192.0.2.1',
+        }
+        self.central_service.create_managed_records(
+            self.admin_context, zone['id'],
+            records_values=[record_values],
+            recordset_values=recordset_values,
+        )
+
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+        self.assertEqual(1, len(recordsets))
+        self.assertEqual('test.example.com.', recordsets[0].name)
+        self.assertEqual('A', recordsets[0].type)
+
+    def test_delete_managed_records(self):
+        context = self.get_admin_context()
+        zone = self.create_zone(context=context)
+        self.create_recordset(context=context, zone=zone)
+
+        recordset_values = {
+            'zone_id': zone['id'],
+            'name': 'test.example.com.',
+            'type': 'A'
+        }
+        record_values = {
+            'data': '192.0.2.1',
+            'managed': True,
+            'managed_plugin_name': 'plugin',
+            'managed_plugin_type': 'plugin',
+            'managed_resource_type': 'instance',
+            'managed_resource_id': '7c0b3445-f69d-417b-9938-82a87220332e'
+        }
+        self.central_service.create_managed_records(
+            context, zone['id'],
+            records_values=[record_values],
+            recordset_values=recordset_values,
+        )
+
+        recordsets = self.central_service.find_recordsets(
+            context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+
+        self.assertEqual(2, len(recordsets))
+
+        criterion = {
+            'managed': True,
+            'managed_plugin_name': 'plugin',
+            'managed_plugin_type': 'plugin',
+            'managed_resource_id': '7c0b3445-f69d-417b-9938-82a87220332e',
+            'managed_resource_type': 'instance'
+        }
+
+        context.edit_managed_records = True
+        self.central_service.delete_managed_records(
+            context, zone['id'], criterion
+        )
+
+        recordsets = self.central_service.find_recordsets(
+            context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+        self.assertEqual(1, len(recordsets))
+
+    def test_delete_managed_records_without_zone(self):
+        context = self.get_admin_context()
+        zone = self.create_zone(context=context)
+        self.create_recordset(context=context, zone=zone)
+
+        recordset_values = {
+            'zone_id': zone['id'],
+            'name': 'test.example.com.',
+            'type': 'A'
+        }
+        record_values = {
+            'data': '192.0.2.1',
+            'managed': True,
+            'managed_plugin_name': 'plugin',
+            'managed_plugin_type': 'plugin',
+            'managed_resource_type': 'instance',
+            'managed_resource_id': '7c0b3445-f69d-417b-9938-82a87220332e'
+        }
+        self.central_service.create_managed_records(
+            context, zone['id'],
+            records_values=[record_values],
+            recordset_values=recordset_values,
+        )
+
+        recordsets = self.central_service.find_recordsets(
+            context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+
+        self.assertEqual(2, len(recordsets))
+
+        criterion = {
+            'managed': True,
+            'managed_plugin_name': 'plugin',
+            'managed_plugin_type': 'plugin',
+            'managed_resource_id': '7c0b3445-f69d-417b-9938-82a87220332e',
+            'managed_resource_type': 'instance'
+        }
+
+        context.edit_managed_records = True
+        self.central_service.delete_managed_records(
+            context, None, criterion
+        )
+
+        recordsets = self.central_service.find_recordsets(
+            context,
+            criterion={'zone_id': zone.id, 'type': 'A'}
+        )
+
+        self.assertEqual(1, len(recordsets))
+
     def test_batch_increment_serial(self):
         zone = self.create_zone()
         zone_serial = zone.serial
