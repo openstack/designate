@@ -70,19 +70,19 @@ Execute all unit tests
 
 .. code-block:: shell
 
-    tox -e py36
+    tox -e py3
 
 Execute only backend tests
 
 .. code-block:: shell
 
-    tox -e py36 -- unit.backend
+    tox -e py3 -- unit.backend
 
 Execute only a single test
 
 .. code-block:: shell
 
-    tox -e py36 -- unit.backend.test_pdns4.PDNS4BackendTestCase.test_create_zone_success
+    tox -e py3 -- unit.backend.test_pdns4.PDNS4BackendTestCase.test_create_zone_success
 
 Contributing
 ------------
