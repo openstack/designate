@@ -43,13 +43,13 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'bind9',
             'masters': [
-                {'host': '192.168.1.1', 'port': 53},
-                {'host': '192.168.1.2', 'port': 35}
+                {'host': '192.0.2.1', 'port': 53},
+                {'host': '192.0.2.2', 'port': 35}
             ],
             'options': [
-                {'key': 'host', 'value': '192.168.2.3'},
+                {'key': 'host', 'value': '192.0.2.3'},
                 {'key': 'port', 'value': '53'},
-                {'key': 'rndc_host', 'value': '192.168.2.4'},
+                {'key': 'rndc_host', 'value': '192.0.2.4'},
                 {'key': 'rndc_port', 'value': '953'},
                 {'key': 'rndc_bin_path', 'value': '/usr/sbin/rndc'},
                 {'key': 'rndc_config_file', 'value': '/etc/rndc.conf'},
@@ -70,7 +70,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         mock_execute.assert_called_with(
             [
                 'addzone',
-                'example.com  { type slave; masters { 192.168.1.1 port 53; 192.168.1.2 port 35;}; file "slave.example.com.cca7908b-dad4-4c50-adba-fb67d4c556e8"; };'  # noqa
+                'example.com  { type slave; masters { 192.0.2.1 port 53; 192.0.2.2 port 35;}; file "slave.example.com.cca7908b-dad4-4c50-adba-fb67d4c556e8"; };'  # noqa
             ]
         )
 
@@ -82,7 +82,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         mock_execute.assert_called_with(
             [
                 'modzone',
-                'example.com  { type slave; masters { 192.168.1.1 port 53; 192.168.1.2 port 35;}; file "slave.example.com.cca7908b-dad4-4c50-adba-fb67d4c556e8"; };'  # noqa
+                'example.com  { type slave; masters { 192.0.2.1 port 53; 192.0.2.2 port 35;}; file "slave.example.com.cca7908b-dad4-4c50-adba-fb67d4c556e8"; };'  # noqa
             ]
         )
 
@@ -111,7 +111,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         mock_execute.assert_called_with(
             [
                 'addzone',
-                'example.com in guest { type slave; masters { 192.168.1.2 port 35; 192.168.1.1 port 53;}; file "slave.example.com.cca7908b-dad4-4c50-adba-fb67d4c556e8"; };'  # noqa
+                'example.com in guest { type slave; masters { 192.0.2.2 port 35; 192.0.2.1 port 53;}; file "slave.example.com.cca7908b-dad4-4c50-adba-fb67d4c556e8"; };'  # noqa
             ]
         )
 
@@ -186,7 +186,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
     def test_generate_rndc_base_call(self):
         self.assertEqual(
             [
-                '/usr/sbin/rndc', '-s', '192.168.2.4', '-p', '953',
+                '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
                 '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key'
             ],
             self.backend._generate_rndc_base_call()
@@ -194,7 +194,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
 
     def test_generate_rndc_base_call_without_config_file(self):
         self.target['options'] = [
-            {'key': 'rndc_host', 'value': '192.168.4.4'},
+            {'key': 'rndc_host', 'value': '192.0.2.4'},
             {'key': 'rndc_port', 'value': '953'},
             {'key': 'rndc_bin_path', 'value': '/usr/sbin/rndc'},
             {'key': 'rndc_key_file', 'value': '/etc/rndc.key'},
@@ -206,7 +206,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
 
         self.assertEqual(
             [
-                '/usr/sbin/rndc', '-s', '192.168.4.4', '-p', '953',
+                '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
                 '-k', '/etc/rndc.key'
             ],
             backend._generate_rndc_base_call()
@@ -214,7 +214,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
 
     def test_generate_rndc_base_call_without_key_file(self):
         self.target['options'] = [
-            {'key': 'rndc_host', 'value': '192.168.3.4'},
+            {'key': 'rndc_host', 'value': '192.0.2.4'},
             {'key': 'rndc_port', 'value': '953'},
             {'key': 'rndc_bin_path', 'value': '/usr/sbin/rndc'},
             {'key': 'rndc_config_file', 'value': '/etc/rndc.conf'},
@@ -226,7 +226,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
 
         self.assertEqual(
             [
-                '/usr/sbin/rndc', '-s', '192.168.3.4', '-p', '953',
+                '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
                 '-c', '/etc/rndc.conf'
             ],
             backend._generate_rndc_base_call()
@@ -239,7 +239,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         self.backend._execute_rndc(rndc_op)
 
         mock_execute.assert_called_with(
-            '/usr/sbin/rndc', '-s', '192.168.2.4', '-p', '953',
+            '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
             '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
             'delzone', 'example.com ', timeout=None
         )
@@ -252,7 +252,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         self.backend._execute_rndc(rndc_op)
 
         mock_execute.assert_called_with(
-            '/usr/sbin/rndc', '-s', '192.168.2.4', '-p', '953',
+            '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
             '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
             'delzone', 'example.com ', timeout=10
         )
@@ -264,7 +264,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         self.backend._rndc_timeout = 10
 
         mock_execute.side_effect = subprocess.TimeoutExpired([
-            '/usr/sbin/rndc', '-s', '192.168.2.4', '-p', '953',
+            '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
             '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
             'delzone', 'example.com '], 10)
 

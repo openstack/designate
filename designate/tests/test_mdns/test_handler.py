@@ -125,7 +125,7 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
     def _get_secondary_zone(self, values=None, attributes=None,
                             masters=None):
         attributes = attributes or []
-        masters = masters or [{"host": "10.0.0.1", "port": 53}]
+        masters = masters or [{"host": "192.0.2.1", "port": 53}]
         fixture = self.get_zone_fixture("SECONDARY", values=values)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
@@ -147,7 +147,7 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
         # DNS packet with NOTIFY opcode
         payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
 
-        master = "10.0.0.1"
+        master = "192.0.2.1"
         zone = self._get_secondary_zone({"serial": 123})
 
         # expected response is an error code NOERROR.  The other fields are
@@ -184,7 +184,7 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
         # DNS packet with NOTIFY opcode
         payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
 
-        master = "10.0.0.1"
+        master = "192.0.2.1"
         zone = self._get_secondary_zone({"serial": 123})
 
         # expected response is an error code NOERROR.  The other fields are
@@ -242,7 +242,7 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {
-            'addr': ("10.0.0.2", 53),
+            'addr': ("192.0.2.2", 53),
             'context': self.context
         }
 
@@ -270,7 +270,7 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {
-            'addr': ("10.0.0.2", 53),
+            'addr': ("192.0.2.2", 53),
             'context': self.context
         }
 
@@ -298,7 +298,7 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {
-            'addr': ("10.0.0.2", 53),
+            'addr': ("192.0.2.2", 53),
             'context': self.context
         }
 

@@ -23,7 +23,7 @@ from designate.backend import impl_dynect
 from designate import context
 from designate import objects
 
-MASTERS = ["10.0.0.1"]
+MASTERS = ["192.0.2.1"]
 CONTACT = 'jdoe@myco.biz'
 
 LOGIN_SUCCESS = {

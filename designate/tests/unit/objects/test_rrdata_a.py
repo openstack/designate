@@ -27,12 +27,12 @@ class RRDataATest(oslotest.base.BaseTestCase):
         recordset = objects.RecordSet(
             name='www.example.test.', type='A',
             records=objects.RecordList(objects=[
-                objects.Record(data='192.168.0.1'),
+                objects.Record(data='192.0.2.1'),
             ])
         )
         recordset.validate()
         self.assertEqual(
-            "<Record id:'None' recordset_id:'None' data:'192.168.0.1'>",
+            "<Record id:'None' recordset_id:'None' data:'192.0.2.1'>",
             repr(recordset.records[0])
         )
 
@@ -40,7 +40,7 @@ class RRDataATest(oslotest.base.BaseTestCase):
         recordset = objects.RecordSet(
             name='www.example.test.', type='A',
             records=objects.RecordList(objects=[
-                objects.Record(data='192.168.0.1'),
+                objects.Record(data='192.0.2.1'),
             ])
         )
         recordset.validate()
@@ -75,7 +75,7 @@ class RRDataATest(oslotest.base.BaseTestCase):
         recordset = objects.RecordSet(
             name='www.example.test.', type='A',
             records=objects.RecordList(objects=[
-                objects.Record(data='10.0.001.1'),
+                objects.Record(data='192.0.002.1'),
             ])
         )
         self.assertRaisesRegex(

@@ -125,12 +125,12 @@ class NeutronNetworkAPITest(oslotest.base.BaseTestCase):
         driver.network.ips.return_value = [
             {
                 'id': '123',
-                'floating_ip_address': '192.168.0.100',
+                'floating_ip_address': '192.0.2.100',
                 'region': 'RegionOne'
             },
             {
                 'id': '456',
-                'floating_ip_address': '192.168.0.200',
+                'floating_ip_address': '192.0.2.200',
                 'region': 'RegionOne'
             },
         ]

@@ -49,17 +49,17 @@ class ZoneTest(oslotest.base.BaseTestCase):
     def test_masters(self):
         zone = objects.Zone(
             masters=objects.ZoneMasterList.from_list([
-                {'host': '1.0.0.0', 'port': 53}
+                {'host': '192.0.2.1', 'port': 53}
             ])
         )
         self.assertEqual(
-            [{'host': '1.0.0.0', 'port': 53}], zone.masters.to_list())
+            [{'host': '192.0.2.1', 'port': 53}], zone.masters.to_list())
 
     def test_masters_2(self):
         zone = objects.Zone(
             masters=objects.ZoneMasterList.from_list([
-                {'host': '1.0.0.0'},
-                {'host': '2.0.0.0'}
+                {'host': '192.0.2.1'},
+                {'host': '192.0.2.2'}
             ])
         )
         self.assertEqual(2, len(zone.masters))
@@ -67,18 +67,18 @@ class ZoneTest(oslotest.base.BaseTestCase):
     def test_get_master_by_ip(self):
         zone = objects.Zone(
             masters=objects.ZoneMasterList.from_list([
-                {'host': '1.0.0.0', 'port': 53},
-                {'host': '2.0.0.0', 'port': 53}
+                {'host': '192.0.2.1', 'port': 53},
+                {'host': '192.0.2.2', 'port': 53}
             ])
         )
-        m = zone.get_master_by_ip('2.0.0.0').to_data()
+        m = zone.get_master_by_ip('192.0.2.2').to_data()
 
-        self.assertEqual('2.0.0.0:53', m)
+        self.assertEqual('192.0.2.2:53', m)
 
     @unittest.expectedFailure  # bug: zone.masters is not iterable
     def test_get_master_by_ip_none(self):
         zone = objects.Zone()
-        master = zone.get_master_by_ip('2.0.0.0')
+        master = zone.get_master_by_ip('192.0.2.2')
         self.assertFalse(master)
 
     def test_validate(self):
@@ -97,7 +97,7 @@ class ZoneTest(oslotest.base.BaseTestCase):
 
     def test_validate_primary_with_masters(self):
         masters = objects.ZoneMasterList()
-        masters.append(objects.ZoneMaster.from_data("10.0.0.1:53"))
+        masters.append(objects.ZoneMaster.from_data("192.0.2.1:53"))
         zone = objects.Zone(
             name='example.com.',
             type='PRIMARY',
@@ -123,7 +123,7 @@ class ZoneTest(oslotest.base.BaseTestCase):
 
     def test_validate_secondary_with_email(self):
         masters = objects.ZoneMasterList()
-        masters.append(objects.ZoneMaster.from_data("10.0.0.1:53"))
+        masters.append(objects.ZoneMaster.from_data("192.0.2.1:53"))
         zone = objects.Zone(
             name='example.com.',
             type='SECONDARY',
@@ -138,7 +138,7 @@ class ZoneTest(oslotest.base.BaseTestCase):
 
     def test_validate_secondary_with_ttl(self):
         masters = objects.ZoneMasterList()
-        masters.append(objects.ZoneMaster.from_data("10.0.0.1:53"))
+        masters.append(objects.ZoneMaster.from_data("192.0.2.1:53"))
         zone = objects.Zone(
             name='example.com.',
             type='SECONDARY',

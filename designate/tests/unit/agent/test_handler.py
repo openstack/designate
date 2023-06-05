@@ -41,15 +41,15 @@ class AgentRequestHandlerTest(designate.tests.TestCase):
         dns.opcode.Opcode = private_codes.OpcodeWith14
 
     def test_init(self):
-        self.CONF.set_override('masters', ['192.168.0.1', '192.168.0.2'],
+        self.CONF.set_override('masters', ['192.0.2.1', '192.0.2.2'],
                                'service:agent')
 
         hndlr = handler.RequestHandler()
 
         self.assertEqual(
             [
-                {'host': '192.168.0.1', 'port': 53},
-                {'host': '192.168.0.2', 'port': 53}
+                {'host': '192.0.2.1', 'port': 53},
+                {'host': '192.0.2.2', 'port': 53}
             ],
             hndlr.masters
         )
