@@ -18,7 +18,6 @@ from oslo_log import log as logging
 
 from designate.context import DesignateContext
 from designate.notification_handler.base import NotificationHandler
-from designate.objects import Record
 
 
 LOG = logging.getLogger(__name__)
@@ -78,6 +77,8 @@ class SampleHandler(NotificationHandler):
                 'data': fixed_ip['address'],
             }
 
-            self._create_or_update_recordset(
-                context, [Record(**record_values)], **recordset_values
+            self.central_api.create_managed_records(
+                context, zone_id,
+                records_values=[record_values],
+                recordset_values=recordset_values,
             )
