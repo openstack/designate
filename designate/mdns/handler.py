@@ -415,19 +415,22 @@ class RequestHandler(object):
         if request.had_tsig:
             # Make the space we reserved for TSIG available for use
             renderer.max_size += TSIG_RRSIZE
+
             if multi_messages:
                 # The first message context will be None then the
                 # context for the prev message is used for the next
                 multi_messages_context = renderer.add_multi_tsig(
                     multi_messages_context, request.keyname,
-                    request.keyring[request.keyname], request.fudge,
-                    request.original_id, request.tsig_error,
-                    request.other_data, request.mac, request.keyalgorithm)
+                    request.keyring.secret, 300,
+                    request.id, request.tsig_error,
+                    b'', request.mac, request.keyalgorithm
+                )
             else:
-                renderer.add_tsig(request.keyname,
-                    request.keyring[request.keyname], request.fudge,
-                    request.original_id, request.tsig_error,
-                    request.other_data, request.mac, request.keyalgorithm)
+                renderer.add_tsig(
+                    request.keyname, request.keyring.secret, 300,
+                    request.id, request.tsig_error,
+                    b'', request.mac, request.keyalgorithm
+                )
         return renderer, multi_messages_context
 
     @staticmethod

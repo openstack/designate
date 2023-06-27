@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import binascii
-from unittest import expectedFailure
 from unittest import mock
 
 import dns
@@ -22,6 +21,7 @@ import dns.rdataclass
 import dns.rdatatype
 import dns.resolver
 import dns.rrset
+import dns.tsigkeyring
 from oslo_config import cfg
 import testtools
 
@@ -638,7 +638,6 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
                 self.assertEqual(
                     expected_response[1], binascii.b2a_hex(response_two))
 
-    @expectedFailure
     @mock.patch.object(dns.renderer.Renderer, 'add_multi_tsig')
     def test_dispatch_opcode_query_AXFR_multiple_messages_with_tsig(self,
             mock_multi_tsig):
@@ -698,11 +697,14 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
                                    side_effect=_find_recordsets_axfr):
                 request = dns.message.from_wire(binascii.a2b_hex(payload))
                 request.environ = {'addr': self.addr, 'context': self.context}
-                request.keyring = {request.keyname: ''}
-                request.had_tsig = True
-                args = [request.keyname, request.keyring[request.keyname],
-                        request.fudge, request.original_id, request.tsig_error,
-                        request.other_data, request.mac, request.keyalgorithm]
+
+                request.use_tsig(dns.tsigkeyring.from_text(
+                    {'test-key-two': 'AnotherSecretKey'})
+                )
+
+                args = [request.keyname, request.keyring.secret,
+                        300, request.id, request.tsig_error,
+                        b'', request.mac, request.keyalgorithm]
                 response_generator = self.handler(request)
                 # Validate the first response
                 response_one = next(response_generator).get_wire()

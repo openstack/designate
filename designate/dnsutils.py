@@ -167,10 +167,11 @@ class TsigInfoMiddleware(DNSMiddleware):
         return None
 
 
-class TsigKeyring(object):
+class TsigKeyring(dict):
     """Implements the DNSPython KeyRing API, backed by the Designate DB"""
 
     def __init__(self, storage):
+        super(TsigKeyring, self).__init__()
         self.storage = storage
 
     def __getitem__(self, key):
