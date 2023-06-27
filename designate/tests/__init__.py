@@ -117,7 +117,7 @@ class TestCase(base.BaseTestCase):
     tsigkey_fixtures = [{
         'name': 'test-key-one',
         'algorithm': 'hmac-md5',
-        'secret': 'SomeSecretKey',
+        'secret': 'SomeOldSecretKey',
         'scope': 'POOL',
         'resource_id': '6ca6baef-3305-4ad0-a52b-a82df5752b62',
     }, {
