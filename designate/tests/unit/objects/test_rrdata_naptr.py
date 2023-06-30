@@ -34,3 +34,40 @@ class RRDataNAPTRTest(oslotest.base.BaseTestCase):
         self.assertEqual('!^.*$!sip:customer-service@example.com!',
                          naptr_record.regexp)
         self.assertEqual('_sip._udp.example.com.', naptr_record.replacement)
+
+    def test_parse_naptr_quoted(self):
+        naptr_record = objects.NAPTR()
+        naptr_record.from_string(
+            '0 0 "S" "SIP+D2U" "!^.*$!sip:support@example.com!" _sip._udp.example.com.')  # noqa
+
+        self.assertEqual(0, naptr_record.order)
+        self.assertEqual(0, naptr_record.preference)
+        self.assertEqual('S', naptr_record.flags)
+        self.assertEqual('SIP+D2U', naptr_record.service)
+        self.assertEqual('!^.*$!sip:support@example.com!',
+                         naptr_record.regexp)
+        self.assertEqual('_sip._udp.example.com.', naptr_record.replacement)
+
+    def test_parse_naptr_empty_fields(self):
+        naptr_record = objects.NAPTR()
+        naptr_record.from_string('0 0 "" "" "" test.')  # noqa
+
+        self.assertEqual(0, naptr_record.order)
+        self.assertEqual(0, naptr_record.preference)
+        self.assertEqual('', naptr_record.flags)
+        self.assertEqual('', naptr_record.service)
+        self.assertEqual('',
+                         naptr_record.regexp)
+        self.assertEqual('test.', naptr_record.replacement)
+
+    def test_parse_naptr_valid_exampe1(self):
+        naptr_record = objects.NAPTR()
+        naptr_record.from_string('65535 65535 "SAUP" "bloop" ":beep::" test.')  # noqa
+
+        self.assertEqual(65535, naptr_record.order)
+        self.assertEqual(65535, naptr_record.preference)
+        self.assertEqual('SAUP', naptr_record.flags)
+        self.assertEqual('bloop', naptr_record.service)
+        self.assertEqual(':beep::',
+                         naptr_record.regexp)
+        self.assertEqual('test.', naptr_record.replacement)
