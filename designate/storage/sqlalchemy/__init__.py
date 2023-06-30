@@ -368,7 +368,8 @@ class SQLAlchemyStorage(base.SQLAlchemy):
                             literal_column('False')),
                            else_=literal_column('True')).label('shared')
         query = select(
-            tables.zones, shared_case).outerjoin(tables.shared_zones)
+            tables.zones,
+            shared_case).outerjoin(tables.shared_zones).distinct()
 
         zones = self._find(
             context, tables.zones, objects.Zone, objects.ZoneList,
