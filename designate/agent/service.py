@@ -30,7 +30,7 @@ from oslo_config import cfg
 from designate.agent import handler
 from designate.backend import agent_backend
 from designate.conf.agent import DEFAULT_AGENT_PORT
-from designate import dnsutils
+from designate import dnsmiddleware
 from designate import service
 from designate import utils
 
@@ -80,7 +80,7 @@ class Service(service.Service):
         # Create an instance of the RequestHandler class
         application = handler.RequestHandler()
         if cfg.CONF['service:agent'].notify_delay > 0.0:
-            application = dnsutils.LimitNotifyMiddleware(application)
-        application = dnsutils.SerializationMiddleware(application)
+            application = dnsmiddleware.LimitNotifyMiddleware(application)
+        application = dnsmiddleware.SerializationMiddleware(application)
 
         return application

@@ -74,12 +74,12 @@ class MdnsServiceTest(designate.tests.TestCase):
         # NOTE: Start is already done by the fixture in start_service()
         self.service.stop()
 
-    @mock.patch.object(dns.message, 'make_query')
-    def test_handle_empty_payload(self, query_mock):
+    @mock.patch.object(dns.message, 'from_wire')
+    def test_handle_empty_payload(self, mock_from_wire):
         mock_socket = mock.Mock()
         self.dns_service._dns_handle_udp_query(mock_socket, self.addr,
                                                ' '.encode('utf-8'))
-        query_mock.assert_called_once_with('unknown', dns.rdatatype.A)
+        mock_from_wire.assert_called_once_with(b' ', {})
 
     def test_handle_udp_payload(self):
         mock_socket = mock.Mock()
@@ -88,7 +88,7 @@ class MdnsServiceTest(designate.tests.TestCase):
         mock_socket.sendto.assert_called_once_with(self.expected_response,
                                                    self.addr)
 
-    def test__dns_handle_tcp_conn_fail_unpack(self):
+    def test_dns_handle_tcp_conn_fail_unpack(self):
         # will call recv() only once
         mock_socket = mock.Mock()
         mock_socket.recv.side_effect = ['X', 'boo']  # X will fail unpack
@@ -97,7 +97,7 @@ class MdnsServiceTest(designate.tests.TestCase):
         self.assertEqual(1, mock_socket.recv.call_count)
         self.assertEqual(1, mock_socket.close.call_count)
 
-    def test__dns_handle_tcp_conn_one_query(self):
+    def test_dns_handle_tcp_conn_one_query(self):
         payload = self.query_payload
         mock_socket = mock.Mock()
         pay_len = struct.pack("!H", len(payload))
@@ -114,7 +114,7 @@ class MdnsServiceTest(designate.tests.TestCase):
         self.assertEqual(len(wire), expected_length + 2)
         self.assertEqual(self.expected_response, wire[2:])
 
-    def test__dns_handle_tcp_conn_multiple_queries(self):
+    def test_dns_handle_tcp_conn_multiple_queries(self):
         payload = self.query_payload
         mock_socket = mock.Mock()
         pay_len = struct.pack("!H", len(payload))
@@ -136,7 +136,7 @@ class MdnsServiceTest(designate.tests.TestCase):
         self.assertEqual(5, mock_socket.sendall.call_count)
         self.assertEqual(1, mock_socket.close.call_count)
 
-    def test__dns_handle_tcp_conn_multiple_queries_socket_error(self):
+    def test_dns_handle_tcp_conn_multiple_queries_socket_error(self):
         payload = self.query_payload
         mock_socket = mock.Mock()
         pay_len = struct.pack("!H", len(payload))
@@ -158,7 +158,7 @@ class MdnsServiceTest(designate.tests.TestCase):
         self.assertEqual(5, mock_socket.sendall.call_count)
         self.assertEqual(1, mock_socket.close.call_count)
 
-    def test__dns_handle_tcp_conn_multiple_queries_ignore_bad_query(self):
+    def test_dns_handle_tcp_conn_multiple_queries_ignore_bad_query(self):
         payload = self.query_payload
         mock_socket = mock.Mock()
         pay_len = struct.pack("!H", len(payload))

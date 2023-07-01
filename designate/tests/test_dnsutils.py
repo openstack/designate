@@ -20,9 +20,9 @@ import dns.query
 import dns.tsigkeyring
 from oslo_config import cfg
 
+from designate import dnsmiddleware
 from designate import dnsutils
 from designate import exceptions
-from designate.mdns import handler
 from designate import objects
 from designate import storage
 import designate.tests
@@ -82,48 +82,6 @@ SAMPLES = {
         ]
     }
 }
-
-
-class TestSerializationMiddleware(designate.tests.TestCase):
-    def setUp(self):
-        super(TestSerializationMiddleware, self).setUp()
-        self.storage = storage.get_storage()
-        self.tg = mock.Mock()
-
-    def test_with_tsigkeyring(self):
-        self.create_tsigkey(fixture=1)
-
-        query = dns.message.make_query(
-            'example.com.', dns.rdatatype.SOA,
-        )
-        query.use_tsig(dns.tsigkeyring.from_text(
-            {'test-key-two': 'AnotherSecretKey'})
-        )
-        payload = query.to_wire()
-
-        application = handler.RequestHandler(self.storage, self.tg)
-        application = dnsutils.SerializationMiddleware(
-            application, dnsutils.TsigKeyring(self.storage)
-        )
-
-        self.assertTrue(next(application(
-            {'payload': payload, 'addr': ['192.0.2.1', 5353]}
-        )))
-
-    def test_without_tsigkeyring(self):
-        query = dns.message.make_query(
-            'example.com.', dns.rdatatype.SOA,
-        )
-        payload = query.to_wire()
-
-        application = handler.RequestHandler(self.storage, self.tg)
-        application = dnsutils.SerializationMiddleware(
-            application, dnsutils.TsigKeyring(self.storage)
-        )
-
-        self.assertTrue(next(application(
-            {'payload': payload, 'addr': ['192.0.2.1', 5353]}
-        )))
 
 
 class TestTsigUtils(designate.tests.TestCase):
@@ -242,7 +200,7 @@ class TestUtils(designate.tests.TestCase):
 
         # Initialize the middlware
         placeholder_app = None
-        middleware = dnsutils.LimitNotifyMiddleware(placeholder_app)
+        middleware = dnsmiddleware.LimitNotifyMiddleware(placeholder_app)
 
         # Prepare a NOTIFY
         zone_name = 'example.com.'
@@ -261,7 +219,7 @@ class TestUtils(designate.tests.TestCase):
 
         # Initialize the middlware
         placeholder_app = None
-        middleware = dnsutils.LimitNotifyMiddleware(placeholder_app)
+        middleware = dnsmiddleware.LimitNotifyMiddleware(placeholder_app)
 
         # Prepare a NOTIFY
         zone_name = 'example.com.'

@@ -17,6 +17,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.conf.mdns import DEFAULT_MDNS_PORT
+from designate import dnsmiddleware
 from designate import dnsutils
 from designate.mdns import handler
 from designate import service
@@ -67,8 +68,10 @@ class Service(service.Service):
         # Create an instance of the RequestHandler class and wrap with
         # necessary middleware.
         application = handler.RequestHandler(self.storage, self.tg)
-        application = dnsutils.TsigInfoMiddleware(application, self.storage)
-        application = dnsutils.SerializationMiddleware(
+        application = dnsmiddleware.TsigInfoMiddleware(
+            application, self.storage
+        )
+        application = dnsmiddleware.SerializationMiddleware(
             application, dnsutils.TsigKeyring(self.storage)
         )
 

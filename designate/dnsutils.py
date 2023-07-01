@@ -15,11 +15,12 @@
 # under the License.
 import random
 import socket
-from threading import Lock
+import threading
 import time
 
-import dns
 import dns.exception
+import dns.message
+import dns.opcode
 import dns.query
 import dns.rdatatype
 import dns.zone
@@ -34,137 +35,6 @@ from designate import objects
 
 CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-
-
-class DNSMiddleware(object):
-    """Base DNS Middleware class with some utility methods"""
-    def __init__(self, application):
-        self.application = application
-
-    def process_request(self, request):
-        """Called on each request.
-
-        If this returns None, the next application down the stack will be
-        executed. If it returns a response then that response will be returned
-        and execution will stop here.
-        """
-        return None
-
-    def process_response(self, response):
-        """Do whatever you'd like to the response."""
-        return response
-
-    def __call__(self, request):
-        response = self.process_request(request)
-
-        if response:
-            return response
-
-        response = self.application(request)
-        return self.process_response(response)
-
-    def _build_error_response(self):
-        response = dns.message.make_response(
-            dns.message.make_query('unknown', dns.rdatatype.A))
-        response.set_rcode(dns.rcode.FORMERR)
-
-        return response
-
-
-class SerializationMiddleware(DNSMiddleware):
-    """DNS Middleware to serialize/deserialize DNS Packets"""
-
-    def __init__(self, application, tsig_keyring=None):
-        self.application = application
-        self.tsig_keyring = tsig_keyring
-
-    def __call__(self, request):
-        # Generate the initial context. This may be updated by other middleware
-        # as we learn more information about the Request.
-        ctxt = context.DesignateContext.get_admin_context(all_tenants=True)
-
-        try:
-            message = dns.message.from_wire(request['payload'],
-                                            self.tsig_keyring)
-
-            if message.had_tsig:
-                LOG.debug('Request signed with TSIG key: %s', message.keyname)
-
-            # Create + Attach the initial "environ" dict. This is similar to
-            # the environ dict used in typical WSGI middleware.
-            message.environ = {
-                'context': ctxt,
-                'addr': request['addr'],
-            }
-
-        except dns.message.UnknownTSIGKey:
-            LOG.error("Unknown TSIG key from %(host)s:%(port)d",
-                      {'host': request['addr'][0], 'port': request['addr'][1]})
-
-            response = self._build_error_response()
-
-        except dns.tsig.BadSignature:
-            LOG.error("Invalid TSIG signature from %(host)s:%(port)d",
-                      {'host': request['addr'][0], 'port': request['addr'][1]})
-
-            response = self._build_error_response()
-
-        except dns.exception.DNSException:
-            LOG.error("Failed to deserialize packet from %(host)s:%(port)d",
-                      {'host': request['addr'][0], 'port': request['addr'][1]})
-
-            response = self._build_error_response()
-
-        except Exception:
-            LOG.exception("Unknown exception deserializing packet "
-                          "from %(host)s %(port)d",
-                          {'host': request['addr'][0],
-                           'port': request['addr'][1]})
-
-            response = self._build_error_response()
-
-        else:
-            # Hand the Deserialized packet onto the Application
-            for response in self.application(message):
-                # Serialize and return the response if present
-                if isinstance(response, dns.message.Message):
-                    yield response.to_wire(max_size=65535)
-
-                elif isinstance(response, dns.renderer.Renderer):
-                    yield response.get_wire()
-
-                else:
-                    LOG.error("Unexpected response %r", response)
-
-
-class TsigInfoMiddleware(DNSMiddleware):
-    """Middleware which looks up the information available for a TsigKey"""
-
-    def __init__(self, application, storage):
-        super(TsigInfoMiddleware, self).__init__(application)
-        self.storage = storage
-
-    def process_request(self, request):
-        if not request.had_tsig:
-            return None
-
-        try:
-            name = request.keyname.to_text(True)
-            if isinstance(name, bytes):
-                name = name.decode('utf-8')
-            criterion = {'name': name}
-            tsigkey = self.storage.find_tsigkey(
-                    context.get_current(), criterion)
-
-            request.environ['tsigkey'] = tsigkey
-            request.environ['context'].tsigkey_id = tsigkey.id
-
-        except exceptions.TsigKeyNotFound:
-            # This should never happen, as we just validated the key.. Except
-            # for race conditions..
-            return self._build_error_response()
-
-        return None
 
 
 class TsigKeyring(dict):
@@ -184,7 +54,8 @@ class TsigKeyring(dict):
                 name = name.decode('utf-8')
             criterion = {'name': name}
             tsigkey = self.storage.find_tsigkey(
-                context.get_current(), criterion)
+                context.get_current(), criterion
+            )
 
             return base64.decode_as_bytes(tsigkey.secret)
 
@@ -196,7 +67,7 @@ class ZoneLock(object):
     """A Lock across all zones that enforces a rate limit on NOTIFYs"""
 
     def __init__(self, delay):
-        self.lock = Lock()
+        self.lock = threading.Lock()
         self.data = {}
         self.delay = delay
 
@@ -219,9 +90,13 @@ class ZoneLock(object):
                 self.data[zone] = now
                 return True
 
-            LOG.debug('Lock for %(zone)s can\'t be released for %(period)s'
-                      'seconds' % {'zone': zone,
-                                   'period': str(self.delay - period)})
+            LOG.debug(
+                'Lock for %(zone)s can\'t be released for %(period)s seconds',
+                {
+                    'zone': zone,
+                    'period': str(self.delay - period)
+                }
+            )
 
             # Don't grant the lock for the zone
             return False
@@ -233,37 +108,6 @@ class ZoneLock(object):
                 self.data.pop(zone)
             except KeyError:
                 pass
-
-
-class LimitNotifyMiddleware(DNSMiddleware):
-    """Middleware that rate limits NOTIFYs to the Agent"""
-
-    def __init__(self, application):
-        super(LimitNotifyMiddleware, self).__init__(application)
-
-        self.delay = CONF['service:agent'].notify_delay
-        self.locker = ZoneLock(self.delay)
-
-    def process_request(self, request):
-        opcode = request.opcode()
-        if opcode != dns.opcode.NOTIFY:
-            return None
-
-        zone_name = request.question[0].name.to_text()
-        if isinstance(zone_name, bytes):
-            zone_name = zone_name.decode('utf-8')
-
-        if self.locker.acquire(zone_name):
-            time.sleep(self.delay)
-            self.locker.release(zone_name)
-            return None
-        else:
-            LOG.debug('Threw away NOTIFY for %(zone)s, already '
-                     'working on an update.' % {'zone': zone_name})
-            response = dns.message.make_response(request)
-            # Provide an authoritative answer
-            response.flags |= dns.flags.AA
-            return (response,)
 
 
 def from_dnspython_zone(dnspython_zone):

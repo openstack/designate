@@ -19,10 +19,9 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
-import designate.dnsutils
+from designate import dnsmiddleware
 from designate.mdns import handler
 from designate.mdns import service
-import designate.rpc
 import designate.service
 from designate import storage
 from designate.tests import fixtures
@@ -81,4 +80,4 @@ class MdnsServiceTest(oslotest.base.BaseTestCase):
 
         app = self.service.dns_application
 
-        self.assertIsInstance(app, designate.dnsutils.DNSMiddleware)
+        self.assertIsInstance(app, dnsmiddleware.DNSMiddleware)

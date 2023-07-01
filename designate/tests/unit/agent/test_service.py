@@ -18,7 +18,7 @@ from unittest import mock
 from designate.agent import service
 from designate.backend import agent_backend
 from designate.backend.agent_backend import impl_fake
-from designate import dnsutils
+from designate import dnsmiddleware
 import designate.tests
 from designate.tests import fixtures
 from designate import utils
@@ -62,7 +62,8 @@ class AgentServiceTest(designate.tests.TestCase):
     @mock.patch.object(utils, 'cache_result')
     def test_get_dns_application(self, mock_cache_result):
         self.assertIsInstance(
-            self.service.dns_application, dnsutils.SerializationMiddleware
+            self.service.dns_application,
+            dnsmiddleware.SerializationMiddleware
         )
 
     @mock.patch.object(utils, 'cache_result')
@@ -72,5 +73,6 @@ class AgentServiceTest(designate.tests.TestCase):
         self.CONF.set_override('notify_delay', 1.0, 'service:agent')
 
         self.assertIsInstance(
-            self.service.dns_application, dnsutils.SerializationMiddleware
+            self.service.dns_application,
+            dnsmiddleware.SerializationMiddleware
         )
