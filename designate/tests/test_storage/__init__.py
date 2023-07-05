@@ -706,6 +706,23 @@ class StorageTestCase(object):
         results = self.storage.find_zones(two_context)
         self.assertEqual(1, len(results))
 
+    def test_find_zones_shared(self):
+        # Create an admin context
+        admin_context = self.get_admin_context()
+
+        # Create a zone in the admin context
+        zone = self.create_zone(context=admin_context)
+
+        # Share the zone with two other projects
+        self.share_zone(
+            zone_id=zone['id'], target_project_id=1, context=admin_context)
+        self.share_zone(
+            zone_id=zone['id'], target_project_id=2, context=admin_context)
+
+        # Ensure that one zone record is returned from find_zones (LP 2025295)
+        results = self.storage.find_zones(admin_context)
+        self.assertEqual(1, len(results))
+
     def test_get_zone(self):
         # Create a zone
         expected = self.create_zone()
