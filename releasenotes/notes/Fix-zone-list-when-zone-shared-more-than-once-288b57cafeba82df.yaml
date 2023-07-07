@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Fixed issues with list zones and recordsets when a zone is shared with more
+    than one project.
