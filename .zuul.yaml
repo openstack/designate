@@ -219,8 +219,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario
-        - designate-tox-dnspython-latest:
-            voting: false
     gate:
       jobs:
         - neutron-tempest-plugin-designate-scenario
