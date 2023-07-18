@@ -211,6 +211,9 @@ function init_designate {
     # (Re)create designate database
     recreate_database designate utf8
 
+    if [[ "$USE_SQLALCHEMY_LATEST" == "True" ]]; then
+        pip3 install --upgrade alembic sqlalchemy
+    fi
     # Init and migrate designate database
     $DESIGNATE_BIN_DIR/designate-manage database sync
 
