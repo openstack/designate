@@ -429,7 +429,7 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
             tables.records.c.recordset_id == tables.recordsets.c.id
         )
 
-        query = select(RECORDSET_QUERY_TABLES).select_from(rjoin)
+        query = select(*RECORDSET_QUERY_TABLES).select_from(rjoin)
 
         query = query.where(
             tables.recordsets.c.id.in_(formatted_ids)
