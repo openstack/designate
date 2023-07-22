@@ -100,33 +100,22 @@ RECORD_MAP = {
 }
 
 
-def _set_object_from_model(obj, model, **extra):
+def _set_object_from_model(obj, model):
     """Update a DesignateObject with the values from a SQLA Model"""
 
-    for fieldname in obj.FIELDS.keys():
-        if hasattr(model, fieldname):
-            if fieldname in extra.keys():
-                obj[fieldname] = extra[fieldname]
-            else:
-                obj[fieldname] = getattr(model, fieldname)
+    for field_name in obj.FIELDS.keys():
+        if hasattr(model, field_name):
+            obj[field_name] = getattr(model, field_name)
 
     obj.obj_reset_changes()
-
     return obj
 
 
-def _set_listobject_from_models(obj, models, map_=None):
+def _set_listobject_from_models(obj, models):
     for model in models:
-        extra = {}
-
-        if map_ is not None:
-            extra = map_(model)
-
-        obj.objects.append(
-            _set_object_from_model(obj.LIST_ITEM_TYPE(), model, **extra))
+        obj.objects.append(_set_object_from_model(obj.LIST_ITEM_TYPE(), model))
 
     obj.obj_reset_changes()
-
     return obj
 
 
