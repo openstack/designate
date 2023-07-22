@@ -169,10 +169,11 @@ class DNSService(object):
 
     def _start(self, host, port):
         sock_tcp = utils.bind_tcp(
-            host, port, self.tcp_backlog)
-
+            host, port, self.tcp_backlog
+        )
         sock_udp = utils.bind_udp(
-            host, port)
+            host, port
+        )
 
         self._dns_socks_tcp.append(sock_tcp)
         self._dns_socks_udp.append(sock_udp)
@@ -194,6 +195,7 @@ class DNSService(object):
 
         client = None
         while self._running.is_set():
+            addr = None
             try:
                 # handle a new TCP connection
                 client, addr = sock_tcp.accept()
@@ -201,11 +203,21 @@ class DNSService(object):
                 if self.tcp_recv_timeout:
                     client.settimeout(self.tcp_recv_timeout)
 
-                LOG.debug('Handling TCP Request from: %(host)s:%(port)d',
-                          {'host': addr[0], 'port': addr[1]})
+                LOG.debug(
+                    'Handling TCP Request from: %(host)s:%(port)d',
+                    {
+                        'host': addr[0],
+                        'port': addr[1]
+                    }
+                )
                 if len(addr) == 4:
-                    LOG.debug('Flow info: %(host)s scope: %(port)d',
-                              {'host': addr[2], 'port': addr[3]})
+                    LOG.debug(
+                        'Flow info: %(host)s scope: %(port)d',
+                        {
+                            'host': addr[2],
+                            'port': addr[3]
+                        }
+                    )
 
                 # Dispatch a thread to handle the connection
                 self.tg.add_thread(self._dns_handle_tcp_conn, addr, client)
@@ -219,14 +231,27 @@ class DNSService(object):
                 if client:
                     client.close()
                 errname = errno.errorcode[e.args[0]]
-                LOG.warning('Socket error %(err)s from: %(host)s:%(port)d',
-                            {'host': addr[0], 'port': addr[1], 'err': errname})
+                addr = addr or (None, 0)
+                LOG.warning(
+                    'Socket error %(err)s from: %(host)s:%(port)d',
+                    {
+                        'host': addr[0],
+                        'port': addr[1],
+                        'err': errname
+                    }
+                )
             except Exception:
                 if client:
                     client.close()
-                LOG.exception('Unknown exception handling TCP request from: '
-                              '%(host)s:%(port)d',
-                              {'host': addr[0], 'port': addr[1]})
+                addr = addr or (None, 0)
+                LOG.exception(
+                    'Unknown exception handling TCP request from: '
+                    '%(host)s:%(port)d',
+                    {
+                        'host': addr[0],
+                        'port': addr[1]
+                    }
+                )
 
     def _dns_handle_tcp_conn(self, addr, client):
         """
@@ -240,7 +265,7 @@ class DNSService(object):
                      (IPv6 addr, Port, Flow info, Scope ID)
         :type addr: tuple
         :param client: Client socket
-        :type client: socket
+        :type client: socket.socket
         :raises: None
         """
         host, port = addr[:2]
@@ -282,20 +307,40 @@ class DNSService(object):
                     client.sendall(tcp_response)
 
         except socket.timeout:
-            LOG.info('TCP Timeout from: %(host)s:%(port)d',
-                     {'host': host, 'port': port})
+            LOG.info(
+                'TCP Timeout from: %(host)s:%(port)d',
+                {
+                    'host': host,
+                    'port': port
+                }
+            )
         except socket.error as e:
             errname = errno.errorcode[e.args[0]]
-            LOG.warning('Socket error %(err)s from: %(host)s:%(port)d',
-                        {'host': host, 'port': port, 'err': errname})
-
+            LOG.warning(
+                'Socket error %(err)s from: %(host)s:%(port)d',
+                {
+                    'host': host,
+                    'port': port,
+                    'err': errname
+                }
+            )
         except struct.error:
-            LOG.warning('Invalid packet from: %(host)s:%(port)d',
-                        {'host': host, 'port': port})
-
+            LOG.warning(
+                'Invalid packet from: %(host)s:%(port)d',
+                {
+                    'host': host,
+                    'port': port
+                }
+            )
         except Exception:
-            LOG.exception('Unknown exception handling TCP request from: '
-                          "%(host)s:%(port)d", {'host': host, 'port': port})
+            LOG.exception(
+                'Unknown exception handling TCP request from: '
+                '%(host)s:%(port)d',
+                {
+                    'host': host,
+                    'port': port
+                }
+            )
         finally:
             if client:
                 client.close()
@@ -304,19 +349,25 @@ class DNSService(object):
         """Handle a DNS Query over UDP in a dedicated thread
 
         :param sock_udp: UDP socket
-        :type sock_udp: socket
+        :type sock_udp: socket.socket
         :raises: None
         """
         LOG.info('_handle_udp thread started')
 
         while self._running.is_set():
+            addr = None
             try:
                 # TODO(kiall): Determine the appropriate default value for
                 #              UDP recvfrom.
                 payload, addr = sock_udp.recvfrom(8192)
 
-                LOG.debug('Handling UDP Request from: %(host)s:%(port)d',
-                          {'host': addr[0], 'port': addr[1]})
+                LOG.debug(
+                    'Handling UDP Request from: %(host)s:%(port)d',
+                    {
+                        'host': addr[0],
+                        'port': addr[1]
+                    }
+                )
 
                 # Dispatch a thread to handle the query
                 self.tg.add_thread(self._dns_handle_udp_query, sock_udp, addr,
@@ -325,19 +376,32 @@ class DNSService(object):
                 pass
             except socket.error as e:
                 errname = errno.errorcode[e.args[0]]
-                LOG.warning('Socket error %(err)s from: %(host)s:%(port)d',
-                            {'host': addr[0], 'port': addr[1], 'err': errname})
+                addr = addr or (None, 0)
+                LOG.warning(
+                    'Socket error %(err)s from: %(host)s:%(port)d',
+                    {
+                        'host': addr[0],
+                        'port': addr[1],
+                        'err': errname
+                    }
+                )
             except Exception:
-                LOG.exception('Unknown exception handling UDP request from: '
-                              '%(host)s:%(port)d',
-                              {'host': addr[0], 'port': addr[1]})
+                addr = addr or (None, 0)
+                LOG.exception(
+                    'Unknown exception handling UDP request from: '
+                    '%(host)s:%(port)d',
+                    {
+                        'host': addr[0],
+                        'port': addr[1]
+                    }
+                )
 
     def _dns_handle_udp_query(self, sock, addr, payload):
         """
         Handle a DNS Query over UDP
 
         :param sock: UDP socket
-        :type sock: socket
+        :type sock: socket.socket
         :param addr: Tuple of the client's (IP, Port)
         :type addr: tuple
         :param payload: Raw DNS query payload
@@ -346,17 +410,18 @@ class DNSService(object):
         """
         try:
             # Call into the DNS Application itself with the payload and addr
-            for response in self.app(
-                    {'payload': payload, 'addr': addr}):
-
-                # Send back a response only if present
+            for response in self.app({'payload': payload, 'addr': addr}):
                 if response is not None:
                     sock.sendto(response, addr)
-
         except Exception:
-            LOG.exception('Unhandled exception while processing request from '
-                          "%(host)s:%(port)d",
-                          {'host': addr[0], 'port': addr[1]})
+            LOG.exception(
+                'Unhandled exception while processing request from '
+                '%(host)s:%(port)d',
+                {
+                    'host': addr[0],
+                    'port': addr[1]
+                }
+            )
 
 
 _launcher = None
