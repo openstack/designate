@@ -32,8 +32,8 @@ sys.path.insert(0, os.path.abspath('./'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
+              'sphinx.ext.graphviz',
               'sphinxcontrib.httpdomain',
-              'sphinxcontrib.blockdiag',
               'ext.support_matrix',
               'ext.custom_css',
               'openstackdocstheme',
@@ -54,8 +54,6 @@ sample_config_basename = '_static/designate'
 policy_generator_config_file = '../../etc/designate/designate-policy-generator.conf'
 sample_policy_basename = '_static/designate'
 
-blockdiag_antialias = True
-blockdiag_html_image_format = "SVG"
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
