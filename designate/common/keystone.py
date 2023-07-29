@@ -32,48 +32,58 @@ def verify_project_id(context, project_id):
 
     """
     session = ksa_loading.load_session_from_conf_options(
-        CONF, 'keystone', auth=context.get_auth_plugin())
-    adap = ksa_loading.load_adapter_from_conf_options(
+        CONF, 'keystone', auth=context.get_auth_plugin()
+    )
+    adapter = ksa_loading.load_adapter_from_conf_options(
         CONF, 'keystone',
-        session=session, min_version=(3, 0), max_version=(3, 'latest'))
+        session=session, min_version=(3, 0), max_version=(3, 'latest')
+    )
     try:
-        resp = adap.get('/projects/%s' % project_id, raise_exc=False)
+        response = adapter.get('/projects/%s' % project_id, raise_exc=False)
     except kse.EndpointNotFound:
         LOG.error(
-            "Keystone identity service version 3.0 was not found. This might "
-            "be because your endpoint points to the v2.0 versioned endpoint "
-            "which is not supported. Please fix this.")
+            'Keystone identity service version 3.0 was not found. This might '
+            'be because your endpoint points to the v2.0 versioned endpoint '
+            'which is not supported. Please fix this.'
+        )
         raise exceptions.KeystoneCommunicationFailure(
-            _("KeystoneV3 endpoint not found"))
+            _('KeystoneV3 endpoint not found')
+        )
     except kse.ClientException:
         # something is wrong, like there isn't a keystone v3 endpoint,
         # or nova isn't configured for the interface to talk to it;
         # we'll take the pass and default to everything being ok.
-        LOG.info("Unable to contact keystone to verify project_id")
+        LOG.info('Unable to contact keystone to verify project_id')
         return True
 
-    if resp:
+    if response.ok:
         # All is good with this 20x status
         return True
-    elif resp.status_code == 404:
-        # we got access, and we know this project is not there
-        raise exceptions.InvalidProject(
-            _("%s is not a valid project ID.") % project_id)
-
-    elif resp.status_code == 403:
+    elif response.status_code == 403:
         # we don't have enough permission to verify this, so default
         # to "it's ok".
         LOG.info(
-            "Insufficient permissions for user %(user)s to verify "
-            "existence of project_id %(pid)s",
-            {"user": context.user_id, "pid": project_id})
+            'Insufficient permissions for user %(user)s to verify '
+            'existence of project_id %(pid)s',
+            {
+                'user': context.user_id,
+                'pid': project_id
+            }
+        )
         return True
+    elif response.status_code == 404:
+        # we got access, and we know this project is not there
+        raise exceptions.InvalidProject(
+            _('%s is not a valid project ID.') % project_id
+        )
     else:
         LOG.warning(
-            "Unexpected response from keystone trying to "
-            "verify project_id %(pid)s - resp: %(code)s %(content)s",
-            {"pid": project_id,
-             "code": resp.status_code,
-             "content": resp.content})
-        # realize we did something wrong, but move on with a warning
+            'Unexpected response from keystone trying to '
+            'verify project_id %(pid)s - response: %(code)s %(content)s',
+            {
+                'pid': project_id,
+                'code': response.status_code,
+                'content': response.content
+            }
+        )
         return True
