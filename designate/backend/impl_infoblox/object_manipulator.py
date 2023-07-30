@@ -12,15 +12,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-
-import gettext
-
 from oslo_log import log
 
 from designate.backend.impl_infoblox import ibexceptions as exc
-
-_ = gettext.gettext
+from designate.i18n import _
 
 LOG = log.getLogger(__name__)
 
