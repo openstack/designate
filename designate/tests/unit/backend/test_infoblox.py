@@ -19,10 +19,80 @@ import oslotest.base
 import requests_mock
 
 from designate.backend import impl_infoblox
+from designate.backend.impl_infoblox import connector
 from designate.backend.impl_infoblox import ibexceptions
 from designate import context
 from designate import exceptions
 from designate import objects
+
+
+class InfobloxConnectorTestCase(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super(InfobloxConnectorTestCase, self).setUp()
+        self.options = {
+            'wapi_url': 'https://localhost/wapi/v2.0/',
+            'username': 'username',
+            'password': 'password',
+            'ns_group': 'ns_group',
+            'sslverify': '1'
+        }
+        self.infoblox = connector.Infoblox(self.options)
+
+    def test_infoblox_constructor(self):
+        options = {
+            'wapi_url': 'https://localhost/wapi/v2.0/',
+            'username': 'username',
+            'password': 'password',
+            'ns_group': 'ns_group',
+            'sslverify': '0'
+        }
+        infoblox = connector.Infoblox(options)
+
+        self.assertIsInstance(infoblox, connector.Infoblox)
+        self.assertFalse(infoblox.sslverify)
+
+    def test_construct_url(self):
+        self.assertEqual(
+            'https://localhost/wapi/v2.0/test',
+            self.infoblox._construct_url('test')
+        )
+        self.assertEqual(
+            'https://localhost/wapi/v2.0/test?*foo=bar&foo=0&bar=1',
+            self.infoblox._construct_url(
+                'test', {'foo': 0, 'bar': 1}, {'foo': {'value': 'bar'}}
+            )
+        )
+        self.assertEqual(
+            'https://localhost/wapi/v2.0/test?*foo=bar&foo=0',
+            self.infoblox._construct_url(
+                'test', {'foo': 0}, {'foo': {'value': 'bar'}}
+            )
+        )
+        self.assertEqual(
+            'https://localhost/wapi/v2.0/test?foo=0',
+            self.infoblox._construct_url(
+                'test', {'foo': 0}
+            )
+        )
+
+    def test_construct_url_no_relative_path(self):
+        self.assertRaisesRegex(
+            ValueError,
+            'Path in request must be relative.',
+            self.infoblox._construct_url, None
+        )
+
+    def test_validate_objtype_or_die(self):
+        self.assertRaisesRegex(
+            ValueError,
+            'WAPI object type can\'t be empty.',
+            self.infoblox._validate_objtype_or_die, None
+        )
+        self.assertRaisesRegex(
+            ValueError,
+            'WAPI object type can\'t contains slash.',
+            self.infoblox._validate_objtype_or_die, '/'
+        )
 
 
 class InfobloxBackendTestCase(oslotest.base.BaseTestCase):
