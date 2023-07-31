@@ -18,20 +18,24 @@ Needs Access to:
 
 * AMQP
 
-.. blockdiag::
+.. graphviz::
 
-   blockdiag {
-
-      loadbalancer [label="L7 Load Balancer", stacked];
-      amqp_servers [label="AMQP Servers", stacked]
-      group api_servers {
-        label = "API Servers";
-        api_server_1 [label="API Server 1"];
-        api_server_2 [label="API Server 2"];
-        api_server_3 [label="API Server 3"];
-      }
-      loadbalancer -> api_server_1, api_server_2, api_server_3;
-      api_server_1, api_server_2, api_server_3 -> amqp_servers;
+   digraph APIHA {
+     rankdir=LR
+     {"L7 Load Balancers" [shape=box]
+      "API Server 1" [shape=box]
+      "API Server 2" [shape=box]
+      "API Server 3" [shape=box]
+      "AMQP Servers" [shape=box]
+     }
+     subgraph "API Servers" {
+       cluster=true;
+       label="API Servers";
+       "API Server 1";
+       "API Server 2";
+       "API Server 3";
+     }
+     "L7 Load Balancers" -> {"API Server 1" "API Server 2" "API Server 3"} -> "AMQP Servers";
    }
 
 Notes
@@ -67,20 +71,29 @@ Needs Access to:
 * AMQP
 * Database
 
-.. blockdiag::
+.. graphviz::
 
-   blockdiag {
-
-      amqp_servers [label="AMQP Servers", stacked]
-      db_servers [label="Database Servers", stacked, shape=flowchart.database]
-      group designate_central_servers {
-        label = "designate-central Servers";
-        designate_central_server_1 [label="designate-central Server 1", width=256];
-        designate_central_server_2 [label="designate-central Server 2", width=256];
-        designate_central_server_3 [label="designate-central Server 3", width=256];
-      }
-      amqp_servers <-> designate_central_server_1, designate_central_server_2, designate_central_server_3;
-      designate_central_server_1, designate_central_server_2, designate_central_server_3 -> db_servers;
+   digraph CENTRALHA {
+     rankdir=LR
+     {"AMQP Servers" [shape=box]
+      "designate-central Server 1" [shape=box]
+      "designate-central Server 2" [shape=box]
+      "designate-central Server 3" [shape=box]
+      "Database Servers" [shape=cylinder]
+     }
+     subgraph "designate-central Servers" {
+       cluster=true;
+       label="designate-central Servers";
+       "designate-central Server 1";
+       "designate-central Server 2";
+       "designate-central Server 3";
+     }
+     "AMQP Servers" -> "designate-central Server 1" [dir=both];
+     "AMQP Servers" -> "designate-central Server 2" [dir=both];
+     "AMQP Servers" -> "designate-central Server 3" [dir=both];
+     "designate-central Server 1" -> "Database Servers";
+     "designate-central Server 2" -> "Database Servers";
+     "designate-central Server 3" -> "Database Servers";
    }
 
 Notes
@@ -99,22 +112,33 @@ Needs Access to:
 * Database
 * DNS Servers
 
-.. blockdiag::
+.. graphviz::
 
-   blockdiag {
-
-      amqp_servers [label="AMQP Servers", stacked]
-      dns_servers [label="DNS Servers", stacked, shape="cloud"]
-      db_servers [label="Database Servers", stacked, shape=flowchart.database]
-      group designate_mdns_servers {
-        label = "designate-mdns Servers";
-        designate_mdns_server_1 [label="designate-mdns Server 1", width=256];
-        designate_mdns_server_2 [label="designate-mdns Server 2", width=256];
-        designate_mdns_server_3 [label="designate-mdns Server 3", width=256];
-      }
-      amqp_servers <-> designate_mdns_server_1, designate_mdns_server_2, designate_mdns_server_3;
-      designate_mdns_server_1, designate_mdns_server_2, designate_mdns_server_3 <- db_servers;
-      designate_mdns_server_1, designate_mdns_server_2, designate_mdns_server_3 -> dns_servers;
+   digraph MDNSHA {
+     rankdir=LR
+     {"AMQP Servers" [shape=box]
+      "designate-mdns Server 1" [shape=box]
+      "designate-mdns Server 2" [shape=box]
+      "designate-mdns Server 3" [shape=box]
+      "DNS Servers" [shape=egg]
+      "Database Servers" [shape=cylinder]
+     }
+     subgraph "designate-mdns Servers" {
+       cluster=true;
+       label="designate-mdns Servers";
+       "designate-mdns Server 1";
+       "designate-mdns Server 2";
+       "designate-mdns Server 3";
+     }
+     "AMQP Servers" -> "designate-mdns Server 1" [dir=both];
+     "AMQP Servers" -> "designate-mdns Server 2" [dir=both];
+     "AMQP Servers" -> "designate-mdns Server 3" [dir=both];
+     "designate-mdns Server 1" -> "Database Servers" [dir=back];
+     "designate-mdns Server 2" -> "Database Servers" [dir=back];
+     "designate-mdns Server 3" -> "Database Servers" [dir=back];
+     "designate-mdns Server 1" -> "DNS Servers"
+     "designate-mdns Server 2" -> "DNS Servers"
+     "designate-mdns Server 3" -> "DNS Servers"
    }
 
 Notes
@@ -132,20 +156,29 @@ Needs Access to:
 * AMQP
 * DNS Servers
 
-.. blockdiag::
+.. graphviz::
 
-   blockdiag {
-
-      amqp_servers [label="AMQP Servers", stacked]
-      dns_servers [label="DNS Servers", stacked, shape="cloud"]
-      group designate_worker_servers {
-        label = "designate-worker Servers";
-        designate_worker_server_1 [label="designate-worker Server 1", width=256];
-        designate_worker_server_2 [label="designate-worker Server 2", width=256];
-        designate_worker_server_3 [label="designate-worker Server 3", width=256];
-      }
-      amqp_servers <-> designate_worker_server_1, designate_worker_server_2, designate_worker_server_3;
-      designate_worker_server_1, designate_worker_server_2, designate_worker_server_3 -> dns_servers;
+   digraph WORKERSHA {
+     rankdir=LR
+     {"AMQP Servers" [shape=box]
+      "designate-worker Server 1" [shape=box]
+      "designate-worker Server 2" [shape=box]
+      "designate-worker Server 3" [shape=box]
+      "DNS Servers" [shape=egg]
+     }
+     subgraph "designate-worker Servers" {
+       cluster=true;
+       label="designate-worker Servers";
+       "designate-worker Server 1";
+       "designate-worker Server 2";
+       "designate-worker Server 3";
+     }
+     "AMQP Servers" -> "designate-worker Server 1" [dir=both];
+     "AMQP Servers" -> "designate-worker Server 2" [dir=both];
+     "AMQP Servers" -> "designate-worker Server 3" [dir=both];
+     "designate-worker Server 1" -> "DNS Servers"
+     "designate-worker Server 2" -> "DNS Servers"
+     "designate-worker Server 3" -> "DNS Servers"
    }
 
 Notes
@@ -163,20 +196,29 @@ Needs Access to:
 * AMQP
 * DLM
 
-.. blockdiag::
+.. graphviz::
 
-   blockdiag {
-
-      amqp_servers [label="AMQP Servers", stacked]
-      dlm_servers [label="DLM Servers", stacked]
-      group designate_producer_servers {
-        label = "designate-producer Servers";
-        designate_producer_server_1 [label="designate-producer Server 1", width=256];
-        designate_producer_server_2 [label="designate-producer Server 2", width=256];
-        designate_producer_server_3 [label="designate-producer Server 3", width=256];
-      }
-      amqp_servers <-> designate_producer_server_1, designate_producer_server_2, designate_producer_server_3;
-      designate_producer_server_1, designate_producer_server_2, designate_producer_server_3 -> dlm_servers;
+   digraph PRODUCERSHA {
+     rankdir=LR
+     {"AMQP Servers" [shape=box]
+      "designate-producer Server 1" [shape=box]
+      "designate-producer Server 2" [shape=box]
+      "designate-producer Server 3" [shape=box]
+      "DLM Servers" [shape=octagon]
+     }
+     subgraph "designate-producer Servers" {
+       cluster=true;
+       label="designate-producer Servers";
+       "designate-producer Server 1";
+       "designate-producer Server 2";
+       "designate-producer Server 3";
+     }
+     "AMQP Servers" -> "designate-producer Server 1" [dir=both];
+     "AMQP Servers" -> "designate-producer Server 2" [dir=both];
+     "AMQP Servers" -> "designate-producer Server 3" [dir=both];
+     "designate-producer Server 1" -> "DLM Servers"
+     "designate-producer Server 2" -> "DLM Servers"
+     "designate-producer Server 3" -> "DLM Servers"
    }
 
 Notes
@@ -205,18 +247,25 @@ Needs Access to:
 
 * AMQP
 
-.. blockdiag::
+.. graphviz::
 
-   blockdiag {
-
-      amqp_servers [label="AMQP Servers", stacked]
-      group designate_sink_servers {
-        label = "designate-sink Servers";
-        designate_sink_server_1 [label="designate-sink Server 1", width=256];
-        designate_sink_server_2 [label="designate-sink Server 2", width=256];
-        designate_sink_server_3 [label="designate-sink Server 3", width=256];
-      }
-      amqp_servers <-> designate_sink_server_1, designate_sink_server_2, designate_sink_server_3;
+   digraph SINKSHA {
+     rankdir=LR
+     {"AMQP Servers" [shape=box]
+      "designate-sink Server 1" [shape=box]
+      "designate-sink Server 2" [shape=box]
+      "designate-sink Server 3" [shape=box]
+     }
+     subgraph "designate-sink Servers" {
+       cluster=true;
+       label="designate-sink Servers";
+       "designate-sink Server 1";
+       "designate-sink Server 2";
+       "designate-sink Server 3";
+     }
+     "AMQP Servers" -> "designate-sink Server 1" [dir=both];
+     "AMQP Servers" -> "designate-sink Server 2" [dir=both];
+     "AMQP Servers" -> "designate-sink Server 3" [dir=both];
    }
 
 Notes
