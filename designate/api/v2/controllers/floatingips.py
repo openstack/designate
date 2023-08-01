@@ -13,25 +13,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import re
-
 from oslo_log import log as logging
 import pecan
 
 from designate.api.v2.controllers import rest
+from designate.common import constants
 from designate import exceptions
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
 
 LOG = logging.getLogger(__name__)
 
-FIP_REGEX = ('^(?P<region>[A-Za-z0-9\\.\\-_]{1,100}):'
-             '(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-'
-             '[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$')
-
 
 def fip_key_to_data(key):
-    m = re.match(FIP_REGEX, key)
+    m = constants.RE_FIP.match(key)
 
     # NOTE: Ensure that the fip matches region:floatingip_id or raise, if
     # not this will cause a 500.

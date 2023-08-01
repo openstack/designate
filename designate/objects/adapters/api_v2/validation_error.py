@@ -11,17 +11,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import re
-
+from designate.common import constants
 from designate import objects
 from designate.objects.adapters.api_v2 import base
 
 
 class NotSpecifiedSential:
     pass
-
-
-REQUIRED_RE = re.compile(r"\'([\w]*)\' is a required property")
 
 
 class ValidationErrorAPIv2Adapter(base.APIv2Adapter):
@@ -49,7 +45,7 @@ class ValidationErrorAPIv2Adapter(base.APIv2Adapter):
         # Currently JSON Schema doesn't add the path on for required items
         if error_dict.get('validator', '') == 'required':
             error_dict['path'].append(
-                REQUIRED_RE.match(error.message).group(1))
+                constants.RE_REQUIRED.match(error.message).group(1))
 
         obj = kwargs['failed_object']
         # Rename the keys in the path list

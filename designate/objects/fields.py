@@ -21,6 +21,8 @@ import uuid
 
 from oslo_versionedobjects import fields as ovoo_fields
 
+from designate.common import constants
+
 
 class IntegerField(ovoo_fields.IntegerField):
     pass
@@ -82,20 +84,6 @@ class IntegerFields(IntegerField):
 
 
 class StringFields(ovoo_fields.StringField):
-    RE_HOSTNAME = r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+\Z'  # noqa
-    RE_ZONENAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'
-    RE_SRV_HOST_NAME = r'^(?:(?!\-)(?:\_[A-Za-z0-9_\-]{1,63}\.){2})(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'  # noqa
-    RE_SSHFP_FINGERPRINT = r'^([0-9A-Fa-f]{10,40}|[0-9A-Fa-f]{64})\Z'
-    RE_TLDNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*\Z'  # noqa
-    RE_NAPTR_FLAGS = r'^[APSUapsu]*$'
-    RE_NAPTR_SERVICE = r'^([A-Za-z]([A-Za-z0-9]*)(\+[A-Za-z]([A-Za-z0-9]{0,31}))*)?$'  # noqa
-    RE_NAPTR_REGEXP = r'^(([^0-9i\\])(.*)\2((.+)|(\\[1-9]))?\2(i?))?$'
-    RE_KVP = r'^\s[A-Za-z0-9]+=[A-Za-z0-9]+'
-    RE_URL_MAIL = r'^mailto:[A-Za-z0-9_\-]+(\+[A-Za-z0-9_\-]+)?@.*'
-    RE_URL_HTTP = r'^http(s)?://.*/'
-    RE_CERT_TYPE = r'(^[A-Z]+$)|(^[0-9]+$)'
-    RE_CERT_ALGO = r'(^[A-Z]+[A-Z0-9\-]+[A-Z0-9]$)|(^[0-9]+$)'
-
     def __init__(self, nullable=False, read_only=False,
                  default=ovoo_fields.UnspecifiedDefault, description='',
                  maxLength=None):
@@ -198,7 +186,7 @@ class DomainField(StringFields):
                 raise ValueError("Host %s is too long" % host)
         if not value.endswith('.'):
             raise ValueError("Domain %s does not end with a dot" % value)
-        if not re.match(self.RE_ZONENAME, value):
+        if not constants.RE_ZONENAME.match(value):
             raise ValueError("Domain %s is invalid" % value)
         return value
 
@@ -212,7 +200,7 @@ class EmailField(StringFields):
         if value.count('@') != 1:
             raise ValueError("%s is not an email" % value)
         email = value.replace('@', '.')
-        if not re.match(self.RE_ZONENAME, "%s." % email):
+        if not constants.RE_ZONENAME.match("%s." % email):
             raise ValueError("Email %s is invalid" % value)
         return value
 
@@ -231,7 +219,7 @@ class HostField(StringFields):
                 raise ValueError("Host %s is too long" % host)
         if value.endswith('.') is False:
             raise ValueError("Host name %s does not end with a dot" % value)
-        if not re.match(self.RE_HOSTNAME, value):
+        if not constants.RE_HOSTNAME.match(value):
             raise ValueError("Host name %s is invalid" % value)
         return value
 
@@ -250,7 +238,7 @@ class SRVField(StringFields):
                 raise ValueError("Host %s is too long" % host)
         if value.endswith('.') is False:
             raise ValueError("Host name %s does not end with a dot" % value)
-        if not re.match(self.RE_SRV_HOST_NAME, value):
+        if not constants.RE_SRV_HOST_NAME.match(value):
             raise ValueError("Host name %s is not a SRV record" % value)
         return value
 
@@ -272,7 +260,7 @@ class Sshfp(StringFields):
 
     def coerce(self, obj, attr, value):
         value = super(Sshfp, self).coerce(obj, attr, value)
-        if not re.match(self.RE_SSHFP_FINGERPRINT, "%s" % value):
+        if not constants.RE_SSHFP_FINGERPRINT.match("%s" % value):
             raise ValueError("Host name %s is not a SSHFP record" % value)
         return value
 
@@ -283,7 +271,7 @@ class TldField(StringFields):
 
     def coerce(self, obj, attr, value):
         value = super(TldField, self).coerce(obj, attr, value)
-        if not re.match(self.RE_TLDNAME, value):
+        if not constants.RE_TLDNAME.match(value):
             raise ValueError("%s is not a TLD" % value)
         return value
 
@@ -297,7 +285,7 @@ class NaptrFlagsField(StringFields):
         if (len(value) > 255):
             raise ValueError("NAPTR record flags field cannot be longer than"
                              " 255 characters" % value)
-        if not re.match(self.RE_NAPTR_FLAGS, "%s" % value):
+        if not constants.RE_NAPTR_FLAGS.match("%s" % value):
             raise ValueError("NAPTR record flags can be S, A, U and P" % value)
         return value
 
@@ -311,7 +299,7 @@ class NaptrServiceField(StringFields):
         if (len(value) > 255):
             raise ValueError("NAPTR record service field cannot be longer than"
                              " 255 characters" % value)
-        if not re.match(self.RE_NAPTR_SERVICE, "%s" % value):
+        if not constants.RE_NAPTR_SERVICE.match("%s" % value):
             raise ValueError("%s NAPTR record service is invalid" % value)
         return value
 
@@ -326,7 +314,7 @@ class NaptrRegexpField(StringFields):
             raise ValueError("NAPTR record regexp field cannot be longer than"
                              " 255 characters" % value)
         if value:
-            if not re.match(self.RE_NAPTR_REGEXP, "%s" % value):
+            if not constants.RE_NAPTR_REGEXP.match("%s" % value):
                 raise ValueError("%s NAPTR record is invalid" % value)
         return value
 
@@ -348,14 +336,14 @@ class CaaPropertyField(StringFields):
                 if len(host) > 63:
                     raise ValueError("Host %s is too long" % host)
             idn_with_dot = idn + '.'
-            if not re.match(self.RE_ZONENAME, idn_with_dot):
+            if not constants.RE_ZONENAME.match(idn_with_dot):
                 raise ValueError("Domain %s is invalid" % idn)
             for entry in entries:
-                if not re.match(self.RE_KVP, entry):
+                if not constants.RE_KVP.match(entry):
                     raise ValueError("%s is not a valid key-value pair" %
                                      entry)
         elif tag == 'iodef':
-            if re.match(self.RE_URL_MAIL, val):
+            if constants.RE_URL_MAIL.match(val):
                 parts = val.split('@')
                 idn = parts[1]
                 domain = idn.split('.')
@@ -363,9 +351,9 @@ class CaaPropertyField(StringFields):
                     if len(host) > 63:
                         raise ValueError("Host %s is too long" % host)
                 idn_with_dot = idn + '.'
-                if not re.match(self.RE_ZONENAME, idn_with_dot):
+                if not constants.RE_ZONENAME.match(idn_with_dot):
                     raise ValueError("Domain %s is invalid" % idn)
-            elif re.match(self.RE_URL_HTTP, val):
+            elif constants.RE_URL_HTTP.match(val):
                 parts = val.split('/')
                 idn = parts[2]
                 domain = idn.split('.')
@@ -373,7 +361,7 @@ class CaaPropertyField(StringFields):
                     if len(host) > 63:
                         raise ValueError("Host %s is too long" % host)
                 idn_with_dot = idn + '.'
-                if not re.match(self.RE_ZONENAME, idn_with_dot):
+                if not constants.RE_ZONENAME.match(idn_with_dot):
                     raise ValueError("Domain %s is invalid" % idn)
             else:
                 raise ValueError("%s is not a valid URL" % val)
@@ -389,7 +377,7 @@ class CertTypeField(StringFields):
 
     def coerce(self, obj, attr, value):
         value = super(CertTypeField, self).coerce(obj, attr, value)
-        if not re.match(self.RE_CERT_TYPE, "%s" % value):
+        if not constants.RE_CERT_TYPE.match("%s" % value):
             raise ValueError("Cert type %s is not a valid Mnemonic or "
                              "value" % value)
         return value
@@ -401,7 +389,7 @@ class CertAlgoField(StringFields):
 
     def coerce(self, obj, attr, value):
         value = super(CertAlgoField, self).coerce(obj, attr, value)
-        if not re.match(self.RE_CERT_ALGO, "%s" % value):
+        if not constants.RE_CERT_ALGO.match("%s" % value):
             raise ValueError("Cert Algo %s is not a valid Mnemonic or "
                              "value" % value)
         return value
@@ -440,7 +428,7 @@ class IPOrHost(IPV4AndV6AddressField):
         try:
             value = super(IPOrHost, self).coerce(obj, attr, value)
         except ValueError:
-            if not re.match(StringFields.RE_ZONENAME, value):
+            if not constants.RE_ZONENAME.match(value):
                 raise ValueError("%s is not IP address or host name" % value)
         return value
 
@@ -456,7 +444,7 @@ class DenylistFields(StringFields):
             return self._null(obj, attr)
 
         # determine the validity if a regex expression filter has been used.
-        msg = ("%s is not a valid regular expression" % value)
+        msg = "%s is not a valid regular expression" % value
         if not len(value):
             raise ValueError(msg)
         try:
