@@ -20,7 +20,6 @@ import re
 import uuid
 
 from oslo_versionedobjects import fields as ovoo_fields
-from oslo_versionedobjects.fields import DateTimeField  # noqa
 
 
 class IntegerField(ovoo_fields.IntegerField):
@@ -44,14 +43,6 @@ class PolymorphicObjectField(ovoo_fields.AutoTypedField):
         self.AUTO_TYPE = PolymorphicObject(objtype, subclasses)
         self.objname = objtype
         super(PolymorphicObjectField, self).__init__(**kwargs)
-
-
-class PolymorphicListOfObjectsField(ovoo_fields.AutoTypedField):
-    def __init__(self, objtype, subclasses=False, **kwargs):
-        self.AUTO_TYPE = ovoo_fields.List(
-            PolymorphicObject(objtype, subclasses))
-        self.objname = objtype
-        super(PolymorphicListOfObjectsField, self).__init__(**kwargs)
 
 
 class ListOfObjectsField(ovoo_fields.ListOfObjectsField):
@@ -138,7 +129,7 @@ class UUIDFields(ovoo_fields.AutoTypedField):
     AUTO_TYPE = UUID()
 
 
-class DateTimeField(DateTimeField):
+class DateTimeField(ovoo_fields.DateTimeField):
     def __init__(self, tzinfo_aware=False, **kwargs):
         super(DateTimeField, self).__init__(tzinfo_aware, **kwargs)
 
