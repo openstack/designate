@@ -76,7 +76,10 @@ class DeletedZonePurgeTest(TestCase):
         # Create a number of deleted zones in the past days.
         now = timeutils.utcnow()
         for index in range(self.number_of_zones):
-            age = index * (self.time_threshold // self.number_of_zones * 2) - 1
+            if index % 2 == 0:
+                age = self.time_threshold * 2
+            else:
+                age = self.time_threshold // 2
             delta = datetime.timedelta(seconds=age)
             deletion_time = now - delta
             name = 'example%d.org.' % index
