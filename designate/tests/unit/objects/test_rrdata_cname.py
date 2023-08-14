@@ -18,44 +18,30 @@ from designate import objects
 LOG = logging.getLogger(__name__)
 
 
-class RRDataSRVTest(oslotest.base.BaseTestCase):
-    def test_srv_record(self):
+class RRDataCNAMETest(oslotest.base.BaseTestCase):
+    def test_cname_record(self):
         recordset = objects.RecordSet(
-            name='_sip._tcp.example.org.', type='SRV',
+            name='cname.example.org.', type='CNAME',
             records=objects.RecordList(objects=[
-                objects.Record(data='10 0 5060 server1.example.org.'),
+                objects.Record(data='server1.example.org.'),
             ])
         )
 
         recordset.validate()
 
-        self.assertEqual('_sip._tcp.example.org.', recordset.name)
-        self.assertEqual('SRV', recordset.type)
+        self.assertEqual('cname.example.org.', recordset.name)
+        self.assertEqual('CNAME', recordset.type)
 
-    def test_srv_invalid_data(self):
+    def test_cname_invalid_data(self):
         recordset = objects.RecordSet(
-            name='_sip._tcp.example.org.', type='SRV',
+            name='cname.example.org.', type='CNAME',
             records=objects.RecordList(objects=[
-                objects.Record(data='10 0'),
+                objects.Record(data='10'),
             ])
         )
 
         self.assertRaisesRegex(
             exceptions.InvalidObject,
             'Provided object does not match schema',
-            recordset.validate
-        )
-
-    def test_srv_invalid_srv_name(self):
-        recordset = objects.RecordSet(
-            name='_sip.tcp.example.org.', type='SRV',
-            records=objects.RecordList(objects=[
-                objects.Record(data='10 0 5060 server1.example.org.'),
-            ])
-        )
-
-        self.assertRaisesRegex(
-            exceptions.InvalidObject,
-            'name is invalid',
             recordset.validate
         )
