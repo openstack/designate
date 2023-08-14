@@ -16,6 +16,8 @@
 import itertools
 from unittest import mock
 
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 from oslo_log import log as logging
 import oslotest.base
 
@@ -23,6 +25,7 @@ from designate import exceptions
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -41,6 +44,10 @@ def create_test_recordset():
 
 
 class RecordSetTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super(RecordSetTest, self).setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+
     def test_init(self):
         record_set = create_test_recordset()
         self.assertEqual('www.example.org.', record_set.name)
@@ -226,6 +233,47 @@ class RecordSetTest(oslotest.base.BaseTestCase):
     def test_validate(self):
         record_set = create_test_recordset()
         record_set.validate()
+
+    def test_validate_attribute_error(self):
+        record_set = objects.RecordSet(
+            name='www.example.org.',
+            type='NAPTR',
+            records=objects.RecordList(objects=[
+                objects.Record(data=None),
+            ])
+        )
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            record_set.validate
+        )
+
+    def test_validate_type_error(self):
+        record_set = objects.RecordSet(
+            name='www.example.org.',
+            type='TXT',
+            records=objects.RecordList(objects=[
+                objects.Record(data=None),
+            ])
+        )
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            record_set.validate
+        )
+
+    def test_validate_unsupported_recordset_type(self):
+        CONF.set_override('supported_record_type', ['A', 'AAAA', 'CNAME'])
+
+        record_set = objects.RecordSet(
+            name='www.example.org.', type='PTR',
+            records=[]
+        )
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            record_set.validate
+        )
 
     def test_validate_handle_exception(self):
         record_set = create_test_recordset()

@@ -68,7 +68,7 @@ class Record(base.DesignateObject, base.PersistentObjectMixin,
 
     def __repr__(self):
         record = self.to_dict()
-        if 'data' in record:
+        if record.get('data') is not None:
             record['data'] = record['data'][:35]
         return self._make_obj_str(record)
 
