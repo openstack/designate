@@ -24,7 +24,6 @@ Verify operation of the DNS service.
 
       ../usr/bin/python /usr/bin/designate-mdns --config-file /etc/designate/designate.conf
       ../usr/bin/python /usr/bin/designate-central --config-file /etc/designate/designate.conf
-      ../usr/bin/python /usr/bin/designate-agent --config-file /etc/designate/designate.conf
       ../usr/bin/python /usr/bin/designate-api --config-file /etc/designate/designate.conf
       ../usr/bin/python /usr/bin/designate-worker --config-file /etc/designate/designate.conf
       ../usr/bin/python /usr/bin/designate-producer --config-file /etc/designate/designate.conf

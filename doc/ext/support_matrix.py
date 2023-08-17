@@ -30,7 +30,6 @@ from sphinx.util import logging
 from sphinx.util.osutil import copyfile
 
 from designate.backend.base import Backend
-from designate.backend.agent_backend.base import AgentBackend
 
 LOG = logging.getLogger(__name__)
 
@@ -128,8 +127,6 @@ class SupportMatrixDirective(rst.Directive):
             except config_parser.NoOptionError:
                 if cfg.get("backends.%s" % item, "type") == "xfr":
                     backend = Backend.get_driver(name[0])
-                elif cfg.get("backends.%s" % item, "type") == "agent":
-                    backend = AgentBackend.get_driver(name[0])
                 status = backend.__backend_status__
 
             if len(name) == 1:

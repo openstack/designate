@@ -16,7 +16,6 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
-from designate.cmd import agent
 from designate.cmd import api
 from designate.cmd import central
 from designate.cmd import mdns
@@ -36,20 +35,6 @@ class CmdTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(CmdTestCase, self).setUp()
         self.useFixture(cfg_fixture.Config(CONF))
-
-    @mock.patch('designate.agent.service.Service')
-    def test_agent(self, mock_service, mock_read_config, mock_log_setup,
-                   mock_heartbeat, mock_serve, mock_wait):
-        CONF.set_override('workers', 1, 'service:agent')
-
-        agent.main()
-
-        mock_read_config.assert_called_with('designate', mock.ANY)
-        mock_log_setup.assert_called_with(mock.ANY, 'designate')
-        mock_service.assert_called_with()
-        mock_heartbeat.assert_called()
-        mock_serve.assert_called_with(mock.ANY, workers=1)
-        mock_wait.assert_called_with()
 
     @mock.patch('designate.api.service.Service')
     def test_api(self, mock_service, mock_read_config, mock_log_setup,

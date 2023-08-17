@@ -30,14 +30,6 @@ The DNS service consists of the following components:
   the customer facing DNS Servers. Can also pull in DNS information about
   DNS Zones hosted outside of the Designate infrastructure
 
-``designate-agent`` component
-  A small python daemon that can be used for a limited sub set of DNS Servers
-  Some DNS Servers requrire commands be run locally, and to do this we use
-  this component.
-
-  .. note:: The majority of the DNS service installs will not need this
-     component.
-
 ``Customer Facing DNS Servers``
   Serves DNS requests to end users. They are orchestreated by the
   ``designate-worker``, and the supported list is maintained

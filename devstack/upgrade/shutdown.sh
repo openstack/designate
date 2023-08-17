@@ -19,12 +19,11 @@ set -o xtrace
 stop_process designate-central
 stop_process designate-api
 stop_process designate-mdns
-stop_process designate-agent
 stop_process designate-sink
 stop_process designate-worker
 stop_process designate-producer
 
 
 # sanity check that service is actually down
-ensure_services_stopped designate-api designate-central designate-mdns designate-agent designate-sink designate-worker designate-producer
+ensure_services_stopped designate-api designate-central designate-mdns designate-sink designate-worker designate-producer
 

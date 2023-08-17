@@ -4,8 +4,8 @@ register_db_to_save designate
 devstack_localrc base enable_plugin designate https://opendev.org/openstack/designate
 devstack_localrc target enable_plugin designate https://opendev.org/openstack/designate
 
-devstack_localrc base enable_service designate-api designate-central designate-producer designate-worker designate-mdns designate-agent designate-sink designate
-devstack_localrc target enable_service designate-api designate-central designate-producer designate-worker designate-mdns designate-agent designate-sink designate
+devstack_localrc base enable_service designate-api designate-central designate-producer designate-worker designate-mdns designate-sink designate
+devstack_localrc target enable_service designate-api designate-central designate-producer designate-worker designate-mdns designate-sink designate
 
 BASE_RUN_SMOKE=False
 TARGET_RUN_SMOKE=False
