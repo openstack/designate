@@ -13,11 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import oslotest.base
+
 from designate import schema
-from designate.tests import TestCase
 
 
-class TestSchema(TestCase):
+class TestSchema(oslotest.base.BaseTestCase):
     def test_constructor(self):
         quota = schema.Schema('admin', 'quota')
 

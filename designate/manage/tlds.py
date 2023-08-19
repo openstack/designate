@@ -19,11 +19,11 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.central import rpcapi as central_rpcapi
+from designate.common import constants
 from designate import exceptions
 from designate.manage import base
 from designate import objects
 from designate import rpc
-from designate.schema import format
 
 
 LOG = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ class TLDCommands(base.Commands):
     # In case of errors, the error message is appended to the list error_lines
     def _validate_and_create_tld(self, line, error_lines):
         # validate the tld name
-        if not format.is_tldname(line['name']):
+        if not constants.RE_TLDNAME.match(line['name']):
             error_lines.append("InvalidTld --> " +
                                self._convert_tld_dict_to_str(line))
             return 0
