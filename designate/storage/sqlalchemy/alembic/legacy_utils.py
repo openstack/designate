@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 
 def is_migration_needed(equivalent_revision):
     metadata = sa.MetaData()
-    metadata.bind = op.get_bind()
+    metadata.reflect(bind=op.get_bind())
 
     if 'migrate_version' not in metadata.tables.keys():
         return True

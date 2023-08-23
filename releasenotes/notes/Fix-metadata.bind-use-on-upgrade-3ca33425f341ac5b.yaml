@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Fix an issue where on upgrade, the alembic migration will fail when using
+    SQLAlchemy 2.x.
