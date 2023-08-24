@@ -24,10 +24,10 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+from designate import exceptions
 from designate.producer import service
 import designate.service
 from designate.tests import fixtures
-from designate.tests.unit import RoObject
 
 CONF = cfg.CONF
 
@@ -38,39 +38,59 @@ class ProducerTest(oslotest.base.BaseTestCase):
         conf = self.useFixture(cfg_fixture.Config(CONF))
         conf.conf([], project='designate')
 
-        service.CONF = RoObject({
-            'service:producer': RoObject({
-                'enabled_tasks': None,  # enable all tasks
-            }),
-            'producer_task:zone_purge': '',
-        })
         super(ProducerTest, self).setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
+        self.tg = mock.Mock()
         self.service = service.Service()
+        self.service.coordination = mock.Mock()
         self.service.rpc_server = mock.Mock()
+        self.service.tg = self.tg
         self.service._storage = mock.Mock()
         self.service._quota = mock.Mock()
         self.service._quota.limit_check = mock.Mock()
 
-    @mock.patch.object(service.tasks, 'PeriodicTask')
     @mock.patch.object(service.coordination, 'Partitioner')
     @mock.patch.object(designate.service.RPCService, 'start')
-    def test_service_start(self, mock_rpc_start, mock_partitioner,
-                           mock_periodic_task):
-        self.service.coordination = mock.Mock()
+    def test_service_start(self, mock_rpc_start, mock_partitioner):
+        CONF.set_override('enabled_tasks', None, 'service:producer')
+
+        mock_partition = mock.Mock()
+        mock_partitioner.return_value = mock_partition
 
         self.service.start()
 
-        self.assertTrue(mock_rpc_start.called)
+        mock_rpc_start.assert_called_with()
+        mock_partition.watch_partition_change.assert_called()
+        mock_partition.start.assert_called()
+
+        # Make sure that tasks were added to the tg timer.
+        self.tg.add_timer.assert_called()
+        self.assertEqual(6, self.tg.add_timer.call_count)
+
+    @mock.patch.object(service.coordination, 'Partitioner')
+    @mock.patch.object(designate.service.RPCService, 'start')
+    def test_service_start_all_extension_disabled(self, mock_rpc_start,
+                                                  mock_partitioner):
+        CONF.set_override('enabled_tasks', [], 'service:producer')
+        self.assertRaisesRegex(
+            exceptions.ConfigurationError,
+            r'No periodic tasks found matching: \[\]',
+            self.service.start,
+        )
+
+        CONF.set_override('enabled_tasks', ['None'], 'service:producer')
+        self.assertRaisesRegex(
+            exceptions.ConfigurationError,
+            r'No periodic tasks found matching: \[\'None\'\]',
+            self.service.start,
+        )
 
     def test_service_stop(self):
-        self.service.coordination.stop = mock.Mock()
-
         self.service.stop()
 
-        self.assertTrue(self.service.coordination.stop.called)
+        self.service.coordination.stop.assert_called()
 
         self.assertIn('Stopping producer service', self.stdlog.logger.output)
 
