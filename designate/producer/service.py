@@ -21,9 +21,7 @@ from designate.central import rpcapi
 from designate import coordination
 from designate import exceptions
 from designate.producer import tasks
-from designate import quota
 from designate import service
-from designate import storage
 
 
 LOG = logging.getLogger(__name__)
@@ -51,19 +49,6 @@ class Service(service.RPCService):
         self.coordination = coordination.Coordination(
             self.service_name, self.tg, grouping_enabled=True
         )
-
-    @property
-    def storage(self):
-        if not self._storage:
-            self._storage = storage.get_storage()
-        return self._storage
-
-    @property
-    def quota(self):
-        if not self._quota:
-            # Get a quota manager instance
-            self._quota = quota.get_quota()
-        return self._quota
 
     @property
     def service_name(self):
