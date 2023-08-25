@@ -96,6 +96,13 @@
         USE_SQLALCHEMY_LATEST: true
 
 - job:
+    name: designate-bind9-catalog-zones
+    parent: designate-bind9
+    vars:
+      devstack_localrc:
+        DESIGNATE_USE_CATALOG_ZONES: true
+
+- job:
     name: designate-pdns4
     post-run: playbooks/designate-pdns4/post.yaml
     parent: designate-base
@@ -248,6 +255,8 @@
         - designate-tox-py310-with-sqlalchemy-2x
         - designate-bind9-sqlalchemy-2x
         - designate-tox-dnspython-latest:
+            voting: false
+        - designate-bind9-catalog-zones:
             voting: false
     gate:
       jobs:
