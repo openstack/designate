@@ -19,6 +19,7 @@ import oslo_messaging as messaging
 
 from designate.central import rpcapi
 from designate import coordination
+from designate import exceptions
 from designate.producer import tasks
 from designate import quota
 from designate import service
@@ -84,9 +85,16 @@ class Service(service.RPCService):
         self._partitioner.start()
         self._partitioner.watch_partition_change(self._rebalance)
 
-        enabled_tasks = CONF['service:producer'].enabled_tasks
-        for task in tasks.PeriodicTask.get_extensions(enabled_tasks):
-            LOG.debug("Registering task %s", task)
+        enabled_tasks = tasks.PeriodicTask.get_extensions(
+            CONF['service:producer'].enabled_tasks
+        )
+        if not enabled_tasks:
+            raise exceptions.ConfigurationError(
+                'No periodic tasks found matching: %s' %
+                CONF['service:producer'].enabled_tasks
+            )
+        for task in enabled_tasks:
+            LOG.debug('Registering task %s', task)
 
             # Instantiate the task
             task = task()
@@ -102,5 +110,5 @@ class Service(service.RPCService):
         self.coordination.stop()
 
     def _rebalance(self, my_partitions, members, event):
-        LOG.info("Received rebalance event %s", event)
+        LOG.info('Received rebalance event %s', event)
         self.partition_range = my_partitions
