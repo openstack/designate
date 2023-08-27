@@ -1,2 +1,2 @@
-pbr>=0.6,<1.0
+pbr
 -e git+https://github.com/openstack/designate.git#egg=designate
