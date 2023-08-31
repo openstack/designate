@@ -196,6 +196,9 @@ shared_zones = Table(
     UniqueConstraint('zone_id', 'project_id', 'target_project_id',
                      name='unique_shared_zone'),
     ForeignKeyConstraint(('zone_id',), ['zones.id'], ondelete='CASCADE'),
+
+    mysql_engine='InnoDB',
+    mysql_charset='utf8'
 )
 
 recordsets = Table('recordsets', metadata,
