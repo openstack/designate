@@ -979,7 +979,7 @@ class Service(service.RPCService):
             context, zone, increment_serial=increment_serial)
 
         # Fire off a XFR
-        if 'masters' in changes:
+        if zone.type == 'SECONDARY' and 'masters' in changes:
             self.worker_api.perform_zone_xfr(context, zone)
 
         self.worker_api.update_zone(context, zone)

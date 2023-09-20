@@ -874,6 +874,42 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsInstance(notified_zone, objects.Zone)
         self.assertEqual(zone.id, notified_zone.id)
 
+    def test_update_zone_master_for_primary_zone(self):
+        # Create a zone
+        zone = self.create_zone(email='info@example.org')
+
+        # Update the masters
+        zone.masters = objects.ZoneMasterList()
+
+        worker = mock.Mock()
+        with mock.patch.object(worker_api.WorkerAPI,
+                               'get_instance') as get_worker:
+            get_worker.return_value = worker
+            self.central_service.update_zone(self.admin_context, zone)
+
+        # Make sure we don't try to trigger an axfr for a primary zone.
+        self.assertFalse(worker.perform_zone_xfr.called)
+
+    def test_update_zone_master_for_secondary_zone(self):
+        fixture = self.get_zone_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['masters'] = [{'host': '192.0.2.10', 'port': 53}]
+
+        # Create a zone
+        zone = self.create_zone(**fixture)
+
+        # Update the masters
+        zone.masters = objects.ZoneMasterList()
+
+        worker = mock.Mock()
+        with mock.patch.object(worker_api.WorkerAPI,
+                               'get_instance') as get_worker:
+            get_worker.return_value = worker
+            self.central_service.update_zone(self.admin_context, zone)
+
+        # Make sure we trigger an axfr for a secondary zone.
+        self.assertTrue(worker.perform_zone_xfr.called)
+
     def test_update_zone_without_id(self):
         # Create a zone
         zone = self.create_zone(email='info@example.org')
