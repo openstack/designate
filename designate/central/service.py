@@ -996,7 +996,7 @@ class Service(service.RPCService):
         )
 
         # Fire off a XFR
-        if 'masters' in changes:
+        if zone.type == 'SECONDARY' and 'masters' in changes:
             self.worker_api.perform_zone_xfr(context, zone)
 
         return zone
