@@ -808,7 +808,7 @@ class Service(service.RPCService):
         """Create zone straight away
         """
 
-        if zone.type == 'SECONDARY' and zone.serial is None:
+        if zone.type == constants.ZONE_SECONDARY and zone.serial is None:
             zone.serial = 1
 
         # randomize the zone refresh time
@@ -818,7 +818,7 @@ class Service(service.RPCService):
 
         self.worker_api.create_zone(context, zone)
 
-        if zone.type == 'SECONDARY':
+        if zone.type == constants.ZONE_SECONDARY:
             xfr_zone = copy.deepcopy(zone)
             xfr_zone.obj_reset_changes(recursive=True)
             self.worker_api.perform_zone_xfr(context, xfr_zone)
@@ -996,7 +996,7 @@ class Service(service.RPCService):
         )
 
         # Fire off a XFR
-        if zone.type == 'SECONDARY' and 'masters' in changes:
+        if zone.type == constants.ZONE_SECONDARY and 'masters' in changes:
             self.worker_api.perform_zone_xfr(context, zone)
 
         return zone
@@ -1128,7 +1128,7 @@ class Service(service.RPCService):
 
         policy.check('xfr_zone', context, target)
 
-        if zone.type != 'SECONDARY':
+        if zone.type != constants.ZONE_SECONDARY:
             msg = "Can't XFR a non Secondary zone."
             raise exceptions.BadRequest(msg)
 
