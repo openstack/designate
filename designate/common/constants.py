@@ -54,6 +54,11 @@ VALID_QUOTAS = [QUOTA_API_EXPORT_SIZE, QUOTA_RECORDSET_RECORDS,
 # RBAC scopes
 PROJECT = 'project'
 
+# Zone constants
+ZONE_PRIMARY = 'PRIMARY'
+ZONE_SECONDARY = 'SECONDARY'
+ZONE_TYPES = [ZONE_PRIMARY, ZONE_SECONDARY]
+
 # Record regexes
 RE_HOSTNAME = re.compile(r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+\Z')  # noqa
 RE_ZONENAME = re.compile(r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z')  # noqa
