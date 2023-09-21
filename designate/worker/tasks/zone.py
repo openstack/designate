@@ -183,7 +183,7 @@ class ZoneXfr(base.Task):
 
         self.zone.update(dnsutils.from_dnspython_zone(dnspython_zone))
         self.zone.transferred_at = timeutils.utcnow()
-        self.zone.obj_reset_changes(['name'])
+        self.zone.obj_reset_changes(['name', 'masters'], recursive=True)
         self.central_api.update_zone(
             self.context, self.zone, increment_serial=False
         )

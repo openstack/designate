@@ -819,9 +819,7 @@ class Service(service.RPCService):
         self.worker_api.create_zone(context, zone)
 
         if zone.type == constants.ZONE_SECONDARY:
-            xfr_zone = copy.deepcopy(zone)
-            xfr_zone.obj_reset_changes(recursive=True)
-            self.worker_api.perform_zone_xfr(context, xfr_zone)
+            self.worker_api.perform_zone_xfr(context, zone)
 
         # If zone is a superzone, update subzones
         # with new parent IDs

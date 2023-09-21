@@ -61,6 +61,38 @@ class TestXfr(oslotest.base.BaseTestCase):
             self.assertNotIn('name', zone.obj_what_changed())
 
     @mock.patch.object(dnsutils, 'do_axfr', mock.Mock())
+    def test_zone_sync_not_change_masters(self):
+        recordset = objects.RecordSet(
+            name='www.example.test.', type='TXT',
+            records=objects.RecordList(objects=[
+                objects.Record(data='foo bar'),
+            ])
+        )
+        zone = objects.Zone(
+            id='7592878e-4ade-40de-8b8d-699b871ee6fa',
+            name='example.com.',
+            serial=1,
+            masters=objects.ZoneMasterList.from_list(
+                [{'host': '127.0.0.1', 'port': 53}, ]
+            ),
+            type=constants.ZONE_SECONDARY,
+            recordsets=objects.RecordSetList(objects=[]),
+        )
+
+        self.xfr = worker_zone.ZoneXfr(mock.Mock(), self.context, zone)
+        self.xfr._central_api = mock.Mock()
+
+        with mock.patch.object(dnsutils, 'from_dnspython_zone') as mock_dns:
+            zone.recordsets = objects.RecordSetList(objects=[recordset])
+            zone.masters = objects.ZoneMasterList()
+            mock_dns.return_value = zone
+
+            self.xfr()
+
+            self.assertIn('transferred_at', zone.obj_what_changed())
+            self.assertNotIn('masters', zone.obj_what_changed())
+
+    @mock.patch.object(dnsutils, 'do_axfr', mock.Mock())
     def test_zone_sync_using_list_of_servers(self):
         zone = objects.Zone(
             id='7592878e-4ade-40de-8b8d-699b871ee6fa',
