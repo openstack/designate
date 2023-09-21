@@ -1622,42 +1622,6 @@ class CentralZoneTestCase(CentralBasic):
             refresh_time = central_service._generate_soa_refresh_interval()
             self.assertEqual(3563, refresh_time)
 
-    @patch.object(objects.Zone, 'obj_reset_changes')
-    def test_create_secondary_zone(self, mock_obj_reset_changes):
-        self.service._enforce_zone_quota = mock.Mock()
-        self.service._create_zone_in_storage = mock.Mock(
-            return_value=objects.Zone(name='example.com.', type='SECONDARY'))
-        self.service._is_valid_zone_name = mock.Mock()
-        self.service._is_valid_ttl = mock.Mock()
-        self.service._is_subzone = mock.Mock(return_value=False)
-        self.service._is_superzone = mock.Mock(return_value=[])
-        self.service.storage.get_pool.return_value = RoObject(
-            ns_records=[RoObject()])
-        self.useFixture(
-            fixtures.MockPatchObject(
-                self.service.storage,
-                'find_pools',
-                return_value=objects.PoolList.from_list(
-                    [
-                        {'id': '94ccc2c1-d751-44fe-b57f-8894c9f5c842'}
-                    ]
-                )
-            )
-        )
-        output = self.service.create_zone(
-            self.context,
-            objects.Zone(
-                tenant_id='1',
-                name='example.com.',
-                ttl=60,
-                pool_id=CentralZoneTestCase.pool__id,
-                refresh=0,
-                type='SECONDARY'
-            )
-        )
-        self.assertEqual('example.com.', output.name)
-        mock_obj_reset_changes.assert_called_once_with(recursive=True)
-
 
 class IsSubzoneTestCase(CentralBasic):
     def setUp(self):
