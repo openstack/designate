@@ -1064,7 +1064,7 @@ class Service(service.RPCService):
             context, zone, increment_serial=increment_serial)
 
         # Fire off a XFR
-        if 'masters' in changes:
+        if zone.type == 'SECONDARY' and 'masters' in changes:
             self.mdns_api.perform_zone_xfr(context, zone)
 
         self.zone_api.update_zone(context, zone)
