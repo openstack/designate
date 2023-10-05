@@ -33,7 +33,6 @@
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
-      - ^etc/.*$
       - ^releasenotes/.*$
 
 - job:
@@ -161,7 +160,6 @@
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
-      - ^etc/.*$
       - ^releasenotes/.*$
 
 - job:
