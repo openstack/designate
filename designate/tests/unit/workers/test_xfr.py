@@ -19,6 +19,7 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+from designate.common import constants
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
@@ -44,7 +45,8 @@ class TestXfr(oslotest.base.BaseTestCase):
             serial=1,
             masters=objects.ZoneMasterList.from_list(
                 [{'host': '127.0.0.1', 'port': 53}, ]
-            )
+            ),
+            type=constants.ZONE_SECONDARY,
         )
 
         self.xfr = worker_zone.ZoneXfr(mock.Mock(), self.context, zone)
@@ -64,6 +66,7 @@ class TestXfr(oslotest.base.BaseTestCase):
             id='7592878e-4ade-40de-8b8d-699b871ee6fa',
             name='example.com.',
             serial=1,
+            type=constants.ZONE_SECONDARY,
         )
 
         self.xfr = worker_zone.ZoneXfr(
@@ -88,7 +91,8 @@ class TestXfr(oslotest.base.BaseTestCase):
             serial=1,
             masters=objects.ZoneMasterList.from_list(
                 [{'host': '127.0.0.1', 'port': 53}, ]
-            )
+            ),
+            type=constants.ZONE_SECONDARY,
         )
 
         self.xfr = worker_zone.ZoneXfr(mock.Mock(), self.context, zone)
@@ -100,3 +104,22 @@ class TestXfr(oslotest.base.BaseTestCase):
             self.xfr()
 
             self.assertNotIn('transferred_at', zone.obj_what_changed())
+
+    @mock.patch.object(dnsutils, 'do_axfr')
+    def test_zone_only_allow_axfr_on_secondary_zones(self, mock_do_axfr):
+        zone = objects.Zone(
+            id='7592878e-4ade-40de-8b8d-699b871ee6fa',
+            name='example.com.',
+            serial=1,
+            masters=objects.ZoneMasterList.from_list(
+                [{'host': '127.0.0.1', 'port': 53}, ]
+            ),
+            type=constants.ZONE_PRIMARY,
+        )
+
+        self.xfr = worker_zone.ZoneXfr(mock.Mock(), self.context, zone)
+        self.xfr._central_api = mock.Mock()
+
+        self.xfr()
+
+        mock_do_axfr.assert_not_called()

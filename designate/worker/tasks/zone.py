@@ -23,6 +23,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
+from designate.common import constants
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
@@ -167,6 +168,9 @@ class ZoneXfr(base.Task):
         self.servers = servers
 
     def __call__(self):
+        if self.zone.type != constants.ZONE_SECONDARY:
+            return
+
         servers = self.servers or self.zone.masters
         if isinstance(servers, objects.ListObjectMixin):
             servers = servers.to_list()
