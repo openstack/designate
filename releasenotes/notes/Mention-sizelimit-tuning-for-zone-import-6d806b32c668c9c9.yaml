@@ -1,0 +1,10 @@
+---
+upgrade:
+  - |
+    The example "api-paste.ini" file for Designate has been updated to enable
+    the oslo middleware sizelimit filter by default. If you update your
+    "api-paste.ini" to the version with sizelimit in it, you will need to
+    adjust the [oslo_middleware] max_request_body_size setting in the
+    Designate configuration file to be large enough to accommodate the expected
+    maximum zone import size in your deployment. The oslo middleware
+    max_request_body_size default is 114688 bytes.
