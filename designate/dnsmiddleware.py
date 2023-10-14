@@ -13,8 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import time
-
 import dns.exception
 import dns.message
 import dns.opcode
@@ -26,7 +24,6 @@ from oslo_log import log as logging
 
 import designate.conf
 from designate import context
-from designate import dnsutils
 from designate import exceptions
 
 CONF = designate.conf.CONF
@@ -176,39 +173,3 @@ class TsigInfoMiddleware(DNSMiddleware):
             return self._build_error_response()
 
         return None
-
-
-class LimitNotifyMiddleware(DNSMiddleware):
-    """Middleware that rate limits NOTIFYs to the Agent"""
-
-    def __init__(self, application):
-        super(LimitNotifyMiddleware, self).__init__(application)
-
-        self.delay = CONF['service:agent'].notify_delay
-        self.locker = dnsutils.ZoneLock(self.delay)
-
-    def process_request(self, request):
-        opcode = request.opcode()
-        if opcode != dns.opcode.NOTIFY:
-            return None
-
-        zone_name = request.question[0].name.to_text()
-        if isinstance(zone_name, bytes):
-            zone_name = zone_name.decode('utf-8')
-
-        if self.locker.acquire(zone_name):
-            time.sleep(self.delay)
-            self.locker.release(zone_name)
-            return None
-        else:
-            LOG.debug(
-                'Threw away NOTIFY for %(zone)s, already '
-                'working on an update.',
-                {
-                    'zone': zone_name
-                }
-            )
-            response = dns.message.make_response(request)
-            # Provide an authoritative answer
-            response.flags |= dns.flags.AA
-            return (response,)

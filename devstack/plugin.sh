@@ -58,9 +58,6 @@ function configure_designate {
         iniset $DESIGNATE_CONF coordination backend_url $DESIGNATE_COORDINATION_URL
     fi
 
-    # Agent Configuration
-    iniset $DESIGNATE_CONF service:agent workers $API_WORKERS
-
     # API Configuration
     sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
     iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
@@ -278,7 +275,6 @@ function start_designate {
 
     run_process designate-central "$DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
     run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
-    run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
     run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
 
     run_process designate-worker "$DESIGNATE_BIN_DIR/designate-worker --config-file $DESIGNATE_CONF"
@@ -314,7 +310,6 @@ function stop_designate {
 
     stop_process designate-central
     stop_process designate-mdns
-    stop_process designate-agent
     stop_process designate-sink
     stop_process designate-worker
     stop_process designate-producer
@@ -324,12 +319,7 @@ function stop_designate {
 
 # This is the main for plugin.sh
 if is_service_enabled designate; then
-    # Sanify check for agent backend
     # ------------------------------
-    if ! is_service_enabled designate-agent && [ "$DESIGNATE_BACKEND_DRIVER" == "agent" ]; then
-        die $LINENO "To use the agent backend, you must enable the designate-agent service"
-    fi
-
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
         echo_summary "Installing Designate client"
         install_designateclient

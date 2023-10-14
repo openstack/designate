@@ -72,10 +72,6 @@ DynDNS or even another Designate instance. In this situation, you will
 typically have a single target with a set of nameservers to test that
 meet your requirements.
 
-Yet another example is when using a Designate agent. In this scenario
-your agent instances are the targets and the nameservers the agent
-updates would be checked for the correct information.
-
 Managing Pools
 ==============
 

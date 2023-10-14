@@ -1,0 +1,6 @@
+---
+prelude: >
+    Designate-agent removal is complete in this version of designate.
+upgrade:
+  - |
+    The agent and all agent backends has been removed and can no longer be used.

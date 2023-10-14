@@ -13,14 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest import mock
-
 import dns
 import dns.query
 import dns.tsigkeyring
 from oslo_config import cfg
 
-from designate import dnsmiddleware
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
@@ -194,47 +191,3 @@ class TestUtils(designate.tests.TestCase):
         self.assertTrue(lock.acquire('example3.com.'))
         lock.release('example3.com.')
         self.assertTrue(lock.acquire('example3.com.'))
-
-    def test_limit_notify_middleware(self):
-        self.CONF.set_override('notify_delay', 0.1, 'service:agent')
-
-        # Initialize the middlware
-        placeholder_app = None
-        middleware = dnsmiddleware.LimitNotifyMiddleware(placeholder_app)
-
-        # Prepare a NOTIFY
-        zone_name = 'example.com.'
-        notify = dns.message.make_query(zone_name, dns.rdatatype.SOA)
-        notify.flags = 0
-        notify.set_opcode(dns.opcode.NOTIFY)
-        notify.flags |= dns.flags.AA
-
-        # Send the NOTIFY through the middleware
-        # No problem, middleware should return None to pass it on
-        self.assertIsNone(middleware.process_request(notify))
-
-    @mock.patch('designate.dnsutils.ZoneLock.acquire', return_value=False)
-    def test_limit_notify_middleware_no_acquire(self, mock_acquire):
-        self.CONF.set_override('notify_delay', 0.1, 'service:agent')
-
-        # Initialize the middlware
-        placeholder_app = None
-        middleware = dnsmiddleware.LimitNotifyMiddleware(placeholder_app)
-
-        # Prepare a NOTIFY
-        zone_name = 'example.com.'
-        notify = dns.message.make_query(zone_name, dns.rdatatype.SOA)
-        notify.flags = 0
-        notify.set_opcode(dns.opcode.NOTIFY)
-        notify.flags |= dns.flags.AA
-
-        # Make a response object to match the middleware's return
-        response = dns.message.make_response(notify)
-        # Provide an authoritative answer
-        response.flags |= dns.flags.AA
-
-        # Send the NOTIFY through the middleware
-        # Lock can't be acquired, a NOTIFY is already being worked on
-        # so just return what would have come back for a successful NOTIFY
-        # This needs to be a one item tuple for the serialization middleware
-        self.assertEqual(middleware.process_request(notify), (response,))

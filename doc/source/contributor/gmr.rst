@@ -223,14 +223,6 @@ GMR Example
     ====                         Configuration                          ====
     ========================================================================
 
-    backend:agent:bind9:
-      query-destination = 127.0.0.1
-      rndc-config-file = None
-      rndc-host = 127.0.0.1
-      rndc-key-file = None
-      rndc-port = 953
-      zone-file-path = /opt/stack/data/designate/zones
-
     backend:bind9:
       masters =
         127.0.0.1:5354
