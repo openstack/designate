@@ -82,12 +82,12 @@ class TLDCommands(base.Commands):
     def _validate_and_create_tld(self, line, error_lines):
         # validate the tld name
         if not constants.RE_TLDNAME.match(line['name']):
-            error_lines.append("InvalidTld --> " +
+            error_lines.append('InvalidTld --> ' +
                                self._convert_tld_dict_to_str(line))
             return 0
         # validate the description if there is one
         elif (line['description']) and (len(line['description']) > 160):
-            error_lines.append("InvalidDescription --> " +
+            error_lines.append('InvalidDescription --> ' +
                                self._convert_tld_dict_to_str(line))
 
             return 0
@@ -97,15 +97,15 @@ class TLDCommands(base.Commands):
                                             tld=objects.Tld.from_dict(line))
                 return 1
             except exceptions.DuplicateTld:
-                error_lines.append("DuplicateTld --> " +
+                error_lines.append('DuplicateTld --> ' +
                                    self._convert_tld_dict_to_str(line))
                 return 0
 
     @base.name('import')
-    @base.args('--input_file', help="Input file path containing TLDs",
+    @base.args('--input_file', help='Input file path containing TLDs',
                default=None, required=True, type=str)
     @base.args('--delimiter',
-               help="delimiter between fields in the input file",
+               help='delimiter between fields in the input file',
                default=',', type=str)
     def from_file(self, input_file=None, delimiter=None):
         self._startup()
@@ -114,7 +114,7 @@ class TLDCommands(base.Commands):
         if not os.path.exists(input_file):
             raise Exception('TLD Input file Not Found')
 
-        LOG.info("Importing TLDs from %s", input_file)
+        LOG.info('Importing TLDs from %s', input_file)
 
         error_lines = []
         tlds_added = 0
@@ -128,17 +128,16 @@ class TLDCommands(base.Commands):
             for line in reader:
                 # check if there are more than 2 fields
                 if 'extra_fields' in line:
-                    error_lines.append("InvalidLine --> " +
+                    error_lines.append('InvalidLine --> ' +
                                        self._convert_tld_dict_to_str(line))
                 else:
                     tlds_added += self._validate_and_create_tld(line,
                                                                 error_lines)
 
-        LOG.info("Number of tlds added: %d", tlds_added)
+        LOG.info('Number of tlds added: %d', tlds_added)
 
-        errors = len(error_lines)
-        if errors > 0:
-            LOG.error("Number of errors: %d", errors)
+        if error_lines:
+            LOG.error('Number of errors: %d', len(error_lines))
             # Sorting the errors and printing them so that it is easier to
             # read the errors
-            LOG.error("Error Lines:\n%s", '\n'.join(sorted(error_lines)))
+            LOG.error('Error Lines:\n%s', '\n'.join(sorted(error_lines)))
