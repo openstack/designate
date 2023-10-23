@@ -38,6 +38,35 @@ class FakeRequest(object):
         return "FakeResponse"
 
 
+class ContextMiddlewareTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super(ContextMiddlewareTest, self).setUp()
+        self.app = middleware.ContextMiddleware({})
+        self.request = FakeRequest()
+
+    def test_extract_all_projects(self):
+        mock_context = mock.Mock()
+
+        self.request.headers.update({
+            'X-Auth-All-Projects': 'True',
+        })
+
+        self.app._extract_all_projects(mock_context, self.request)
+
+        self.assertTrue(mock_context.all_tenants)
+
+    def test_extract_dns_hide_counts(self):
+        mock_context = mock.Mock()
+
+        self.request.headers.update({
+            'OpenStack-DNS-Hide-Counts': 'True',
+        })
+
+        self.app._extract_dns_hide_counts(mock_context, self.request)
+
+        self.assertTrue(mock_context.hide_counts)
+
+
 class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super(KeystoneContextMiddlewareTest, self).setUp()
@@ -45,7 +74,7 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
 
         self.request = FakeRequest()
 
-        # Replace the DesignateContext class..
+        # Replace the DesignateContext class.
         self.ctxt = mock.Mock()
         self.useFixture(fixtures.MockPatch(
             'designate.context.DesignateContext',

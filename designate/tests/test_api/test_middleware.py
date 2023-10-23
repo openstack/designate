@@ -17,6 +17,7 @@
 from unittest import mock
 
 from oslo_config import cfg
+import oslo_messaging as messaging
 from oslo_messaging.notify import notifier
 
 from designate.api import middleware
@@ -54,6 +55,7 @@ class KeystoneContextMiddlewareTest(designate.tests.TestCase):
             'X-User-ID': 'UserID',
             'X-Tenant-ID': 'TenantID',
             'X-Roles': 'admin,Member',
+            'X-Identity-Status': 'Valid'
         }
 
         # Process the request
@@ -68,6 +70,29 @@ class KeystoneContextMiddlewareTest(designate.tests.TestCase):
         self.assertEqual('UserID', context.user_id)
         self.assertEqual('TenantID', context.project_id)
         self.assertEqual(['admin', 'Member'], context.roles)
+
+    def test_process_request_with_service_catalog(self):
+        app = middleware.KeystoneContextMiddleware({})
+
+        request = FakeRequest()
+
+        request.headers = {
+            'X-Auth-Token': 'AuthToken',
+            'X-User-ID': 'UserID',
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin,Member',
+            'X-Service-Catalog': '{"test": "value"}'
+        }
+
+        # Process the request
+        app.process_request(request)
+
+        self.assertIn('context', request.environ)
+
+        context = request.environ['context']
+
+        self.assertIn('test', context.service_catalog)
+        self.assertEqual('value', context.service_catalog['test'])
 
     def test_process_request_invalid_keystone_token(self):
         app = middleware.KeystoneContextMiddleware({})
@@ -224,7 +249,44 @@ class NormalizeURIMiddlewareTest(designate.tests.TestCase):
 
 
 class FaultMiddlewareTest(designate.tests.TestCase):
-    @mock.patch.object(notifier.Notifier, "error")
+    def test_request(self):
+        mock_request = mock.Mock()
+
+        app = middleware.FaultWrapperMiddleware({})
+
+        app(mock_request)
+
+        mock_request.get_response.assert_called()
+
+    def test_request_messaging_timeout(self):
+        request = FakeRequest()
+        mock_get_response = mock.Mock()
+        request.get_response = mock_get_response
+
+        mock_get_response.side_effect = messaging.MessagingTimeout()
+
+        app = middleware.FaultWrapperMiddleware({})
+
+        response = app(request)
+
+        self.assertEqual(504, response.status_code)
+        mock_get_response.assert_called_with({})
+
+    def test_request_unknown_error(self):
+        request = FakeRequest()
+        mock_get_response = mock.Mock()
+        request.get_response = mock_get_response
+
+        mock_get_response.side_effect = Exception()
+
+        app = middleware.FaultWrapperMiddleware({})
+
+        response = app(request)
+
+        self.assertEqual(500, response.status_code)
+        mock_get_response.assert_called_with({})
+
+    @mock.patch.object(notifier.Notifier, 'error')
     def test_notify_of_fault(self, mock_notifier):
         self.config(notify_api_faults=True)
         rpc.init(cfg.CONF)
