@@ -57,8 +57,6 @@ PRODUCER_OPTS = [
                help='Number of Producer greenthreads to spawn'),
     cfg.ListOpt('enabled_tasks',
                 help='Enabled tasks to run'),
-    cfg.StrOpt('storage_driver', default='sqlalchemy',
-               help='The storage driver to use'),
     cfg.BoolOpt('export_synchronous', default=True,
                 help='Whether to allow synchronous zone exports',
                 deprecated_for_removal=True,

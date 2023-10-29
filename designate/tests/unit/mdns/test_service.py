@@ -60,18 +60,6 @@ class MdnsServiceTest(oslotest.base.BaseTestCase):
     def test_service_name(self):
         self.assertEqual('mdns', self.service.service_name)
 
-    @mock.patch.object(storage, 'get_storage')
-    def test_storage_driver(self, mock_get_driver):
-        self.service._storage = None
-
-        mock_driver = mock.MagicMock()
-        mock_driver.name = 'noop_driver'
-        mock_get_driver.return_value = mock_driver
-
-        self.assertIsInstance(self.service.storage, mock.MagicMock)
-
-        self.assertTrue(mock_get_driver.called)
-
     @mock.patch.object(handler, 'RequestHandler')
     @mock.patch.object(designate.service.DNSService, 'start')
     @mock.patch.object(designate.utils, 'cache_result')
