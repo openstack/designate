@@ -77,7 +77,8 @@ class ZoneAPIv2Adapter(base.APIv2Adapter):
             del values['attributes']
 
         return super(ZoneAPIv2Adapter, cls).parse_object(
-            values, obj, *args, **kwargs)
+            values, obj, *args, **kwargs
+        )
 
 
 class ZoneListAPIv2Adapter(base.APIv2Adapter):
