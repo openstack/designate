@@ -333,3 +333,31 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
         self.assertEqual(
             req_mock.last_request.headers.get('X-API-Key'), 'api_key'
         )
+
+    @mock.patch('os.path.exists')
+    def test_verify_ssl(self, mock_path_exists):
+        mock_path_exists.return_value = True
+
+        self.backend.api_ca_cert = 'valid_cert'
+
+        self.assertEqual('valid_cert', self.backend._verify_ssl())
+
+    @mock.patch('os.path.exists')
+    def test_verify_ssl_does_not_exist(self, mock_path_exists):
+        mock_path_exists.return_value = False
+
+        self.backend.api_ca_cert = 'valid_cert'
+
+        self.assertFalse(self.backend._verify_ssl())
+
+    def test_verify_ssl_not_valid(self):
+        self.assertFalse(self.backend._verify_ssl())
+
+        self.backend.api_ca_cert = 'changeme'
+        self.assertFalse(self.backend._verify_ssl())
+
+        self.backend.api_ca_cert = ''
+        self.assertFalse(self.backend._verify_ssl())
+
+        self.backend.api_ca_cert = None
+        self.assertFalse(self.backend._verify_ssl())
