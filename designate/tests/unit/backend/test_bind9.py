@@ -29,6 +29,8 @@ import subprocess
 class Bind9BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(Bind9BackendTestCase, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
         self.admin_context = mock.Mock()
         mock.patch.object(
             context.DesignateContext, 'get_admin_context',
@@ -54,6 +56,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
                 {'key': 'rndc_bin_path', 'value': '/usr/sbin/rndc'},
                 {'key': 'rndc_config_file', 'value': '/etc/rndc.conf'},
                 {'key': 'rndc_key_file', 'value': '/etc/rndc.key'},
+                {'key': 'rndc_timeout', 'value': '0'},
                 {'key': 'clean_zonefile', 'value': 'true'}
             ],
         }
@@ -87,6 +90,26 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         )
 
     @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
+    @mock.patch.object(impl_bind9.Bind9Backend, 'get_zone')
+    def test_update_zone_error(self, mock_get_zone, mock_execute):
+        mock_get_zone.return_value = True
+        mock_execute.side_effect = exceptions.Backend('error')
+
+        with fixtures.random_seed(0):
+            self.backend.update_zone(self.admin_context, self.zone)
+
+        self.assertIn('Error updating zone', self.stdlog.logger.output)
+
+    @mock.patch.object(impl_bind9.Bind9Backend, 'create_zone')
+    @mock.patch.object(impl_bind9.Bind9Backend, 'get_zone')
+    def test_update_zone_does_not_exist(self, mock_get_zone, mock_create_zone):
+        mock_get_zone.return_value = False
+
+        self.backend.update_zone(self.admin_context, self.zone)
+
+        mock_create_zone.assert_called()
+
+    @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
     def test_get_zone(self, mock_execute):
         with fixtures.random_seed(0):
             self.backend.get_zone(self.admin_context, self.zone)
@@ -94,6 +117,22 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         mock_execute.assert_called_with(
             ['showzone', 'example.com ']
         )
+
+    @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
+    def test_get_zone_backend_error(self, mock_execute):
+        mock_execute.side_effect = exceptions.Backend('error')
+
+        self.assertRaisesRegex(
+            exceptions.Backend,
+            'error',
+            self.backend.get_zone, self.admin_context, self.zone
+        )
+
+    @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
+    def test_get_zone_backend_error_not_found(self, mock_execute):
+        mock_execute.side_effect = exceptions.Backend('not found')
+
+        self.assertFalse(self.backend.get_zone(self.admin_context, self.zone))
 
     @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
     def test_create_zone_with_view(self, mock_execute):

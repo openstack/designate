@@ -53,7 +53,8 @@ class Bind9Backend(base.Backend):
 
         self._rndc_call_base = self._generate_rndc_base_call()
         self._rndc_timeout = self.options.get('rndc_timeout', None)
-        if self._rndc_timeout == 0:
+
+        if self._rndc_timeout == 0 or self._rndc_timeout == '0':
             self._rndc_timeout = None
 
     def _generate_rndc_base_call(self):
