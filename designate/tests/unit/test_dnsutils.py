@@ -40,7 +40,7 @@ class TestDNSUtils(oslotest.base.BaseTestCase):
 
     @mock.patch.object(dns.query, 'udp')
     def test_send_udp_dns_message(self, mock_udp):
-        CONF.set_override('all_tcp', False, 'service:mdns')
+        CONF.set_override('all_tcp', False, 'service:worker')
         dnsutils.send_dns_message('msg', '192.0.2.1', 1234, 1)
         mock_udp.assert_called_with(
             'msg', '192.0.2.1', port=1234, timeout=1
@@ -48,7 +48,7 @@ class TestDNSUtils(oslotest.base.BaseTestCase):
 
     @mock.patch.object(dns.query, 'tcp')
     def test_send_tcp_dns_message(self, mock_tcp):
-        CONF.set_override('all_tcp', True, 'service:mdns')
+        CONF.set_override('all_tcp', True, 'service:worker')
         dnsutils.send_dns_message('msg', '192.0.2.1', 1234, 1)
         mock_tcp.assert_called_with(
             'msg', '192.0.2.1', port=1234, timeout=1
@@ -57,20 +57,12 @@ class TestDNSUtils(oslotest.base.BaseTestCase):
     def test_all_tcp_default(self):
         self.assertEqual(False, dnsutils.use_all_tcp())
 
-    def test_all_tcp_using_mdns(self):
-        CONF.set_override('all_tcp', True, 'service:mdns')
-        self.assertEqual(True, dnsutils.use_all_tcp())
-
     def test_all_tcp_using_worker(self):
         CONF.set_override('all_tcp', True, 'service:worker')
         self.assertEqual(True, dnsutils.use_all_tcp())
 
     def test_xfr_default(self):
         self.assertEqual(10, dnsutils.xfr_timeout())
-
-    def test_xfr_timeout_set_using_mdns(self):
-        CONF.set_override('xfr_timeout', 30, 'service:mdns')
-        self.assertEqual(30, dnsutils.xfr_timeout())
 
     def test_xfr_timeout_set_using_worker(self):
         CONF.set_override('xfr_timeout', 40, 'service:worker')
