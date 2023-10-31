@@ -36,8 +36,6 @@ MDNS_OPTS = [
     cfg.BoolOpt('query_enforce_tsig', default=False,
                 help='Enforce all incoming queries (including AXFR) are TSIG '
                      'signed'),
-    cfg.StrOpt('storage_driver', default='sqlalchemy',
-               help='The storage driver to use'),
     cfg.IntOpt('max_message_size', default=65535,
                help='Maximum message size to emit'),
 ]

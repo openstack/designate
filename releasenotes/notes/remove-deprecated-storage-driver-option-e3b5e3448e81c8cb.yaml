@@ -1,0 +1,4 @@
+---
+other:
+  - |
+    Removed previously deprecated ``storage_driver`` configuration option.

@@ -45,8 +45,6 @@ eventlet.monkey_patch(os=False)
 CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
-CONF.import_opt('storage_driver', 'designate.central',
-                group='service:central')
 CONF.import_opt('auth_strategy', 'designate.api',
                 group='service:api')
 CONF.import_opt('connection', 'designate.storage.sqlalchemy',
@@ -348,11 +346,6 @@ class TestCase(base.BaseTestCase):
         )
 
         self.useFixture(fixtures.RPCFixture(CONF))
-
-        self.config(
-            storage_driver='sqlalchemy',
-            group='service:central'
-        )
 
         self.config(
             emitter_type="noop",
