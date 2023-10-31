@@ -3,6 +3,7 @@ other:
   - |
     Removed previously deprecated ``service:mdns`` configuration options. These are now
     configured under ``service:worker`` instead.
+
     - ``all_tcp``
     - ``xfr_timeout``
     - ``topic``
