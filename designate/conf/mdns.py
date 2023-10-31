@@ -18,7 +18,7 @@ from oslo_config import cfg
 DEFAULT_MDNS_PORT = 5354
 
 MDNS_GROUP = cfg.OptGroup(
-    name='service:mdns', title="Configuration for mDNS Service"
+    name='service:mdns', title='Configuration for mDNS Service'
 )
 
 MDNS_OPTS = [
@@ -33,12 +33,6 @@ MDNS_OPTS = [
                help='mDNS TCP Backlog'),
     cfg.FloatOpt('tcp_recv_timeout', default=0.5,
                  help='mDNS TCP Receive Timeout'),
-    cfg.IntOpt('all_tcp', help='Send all traffic over TCP',
-               default=None,
-               deprecated_for_removal=True,
-               deprecated_reason='This parameter should now be configured in'
-                                 'service:worker instead',
-               deprecated_since='Zed'),
     cfg.BoolOpt('query_enforce_tsig', default=False,
                 help='Enforce all incoming queries (including AXFR) are TSIG '
                      'signed'),
@@ -46,14 +40,6 @@ MDNS_OPTS = [
                help='The storage driver to use'),
     cfg.IntOpt('max_message_size', default=65535,
                help='Maximum message size to emit'),
-    cfg.StrOpt('topic', default='mdns',
-               help='RPC topic name for mdns'),
-    cfg.IntOpt('xfr_timeout', help="Timeout in seconds for XFR's.",
-               default=None,
-               deprecated_for_removal=True,
-               deprecated_reason='This parameter should now be configured in'
-                                 'service:worker instead',
-               deprecated_since='Zed'),
 ]
 
 

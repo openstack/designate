@@ -183,10 +183,7 @@ def dnspythonrecord_to_recordset(rname, rdataset):
 
 
 def xfr_timeout():
-    if CONF['service:mdns'].xfr_timeout is not None:
-        return CONF['service:mdns'].xfr_timeout
-    else:
-        return CONF['service:worker'].xfr_timeout
+    return CONF['service:worker'].xfr_timeout
 
 
 def do_axfr(zone_name, servers, source=None):
@@ -267,10 +264,7 @@ def soa_query(zone_name, host, port=53, timeout=10):
 
 
 def use_all_tcp():
-    if CONF['service:mdns'].all_tcp is not None:
-        return CONF['service:mdns'].all_tcp
-    else:
-        return CONF['service:worker'].all_tcp
+    return CONF['service:worker'].all_tcp
 
 
 def send_dns_message(dns_message, host, port=53, timeout=10):
