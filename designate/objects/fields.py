@@ -13,7 +13,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 import dns.exception
 from dns import ipv4
 import re
@@ -36,7 +35,7 @@ class PolymorphicObject(ovoo_fields.Object):
     def coerce(self, obj, attr, value):
         if hasattr(value, '__bases__'):
             check_value = value.__bases__[0]
-            super(PolymorphicObject, self).coerce(obj, attr, check_value)
+            super().coerce(obj, attr, check_value)
         return value
 
 
@@ -44,7 +43,7 @@ class PolymorphicObjectField(ovoo_fields.AutoTypedField):
     def __init__(self, objtype, subclasses=False, **kwargs):
         self.AUTO_TYPE = PolymorphicObject(objtype, subclasses)
         self.objname = objtype
-        super(PolymorphicObjectField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class ListOfObjectsField(ovoo_fields.ListOfObjectsField):
@@ -56,21 +55,21 @@ class ObjectFields(ovoo_fields.ObjectField):
         self.AUTO_TYPE = ovoo_fields.List(
             ovoo_fields.Object(objtype, subclasses))
         self.objname = objtype
-        super(ObjectFields, self).__init__(objtype, **kwargs)
+        super().__init__(objtype, **kwargs)
         self.relation = relation
 
 
 class IntegerFields(IntegerField):
     def __init__(self, nullable=False, default=ovoo_fields.UnspecifiedDefault,
                  read_only=False, minimum=0, maximum=None):
-        super(IntegerFields, self).__init__(nullable=nullable,
-                                            default=default,
-                                            read_only=read_only)
+        super().__init__(
+            nullable=nullable, default=default, read_only=read_only
+        )
         self.min = minimum
         self.max = maximum
 
     def coerce(self, obj, attr, value):
-        value = super(IntegerFields, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if value is None:
             return value
         if value < self.min:
@@ -87,9 +86,9 @@ class StringFields(ovoo_fields.StringField):
     def __init__(self, nullable=False, read_only=False,
                  default=ovoo_fields.UnspecifiedDefault, description='',
                  maxLength=None):
-
-        super(StringFields, self).__init__(nullable=nullable, default=default,
-                                           read_only=read_only)
+        super().__init__(
+            nullable=nullable, default=default, read_only=read_only
+        )
         self.description = description
         self.maxLength = maxLength
 
@@ -97,7 +96,7 @@ class StringFields(ovoo_fields.StringField):
         if value is None:
             return self._null(obj, attr)
         else:
-            value = super(StringFields, self).coerce(obj, attr, value)
+            value = super().coerce(obj, attr, value)
             if self.maxLength and len(value) > self.maxLength:
                 raise ValueError('Value too long for %s' % attr)
             return value
@@ -119,7 +118,7 @@ class UUIDFields(ovoo_fields.AutoTypedField):
 
 class DateTimeField(ovoo_fields.DateTimeField):
     def __init__(self, tzinfo_aware=False, **kwargs):
-        super(DateTimeField, self).__init__(tzinfo_aware, **kwargs)
+        super().__init__(tzinfo_aware, **kwargs)
 
 
 class ObjectField(ovoo_fields.ObjectField):
@@ -134,7 +133,7 @@ class IPV4AddressField(ovoo_fields.IPV4AddressField):
             ipv4.inet_aton(str(value))
         except dns.exception.SyntaxError:
             raise ValueError()
-        value = super(IPV4AddressField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         # we use this field as a string, not need a netaddr.IPAdress
         # as oslo.versionedobjects is using
         return str(value)
@@ -143,7 +142,7 @@ class IPV4AddressField(ovoo_fields.IPV4AddressField):
 class IPV6AddressField(ovoo_fields.IPV6AddressField):
 
     def coerce(self, obj, attr, value):
-        value = super(IPV6AddressField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         # we use this field as a string, not need a netaddr.IPAdress
         # as oslo.versionedobjects is using
         return str(value)
@@ -152,7 +151,7 @@ class IPV6AddressField(ovoo_fields.IPV6AddressField):
 class IPV4AndV6AddressField(ovoo_fields.IPV4AndV6AddressField):
 
     def coerce(self, obj, attr, value):
-        value = super(IPV4AndV6AddressField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         # we use this field as a string, not need a netaddr.IPAdress
         # as oslo.versionedobjects is using
         return str(value)
@@ -169,15 +168,15 @@ class Enum(ovoo_fields.Enum):
 class EnumField(ovoo_fields.BaseEnumField):
     def __init__(self, valid_values, **kwargs):
         self.AUTO_TYPE = Enum(valid_values=valid_values)
-        super(EnumField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class DomainField(StringFields):
     def __init__(self, **kwargs):
-        super(DomainField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(DomainField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if value is None:
             return
         domain = value.split('.')
@@ -193,10 +192,10 @@ class DomainField(StringFields):
 
 class EmailField(StringFields):
     def __init__(self, **kwargs):
-        super(EmailField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(EmailField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if value.count('@') != 1:
             raise ValueError("%s is not an email" % value)
         email = value.replace('@', '.')
@@ -207,10 +206,10 @@ class EmailField(StringFields):
 
 class HostField(StringFields):
     def __init__(self, **kwargs):
-        super(HostField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(HostField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if value is None:
             return
         hostname = value.split('.')
@@ -226,10 +225,10 @@ class HostField(StringFields):
 
 class SRVField(StringFields):
     def __init__(self, **kwargs):
-        super(SRVField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(SRVField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if value is None:
             return
         srvtype = value.split('.')
@@ -245,10 +244,10 @@ class SRVField(StringFields):
 
 class TxtField(StringFields):
     def __init__(self, **kwargs):
-        super(TxtField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(TxtField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if value.endswith('\\'):
             raise ValueError("Do NOT put '\\' into end of TXT record")
         return value
@@ -256,10 +255,10 @@ class TxtField(StringFields):
 
 class Sshfp(StringFields):
     def __init__(self, **kwargs):
-        super(Sshfp, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(Sshfp, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if not constants.RE_SSHFP_FINGERPRINT.match("%s" % value):
             raise ValueError("Host name %s is not a SSHFP record" % value)
         return value
@@ -267,10 +266,10 @@ class Sshfp(StringFields):
 
 class TldField(StringFields):
     def __init__(self, **kwargs):
-        super(TldField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(TldField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if not constants.RE_TLDNAME.match(value):
             raise ValueError("%s is not a TLD" % value)
         return value
@@ -278,10 +277,10 @@ class TldField(StringFields):
 
 class NaptrFlagsField(StringFields):
     def __init__(self, **kwargs):
-        super(NaptrFlagsField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(NaptrFlagsField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if (len(value) > 255):
             raise ValueError("NAPTR record flags field cannot be longer than"
                              " 255 characters" % value)
@@ -292,10 +291,10 @@ class NaptrFlagsField(StringFields):
 
 class NaptrServiceField(StringFields):
     def __init__(self, **kwargs):
-        super(NaptrServiceField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(NaptrServiceField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if (len(value) > 255):
             raise ValueError("NAPTR record service field cannot be longer than"
                              " 255 characters" % value)
@@ -306,10 +305,10 @@ class NaptrServiceField(StringFields):
 
 class NaptrRegexpField(StringFields):
     def __init__(self, **kwargs):
-        super(NaptrRegexpField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(NaptrRegexpField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if (len(value) > 255):
             raise ValueError("NAPTR record regexp field cannot be longer than"
                              " 255 characters" % value)
@@ -321,10 +320,10 @@ class NaptrRegexpField(StringFields):
 
 class CaaPropertyField(StringFields):
     def __init__(self, **kwargs):
-        super(CaaPropertyField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(CaaPropertyField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         prpt = value.split(' ', 1)
         tag = prpt[0]
         val = prpt[1]
@@ -373,10 +372,10 @@ class CaaPropertyField(StringFields):
 
 class CertTypeField(StringFields):
     def __init__(self, **kwargs):
-        super(CertTypeField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(CertTypeField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if not constants.RE_CERT_TYPE.match("%s" % value):
             raise ValueError("Cert type %s is not a valid Mnemonic or "
                              "value" % value)
@@ -385,10 +384,10 @@ class CertTypeField(StringFields):
 
 class CertAlgoField(StringFields):
     def __init__(self, **kwargs):
-        super(CertAlgoField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(CertAlgoField, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
         if not constants.RE_CERT_ALGO.match("%s" % value):
             raise ValueError("Cert Algo %s is not a valid Mnemonic or "
                              "value" % value)
@@ -421,12 +420,13 @@ class BaseObjectField(ovoo_fields.AutoTypedField):
 class IPOrHost(IPV4AndV6AddressField):
     def __init__(self, nullable=False, read_only=False,
                  default=ovoo_fields.UnspecifiedDefault):
-        super(IPOrHost, self).__init__(nullable=nullable,
-                                       default=default, read_only=read_only)
+        super().__init__(
+            nullable=nullable, default=default, read_only=read_only
+        )
 
     def coerce(self, obj, attr, value):
         try:
-            value = super(IPOrHost, self).coerce(obj, attr, value)
+            value = super().coerce(obj, attr, value)
         except ValueError:
             if not constants.RE_ZONENAME.match(value):
                 raise ValueError("%s is not IP address or host name" % value)
@@ -435,10 +435,10 @@ class IPOrHost(IPV4AndV6AddressField):
 
 class DenylistFields(StringFields):
     def __init__(self, **kwargs):
-        super(DenylistFields, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def coerce(self, obj, attr, value):
-        value = super(DenylistFields, self).coerce(obj, attr, value)
+        value = super().coerce(obj, attr, value)
 
         if value is None:
             return self._null(obj, attr)

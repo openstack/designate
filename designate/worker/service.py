@@ -34,7 +34,7 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class AlsoNotifyTask(object):
+class AlsoNotifyTask:
     """
     Placeholder to define options for also_notify targets
     """
@@ -53,7 +53,7 @@ class Service(service.RPCService):
         self._executor = None
         self._pools_map = None
 
-        super(Service, self).__init__(
+        super().__init__(
             self.service_name, cfg.CONF['service:worker'].topic,
             threads=cfg.CONF['service:worker'].threads,
         )
@@ -134,11 +134,11 @@ class Service(service.RPCService):
         return self.pools_map[pool_id]
 
     def start(self):
-        super(Service, self).start()
+        super().start()
         LOG.info('Started worker')
 
     def stop(self, graceful=True):
-        super(Service, self).stop(graceful)
+        super().stop(graceful)
 
     def _do_zone_action(self, context, zone, zone_params=None):
         pool = self.get_pool(zone.pool_id)

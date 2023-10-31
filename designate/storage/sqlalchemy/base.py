@@ -119,10 +119,10 @@ def _set_listobject_from_models(obj, models):
     return obj
 
 
-class SQLAlchemy(object, metaclass=abc.ABCMeta):
+class SQLAlchemy(metaclass=abc.ABCMeta):
 
     def __init__(self):
-        super(SQLAlchemy, self).__init__()
+        super().__init__()
         self.local_store = threading.local()
 
     @staticmethod
@@ -376,8 +376,8 @@ class SQLAlchemy(object, metaclass=abc.ABCMeta):
         count_q = self._apply_criterion(tables.recordsets, count_q, criterion)
 
         if filtering_records:
-            records_criterion = dict((k, v) for k, v in (
-                ('data', data), ('status', status)) if v is not None)
+            records_criterion = {k: v for k, v in (
+                ('data', data), ('status', status)) if v is not None}
             inner_q = self._apply_criterion(tables.records, inner_q,
                                             records_criterion)
             count_q = self._apply_criterion(tables.records, count_q,

@@ -28,7 +28,7 @@ from designate.worker import rpcapi as worker_api
 
 class ApiV2ZonesTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2ZonesTest, self).setUp()
+        super().setUp()
 
         # Create the default TLDs
         self.create_default_tlds()

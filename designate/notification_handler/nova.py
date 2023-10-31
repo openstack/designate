@@ -40,7 +40,7 @@ class NovaFixedHandler(BaseAddressHandler):
         ]
 
     def _get_ip_data(self, addr_dict):
-        data = super(NovaFixedHandler, self)._get_ip_data(addr_dict)
+        data = super()._get_ip_data(addr_dict)
         data['label'] = addr_dict['label']
         return data
 

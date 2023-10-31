@@ -28,7 +28,7 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
                            test_notification_handler.NotificationHandlerMixin):
 
     def setUp(self):
-        super(TestSinkNotification, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

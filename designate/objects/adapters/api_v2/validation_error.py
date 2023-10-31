@@ -39,7 +39,7 @@ class ValidationErrorAPIv2Adapter(base.APIv2Adapter):
     @classmethod
     def render_object(cls, error, *args, **kwargs):
         # Do the usual rename
-        error_dict = super(ValidationErrorAPIv2Adapter, cls).render_object(
+        error_dict = super().render_object(
             error, *args, **kwargs)
 
         # Currently JSON Schema doesn't add the path on for required items

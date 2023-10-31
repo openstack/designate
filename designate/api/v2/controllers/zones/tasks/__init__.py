@@ -31,7 +31,7 @@ from designate.api.v2.controllers.zones.tasks.xfr import XfrController
 LOG = logging.getLogger(__name__)
 
 
-class TasksController(object):
+class TasksController:
 
     transfer_accepts = TRA()
     transfer_requests = TRC()

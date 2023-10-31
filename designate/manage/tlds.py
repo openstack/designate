@@ -56,7 +56,7 @@ class TLDCommands(base.Commands):
     """
 
     def __init__(self):
-        super(TLDCommands, self).__init__()
+        super().__init__()
 
     def _startup(self):
         rpc.init(cfg.CONF)

@@ -28,7 +28,7 @@ from designate import tests
 
 class SchedulerFilterTest(tests.TestCase):
     def setUp(self):
-        super(SchedulerFilterTest, self).setUp()
+        super().setUp()
         self.context = self.get_context()
         self.zone = objects.Zone(
             name="example.com.",
@@ -116,7 +116,7 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
     FILTER = pool_id_attribute_filter.PoolIDAttributeFilter
 
     def setUp(self):
-        super(SchedulerPoolIDAttributeFilterTest, self).setUp()
+        super().setUp()
         self.zone = objects.Zone(
             name="example.com.",
             type="PRIMARY",
@@ -200,7 +200,7 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
     FILTER = attribute_filter.AttributeFilter
 
     def setUp(self):
-        super(SchedulerAttributeFilterTest, self).setUp()
+        super().setUp()
         self.zone = objects.Zone(
             name="example.com.",
             type="PRIMARY",

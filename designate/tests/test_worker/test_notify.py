@@ -34,7 +34,7 @@ class WorkerNotifyTest(TestCase):
     }
 
     def setUp(self):
-        super(WorkerNotifyTest, self).setUp()
+        super().setUp()
         self.nameserver = objects.PoolNameserver.from_dict({
             'id': 'f278782a-07dc-4502-9177-b5d85c5f7c7e',
             'host': '192.0.2.1',

@@ -34,7 +34,7 @@ def percentage(part, whole):
     return 100 * float(part) / float(whole)
 
 
-class TaskConfig(object):
+class TaskConfig:
     """
     Configuration mixin for the various configuration settings that
     a task may want to access
@@ -108,7 +108,7 @@ class Task(TaskConfig):
         - Can optionally return something
     """
     def __init__(self, executor, **kwargs):
-        super(Task, self).__init__()
+        super().__init__()
 
         self._storage = None
         self._quota = None

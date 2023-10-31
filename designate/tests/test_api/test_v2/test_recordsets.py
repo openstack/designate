@@ -22,7 +22,7 @@ LOG = logging.getLogger(__name__)
 
 class ApiV2RecordSetsTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2RecordSetsTest, self).setUp()
+        super().setUp()
         self.zone = self.create_zone()
 
     def test_get_recordsets_owned_by_project(self):

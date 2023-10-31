@@ -24,7 +24,7 @@ from designate import utils
 class Zone(base.DesignateObject, base.DictObjectMixin,
            base.PersistentObjectMixin, base.SoftDeleteObjectMixin):
     def __init__(self, *args, **kwargs):
-        super(Zone, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     fields = {
         'shard': fields.IntegerFields(nullable=True, minimum=0, maximum=4095),
@@ -133,7 +133,7 @@ class Zone(base.DesignateObject, base.DictObjectMixin,
                         errors.append(e)
                 self._raise(errors)
 
-            super(Zone, self).validate()
+            super().validate()
         except exceptions.RelationNotLoaded as ex:
             errors = ValidationErrorList()
             e = ValidationError()

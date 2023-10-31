@@ -97,7 +97,7 @@ QUERY_RESULTS = {
 
 class TestZoneAction(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestZoneAction, self).setUp()
+        super().setUp()
         self.context = mock.Mock()
         self.pool = 'default_pool'
         self.executor = mock.Mock()
@@ -152,7 +152,7 @@ class TestZoneAction(oslotest.base.BaseTestCase):
 
 class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestZoneActionOnTarget, self).setUp()
+        super().setUp()
         self.backend = mock.Mock()
         self.target = objects.PoolTarget.from_dict({
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
@@ -241,7 +241,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
 
 class TestSendNotify(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestSendNotify, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
         self.backend = mock.Mock()
         self.target = objects.PoolTarget.from_dict({
@@ -290,7 +290,7 @@ class TestSendNotify(oslotest.base.BaseTestCase):
 
 class TestZoneActor(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestZoneActor, self).setUp()
+        super().setUp()
         self.context = mock.Mock()
         self.pool = mock.Mock()
         self.executor = mock.Mock()
@@ -363,7 +363,7 @@ class TestParseQueryResults(oslotest.base.BaseTestCase):
 
 class TestZonePoller(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestZonePoller, self).setUp()
+        super().setUp()
         self.context = mock.Mock()
         self.pool = mock.Mock()
         self.zone = mock.Mock(name='example.com.', serial=1)
@@ -518,7 +518,7 @@ class TestZonePoller(oslotest.base.BaseTestCase):
 
 class TestZonePollerPolling(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestZonePollerPolling, self).setUp()
+        super().setUp()
         self.executor = processing.Executor()
         self.context = mock.Mock()
         self.zone = mock.Mock(name='example.com.', action='UPDATE', serial=10)
@@ -579,7 +579,7 @@ class TestZonePollerPolling(oslotest.base.BaseTestCase):
 
 class TestUpdateStatus(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestUpdateStatus, self).setUp()
+        super().setUp()
         self.executor = processing.Executor()
         self.task = zone.UpdateStatus(self.executor, mock.Mock(), mock.Mock())
         self.task._central_api = mock.Mock()
@@ -655,7 +655,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
 
 class TestPollForZone(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestPollForZone, self).setUp()
+        super().setUp()
         self.zone = mock.Mock(serial=1)
         self.zone.name = 'example.org.'
         self.executor = processing.Executor()
@@ -699,7 +699,7 @@ class TestPollForZone(oslotest.base.BaseTestCase):
 
 class TestExportZone(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestExportZone, self).setUp()
+        super().setUp()
         self.zone = mock.Mock(name='example.com.', serial=1)
         self.export = mock.Mock()
         self.export.id = '1'

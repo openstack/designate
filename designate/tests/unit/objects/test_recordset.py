@@ -45,7 +45,7 @@ def create_test_recordset():
 
 class RecordSetTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(RecordSetTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     def test_init(self):
@@ -278,7 +278,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
     def test_validate_handle_exception(self):
         record_set = create_test_recordset()
         rs_module = record_set.__class__.__bases__[0].__module__
-        fn_name = '{}.DesignateObject.obj_cls_from_name'.format(rs_module)
+        fn_name = f'{rs_module}.DesignateObject.obj_cls_from_name'
 
         with mock.patch(fn_name) as patched:
             patched.side_effect = KeyError
@@ -312,7 +312,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
         self.assertIn('records', record_set.obj_what_changed())
 
         def get_data(record_list):
-            return set([r.data for r in record_list])
+            return {r.data for r in record_list}
 
         self.assertEqual(
             {old_ip},
@@ -346,7 +346,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
         self.assertIn('records', record_set.obj_what_changed())
 
         def get_data(record_list):
-            return set([r.data for r in record_list])
+            return {r.data for r in record_list}
 
         self.assertEqual(
             set(old_ips),

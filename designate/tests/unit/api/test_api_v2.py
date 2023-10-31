@@ -20,7 +20,7 @@ from designate.objects.adapters.api_v2 import base
 import designate.tests
 
 
-class MockRequest(object):
+class MockRequest:
     def __init__(self, GET=None):
         self.GET = GET
 
@@ -28,7 +28,7 @@ class MockRequest(object):
 class TestAPIv2(designate.tests.TestCase):
 
     def setUp(self):
-        super(TestAPIv2, self).setUp()
+        super().setUp()
 
     @mock.patch.object(base.APIv2Adapter, '_get_collection_href')
     @mock.patch.object(base.APIv2Adapter, '_get_next_href')

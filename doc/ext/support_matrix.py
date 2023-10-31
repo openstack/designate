@@ -34,7 +34,7 @@ from designate.backend.base import Backend
 LOG = logging.getLogger(__name__)
 
 
-class SupportMatrix(object):
+class SupportMatrix:
     """Represents the entire support matrix for Nova virt drivers
     """
 
@@ -53,7 +53,7 @@ class SupportMatrix(object):
         self.backends = {}
 
 
-class SupportMatrixGrade(object):
+class SupportMatrixGrade:
 
     def __init__(self, key, title, notes, in_tree, css_class):
         self.key = key
@@ -63,7 +63,7 @@ class SupportMatrixGrade(object):
         self.css_class = css_class
 
 
-class SupportMatrixBackend(object):
+class SupportMatrixBackend:
 
     def __init__(self, key, title, status,
                  maintainers=None, variations=None,
@@ -213,17 +213,17 @@ class SupportMatrixDirective(rst.Directive):
         treetitle = nodes.entry()
         treetitle.append(nodes.strong(text="In Tree"))
         if bool(backend.in_tree):
-            status = u"\u2714"
+            status = "\u2714"
             intree = nodes.paragraph(text=status)
             intree['classes'].append("label")
             intree['classes'].append("label-success")
 
         else:
-            status = u"\u2716"
+            status = "\u2716"
             intree = nodes.paragraph(text=status)
             intree['classes'].append("label")
             intree['classes'].append("label-danger")
-            status = u"\u2714"
+            status = "\u2714"
         treetext = nodes.entry()
         treetext.append(intree)
         treerow.append(treetitle)
@@ -397,13 +397,13 @@ class SupportMatrixDirective(rst.Directive):
                     item.append(typecol)
 
                     if bool(matrix.backends[backend].in_tree):
-                        status = u"\u2714"
+                        status = "\u2714"
                         intree = nodes.paragraph(text=status)
                         intree['classes'].append("label")
                         intree['classes'].append("label-success")
 
                     else:
-                        status = u"\u2716"
+                        status = "\u2716"
                         intree = nodes.paragraph(text=status)
                         intree['classes'].append("label")
                         intree['classes'].append("label-danger")

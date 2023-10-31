@@ -29,7 +29,7 @@ class StorageQuota(base.Quota):
     __plugin_name__ = 'storage'
 
     def __init__(self):
-        super(StorageQuota, self).__init__()
+        super().__init__()
         self.storage = storage.get_storage()
 
     def _get_quotas(self, context, tenant_id):
@@ -37,7 +37,7 @@ class StorageQuota(base.Quota):
             'tenant_id': tenant_id,
         })
 
-        return dict((q['resource'], q['hard_limit']) for q in quotas)
+        return {q['resource']: q['hard_limit'] for q in quotas}
 
     def get_quota(self, context, tenant_id, resource):
         context = context.deepcopy()
@@ -56,8 +56,9 @@ class StorageQuota(base.Quota):
         context.all_tenants = True
 
         if resource not in list(self.get_default_quotas(context).keys()):
-            raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
-                                                  "resource" % resource)
+            raise exceptions.QuotaResourceUnknown(
+                f'{resource} is not a valid quota resource'
+            )
 
         try:
             self._create_quota(context, tenant_id, resource, hard_limit)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2012 Managed I.T.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
@@ -50,7 +49,7 @@ LOG = logging.getLogger(__name__)
 
 class CentralServiceTest(designate.tests.TestCase):
     def setUp(self):
-        super(CentralServiceTest, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
@@ -84,12 +83,12 @@ class CentralServiceTest(designate.tests.TestCase):
         list.append(objects.Tld(name='z'))
 
         with mock.patch.object(self.central_service.storage, 'find_tlds',
-                return_value=list):
+                               return_value=list):
             self.central_service.start()
 
         context = self.get_context()
         with mock.patch.object(self.central_service.storage, 'find_tld',
-                return_value=objects.Tld(name='biz')):
+                               return_value=objects.Tld(name='biz')):
             with testtools.ExpectedException(exceptions.InvalidZoneName):
                 self.central_service._is_valid_zone_name(context, 'biz.')
 
@@ -480,8 +479,8 @@ class CentralServiceTest(designate.tests.TestCase):
         self.assertIsNotNone(ns_recordset.id)
         self.assertEqual('NS', ns_recordset.type)
         self.assertIsNotNone(ns_recordset.records)
-        self.assertEqual(set([n.hostname for n in pool.ns_records]),
-                         set([n.data for n in ns_recordset.records]))
+        self.assertEqual({n.hostname for n in pool.ns_records},
+                         {n.data for n in ns_recordset.records})
 
         return zone
 
@@ -576,8 +575,8 @@ class CentralServiceTest(designate.tests.TestCase):
         subzone_values['name'] = 'www.%s' % zone_values['name']
         subzone_values['context'] = self.admin_context
 
-        LOG.debug("zone_values: {0}".format(zone_values))
-        LOG.debug("subzone_values: {0}".format(subzone_values))
+        LOG.debug(f"zone_values: {zone_values}")
+        LOG.debug(f"subzone_values: {subzone_values}")
 
         # Create the subzone
         subzone = self.create_zone(**subzone_values)
@@ -3024,8 +3023,8 @@ class CentralServiceTest(designate.tests.TestCase):
             criterion={'zone_id': zone.id, 'type': "NS"})
 
         # Verify that the doamins NS records were updated correctly
-        self.assertEqual(set([n.hostname for n in pool.ns_records]),
-                         set([n.data for n in ns_recordset.records]))
+        self.assertEqual({n.hostname for n in pool.ns_records},
+                         {n.data for n in ns_recordset.records})
 
         # Verify that the 3 zones are in the database and that
         # the delayed_notify flag is set
@@ -3069,8 +3068,8 @@ class CentralServiceTest(designate.tests.TestCase):
             criterion={'zone_id': zone.id, 'type': "NS"})
 
         # Verify that the doamins NS records ware updated correctly
-        self.assertEqual(set([n.hostname for n in pool.ns_records]),
-                         set([n.data for n in ns_recordset.records]))
+        self.assertEqual({n.hostname for n in pool.ns_records},
+                         {n.data for n in ns_recordset.records})
 
         zones = self._fetch_all_zones()
         self.assertEqual(1, len(zones))
@@ -3614,7 +3613,7 @@ class CentralServiceTest(designate.tests.TestCase):
                                        roles=['member', 'reader'])
             request_body = self.get_zonefile_fixture()
             zone_import = self.central_service.create_zone_import(context,
-                                                            request_body)
+                                                                  request_body)
             return self.wait_for_import(zone_import.id, error_is_ok=True)
 
         with futurist.GreenThreadPoolExecutor() as executor:
@@ -4125,16 +4124,18 @@ class CentralServiceTest(designate.tests.TestCase):
         zone = self.create_zone(context=context)
 
         # Ensure we have no shared zones to start with.
-        shared_zones = self.central_service.find_shared_zones(context,
-            criterion={'zone_id': zone.id})
+        shared_zones = self.central_service.find_shared_zones(
+            context, criterion={'zone_id': zone.id}
+        )
         self.assertEqual(0, len(shared_zones))
 
         # Create a first shared_zone
         shared_zone = self.share_zone(context=context, zone_id=zone.id)
 
         # Ensure we can retrieve the newly created shared_zone
-        shared_zones = self.central_service.find_shared_zones(context,
-            criterion={'zone_id': zone.id})
+        shared_zones = self.central_service.find_shared_zones(
+            context, criterion={'zone_id': zone.id}
+        )
         self.assertEqual(1, len(shared_zones))
 
         # Ensure we can retrieve the newly created shared_zone no criteria
@@ -4147,8 +4148,9 @@ class CentralServiceTest(designate.tests.TestCase):
         )
 
         # Ensure we can retrieve both shared_zones
-        shared_zones = self.central_service.find_shared_zones(context,
-            criterion={'zone_id': zone.id})
+        shared_zones = self.central_service.find_shared_zones(
+            context, criterion={'zone_id': zone.id}
+        )
 
         self.assertEqual(2, len(shared_zones))
         self.assertEqual(zone.id, shared_zones[0].zone_id)
@@ -4166,8 +4168,9 @@ class CentralServiceTest(designate.tests.TestCase):
         shared_zone = self.share_zone(context=context, zone_id=zone.id)
 
         # Ensure we can retrieve the newly created shared_zone
-        shared_zones = self.central_service.find_shared_zones(context,
-            criterion={'zone_id': zone.id})
+        shared_zones = self.central_service.find_shared_zones(
+            context, criterion={'zone_id': zone.id}
+        )
         self.assertEqual(1, len(shared_zones))
 
         # Create a second shared_zone
@@ -4179,8 +4182,9 @@ class CentralServiceTest(designate.tests.TestCase):
         cfg.CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
 
         # Ensure we can retrieve both shared_zones
-        shared_zones = self.central_service.find_shared_zones(context,
-            criterion={'zone_id': zone.id})
+        shared_zones = self.central_service.find_shared_zones(
+            context, criterion={'zone_id': zone.id}
+        )
 
         self.assertEqual(2, len(shared_zones))
         self.assertEqual(zone.id, shared_zones[0].zone_id)

@@ -46,7 +46,7 @@ LOG = logging.getLogger(__name__)
 class Service(service.Service):
     def __init__(self, name, threads=None):
         threads = threads or 1000
-        super(Service, self).__init__(threads)
+        super().__init__(threads)
         self.name = name
         self.host = CONF.host
 
@@ -64,16 +64,16 @@ class Service(service.Service):
                      'name': self.name,
                      'version': version.version_info.version_string()
                  })
-        super(Service, self).start()
+        super().start()
 
     def stop(self, graceful=True):
         LOG.info('Stopping %(name)s service', {'name': self.name})
-        super(Service, self).stop(graceful)
+        super().stop(graceful)
 
 
 class RPCService(Service):
     def __init__(self, name, rpc_topic, threads=None):
-        super(RPCService, self).__init__(name, threads)
+        super().__init__(name, threads)
         LOG.debug("Creating RPC Server on topic '%s' for %s",
                   rpc_topic, self.name)
 
@@ -84,7 +84,7 @@ class RPCService(Service):
         self.rpc_topic = rpc_topic
 
     def start(self):
-        super(RPCService, self).start()
+        super().start()
         target = messaging.Target(topic=self.rpc_topic, server=self.host)
         self.rpc_server = rpc.get_server(target, self.endpoints)
         self.rpc_server.start()
@@ -93,15 +93,15 @@ class RPCService(Service):
     def stop(self, graceful=True):
         if self.rpc_server:
             self.rpc_server.stop()
-        super(RPCService, self).stop(graceful)
+        super().stop(graceful)
 
     def wait(self):
-        super(RPCService, self).wait()
+        super().wait()
 
 
 class WSGIService(Service):
     def __init__(self, app, name, listen, max_url_len=None):
-        super(WSGIService, self).__init__(name)
+        super().__init__(name)
         self.app = app
         self.name = name
 
@@ -125,20 +125,20 @@ class WSGIService(Service):
     def start(self):
         for server in self.servers:
             server.start()
-        super(WSGIService, self).start()
+        super().start()
 
     def stop(self, graceful=True):
         for server in self.servers:
             server.stop()
-        super(WSGIService, self).stop(graceful)
+        super().stop(graceful)
 
     def wait(self):
         for server in self.servers:
             server.wait()
-        super(WSGIService, self).wait()
+        super().wait()
 
 
-class DNSService(object):
+class DNSService:
     _TCP_RECV_MAX_SIZE = 65535
 
     def __init__(self, app, tg, listen, tcp_backlog, tcp_recv_timeout):
@@ -227,7 +227,7 @@ class DNSService(object):
             # ensure no exceptions are generated from within.
             except socket.timeout:
                 pass
-            except socket.error as e:
+            except OSError as e:
                 if client:
                     client.close()
                 errname = errno.errorcode[e.args[0]]
@@ -314,7 +314,7 @@ class DNSService(object):
                     'port': port
                 }
             )
-        except socket.error as e:
+        except OSError as e:
             errname = errno.errorcode[e.args[0]]
             LOG.warning(
                 'Socket error %(err)s from: %(host)s:%(port)d',
@@ -374,7 +374,7 @@ class DNSService(object):
                                    payload)
             except socket.timeout:
                 pass
-            except socket.error as e:
+            except OSError as e:
                 errname = errno.errorcode[e.args[0]]
                 addr = addr or (None, 0)
                 LOG.warning(

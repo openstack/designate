@@ -26,7 +26,7 @@ class DesignateException(Exception):
         self.errors = kwargs.pop('errors', None)
         self.object = kwargs.pop('object', None)
 
-        super(DesignateException, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if args and isinstance(args[0], str):
             self.error_message = args[0]
@@ -41,13 +41,13 @@ class RelationNotLoaded(DesignateException):
     error_type = 'relation_not_loaded'
 
     def __init__(self, *args, **kwargs):
-
         self.relation = kwargs.pop('relation', None)
 
-        super(RelationNotLoaded, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        self.error_message = ("%(relation)s is not loaded on %(object)s" %
-            {"relation": self.relation, "object": self.object.obj_name()})
+        self.error_message = ('{relation} is not loaded on {object}'.format(
+            relation=self.relation, object=self.object.obj_name()
+        ))
 
     def __str__(self):
         return self.error_message

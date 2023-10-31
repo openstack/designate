@@ -34,6 +34,7 @@ CFG_GROUP_NAME = 'backend:dynect'
 class DynClientError(exceptions.Backend):
     """The base exception class for all HTTP exceptions.
     """
+
     def __init__(self, data=None, job_id=None, msgs=None,
                  http_status=None, url=None, method=None, details=None):
         self.data = data
@@ -44,14 +45,16 @@ class DynClientError(exceptions.Backend):
         self.url = url
         self.method = method
         self.details = details
-        formatted_string = "%s (HTTP %s to %s - %s) - %s" % (self.msgs,
-                                                             self.method,
-                                                             self.url,
-                                                             self.http_status,
-                                                             self.details)
+        formatted_string = '{} (HTTP {} to {} - {}) - {}'.format(
+            self.msgs,
+            self.method,
+            self.url,
+            self.http_status,
+            self.details
+        )
         if job_id:
-            formatted_string += " (Job-ID: %s)" % job_id
-        super(DynClientError, self).__init__(formatted_string)
+            formatted_string += f' (Job-ID: {job_id})'
+        super().__init__(formatted_string)
 
     @staticmethod
     def from_response(response, details=None):
@@ -90,12 +93,13 @@ class DynClientOperationBlocked(exceptions.BadRequest, DynClientError):
     error_type = 'operation_blocked'
 
 
-class DynClient(object):
+class DynClient:
     """
     DynECT service client.
 
     https://help.dynect.net/rest/
     """
+
     def __init__(self, customer_name, user_name, password,
                  endpoint="https://api.dynect.net:443",
                  api_version='3.5.6', headers=None, verify=True, retries=1,
@@ -141,7 +145,7 @@ class DynClient(object):
         ]
 
         for element in kwargs['headers']:
-            header = "-H '%s: %s'" % (element, kwargs['headers'][element])
+            header = "-H '{}: {}'".format(element, kwargs['headers'][element])
             string_parts.append(header)
 
         LOG.debug("REQ: %s", " ".join(string_parts))
@@ -205,7 +209,7 @@ class DynClient(object):
             start_time = time.monotonic()
         resp = self.http.request(method, url, **kwargs)
         if self.timings:
-            self.times.append(("%s %s" % (method, url),
+            self.times.append((f"{method} {url}",
                                start_time, time.monotonic()))
         self._http_log_resp(resp)
 
@@ -303,7 +307,7 @@ class DynECTBackend(base.Backend):
     __backend_status__ = 'untested'
 
     def __init__(self, target):
-        super(DynECTBackend, self).__init__(target)
+        super().__init__(target)
 
         self.customer_name = self.options.get('customer_name')
         self.username = self.options.get('username')

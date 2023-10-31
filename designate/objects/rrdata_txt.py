@@ -84,7 +84,7 @@ class TXT(Record):
             for record_string in record_strings:
                 # add back the delimiting quotes after
                 # strip and split for each string
-                record_string = '"{}"'.format(record_string)
+                record_string = f'"{record_string}"'
                 # further validate each string individually
                 self._validate_record_single_string(value=record_string)
         else:

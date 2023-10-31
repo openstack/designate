@@ -36,7 +36,7 @@ cfg.CONF.import_opt('supported_record_type', 'designate')
 class RecordSet(base.DesignateObject, base.DictObjectMixin,
                 base.PersistentObjectMixin):
     def __init__(self, *args, **kwargs):
-        super(RecordSet, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def action(self):
@@ -190,8 +190,10 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
                 error_indexes.append(i)
 
             except Exception as e:
-                error_message = ('Provided object is not valid. Got a %s error'
-                    ' with message %s' % (type(e).__name__, str(e)))
+                error_message = (
+                        'Provided object is not valid. Got a %s error with '
+                        'message %s' % (type(e).__name__, str(e))
+                )
                 raise exceptions.InvalidObject(error_message)
 
             else:
@@ -202,7 +204,7 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
 
         try:
             # Run the actual validate code
-            super(RecordSet, self).validate()
+            super().validate()
 
         except exceptions.InvalidObject as e:
             raise e

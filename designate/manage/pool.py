@@ -36,7 +36,7 @@ CONF = cfg.CONF
 
 class PoolCommands(base.Commands):
     def __init__(self):
-        super(PoolCommands, self).__init__()
+        super().__init__()
         self.central_api = None
         self.dry_run = False
         self.skip_verify_drivers = False
@@ -258,7 +258,7 @@ class PoolCommands(base.Commands):
 
     @staticmethod
     def _load_config(filename):
-        with open(filename, 'r') as stream:
+        with open(filename) as stream:
             return yaml.safe_load(stream)
 
     @staticmethod

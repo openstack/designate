@@ -20,11 +20,12 @@ from designate.objects import fields
 class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
               base.DesignateObject):
     def __init__(self, *args, **kwargs):
-        super(TsigKey, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     fields = {
         'name': fields.StringFields(nullable=False, maxLength=160),
-        'algorithm': fields.EnumField(nullable=False,
+        'algorithm': fields.EnumField(
+            nullable=False,
             valid_values=[
                 'hmac-md5',
                 'hmac-sha1',
@@ -35,8 +36,8 @@ class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
             ]
         ),
         'secret': fields.StringFields(maxLength=160),
-        'scope': fields.EnumField(nullable=False,
-            valid_values=['POOL', 'ZONE']
+        'scope': fields.EnumField(
+            nullable=False, valid_values=['POOL', 'ZONE']
         ),
         'resource_id': fields.UUIDFields(nullable=False)
     }

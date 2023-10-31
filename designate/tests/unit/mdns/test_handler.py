@@ -32,7 +32,7 @@ CONF = cfg.CONF
 
 class MdnsHandleTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(MdnsHandleTest, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))
@@ -219,7 +219,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
 
 class TestRequestHandlerCall(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestRequestHandlerCall, self).setUp()
+        super().setUp()
         self.handler = handler.RequestHandler(mock.Mock(), mock.Mock())
 
         # Use a simple handlers that doesn't require a real request
@@ -329,7 +329,7 @@ class TestRequestHandlerCall(oslotest.base.BaseTestCase):
 
 class HandleRecordQueryTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(HandleRecordQueryTest, self).setUp()
+        super().setUp()
         self.context = mock.Mock()
         self.storage = mock.Mock()
         self.handler = handler.RequestHandler(self.storage, mock.Mock())

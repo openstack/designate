@@ -60,7 +60,7 @@ class SampleHandler(NotificationHandler):
         zone_id = cfg.CONF[self.name].zone_id
         zone_name = cfg.CONF[self.name].zone_name
 
-        record_name = '%s.%s' % (payload['instance_id'], zone_name)
+        record_name = '{}.{}'.format(payload['instance_id'], zone_name)
 
         context = DesignateContext().elevated()
         context.all_tenants = True

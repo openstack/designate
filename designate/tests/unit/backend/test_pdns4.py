@@ -23,7 +23,7 @@ from designate.tests import fixtures
 
 class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(PDNS4BackendTestCase, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
@@ -63,7 +63,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             '%s/localhost/zones' % self.base_address,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=404,
         )
 
@@ -96,7 +96,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             '%s/localhost/zones' % self.base_address,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=404,
         )
 
@@ -121,7 +121,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             '%s/localhost/zones' % self.base_address,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=200,
         )
         req_mock.delete(
@@ -150,7 +150,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             status_code=500,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=200,
         )
         req_mock.delete(
@@ -187,7 +187,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             '%s/localhost/zones' % self.base_address,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=404,
         )
 
@@ -222,7 +222,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             status_code=500,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=404,
         )
 
@@ -244,7 +244,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             status_code=500,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             [{'status_code': 404}, {'status_code': 200}],
         )
         req_mock.delete(
@@ -284,7 +284,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             '%s/localhost/zones/example.com.' % self.base_address,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=200,
         )
 
@@ -302,7 +302,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
 
         # pdns returns 422 if asked about a zone that doesn't exist.
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=422,
         )
 
@@ -319,7 +319,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             status_code=500,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
             status_code=200,
         )
 

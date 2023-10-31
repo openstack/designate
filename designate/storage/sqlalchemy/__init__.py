@@ -36,7 +36,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
     __plugin_name__ = 'sqlalchemy'
 
     def __init__(self):
-        super(SQLAlchemyStorage, self).__init__()
+        super().__init__()
 
     def get_inspector(self):
         return sql.get_inspector()
@@ -499,11 +499,11 @@ class SQLAlchemyStorage(base.SQLAlchemy):
 
         if zone.obj_attr_is_set('attributes'):
             # Gather the Attribute ID's we have
-            have = set([r.id for r in self._find_zone_attributes(
-                context, {'zone_id': zone.id})])
+            have = {r.id for r in self._find_zone_attributes(
+                context, {'zone_id': zone.id})}
 
             # Prep some lists of changes
-            keep = set([])
+            keep = set()
             create = []
             update = []
 
@@ -539,11 +539,11 @@ class SQLAlchemyStorage(base.SQLAlchemy):
 
         if zone.obj_attr_is_set('masters'):
             # Gather the Attribute ID's we have
-            have = set([r.id for r in self._find_zone_masters(
-                context, {'zone_id': zone.id})])
+            have = {r.id for r in self._find_zone_masters(
+                context, {'zone_id': zone.id})}
 
             # Prep some lists of changes
-            keep = set([])
+            keep = set()
             create = []
             update = []
 
@@ -597,7 +597,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
 
             if zone.type == 'SECONDARY':
                 # Purge anything that shouldn't be there :P
-                for i in set([i.id for i in existing.values()]) - keep:
+                for i in {i.id for i in existing.values()} - keep:
                     self.delete_recordset(context, i)
 
         if tenant_id_changed:
@@ -1075,11 +1075,11 @@ class SQLAlchemyStorage(base.SQLAlchemy):
 
         if recordset.obj_attr_is_set('records'):
             # Gather the Record ID's we have
-            have_records = set([r.id for r in self._find_records(
-                context, {'recordset_id': recordset.id})])
+            have_records = {r.id for r in self._find_records(
+                context, {'recordset_id': recordset.id})}
 
             # Prep some lists of changes
-            keep_records = set([])
+            keep_records = set()
             create_records = []
             update_records = []
 
@@ -1174,8 +1174,8 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         Calculates the hash of the record, used to ensure record uniqueness.
         """
         md5sum = md5(usedforsecurity=False)
-        md5sum.update(('%s:%s' % (record.recordset_id,
-                                  record.data)).encode('utf-8'))
+        md5sum.update(('{}:{}'.format(record.recordset_id,
+                                      record.data)).encode('utf-8'))
 
         return md5sum.hexdigest()
 
@@ -1652,7 +1652,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
             context, {'id': pool_nameserver_id}, one=True)
 
     def find_pool_nameservers(self, context, criterion=None, marker=None,
-                   limit=None, sort_key=None, sort_dir=None):
+                              limit=None, sort_key=None, sort_dir=None):
         return self._find_pool_nameservers(context, criterion, marker=marker,
                                            limit=limit, sort_key=sort_key,
                                            sort_dir=sort_dir)
@@ -1752,7 +1752,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
             have_items.add(r.id)
 
         # Prep some lists of changes
-        keep_items = set([])
+        keep_items = set()
         create_items = []
         update_items = []
 
@@ -1809,7 +1809,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
             have_items.add(r.id)
 
         # Prep some lists of changes
-        keep_items = set([])
+        keep_items = set()
         create_items = []
         update_items = []
 
@@ -1961,8 +1961,8 @@ class SQLAlchemyStorage(base.SQLAlchemy):
     def find_pool_also_notifies(self, context, criterion=None, marker=None,
                                 limit=None, sort_key=None, sort_dir=None):
         return self._find_pool_also_notifies(context, criterion, marker=marker,
-                                          limit=limit, sort_key=sort_key,
-                                          sort_dir=sort_dir)
+                                             limit=limit, sort_key=sort_key,
+                                             sort_dir=sort_dir)
 
     def find_pool_also_notify(self, context, criterion):
         return self._find_pool_also_notifies(context, criterion, one=True)
@@ -2085,10 +2085,12 @@ class SQLAlchemyStorage(base.SQLAlchemy):
 
     def count_zone_transfer_accept(self, context, criterion=None):
         query = select(func.count(tables.zone_transfer_accepts.c.id))
-        query = self._apply_criterion(tables.zone_transfer_accepts,
-                    query, criterion)
-        query = self._apply_deleted_criteria(context,
-                    tables.zone_transfer_accepts, query)
+        query = self._apply_criterion(
+            tables.zone_transfer_accepts, query, criterion
+        )
+        query = self._apply_deleted_criteria(
+            context, tables.zone_transfer_accepts, query
+        )
 
         with sql.get_read_session() as session:
             resultproxy = session.execute(query)
@@ -2202,7 +2204,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
                                        one=True)
 
     def find_zone_imports(self, context, criterion=None, marker=None,
-                  limit=None, sort_key=None, sort_dir=None):
+                          limit=None, sort_key=None, sort_dir=None):
         """
         Find Zone Imports
 

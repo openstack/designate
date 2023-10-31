@@ -40,7 +40,7 @@ CONF.import_opt('default_pool_id', 'designate.central',
 TSIG_RRSIZE = 10 + 64 + 160 + 1
 
 
-class RequestHandler(object):
+class RequestHandler:
     def __init__(self, storage, tg):
         self._worker_api = None
 
@@ -72,18 +72,15 @@ class RequestHandler(object):
             # It is permissible for a server to send an AXFR response when
             # receiving an IXFR request.
             if q_rrset.rdtype in (dns.rdatatype.AXFR, dns.rdatatype.IXFR):
-                for response in self._handle_axfr(request):
-                    yield response
+                yield from self._handle_axfr(request)
                 return
 
             else:
-                for response in self._handle_record_query(request):
-                    yield response
+                yield from self._handle_record_query(request)
                 return
 
         elif request.opcode() == dns.opcode.NOTIFY:
-            for response in self._handle_notify(request):
-                yield response
+            yield from self._handle_notify(request)
             return
 
         else:

@@ -20,7 +20,7 @@ class ServiceStatus(base.DesignateObject, base.DictObjectMixin,
                     base.PersistentObjectMixin):
 
     def __init__(self, *args, **kwargs):
-        super(ServiceStatus, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     fields = {
         "service_name": fields.StringFields(),

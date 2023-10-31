@@ -30,7 +30,7 @@ CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
-class DNSMiddleware(object):
+class DNSMiddleware:
     """Base DNS Middleware class with some utility methods"""
     def __init__(self, application):
         self.application = application
@@ -69,7 +69,7 @@ class SerializationMiddleware(DNSMiddleware):
     """DNS Middleware to serialize/deserialize DNS Packets"""
 
     def __init__(self, application, tsig_keyring=None):
-        super(SerializationMiddleware, self).__init__(application)
+        super().__init__(application)
         self.tsig_keyring = tsig_keyring
 
     def __call__(self, request):
@@ -148,7 +148,7 @@ class TsigInfoMiddleware(DNSMiddleware):
     """Middleware which looks up the information available for a TsigKey"""
 
     def __init__(self, application, storage):
-        super(TsigInfoMiddleware, self).__init__(application)
+        super().__init__(application)
         self.storage = storage
 
     def process_request(self, request):

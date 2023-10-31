@@ -54,7 +54,7 @@ def main(argv):
 
     pip_requires = os.path.join(root, 'requirements.txt')
     test_requires = os.path.join(root, 'test-requirements.txt')
-    py_version = "python%s.%s" % (sys.version_info[0], sys.version_info[1])
+    py_version = f"python{sys.version_info[0]}.{sys.version_info[1]}"
     project = 'Designate'
     install = install_venv.InstallVenv(root, venv, pip_requires, test_requires,
                                        py_version, project)

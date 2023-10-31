@@ -24,7 +24,7 @@ from designate import tests
 
 class TestDuplicateServiceStatus(tests.TestCase):
     def setUp(self):
-        super(TestDuplicateServiceStatus, self).setUp()
+        super().setUp()
         self.meta = MetaData()
         self.meta.bind = sql.get_read_engine()
         self.service_statuses_table = Table(

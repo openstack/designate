@@ -32,7 +32,7 @@ class PDNS4Backend(base.Backend):
     __backend_status__ = 'integrated'
 
     def __init__(self, target):
-        super(PDNS4Backend, self).__init__(target)
+        super().__init__(target)
 
         self.api_endpoint = self.options.get('api_endpoint')
         self.api_token = self.options.get('api_token')
@@ -45,7 +45,7 @@ class PDNS4Backend(base.Backend):
 
     def _build_url(self, zone=''):
         r_url = urllib.parse.urlparse(self.api_endpoint)
-        return "%s://%s/api/v1/servers/localhost/zones%s%s" % (
+        return "{}://{}/api/v1/servers/localhost/zones{}{}".format(
             r_url.scheme, r_url.netloc, '/' if zone else '', zone)
 
     def _check_zone_exists(self, zone):

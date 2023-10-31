@@ -19,7 +19,7 @@ from pecan import expose
 from designate import exceptions
 
 
-class ErrorsController(object):
+class ErrorsController:
 
     @expose(content_type='text/plain')
     @expose(content_type='text/dns')

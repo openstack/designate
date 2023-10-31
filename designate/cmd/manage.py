@@ -53,7 +53,7 @@ def methods_of(obj):
 
 def get_available_commands():
     em = ExtensionManager('designate.manage')
-    return dict([(e.name, e.plugin) for e in em.extensions])
+    return {e.name: e.plugin for e in em.extensions}
 
 
 def add_command_parsers(subparsers):

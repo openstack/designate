@@ -28,7 +28,7 @@ LOG = logging.getLogger(__name__)
 
 
 def _get_attrname(name):
-    return "_obj_{}".format(name)
+    return f'_obj_{name}'
 
 
 def get_dict_attr(klass, attr):
@@ -49,7 +49,7 @@ class DesignateObject(base.VersionedObject):
             if name not in self.fields:
                 raise TypeError("__init__() got an unexpected keyword "
                                 "argument '%(name)s'" % {'name': name})
-        super(DesignateObject, self).__init__(self, *args, **kwargs)
+        super().__init__(self, *args, **kwargs)
         self._obj_original_values = dict()
         self.FIELDS = self.fields
 
@@ -57,7 +57,7 @@ class DesignateObject(base.VersionedObject):
     def _make_obj_str(cls, data):
         msg = "<%s" % cls.obj_name()
         for key in cls.STRING_KEYS:
-            msg += " %s:'%s'" % (key, data.get(key))
+            msg += f" {key}:'{data.get(key)}'"
         msg += ">"
         return msg
 
@@ -141,7 +141,7 @@ class DesignateObject(base.VersionedObject):
                     'type': self.obj_name(),
                     'name': name,
                 })
-        super(DesignateObject, self).__setattr__(name, value)
+        super().__setattr__(name, value)
 
     def __eq__(self, other):
         if self.__class__ != other.__class__:
@@ -285,7 +285,7 @@ class DesignateObject(base.VersionedObject):
                         field.coerce(self, name, value)  # Check value
                     except Exception:
                         raise exceptions.InvalidObject(
-                            "{} is invalid".format(name))
+                            f'{name} is invalid')
             elif not field.nullable:
                 # Check required is True ~ nullable is False
                 errors = ValidationErrorList()
@@ -296,8 +296,8 @@ class DesignateObject(base.VersionedObject):
                 e.message = "'%s' is a required property" % name
                 errors.append(e)
                 raise exceptions.InvalidObject(
-                    "Provided object does not match "
-                    "schema", errors=errors, object=self)
+                    'Provided object does not match '
+                    'schema', errors=errors, object=self)
 
     def obj_attr_is_set(self, name):
         """
@@ -445,7 +445,7 @@ class AttributeListObjectMixin(ListObjectMixin):
         return default
 
 
-class PersistentObjectMixin(object):
+class PersistentObjectMixin:
     """
     Mixin class for Persistent objects.
 
@@ -459,7 +459,7 @@ class PersistentObjectMixin(object):
     }
 
 
-class SoftDeleteObjectMixin(object):
+class SoftDeleteObjectMixin:
     """
     Mixin class for Soft-Deleted objects.
 
@@ -471,7 +471,7 @@ class SoftDeleteObjectMixin(object):
     }
 
 
-class PagedListObjectMixin(object):
+class PagedListObjectMixin:
     """
     Mixin class for List objects.
 
@@ -517,8 +517,8 @@ class DesignateRegistry(base.VersionedObjectRegistry):
                         LOG.exception(
                             'Error setting %{obj_name}s.%{field_name}s',
                             {
-                                "obj_name": self.obj_name(),
-                                "field_name": name
+                                'obj_name': self.obj_name(),
+                                'field_name': name
                             })
 
             setattr(cls, name, property(getter, setter, attr.fdel))

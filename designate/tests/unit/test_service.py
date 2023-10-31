@@ -31,7 +31,7 @@ CONF = cfg.CONF
 class TestBaseService(oslotest.base.BaseTestCase):
     def tearDown(self):
         designate_service._launcher = None
-        super(TestBaseService, self).tearDown()
+        super().tearDown()
 
     @mock.patch.object(service, 'launch')
     def test_serve(self, mock_service_launch):
@@ -115,7 +115,7 @@ class TestRpcService(oslotest.base.BaseTestCase):
     @mock.patch.object(profiler, 'setup_profiler')
     def setUp(self, mock_setup_profiler, mock_rpc_init,
               mock_policy_init):
-        super(TestRpcService, self).setUp()
+        super().setUp()
         self.service = designate_service.RPCService(
             'test-rpc-service', 'test-topic'
         )
@@ -154,7 +154,7 @@ class TestRpcService(oslotest.base.BaseTestCase):
 
 class TestDNSService(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestDNSService, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
         self.tg = mock.Mock()

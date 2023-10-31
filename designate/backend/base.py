@@ -33,7 +33,7 @@ class Backend(DriverPlugin):
     __backend_status__ = 'untested'
 
     def __init__(self, target):
-        super(Backend, self).__init__()
+        super().__init__()
 
         self.target = target
         self.options = target.options

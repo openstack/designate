@@ -25,7 +25,7 @@ import designate.tests
 
 class ApiServiceTest(designate.tests.TestCase):
     def setUp(self):
-        super(ApiServiceTest, self).setUp()
+        super().setUp()
 
         self.config(listen=['0.0.0.0:0'], group='service:api')
 

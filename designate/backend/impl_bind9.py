@@ -40,7 +40,7 @@ class Bind9Backend(base.Backend):
     __backend_status__ = 'integrated'
 
     def __init__(self, target):
-        super(Bind9Backend, self).__init__(target)
+        super().__init__(target)
 
         self._host = self.options.get('host', '127.0.0.1')
         self._port = int(self.options.get('port', 53))
@@ -83,7 +83,7 @@ class Bind9Backend(base.Backend):
         for master in self.masters:
             host = master['host']
             port = master['port']
-            masters.append('%s port %s' % (host, port))
+            masters.append(f'{host} port {port}')
 
         # Ensure different MiniDNS instances are targeted for AXFRs
         random.shuffle(masters)
@@ -113,7 +113,7 @@ class Bind9Backend(base.Backend):
 
         rndc_op = [
             'showzone',
-            '%s %s' % (zone['name'].rstrip('.'), view),
+            '{} {}'.format(zone['name'].rstrip('.'), view),
         ]
         try:
             self._execute_rndc(rndc_op)
@@ -137,10 +137,10 @@ class Bind9Backend(base.Backend):
 
         rndc_op = [
             'delzone',
-            '%s %s' % (zone['name'].rstrip('.'), view),
+            '{} {}'.format(zone['name'].rstrip('.'), view),
         ]
         if (self._clean_zonefile or (zone_params and
-                zone_params.get('hard_delete'))):
+                                     zone_params.get('hard_delete'))):
             rndc_op.insert(1, '-clean')
 
         try:
@@ -174,7 +174,7 @@ class Bind9Backend(base.Backend):
         for master in self.masters:
             host = master['host']
             port = master['port']
-            masters.append('%s port %s' % (host, port))
+            masters.append(f'{host} port {port}')
 
         # Ensure different MiniDNS instances are targeted for AXFRs
         random.shuffle(masters)
@@ -206,7 +206,7 @@ class Bind9Backend(base.Backend):
         try:
             rndc_call = self._rndc_call_base + rndc_op
             LOG.debug('Executing RNDC call: %r with timeout %s',
-                rndc_call, self._rndc_timeout)
+                      rndc_call, self._rndc_timeout)
             utils.execute(*rndc_call, timeout=self._rndc_timeout)
         except (utils.processutils.ProcessExecutionError,
                 subprocess.TimeoutExpired) as e:

@@ -35,7 +35,7 @@ def _retry_if_tooz_error(exception):
     return isinstance(exception, tooz.coordination.ToozError)
 
 
-class Coordination(object):
+class Coordination:
     def __init__(self, name, tg, grouping_enabled=False):
         # NOTE(eandersson): Workaround until tooz handles the conversion.
         if not isinstance(name, bytes):
@@ -128,7 +128,7 @@ class Coordination(object):
         )
 
 
-class Partitioner(object):
+class Partitioner:
     def __init__(self, coordinator, group_id, my_id, partitions):
         self._coordinator = coordinator
         self._group_id = group_id

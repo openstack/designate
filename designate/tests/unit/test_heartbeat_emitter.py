@@ -28,7 +28,7 @@ CONF = cfg.CONF
 
 class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(HeartbeatEmitterTest, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))
@@ -83,7 +83,7 @@ class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
 
 class RpcEmitterTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(RpcEmitterTest, self).setUp()
+        super().setUp()
 
     @mock.patch.object(objects, 'ServiceStatus')
     @mock.patch('designate.context.DesignateContext.get_admin_context')

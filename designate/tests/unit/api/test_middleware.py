@@ -21,7 +21,7 @@ import oslotest.base
 from designate.api import middleware
 
 
-class FakeRequest(object):
+class FakeRequest:
     def __init__(self):
         self.headers = {}
         self.environ = {}
@@ -40,7 +40,7 @@ class FakeRequest(object):
 
 class ContextMiddlewareTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(ContextMiddlewareTest, self).setUp()
+        super().setUp()
         self.app = middleware.ContextMiddleware({})
         self.request = FakeRequest()
 
@@ -69,7 +69,7 @@ class ContextMiddlewareTest(oslotest.base.BaseTestCase):
 
 class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(KeystoneContextMiddlewareTest, self).setUp()
+        super().setUp()
         self.app = middleware.KeystoneContextMiddleware({})
 
         self.request = FakeRequest()

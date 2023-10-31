@@ -23,7 +23,7 @@ def get_tlds_path(name='tlds_list'):
 
 class ManageTLDSTestCase(designate.tests.TestCase):
     def setUp(self):
-        super(ManageTLDSTestCase, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.tlds = tlds.TLDCommands()

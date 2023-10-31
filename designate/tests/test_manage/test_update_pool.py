@@ -36,7 +36,7 @@ def hydrate_pool_targets(target_masters):
 
 class UpdatePoolTestCase(designate.tests.TestCase):
     def setUp(self):
-        super(UpdatePoolTestCase, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

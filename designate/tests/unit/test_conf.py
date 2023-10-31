@@ -19,7 +19,7 @@ from designate.conf import worker
 
 class TestConfOpts(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestConfOpts, self).setUp()
+        super().setUp()
 
     def test_opts_tupleize(self):
         self.assertEqual([('a', 'b')], opts._tupleize({'a': 'b'}))

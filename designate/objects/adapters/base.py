@@ -29,7 +29,7 @@ class DesignateObjectAdapterMetaclass(type):
             cls._adapter_classes = {}
             return
 
-        key = '%s:%s' % (cls.adapter_format(), cls.adapter_object())
+        key = f'{cls.adapter_format()}:{cls.adapter_object()}'
         if key not in cls._adapter_classes:
             cls._adapter_classes[key] = cls
         else:
@@ -43,7 +43,7 @@ class DesignateObjectAdapterMetaclass(type):
             )
 
 
-class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
+class DesignateAdapter(metaclass=DesignateObjectAdapterMetaclass):
     """docstring for DesignateObjectAdapter"""
     ADAPTER_FORMAT = None
     ADAPTER_OBJECT = objects.DesignateObject
@@ -62,9 +62,9 @@ class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
         if obj_format is None:
             obj_format = cls.ADAPTER_FORMAT
         if isinstance(obj, objects.DesignateObject):
-            key = '%s:%s' % (obj_format, obj.obj_name())
+            key = f'{obj_format}:{obj.obj_name()}'
         else:
-            key = '%s:%s' % (obj_format, obj)
+            key = f'{obj_format}:{obj}'
         try:
             return cls._adapter_classes[key]
         except KeyError as e:
@@ -283,8 +283,8 @@ class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
 
         if error_keys:
             raise exceptions.InvalidObject(
-                'Provided object does not match schema. Keys {0} are not '
-                'valid for {1}'.format(
+                'Provided object does not match schema. Keys {} are not '
+                'valid for {}'.format(
                     error_keys, cls.MODIFICATIONS['options']['resource_name']
                 )
             )

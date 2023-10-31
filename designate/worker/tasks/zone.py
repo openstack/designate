@@ -15,7 +15,6 @@
 # under the License.
 from collections import namedtuple
 import errno
-import socket
 import time
 
 import dns
@@ -45,7 +44,7 @@ class ZoneActionOnTarget(base.Task):
     """
 
     def __init__(self, executor, context, zone, target, zone_params):
-        super(ZoneActionOnTarget, self).__init__(executor)
+        super().__init__(executor)
         self.zone = zone
         self.action = zone.action
         self.target = target
@@ -118,7 +117,7 @@ class SendNotify(base.Task):
     """
 
     def __init__(self, executor, zone, target):
-        super(SendNotify, self).__init__(executor)
+        super().__init__(executor)
         self.zone = zone
         self.target = target
 
@@ -162,7 +161,7 @@ class ZoneXfr(base.Task):
     """
 
     def __init__(self, executor, context, zone, servers=None):
-        super(ZoneXfr, self).__init__(executor)
+        super().__init__(executor)
         self.context = context
         self.zone = zone
         self.servers = servers
@@ -201,7 +200,7 @@ class ZoneActor(base.Task):
     """
 
     def __init__(self, executor, context, pool, zone, zone_params=None):
-        super(ZoneActor, self).__init__(executor)
+        super().__init__(executor)
         self.context = context
         self.pool = pool
         self.zone = zone
@@ -259,7 +258,7 @@ class ZoneAction(base.Task):
 
     def __init__(self, executor, context, pool, zone, action,
                  zone_params=None):
-        super(ZoneAction, self).__init__(executor)
+        super().__init__(executor)
         self.context = context
         self.pool = pool
         self.zone = zone
@@ -376,7 +375,7 @@ class PollForZone(base.Task):
     """
 
     def __init__(self, executor, zone, ns):
-        super(PollForZone, self).__init__(executor)
+        super().__init__(executor)
         self.zone = zone
         self.ns = ns
 
@@ -458,7 +457,7 @@ class ZonePoller(base.Task):
     """
 
     def __init__(self, executor, context, pool, zone):
-        super(ZonePoller, self).__init__(executor)
+        super().__init__(executor)
         self.context = context
         self.pool = pool
         self.zone = zone
@@ -606,7 +605,7 @@ class GetZoneSerial(base.Task):
     Get zone serial number from a resolver using retries.
     """
     def __init__(self, executor, context, zone, host, port):
-        super(GetZoneSerial, self).__init__(executor)
+        super().__init__(executor)
         self.context = context
         self.zone = zone
         self.host = host
@@ -693,7 +692,7 @@ class GetZoneSerial(base.Task):
             return dnsutils.soa_query(
                 zone_name, host, port, timeout=self.serial_timeout
             )
-        except socket.error as e:
+        except OSError as e:
             if e.errno != errno.EAGAIN:
                 raise
             LOG.info(
@@ -745,7 +744,7 @@ class UpdateStatus(base.Task):
     """
 
     def __init__(self, executor, context, zone):
-        super(UpdateStatus, self).__init__(executor)
+        super().__init__(executor)
         self.zone = zone
         self.context = context
 
@@ -783,14 +782,14 @@ class RecoverShard(base.Task):
     """
 
     def __init__(self, executor, context, begin, end):
-        super(RecoverShard, self).__init__(executor)
+        super().__init__(executor)
         self.context = context
         self.begin_shard = begin
         self.end_shard = end
 
     def _get_zones(self):
         criterion = {
-            'shard': "BETWEEN %s,%s" % (self.begin_shard, self.end_shard),
+            'shard': f"BETWEEN {self.begin_shard},{self.end_shard}",
             'status': 'ERROR'
         }
         error_zones = self.storage.find_zones(self.context, criterion)
@@ -799,7 +798,7 @@ class RecoverShard(base.Task):
         # status for longer than they should
         # Generate the current serial, will provide a UTC Unix TS.
         stale_criterion = {
-            'shard': "BETWEEN %s,%s" % (self.begin_shard, self.end_shard),
+            'shard': f"BETWEEN {self.begin_shard},{self.end_shard}",
             'status': 'PENDING',
             'serial': "<%s" % (timeutils.utcnow_ts() - self.max_prop_time)
         }
@@ -849,7 +848,7 @@ class ExportZone(base.Task):
     """
 
     def __init__(self, executor, context, zone, export):
-        super(ExportZone, self).__init__(executor)
+        super().__init__(executor)
         self.context = context
         self.zone = zone
         self.export = export

@@ -53,7 +53,7 @@ def unwrap(f):
     return f
 
 
-class RwObject(object):
+class RwObject:
     """Object mock: raise exception on __setitem__ or __setattr__
     on any item/attr created after initialization.
     Allows updating existing items/attrs
@@ -140,7 +140,7 @@ def mock_out(name):
     return decorator
 
 
-class Mockzone(object):
+class Mockzone:
     id = 1
     name = 'example.org'
     pool_id = 1
@@ -172,7 +172,7 @@ class Mockzone(object):
             raise NotImplementedError(k)
 
 
-class MockRecordSet(object):
+class MockRecordSet:
     id = 1
     name = 'example.org.'
     pool_id = 1
@@ -188,7 +188,7 @@ class MockRecordSet(object):
         raise NotImplementedError()
 
 
-class MockRecord(object):
+class MockRecord:
     hostname = 'bar'
 
     def __getitem__(self, n):
@@ -196,7 +196,7 @@ class MockRecord(object):
         return 'bar'
 
 
-class MockPool(object):
+class MockPool:
     ns_records = [MockRecord(), ]
 
 
@@ -221,7 +221,7 @@ class NotMockedError(NotImplementedError):
        mock.NonCallableMock(side_effect=NotMockedError))
 class CentralBasic(TestCase):
     def setUp(self):
-        super(CentralBasic, self).setUp()
+        super().setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.CONF([], project='designate')
         mock_storage = mock.Mock(spec=sqlalchemy.SQLAlchemyStorage)
@@ -325,7 +325,7 @@ class CentralServiceTestCase(CentralBasic):
             type = 'PRIMARY'
             pool_id = 1
 
-        class MockRecord(object):
+        class MockRecord:
             data = None
 
         mock_soa = RoObject(records=[MockRecord()])
@@ -451,7 +451,7 @@ class CentralServiceTestCase(CentralBasic):
         #  we will hit it if we try to do the operations in a loop 100 times.
         for num in range(100):
             recordset = mock.Mock(spec=objects.RecordSet)
-            recordset.name = "b{}".format(num)
+            recordset.name = f"b{num}"
             recordset.obj_attr_is_set.return_value = True
             recordset.records = [MockRecord()]
 
@@ -545,7 +545,7 @@ class CentralZoneTestCase(CentralBasic):
     zone_shared = False
 
     def setUp(self):
-        super(CentralZoneTestCase, self).setUp()
+        super().setUp()
 
         def storage_find_tld(c, d):
             if d['name'] not in ('org',):
@@ -1521,8 +1521,8 @@ class CentralZoneTestCase(CentralBasic):
 
         with fx_worker:
             self.service.delete_recordset(self.context,
-                CentralZoneTestCase.zone__id_2,
-                CentralZoneTestCase.recordset__id)
+                                          CentralZoneTestCase.zone__id_2,
+                                          CentralZoneTestCase.recordset__id)
 
         self.assertTrue(
             self.service._delete_recordset_in_storage.called)
@@ -1625,7 +1625,7 @@ class CentralZoneTestCase(CentralBasic):
 
 class IsSubzoneTestCase(CentralBasic):
     def setUp(self):
-        super(IsSubzoneTestCase, self).setUp()
+        super().setUp()
 
         def find_zone(ctx, criterion):
             LOG.debug("Calling find_zone on %r" % criterion)
@@ -1662,7 +1662,7 @@ class IsSubzoneTestCase(CentralBasic):
 
 class CentralZoneExportTests(CentralBasic):
     def setUp(self):
-        super(CentralZoneExportTests, self).setUp()
+        super().setUp()
 
         def storage_find_tld(c, d):
             if d['name'] not in ('org',):

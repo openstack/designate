@@ -38,7 +38,7 @@ class ProducerTest(oslotest.base.BaseTestCase):
         conf = self.useFixture(cfg_fixture.Config(CONF))
         conf.conf([], project='designate')
 
-        super(ProducerTest, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

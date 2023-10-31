@@ -115,7 +115,7 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
             # Do a single assignment, preserves the object change fields
             recordset.records = new_recordset_records
 
-        return super(RecordSetAPIv2Adapter, cls).parse_object(
+        return super().parse_object(
             new_recordset, recordset, *args, **kwargs)
 
     @classmethod
@@ -126,7 +126,7 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
         to_insert = ''
         if 'zones' not in path and obj is not None:
             insert_zones = True
-            to_insert = 'zones/{0}'.format(obj.zone_id)
+            to_insert = f'zones/{obj.zone_id}'
 
         item_path = ''
         for part in path:
@@ -134,7 +134,7 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
                 item_path += '/' + part
                 return item_path
             elif insert_zones and to_insert and part == 'v2':
-                item_path += '/v2/{0}'.format(to_insert)
+                item_path += f'/v2/{to_insert}'
                 insert_zones = False  # make sure only insert once if needed
             else:
                 item_path += '/' + part

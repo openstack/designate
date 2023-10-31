@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 class StorageQuotaTest(tests.TestCase):
     def setUp(self):
-        super(StorageQuotaTest, self).setUp()
+        super().setUp()
         self.config(quota_driver='storage')
         self.quota = quota.get_quota()
 

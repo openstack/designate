@@ -28,7 +28,7 @@ WORKER_API = None
 
 @profiler.trace_cls("rpc")
 @rpc_logging(LOG, 'worker')
-class WorkerAPI(object):
+class WorkerAPI:
     """
     Client side of the worker RPC API.
 

@@ -83,7 +83,7 @@ SAMPLES = {
 
 class TestTsigUtils(designate.tests.TestCase):
     def setUp(self):
-        super(TestTsigUtils, self).setUp()
+        super().setUp()
         self.storage = storage.get_storage()
         self.tsig_keyring = dnsutils.TsigKeyring(self.storage)
 
@@ -115,7 +115,7 @@ class TestTsigUtils(designate.tests.TestCase):
 
 class TestUtils(designate.tests.TestCase):
     def setUp(self):
-        super(TestUtils, self).setUp()
+        super().setUp()
 
     def test_from_dnspython_zone(self):
         zone_file = self.get_zonefile_fixture()

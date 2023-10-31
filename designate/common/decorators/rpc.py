@@ -20,7 +20,7 @@ import designate.exceptions
 
 class ExceptionThreadLocal(threading.local):
     def __init__(self):
-        super(ExceptionThreadLocal, self).__init__()
+        super().__init__()
         self.depth = 0
 
     def reset_depth(self):

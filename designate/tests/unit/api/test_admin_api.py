@@ -20,7 +20,7 @@ from designate import exceptions
 import designate.tests
 
 
-class MockRequest(object):
+class MockRequest:
     def __init__(self, GET=None):
         self.GET = GET
 
@@ -28,7 +28,7 @@ class MockRequest(object):
 class TestAdminAPI(designate.tests.TestCase):
 
     def setUp(self):
-        super(TestAdminAPI, self).setUp()
+        super().setUp()
 
     @mock.patch.object(base.BaseView, '_get_collection_href')
     @mock.patch.object(base.BaseView, '_get_next_href')

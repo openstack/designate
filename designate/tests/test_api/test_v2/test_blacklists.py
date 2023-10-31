@@ -20,7 +20,7 @@ from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 class ApiV2BlacklistsTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2BlacklistsTest, self).setUp()
+        super().setUp()
 
     def test_get_blacklists(self):
         # Set the policy file as this is an admin-only API

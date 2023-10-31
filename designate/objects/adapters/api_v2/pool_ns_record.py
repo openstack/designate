@@ -46,6 +46,6 @@ class PoolNsRecordListAPIv2Adapter(base.APIv2Adapter):
 
     @classmethod
     def render_list(cls, list_objects, *args, **kwargs):
-        r_list = super(PoolNsRecordListAPIv2Adapter, cls).render_list(
+        r_list = super().render_list(
             list_objects, *args, **kwargs)
         return r_list[cls.MODIFICATIONS['options']['collection_name']]

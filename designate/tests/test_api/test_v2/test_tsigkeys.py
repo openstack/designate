@@ -24,7 +24,7 @@ from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 class ApiV2TsigKeysTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2TsigKeysTest, self).setUp()
+        super().setUp()
 
         # Set the policy to accept everyone as an admin, as this is an
         # admin-only API

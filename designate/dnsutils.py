@@ -41,7 +41,7 @@ class TsigKeyring(dict):
     """Implements the DNSPython KeyRing API, backed by the Designate DB"""
 
     def __init__(self, storage):
-        super(TsigKeyring, self).__init__()
+        super().__init__()
         self.storage = storage
 
     def __getitem__(self, key):
@@ -63,7 +63,7 @@ class TsigKeyring(dict):
             return default
 
 
-class ZoneLock(object):
+class ZoneLock:
     """A Lock across all zones that enforces a rate limit on NOTIFYs"""
 
     def __init__(self, delay):
@@ -209,28 +209,28 @@ def do_axfr(zone_name, servers, source=None):
                     port=srv['port'], source=source
                 )
                 raw_zone = dns.zone.from_xfr(xfr, relativize=False)
-                LOG.debug("AXFR Successful for %s", raw_zone.origin.to_text())
+                LOG.debug('AXFR Successful for %s', raw_zone.origin.to_text())
                 return raw_zone
             except eventlet.Timeout as t:
                 if t == to:
-                    LOG.error("AXFR timed out for %(name)s from %(host)s",
+                    LOG.error('AXFR timed out for %(name)s from %(host)s',
                               log_info)
                     continue
             except dns.exception.FormError:
-                LOG.error("Zone %(name)s is not present on %(host)s."
-                          "Trying next server.", log_info)
-            except socket.error:
-                LOG.error("Connection error when doing AXFR for %(name)s from "
-                          "%(host)s", log_info)
+                LOG.error('Zone %(name)s is not present on %(host)s.'
+                          'Trying next server.', log_info)
+            except OSError:
+                LOG.error('Connection error when doing AXFR for %(name)s from '
+                          '%(host)s', log_info)
             except Exception:
-                LOG.exception("Problem doing AXFR %(name)s from %(host)s. "
-                              "Trying next server.", log_info)
+                LOG.exception('Problem doing AXFR %(name)s from %(host)s. '
+                              'Trying next server.', log_info)
             finally:
                 to.cancel()
 
     raise exceptions.XFRFailure(
-        "XFR failed for %(name)s. No servers in %(servers)s was reached." %
-        {"name": zone_name, "servers": servers}
+        'XFR failed for %(name)s. No servers in %(servers)s was reached.' %
+        {'name': zone_name, 'servers': servers}
     )
 
 

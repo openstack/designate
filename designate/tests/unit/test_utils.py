@@ -27,7 +27,7 @@ CONF = cfg.CONF
 
 class TestUtils(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestUtils, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)
@@ -185,7 +185,7 @@ class TestUtils(oslotest.base.BaseTestCase):
 
     @mock.patch.object(utils, 'resource_string')
     def test_load_template(self, mock_resource_string):
-        mock_resource_string.return_value = 'Hello {{name}}'.encode('utf-8')
+        mock_resource_string.return_value = b'Hello {{name}}'
 
         template = utils.load_template('bind9-zone.jinja2')
 
@@ -193,7 +193,7 @@ class TestUtils(oslotest.base.BaseTestCase):
 
     @mock.patch.object(utils, 'resource_string')
     def test_load_template_keep_trailing_newline(self, mock_resource_string):
-        mock_resource_string.return_value = 'Hello {{name}}'.encode('utf-8')
+        mock_resource_string.return_value = b'Hello {{name}}'
 
         template = utils.load_template('bind9-zone.jinja2')
 

@@ -36,7 +36,7 @@ class PeriodicTask(plugin.ExtensionPlugin):
     __plugin_type__ = 'producer_task'
 
     def __init__(self):
-        super(PeriodicTask, self).__init__()
+        super().__init__()
         self.my_partitions = None
 
     @property
@@ -73,8 +73,7 @@ class PeriodicTask(plugin.ExtensionPlugin):
             else:
                 kwargs["marker"] = items[-1].id
 
-            for i in items:
-                yield i
+            yield from items
 
     def _iter_zones(self, ctxt, criterion=None):
         criterion = criterion or {}
@@ -90,7 +89,7 @@ class DeletedZonePurgeTask(PeriodicTask):
     __plugin_name__ = 'zone_purge'
 
     def __init__(self):
-        super(DeletedZonePurgeTask, self).__init__()
+        super().__init__()
 
     def __call__(self):
         """Call the Central API to perform a purge of deleted zones based on
@@ -126,7 +125,7 @@ class PeriodicExistsTask(PeriodicTask):
     __plugin_name__ = 'periodic_exists'
 
     def __init__(self):
-        super(PeriodicExistsTask, self).__init__()
+        super().__init__()
         self.notifier = rpc.get_notifier('producer')
 
     @staticmethod
@@ -219,7 +218,7 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
     __plugin_name__ = 'delayed_notify'
 
     def __init__(self):
-        super(PeriodicGenerateDelayedNotifyTask, self).__init__()
+        super().__init__()
 
     def __call__(self):
         """Fetch a list of zones with the delayed_notify flag set up to
@@ -271,7 +270,7 @@ class PeriodicIncrementSerialTask(PeriodicTask):
     __plugin_name__ = 'increment_serial'
 
     def __init__(self):
-        super(PeriodicIncrementSerialTask, self).__init__()
+        super().__init__()
 
     def __call__(self):
         ctxt = context.DesignateContext.get_admin_context()

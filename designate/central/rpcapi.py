@@ -34,7 +34,7 @@ def reset():
 
 @profiler.trace_cls("rpc")
 @rpc_logging(LOG, 'central')
-class CentralAPI(object):
+class CentralAPI:
     """
     Client side of the central RPC API.
 

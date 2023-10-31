@@ -21,8 +21,7 @@ from designate.utils import generate_uuid
 
 LOG = logging.getLogger(__name__)
 
-POOL = dict([(generate_uuid(), '192.168.2.%s' % i) for i in
-             range(0, 254)])
+POOL = {generate_uuid(): '192.168.2.%s' % i for i in range(0, 254)}
 ALLOCATIONS = {}
 
 

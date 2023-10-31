@@ -28,7 +28,7 @@ LOG = logging.getLogger(__name__)
 
 class Service(service.Service):
     def __init__(self):
-        super(Service, self).__init__(
+        super().__init__(
             self.service_name, threads=cfg.CONF['service:sink'].threads
         )
 
@@ -65,7 +65,7 @@ class Service(service.Service):
         return subscriptions
 
     def start(self):
-        super(Service, self).start()
+        super().start()
 
         # Setup notification subscriptions and start consuming
         targets = self._get_targets()
@@ -90,7 +90,7 @@ class Service(service.Service):
                 'Unable to gracefully stop the notification listener: %s', e
             )
 
-        super(Service, self).stop(graceful)
+        super().stop(graceful)
 
     def _get_targets(self):
         """

@@ -31,7 +31,7 @@ LOG = logging.getLogger(__name__)
 
 class DesignateBackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(DesignateBackendTestCase, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

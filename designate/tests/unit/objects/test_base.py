@@ -402,7 +402,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
     def test_obj_what_changed(self):
         obj = TestObject()
 
-        self.assertEqual(set([]), obj.obj_what_changed())
+        self.assertEqual(set(), obj.obj_what_changed())
 
         obj.name = "My Name"
 
@@ -647,16 +647,20 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
             'designate_object.name': 'TestObjectList',
             'designate_object.data': {
                 'objects': [
-                    {'designate_object.changes': ['id'],
-                     'designate_object.data': {'id': 'One'},
-                     'designate_object.name': 'TestObject',
-                     'designate_object.namespace': 'designate',
-                     'designate_object.version': '1.0'},
-                    {'designate_object.changes': ['id'],
-                     'designate_object.data': {'id': 'Two'},
-                     'designate_object.name': 'TestObject',
-                     'designate_object.namespace': 'designate',
-                     'designate_object.version': '1.0'},
+                    {
+                        'designate_object.changes': ['id'],
+                        'designate_object.data': {'id': 'One'},
+                        'designate_object.name': 'TestObject',
+                        'designate_object.namespace': 'designate',
+                        'designate_object.version': '1.0'
+                    },
+                    {
+                        'designate_object.changes': ['id'],
+                        'designate_object.data': {'id': 'Two'},
+                        'designate_object.name': 'TestObject',
+                        'designate_object.namespace': 'designate',
+                        'designate_object.version': '1.0'
+                    },
                 ],
             },
             'designate_object.changes': ['objects'],
@@ -740,16 +744,20 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
             'designate_object.name': 'TestObjectList',
             'designate_object.data': {
                 'objects': [
-                    {'designate_object.changes': ['id'],
-                     'designate_object.data': {'id': 'One'},
-                     'designate_object.name': 'TestObject',
-                     'designate_object.namespace': 'designate',
-                     'designate_object.version': '1.0'},
-                    {'designate_object.changes': ['id'],
-                     'designate_object.data': {'id': 'Two'},
-                     'designate_object.name': 'TestObject',
-                     'designate_object.namespace': 'designate',
-                     'designate_object.version': '1.0'},
+                    {
+                        'designate_object.changes': ['id'],
+                        'designate_object.data': {'id': 'One'},
+                        'designate_object.name': 'TestObject',
+                        'designate_object.namespace': 'designate',
+                        'designate_object.version': '1.0'
+                    },
+                    {
+                        'designate_object.changes': ['id'],
+                        'designate_object.data': {'id': 'Two'},
+                        'designate_object.name': 'TestObject',
+                        'designate_object.namespace': 'designate',
+                        'designate_object.version': '1.0'
+                    },
                 ],
             },
             'designate_object.changes': ['objects'],
@@ -774,24 +782,28 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
             'designate_object.changes': ['objects'],
             'designate_object.data': {
                 'objects': [
-                    {'designate_object.changes': ['nested'],
-                     'designate_object.data': {'nested':
-                         {
-                             'designate_object.changes': [
-                                 'id'],
-                             'designate_object.data': {
-                                 'id': 'Two'},
-                             'designate_object.name': 'TestObject',
-                             'designate_object.namespace': 'designate',
-                             'designate_object.version': '1.0'}},
-                     'designate_object.name': 'TestObject',
-                     'designate_object.namespace': 'designate',
-                     'designate_object.version': '1.0'},
-                    {'designate_object.changes': ['id'],
-                     'designate_object.data': {'id': 'Two'},
-                     'designate_object.name': 'TestObject',
-                     'designate_object.namespace': 'designate',
-                     'designate_object.version': '1.0'}]},
+                    {
+                        'designate_object.changes': ['nested'],
+                        'designate_object.data': {'nested':
+                            {
+                                'designate_object.changes': ['id'],
+                                'designate_object.data': {'id': 'Two'},
+                                'designate_object.name': 'TestObject',
+                                'designate_object.namespace': 'designate',
+                                'designate_object.version': '1.0'}
+                        },
+                        'designate_object.name': 'TestObject',
+                        'designate_object.namespace': 'designate',
+                        'designate_object.version': '1.0'},
+                    {
+                        'designate_object.changes': ['id'],
+                        'designate_object.data': {'id': 'Two'},
+                        'designate_object.name': 'TestObject',
+                        'designate_object.namespace': 'designate',
+                        'designate_object.version': '1.0'
+                    }
+                ]
+            },
             'designate_object.namespace': 'designate',
             'designate_object.version': '1.0'}
 
@@ -809,7 +821,7 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         obj.obj_reset_changes()
 
         changes = obj.obj_what_changed()
-        expected = set([])
+        expected = set()
 
         self.assertEqual(expected, changes)
 

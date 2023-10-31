@@ -30,7 +30,7 @@ class APIv2Adapter(base.DesignateAdapter):
 
     @classmethod
     def render_list(cls, list_objects, *args, **kwargs):
-        r_list = super(APIv2Adapter, cls).render_list(
+        r_list = super().render_list(
             list_objects, *args, **kwargs)
 
         if (cls.MODIFICATIONS['options'].get('links', True) and
@@ -49,7 +49,7 @@ class APIv2Adapter(base.DesignateAdapter):
 
     @classmethod
     def render_object(cls, obj, *args, **kwargs):
-        new_obj = super(APIv2Adapter, cls).render_object(obj, *args, **kwargs)
+        new_obj = super().render_object(obj, *args, **kwargs)
 
         if (cls.MODIFICATIONS['options'].get('links', True) and
                 'request' in kwargs):
@@ -63,7 +63,7 @@ class APIv2Adapter(base.DesignateAdapter):
 
     @classmethod
     def parse(cls, values, output_object, *args, **kwargs):
-        return super(APIv2Adapter, cls).parse(
+        return super().parse(
             cls.ADAPTER_FORMAT, values, output_object, *args, **kwargs)
 
     #####################
@@ -81,7 +81,7 @@ class APIv2Adapter(base.DesignateAdapter):
         base_uri = cls._get_base_url(request)
 
         path = cls._get_path(request, obj)
-        return {'self': '%s%s/%s' % (base_uri, path, obj.id)}
+        return {'self': f'{base_uri}{path}/{obj.id}'}
 
     @classmethod
     def _get_path(cls, request, *args):
@@ -132,7 +132,7 @@ class APIv2Adapter(base.DesignateAdapter):
 
         base_uri = cls._get_base_url(request)
 
-        href = "%s%s?%s" % (
+        href = '{}{}?{}'.format(
             base_uri,
             cls._get_path(request),
             parse.urlencode(params))

@@ -17,7 +17,7 @@ from designate import exceptions
 
 class FloatingIPTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(FloatingIPTest, self).setUp()
+        super().setUp()
 
     def test_fip_key_to_data(self):
         self.assertEqual(

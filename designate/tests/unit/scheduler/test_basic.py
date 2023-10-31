@@ -22,7 +22,7 @@ from designate import tests
 class SchedulerTest(tests.TestCase):
 
     def setUp(self):
-        super(SchedulerTest, self).setUp()
+        super().setUp()
         self.context = self.get_context()
         self.zone = objects.Zone(
             name="example.com.",

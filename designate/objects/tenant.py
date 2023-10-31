@@ -19,7 +19,7 @@ from designate.objects import fields
 @base.DesignateRegistry.register
 class Tenant(base.DesignateObject, base.DictObjectMixin):
     def __init__(self, *args, **kwargs):
-        super(Tenant, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     fields = {
         'id': fields.AnyField(nullable=True),

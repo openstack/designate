@@ -34,7 +34,7 @@ class Service(service.Service):
     def __init__(self):
         self._storage = None
 
-        super(Service, self).__init__(
+        super().__init__(
             self.service_name, threads=cfg.CONF['service:mdns'].threads,
         )
         self.dns_service = service.DNSService(
@@ -45,12 +45,12 @@ class Service(service.Service):
         )
 
     def start(self):
-        super(Service, self).start()
+        super().start()
         self.dns_service.start()
 
     def stop(self, graceful=True):
         self.dns_service.stop()
-        super(Service, self).stop(graceful)
+        super().stop(graceful)
 
     @property
     def storage(self):

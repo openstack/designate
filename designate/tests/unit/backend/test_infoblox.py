@@ -28,7 +28,7 @@ from designate import objects
 
 class InfobloxConnectorTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(InfobloxConnectorTestCase, self).setUp()
+        super().setUp()
         self.options = {
             'wapi_url': 'https://203.0.113.1/wapi/v2.0/',
             'username': 'username',
@@ -97,7 +97,7 @@ class InfobloxConnectorTestCase(oslotest.base.BaseTestCase):
 
 class InfobloxBackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(InfobloxBackendTestCase, self).setUp()
+        super().setUp()
         self.base_address = 'https://203.0.113.1/wapi'
 
         self.context = mock.Mock()

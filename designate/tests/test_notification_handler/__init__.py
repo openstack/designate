@@ -23,14 +23,14 @@ from designate.tests import resources
 FIXTURES_PATH = os.path.join(resources.path, 'sample_notifications')
 
 
-class NotificationHandlerMixin(object):
+class NotificationHandlerMixin:
     def get_notification_fixture(self, service, name):
         filename = os.path.join(FIXTURES_PATH, service, '%s.json' % name)
 
         if not os.path.exists(filename):
             raise Exception('Invalid notification fixture requested')
 
-        with open(filename, 'r') as fp:
+        with open(filename) as fp:
             fixture = fp.read()
 
         return jsonutils.loads(fixture)

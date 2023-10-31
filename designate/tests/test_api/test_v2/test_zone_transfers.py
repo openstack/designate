@@ -19,7 +19,7 @@ from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 class ApiV2ZoneTransfersTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2ZoneTransfersTest, self).setUp()
+        super().setUp()
 
         self.zone = self.create_zone()
         self.tenant_1_context = self.get_context(project_id=1)
@@ -252,7 +252,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
 
     def test_get_zone_transfer_accept_invalid_id(self):
         self._assert_invalid_uuid(self.client.get,
-            '/zones/tasks/transfer_accepts/%s')
+                                  '/zones/tasks/transfer_accepts/%s')
 
     def test_get_zone_transfer_accepts(self):
         response = self.client.get(

@@ -33,7 +33,7 @@ CONF = cfg.CONF
 class MdnsServiceTest(oslotest.base.BaseTestCase):
     @mock.patch.object(storage, 'get_storage', mock.Mock())
     def setUp(self):
-        super(MdnsServiceTest, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

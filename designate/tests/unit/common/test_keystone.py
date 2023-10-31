@@ -20,7 +20,7 @@ from designate import exceptions
 
 class TestVerifyProjectid(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestVerifyProjectid, self).setUp()
+        super().setUp()
 
     @mock.patch('keystoneauth1.adapter.Adapter.get')
     def test_verify_project_id(self, mock_get):

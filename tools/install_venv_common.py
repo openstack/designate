@@ -28,7 +28,7 @@ import subprocess
 import sys
 
 
-class InstallVenv(object):
+class InstallVenv:
 
     def __init__(self, root, venv, requirements,
                  test_requirements, py_version,
@@ -163,4 +163,4 @@ class Fedora(Distro):
         if not self.check_pkg('python-virtualenv'):
             self.die("Please install 'python-virtualenv'.")
 
-        super(Fedora, self).install_virtualenv()
+        super().install_virtualenv()

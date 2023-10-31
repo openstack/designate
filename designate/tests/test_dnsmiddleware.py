@@ -27,7 +27,7 @@ CONF = cfg.CONF
 
 class TestSerializationMiddleware(designate.tests.TestCase):
     def setUp(self):
-        super(TestSerializationMiddleware, self).setUp()
+        super().setUp()
         self.storage = storage.get_storage()
         self.tg = mock.Mock()
 

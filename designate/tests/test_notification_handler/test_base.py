@@ -38,7 +38,7 @@ class InheritFormBaseAddressHandler(base.BaseAddressHandler):
 
 class BaseAddressHandlerTest(TestCase):
     def setUp(self):
-        super(BaseAddressHandlerTest, self).setUp()
+        super().setUp()
 
         self.zone = self.create_zone()
         self.zone_id = self.zone['id']

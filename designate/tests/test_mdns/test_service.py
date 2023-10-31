@@ -56,7 +56,7 @@ class MdnsServiceTest(designate.tests.TestCase):
     # Use self._print_dns_msg() to display the messages
 
     def setUp(self):
-        super(MdnsServiceTest, self).setUp()
+        super().setUp()
 
         self.config(listen=['0.0.0.0:0'], group='service:mdns')
 
@@ -68,7 +68,7 @@ class MdnsServiceTest(designate.tests.TestCase):
     def _print_dns_msg(desc, wire):
         """Print DNS message for debugging"""
         q = dns.message.from_wire(wire).to_text()
-        print("%s:\n%s\n" % (desc, q))
+        print(f"{desc}:\n{q}\n")
 
     def test_stop(self):
         # NOTE: Start is already done by the fixture in start_service()
@@ -78,7 +78,7 @@ class MdnsServiceTest(designate.tests.TestCase):
     def test_handle_empty_payload(self, mock_from_wire):
         mock_socket = mock.Mock()
         self.dns_service._dns_handle_udp_query(mock_socket, self.addr,
-                                               ' '.encode('utf-8'))
+                                               b' ')
         mock_from_wire.assert_called_once_with(b' ', {})
 
     def test_handle_udp_payload(self):

@@ -19,7 +19,7 @@ Unit test utilities
 """
 
 
-class RoObject(object):
+class RoObject:
     """Read-only object: raise exception on unexpected
     __setitem__ or __setattr__
     """
@@ -55,7 +55,7 @@ class RoObject(object):
         return self.__dict__
 
 
-class RwObject(object):
+class RwObject:
     """Object mock: raise exception on __setitem__ or __setattr__
     on any item/attr created after initialization.
     Allows updating existing items/attrs

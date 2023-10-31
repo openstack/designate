@@ -46,7 +46,7 @@ class ZoneExportAPIv2Adapter(base.APIv2Adapter):
 
     @classmethod
     def render_object(cls, obj, *args, **kwargs):
-        new_obj = super(ZoneExportAPIv2Adapter, cls).render_object(
+        new_obj = super().render_object(
             obj, *args, **kwargs
         )
 
@@ -57,7 +57,9 @@ class ZoneExportAPIv2Adapter(base.APIv2Adapter):
                 cls._get_path(kwargs['request']))[0]
 
             new_obj['links']['export'] = (
-                    '%s/%s' % (base_uri, new_obj['location'].split('://')[1])
+                    '{}/{}'.format(
+                        base_uri, new_obj['location'].split('://')[1]
+                    )
             )
 
         return new_obj

@@ -60,7 +60,7 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
 
     @classmethod
     def render_object(cls, obj, *args, **kwargs):
-        new_obj = super(ZoneTransferRequestAPIv2Adapter, cls).render_object(
+        new_obj = super().render_object(
             obj, *args, **kwargs
         )
         try:

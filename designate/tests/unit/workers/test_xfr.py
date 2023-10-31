@@ -31,7 +31,7 @@ CONF = cfg.CONF
 
 class TestXfr(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestXfr, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))

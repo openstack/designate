@@ -29,7 +29,7 @@ from designate.api.v2.controllers import tsigkeys
 from designate.api.v2.controllers import zones
 
 
-class RootController(object):
+class RootController:
     """
     This is /v2/ Controller. Pecan will find all controllers via the object
     properties attached to this.

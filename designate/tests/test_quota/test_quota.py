@@ -34,7 +34,7 @@ class QuotaTestCase(designate.tests.TestCase):
     ]
 
     def setUp(self):
-        super(QuotaTestCase, self).setUp()
+        super().setUp()
         self.config(quota_driver=self.quota_driver)
         self.quota = quota.get_quota()
 

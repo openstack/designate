@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class BaseView(object):
+class BaseView:
     """
     The Views are responsible for converting to/from the "internal" and
     "external" representations of collections and resources. This includes
@@ -40,7 +40,7 @@ class BaseView(object):
     _collection_name = None
 
     def __init__(self):
-        super(BaseView, self).__init__()
+        super().__init__()
 
         self.base_uri = CONF['service:api']['api_base_uri'].rstrip('/')
 
@@ -160,13 +160,13 @@ class BaseView(object):
         return links
 
     def _get_base_href(self, parents=None):
-        href = "%s/v2/%s" % (self.base_uri, self._collection_name)
+        href = f"{self.base_uri}/v2/{self._collection_name}"
 
         return href.rstrip('?')
 
     def _get_resource_href(self, request, item, parents=None):
         base_href = self._get_base_href(parents)
-        href = "%s/%s" % (base_href, item['id'])
+        href = "{}/{}".format(base_href, item['id'])
 
         return href.rstrip('?')
 
@@ -178,7 +178,7 @@ class BaseView(object):
 
         base_href = self._get_base_href(parents)
 
-        href = "%s?%s" % (base_href, parse.urlencode(params))
+        href = f"{base_href}?{parse.urlencode(params)}"
 
         return href.rstrip('?')
 

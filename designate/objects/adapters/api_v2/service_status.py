@@ -38,12 +38,15 @@ class ServiceStatusAPIv2Adapter(base.APIv2Adapter):
 
     @classmethod
     def render_object(cls, obj, *args, **kwargs):
-        new_obj = super(ServiceStatusAPIv2Adapter, cls).render_object(
+        new_obj = super().render_object(
             obj, *args, **kwargs
         )
         new_obj['links']['self'] = (
-                '%s/v2/%s/%s' % (cls._get_base_url(kwargs['request']),
-                                 'service_statuses', new_obj['id'])
+                '{}/v2/{}/{}'.format(
+                    cls._get_base_url(kwargs['request']),
+                    'service_statuses',
+                    new_obj['id']
+                )
         )
         return new_obj
 

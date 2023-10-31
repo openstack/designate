@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
     def setUp(self):
-        super(NeutronFloatingHandlerTest, self).setUp()
+        super().setUp()
 
         zone = self.create_zone()
         self.zone_id = zone['id']
@@ -55,7 +55,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         # Ensure we now have exactly 2 records, plus SOA & NS
         recordsets = self.central_service.find_recordsets(self.admin_context,
-                                                         criterion)
+                                                          criterion)
 
         self.assertEqual(4, len(recordsets))
 

@@ -35,7 +35,7 @@ CONF = cfg.CONF
 
 class TestDNSUtils(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestDNSUtils, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     @mock.patch.object(dns.query, 'udp')
@@ -71,7 +71,7 @@ class TestDNSUtils(oslotest.base.BaseTestCase):
 
 class TestDoAfxr(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestDoAfxr, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     @mock.patch.object(dns.query, 'xfr')
@@ -183,7 +183,7 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
 
 class TestDNSMessages(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestDNSMessages, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     @mock.patch.object(dnsutils, 'send_dns_message')

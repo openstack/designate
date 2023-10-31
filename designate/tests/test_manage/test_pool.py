@@ -32,13 +32,13 @@ def get_pools_path(name='pools.yaml'):
 
 
 def get_pools(name='pools.yaml'):
-    with open(get_pools_path(name), 'r') as pool_obj:
+    with open(get_pools_path(name)) as pool_obj:
         return yaml.safe_load(pool_obj)
 
 
 class ManagePoolTestCase(designate.tests.TestCase):
     def setUp(self):
-        super(ManagePoolTestCase, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

@@ -35,7 +35,7 @@ INVALID_ID = [
 
 class AdminApiTestCase(designate.tests.TestCase):
     def setUp(self):
-        super(AdminApiTestCase, self).setUp()
+        super().setUp()
 
         # Ensure the v2 API is enabled
         self.config(enable_api_admin=True, group='service:api')
@@ -61,7 +61,7 @@ class AdminApiTestCase(designate.tests.TestCase):
         self.app = None
         self.client = None
 
-        super(AdminApiTestCase, self).tearDown()
+        super().tearDown()
 
     def _assert_invalid_uuid(self, method, url_format, *args, **kw):
         """

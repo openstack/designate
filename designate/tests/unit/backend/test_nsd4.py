@@ -29,7 +29,7 @@ from designate import objects
 
 class NSD4BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(NSD4BackendTestCase, self).setUp()
+        super().setUp()
 
         self.context = mock.Mock()
         self.admin_context = mock.Mock()

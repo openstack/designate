@@ -179,7 +179,7 @@ def validate_uuid(*check):
             for name in check:
                 pos = arg_spec.index(name)
                 if not is_uuid_like(args[pos]):
-                    msg = 'Invalid UUID %s: %s' % (name, args[pos])
+                    msg = f'Invalid UUID {name}: {args[pos]}'
                     raise exceptions.InvalidUUID(msg)
             return f(*args, **kwargs)
         return functools.wraps(f)(wrapper)
@@ -279,7 +279,7 @@ def get_paging_params(context, params, sort_keys):
         sort_dir = None
 
     elif sort_key and sort_key not in sort_keys:
-        msg = 'sort key must be one of %(keys)s' % {'keys': sort_keys}
+        msg = f'sort key must be one of {sort_keys}'
         raise exceptions.InvalidSortKey(msg)
     elif sort_key == 'tenant_id' and not context.all_tenants:
         sort_key = None

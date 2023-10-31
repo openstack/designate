@@ -20,7 +20,7 @@ from designate.objects import fields
 class Record(base.DesignateObject, base.PersistentObjectMixin,
              base.DictObjectMixin):
     def __init__(self, *args, **kwargs):
-        super(Record, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     fields = {
         'shard': fields.IntegerFields(nullable=True, minimum=0, maximum=4095),

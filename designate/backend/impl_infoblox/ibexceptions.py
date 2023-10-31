@@ -27,14 +27,14 @@ class InfobloxExceptionBase(exceptions.Backend):
 
     def __init__(self, **kwargs):
         try:
-            super(InfobloxExceptionBase, self).__init__(self.message % kwargs)
+            super().__init__(self.message % kwargs)
             self.msg = self.message % kwargs
         except Exception:
             if self.use_fatal_exceptions():
                 raise
             else:
                 # at least get the core message out if something happened
-                super(InfobloxExceptionBase, self).__init__(self.message)
+                super().__init__(self.message)
 
     def __unicode__(self):
         return str(self.msg)
@@ -55,7 +55,7 @@ class InfobloxException(InfobloxExceptionBase):
     """Generic Infoblox Exception."""
     def __init__(self, response, **kwargs):
         self.response = response
-        super(InfobloxException, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class InfobloxIsMisconfigured(InfobloxExceptionBase):

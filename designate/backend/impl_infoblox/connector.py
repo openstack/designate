@@ -27,7 +27,7 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
-class Infoblox(object):
+class Infoblox:
     """Infoblox class
 
     Defines methods for getting, creating, updating and

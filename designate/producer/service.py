@@ -41,7 +41,7 @@ class Service(service.RPCService):
         self._storage = None
         self._quota = None
 
-        super(Service, self).__init__(
+        super().__init__(
             self.service_name, cfg.CONF['service:producer'].topic,
             threads=cfg.CONF['service:producer'].threads,
         )
@@ -59,7 +59,7 @@ class Service(service.RPCService):
         return rpcapi.CentralAPI.get_instance()
 
     def start(self):
-        super(Service, self).start()
+        super().start()
         self.coordination.start()
 
         self._partitioner = coordination.Partitioner(
@@ -91,7 +91,7 @@ class Service(service.RPCService):
             self.tg.add_timer(interval, task)
 
     def stop(self, graceful=True):
-        super(Service, self).stop(graceful)
+        super().stop(graceful)
         self.coordination.stop()
 
     def _rebalance(self, my_partitions, members, event):

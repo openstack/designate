@@ -36,7 +36,7 @@ CONF = cfg.CONF
 
 class TestService(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestService, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         conf = self.useFixture(cfg_fixture.Config(CONF))

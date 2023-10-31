@@ -30,7 +30,7 @@ LOG = logging.getLogger(__name__)
 class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
     def test_yaml_parsing(self):
         file = os.path.join(resources.path, 'pools_yaml/pools.yaml')
-        with open(file, 'r') as stream:
+        with open(file) as stream:
             xpools = yaml.safe_load(stream)
 
         for xpool in xpools:
@@ -136,7 +136,7 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
         }
 
         file = os.path.join(resources.path, 'pools_yaml/sample_output.yaml')
-        with open(file, 'r') as stream:
+        with open(file) as stream:
             self.assertEqual(
                 stream.read(),
                 yaml.safe_dump(

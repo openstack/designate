@@ -27,6 +27,6 @@ class ZonesController(rest.RestController):
         return '.zones'
 
     def __init__(self):
-        super(ZonesController, self).__init__()
+        super().__init__()
 
     export = export.ExportController()

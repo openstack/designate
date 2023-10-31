@@ -225,7 +225,7 @@ def get_notifier(service=None, host=None, publisher_id=None):
     if NOTIFIER is None:
         raise AssertionError("'NOTIFIER' must not be None")
     if not publisher_id:
-        publisher_id = "%s.%s" % (service, host or CONF.host)
+        publisher_id = f'{service}.{host or CONF.host}'
     return NOTIFIER.prepare(publisher_id=publisher_id)
 
 

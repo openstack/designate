@@ -22,7 +22,7 @@ from designate.tests import TestCase
 
 class TestCoordination(TestCase):
     def setUp(self):
-        super(TestCoordination, self).setUp()
+        super().setUp()
         self.name = 'coordination'
         self.tg = mock.Mock()
         self.config(backend_url="zake://", group="coordination")

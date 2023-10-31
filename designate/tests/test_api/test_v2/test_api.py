@@ -16,7 +16,7 @@ from designate.tests.test_api.test_v2 import ApiV2TestCase
 class ApiV2DisableTest(ApiV2TestCase):
     def setUp(self):
         self.config(enable_api_v2=False, group='service:api')
-        super(ApiV2DisableTest, self).setUp()
+        super().setUp()
 
     def test_disable_v2_api(self):
         urls = ['zones', 'pools', 'service_statuses']

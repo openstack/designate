@@ -28,7 +28,7 @@ cfg.CONF.import_opt('enabled_extensions_admin', 'designate.api.admin',
 
 class APIV2ZoneImportExportTest(ApiV2TestCase):
     def setUp(self):
-        super(APIV2ZoneImportExportTest, self).setUp()
+        super().setUp()
 
         self.config(enable_api_admin=True, group='service:api')
         self.config(enabled_extensions_admin=['zones'], group='service:api')
@@ -50,8 +50,8 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         fixture = self.get_zonefile_fixture(variant='noorigin')
 
         response = self.client.post_json('/zones/tasks/imports', fixture,
-                        headers={'Content-type': 'text/dns',
-                                 'X-Test-Role': 'member'})
+                                         headers={'Content-type': 'text/dns',
+                                                  'X-Test-Role': 'member'})
 
         import_id = response.json_body['id']
         self.wait_for_import(import_id, error_is_ok=True)
@@ -61,15 +61,15 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         response = self.client.get(url, headers={'X-Test-Role': 'member'})
         self.assertEqual('ERROR', response.json['status'])
         origin_msg = ("The $ORIGIN statement is required and must be the"
-                     " first statement in the zonefile.")
+                      " first statement in the zonefile.")
         self.assertEqual(origin_msg, response.json['message'])
 
     def test_missing_soa(self):
         fixture = self.get_zonefile_fixture(variant='nosoa')
 
         response = self.client.post_json('/zones/tasks/imports', fixture,
-                        headers={'Content-type': 'text/dns',
-                                 'X-Test-Role': 'member'})
+                                         headers={'Content-type': 'text/dns',
+                                                  'X-Test-Role': 'member'})
 
         import_id = response.json_body['id']
         self.wait_for_import(import_id, error_is_ok=True)
@@ -85,8 +85,8 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         fixture = self.get_zonefile_fixture(variant='malformed')
 
         response = self.client.post_json('/zones/tasks/imports', fixture,
-                        headers={'Content-type': 'text/dns',
-                                 'X-Test-Role': 'member'})
+                                         headers={'Content-type': 'text/dns',
+                                                  'X-Test-Role': 'member'})
 
         import_id = response.json_body['id']
         self.wait_for_import(import_id, error_is_ok=True)

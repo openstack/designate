@@ -22,7 +22,7 @@ CONF = cfg.CONF
 
 class TestDNSMiddleware(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestDNSMiddleware, self).setUp()
+        super().setUp()
         self.application = mock.Mock(name='application')
         self.dns_application = dnsmiddleware.DNSMiddleware(self.application)
 

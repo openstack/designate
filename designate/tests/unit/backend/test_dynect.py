@@ -148,7 +148,7 @@ ACTIVATE_SUCCESS = {
 
 class DynECTTestsCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(DynECTTestsCase, self).setUp()
+        super().setUp()
 
         self.context = mock.Mock()
         self.admin_context = mock.Mock()

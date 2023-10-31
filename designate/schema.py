@@ -22,7 +22,7 @@ from designate import utils
 LOG = logging.getLogger(__name__)
 
 
-class Schema(object):
+class Schema:
     def __init__(self, version, name):
         self.raw_schema = utils.load_schema(version, name)
         self.validator = jsonschema.Draft4Validator(self.raw_schema)

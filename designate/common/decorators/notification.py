@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 
 class NotificationThreadLocal(threading.local):
     def __init__(self):
-        super(NotificationThreadLocal, self).__init__()
+        super().__init__()
         self.stack = 0
         self.queue = collections.deque()
 

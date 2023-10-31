@@ -29,7 +29,7 @@ from designate.tests import fixtures
 
 class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(AkamaiBackendTestCase, self).setUp()
+        super().setUp()
 
         self.admin_context = mock.Mock()
         mock.patch.object(

@@ -24,7 +24,7 @@ CONF = cfg.CONF
 
 class ManageTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(ManageTestCase, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     @mock.patch('oslo_config.cfg.ConfigOpts.__call__')
@@ -68,7 +68,7 @@ class ManageTestCase(oslotest.base.BaseTestCase):
         self.assertEqual('bar', manage.get_arg_string('--bar'))
 
     def test_methods_of(self):
-        class foo(object):
+        class foo:
             foo = 'bar'
 
             def public(self):

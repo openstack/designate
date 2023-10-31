@@ -33,7 +33,7 @@ CONF = cfg.CONF
 @mock.patch('designate.utils.read_config')
 class CmdTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(CmdTestCase, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     @mock.patch('designate.api.service.Service')

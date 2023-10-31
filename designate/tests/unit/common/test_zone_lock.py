@@ -19,7 +19,7 @@ from designate import objects
 
 class TestExtractZoneId(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestExtractZoneId, self).setUp()
+        super().setUp()
 
     def test_extract_zone_id_empty(self):
         self.assertIsNone(lock.extract_zone_id([], {}))

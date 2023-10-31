@@ -21,7 +21,7 @@ from designate import exceptions
 LOG = logging.getLogger(__name__)
 
 
-class Scheduler(object):
+class Scheduler:
     """Scheduler that schedules zones based on the filters provided on the zone
     and other inputs.
 

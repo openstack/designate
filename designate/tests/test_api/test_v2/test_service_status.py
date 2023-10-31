@@ -20,7 +20,7 @@ LOG = logging.getLogger(__name__)
 
 class ApiV2ServiceStatusTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2ServiceStatusTest, self).setUp()
+        super().setUp()
 
     def test_get_service_statuses(self):
         # Set the policy file as this is an admin-only API
@@ -108,9 +108,9 @@ class ApiV2ServiceStatusTest(ApiV2TestCase):
         fixture = self.get_service_status_fixture(0)
         self.assertEqual(fixture['hostname'], response.json['hostname'])
         self.assertEqual(fixture['service_name'],
-                        response.json['service_name'])
+                         response.json['service_name'])
         self.assertEqual(fixture['capabilities'],
-                        response.json['capabilities'])
+                         response.json['capabilities'])
         self.assertEqual(fixture['stats'], response.json['stats'])
         self.assertEqual(fixture['status'], response.json['status'])
         self.assertIsNone(response.json['heartbeated_at'])

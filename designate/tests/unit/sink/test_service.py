@@ -19,7 +19,7 @@ from designate.tests import fixtures
 
 class TestSinkService(designate.tests.TestCase):
     def setUp(self):
-        super(TestSinkService, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

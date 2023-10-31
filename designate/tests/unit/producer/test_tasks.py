@@ -56,7 +56,7 @@ class DummyTask(tasks.PeriodicTask):
 
 class PeriodicTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(PeriodicTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
         self.task = DummyTask()
@@ -112,7 +112,7 @@ class PeriodicTest(oslotest.base.BaseTestCase):
 
 class PeriodicExistsTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(PeriodicExistsTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
         CONF.set_override('interval', 5, 'producer_task:periodic_exists')
@@ -192,7 +192,7 @@ class PeriodicExistsTest(oslotest.base.BaseTestCase):
 
 class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(PeriodicSecondaryRefreshTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
         # Mock a ctxt...
@@ -250,7 +250,7 @@ class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
 
 class PeriodicIncrementSerialTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(PeriodicIncrementSerialTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
         self.central_api = mock.Mock()

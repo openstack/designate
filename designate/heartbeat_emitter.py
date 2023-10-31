@@ -40,7 +40,7 @@ class HeartbeatEmitter(plugin.DriverPlugin):
     __plugin_type__ = 'heartbeat_emitter'
 
     def __init__(self, service_name, **kwargs):
-        super(HeartbeatEmitter, self).__init__()
+        super().__init__()
 
         self._status = 'UP'
         self._stats = {}
@@ -100,7 +100,7 @@ class RpcEmitter(HeartbeatEmitter):
     __plugin_name__ = 'rpc'
 
     def __init__(self, service_name, rpc_api=None, **kwargs):
-        super(RpcEmitter, self).__init__(service_name, **kwargs)
+        super().__init__(service_name, **kwargs)
         self.rpc_api = rpc_api
 
     def transmit(self, status):

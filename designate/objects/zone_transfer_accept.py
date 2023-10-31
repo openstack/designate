@@ -24,7 +24,7 @@ class ZoneTransferAccept(base.DictObjectMixin, base.PersistentObjectMixin,
         'zone_transfer_request_id': fields.UUIDFields(nullable=True),
         'tenant_id': fields.StringFields(nullable=True),
         'status': fields.EnumField(nullable=True, valid_values=[
-            "ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"
+            'ACTIVE', 'PENDING', 'DELETED', 'ERROR', 'COMPLETE'
         ]),
         'key': fields.StringFields(maxLength=160),
         'zone_id': fields.UUIDFields(nullable=True),

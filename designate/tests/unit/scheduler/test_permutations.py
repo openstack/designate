@@ -63,7 +63,7 @@ def build_test_pools():
 
 class AttributeSchedulerPermutationsTest(tests.TestCase):
     def setUp(self):
-        super(AttributeSchedulerPermutationsTest, self).setUp()
+        super().setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.context = self.get_context()
 
@@ -181,7 +181,7 @@ class AttributeSchedulerPermutationsTest(tests.TestCase):
 
 class DefaultSchedulerPermutationsTest(tests.TestCase):
     def setUp(self):
-        super(DefaultSchedulerPermutationsTest, self).setUp()
+        super().setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.context = self.get_context()
 
@@ -213,7 +213,7 @@ class DefaultSchedulerPermutationsTest(tests.TestCase):
 
 class FallbackSchedulerPermutationsTest(tests.TestCase):
     def setUp(self):
-        super(FallbackSchedulerPermutationsTest, self).setUp()
+        super().setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.context = self.get_context()
 

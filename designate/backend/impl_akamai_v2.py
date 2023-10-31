@@ -28,7 +28,7 @@ from designate import exceptions
 LOG = logging.getLogger(__name__)
 
 
-class AkamaiClient(object):
+class AkamaiClient:
     def __init__(self, client_token=None, client_secret=None,
                  access_token=None, host=None):
         session = requests.Session()
@@ -164,7 +164,7 @@ class AkamaiBackend(base.Backend):
     __backend_status__ = 'untested'
 
     def __init__(self, target):
-        super(AkamaiBackend, self).__init__(target)
+        super().__init__(target)
 
         self._host = self.options.get('host', '127.0.0.1')
         self._port = int(self.options.get('port', 53))

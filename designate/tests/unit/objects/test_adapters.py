@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 class DesignateTestObject(base.DictObjectMixin, base.PersistentObjectMixin,
                           base.DesignateObject):
     def __init__(self, *args, **kwargs):
-        super(DesignateTestObject, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     fields = {
         'name': fields.StringFields(maxLength=255),

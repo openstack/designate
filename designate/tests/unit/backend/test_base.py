@@ -25,7 +25,7 @@ from designate.tests import fixtures
 
 class BaseBackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(BaseBackendTestCase, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 

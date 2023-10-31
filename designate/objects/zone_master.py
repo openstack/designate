@@ -26,7 +26,7 @@ class ZoneMaster(base.DesignateObject,
                  base.PersistentObjectMixin,
                  base.SoftDeleteObjectMixin):
     def __init__(self, *args, **kwargs):
-        super(ZoneMaster, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     fields = {
         'zone_id': fields.UUIDFields(nullable=True),
@@ -35,12 +35,12 @@ class ZoneMaster(base.DesignateObject,
     }
 
     def to_data(self):
-        return "{}:{}".format(self.host, self.port)
+        return f'{self.host}:{self.port}'
 
     @classmethod
     def from_data(cls, data):
         host, port = utils.split_host_port(data)
-        dict_data = {"host": host, "port": port}
+        dict_data = {'host': host, 'port': port}
         return cls(**dict_data)
 
 

@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class Plugin(object, metaclass=abc.ABCMeta):
+class Plugin(metaclass=abc.ABCMeta):
     __plugin_ns__ = None
 
     __plugin_name__ = None
@@ -32,7 +32,7 @@ class Plugin(object, metaclass=abc.ABCMeta):
 
     def __init__(self):
         self.name = self.get_canonical_name()
-        LOG.debug("Loaded plugin %s", self.name)
+        LOG.debug('Loaded plugin %s', self.name)
 
     @classmethod
     def get_canonical_name(cls):
@@ -41,7 +41,7 @@ class Plugin(object, metaclass=abc.ABCMeta):
         """
         type_ = cls.get_plugin_type()
         name = cls.get_plugin_name()
-        return "%s:%s" % (type_, name)
+        return f'{type_}:{name}'
 
     @classmethod
     def get_plugin_name(cls):

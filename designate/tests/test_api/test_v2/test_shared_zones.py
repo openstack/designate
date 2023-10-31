@@ -16,7 +16,7 @@ from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 class ApiV2SharedZonesTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2SharedZonesTest, self).setUp()
+        super().setUp()
 
         self.zone = self.create_zone()
         self.target_project_id = '2'

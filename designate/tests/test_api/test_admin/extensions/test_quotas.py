@@ -1,4 +1,3 @@
-# coding=utf-8
 # COPYRIGHT 2014 Rackspace
 #
 # Author: Tim Simmons <tim.simmons@rackspace.com>
@@ -25,7 +24,7 @@ cfg.CONF.import_opt('enabled_extensions_admin', 'designate.api.admin',
 class AdminApiQuotasTest(AdminApiTestCase):
     def setUp(self):
         self.config(enabled_extensions_admin=['quotas'], group='service:api')
-        super(AdminApiQuotasTest, self).setUp()
+        super().setUp()
 
     def test_get_quotas(self):
         self.policy({'get_quotas': '@'})
@@ -33,7 +32,7 @@ class AdminApiQuotasTest(AdminApiTestCase):
 
         response = self.client.get('/quotas/%s' % context.project_id,
                                    headers={'X-Test-Tenant-Id':
-                                   context.project_id})
+                                            context.project_id})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -56,7 +55,7 @@ class AdminApiQuotasTest(AdminApiTestCase):
 
         response = self.client.get('/quotas/%s' % 'a',
                                    headers={'X-Test-Tenant-Id':
-                                   context.project_id})
+                                            context.project_id})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -69,12 +68,12 @@ class AdminApiQuotasTest(AdminApiTestCase):
         response = self.client.patch_json('/quotas/%s' % 'a', body,
                                           status=200,
                                           headers={'X-Test-Tenant-Id':
-                                          context.project_id})
+                                                   context.project_id})
         self.assertEqual(200, response.status_int)
 
         response = self.client.get('/quotas/%s' % 'a',
                                    headers={'X-Test-Tenant-Id':
-                                   context.project_id})
+                                            context.project_id})
 
         new_count = response.json['quota']['zones']
 
@@ -111,7 +110,7 @@ class AdminApiQuotasTest(AdminApiTestCase):
 
         response = self.client.get('/quotas/%s' % 'a',
                                    headers={'X-Test-Tenant-Id':
-                                   context.project_id})
+                                            context.project_id})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -124,23 +123,23 @@ class AdminApiQuotasTest(AdminApiTestCase):
         response = self.client.patch_json('/quotas/%s' % 'a', body,
                                           status=200,
                                           headers={'X-Test-Tenant-Id':
-                                          context.project_id})
+                                                   context.project_id})
         self.assertEqual(200, response.status_int)
 
         response = self.client.get('/quotas/%s' % 'a',
                                    headers={'X-Test-Tenant-Id':
-                                   context.project_id})
+                                            context.project_id})
 
         new_count = response.json['quota']['zones']
 
         self.assertNotEqual(current_count, new_count)
 
         response = self.client.delete('/quotas/%s' % 'a',
-                                   headers={'X-Test-Tenant-Id':
-                                   context.project_id}, status=204)
+                                      headers={'X-Test-Tenant-Id':
+                                               context.project_id}, status=204)
         response = self.client.get('/quotas/%s' % 'a',
                                    headers={'X-Test-Tenant-Id':
-                                   context.project_id})
+                                            context.project_id})
 
         newest_count = response.json['quota']['zones']
         self.assertNotEqual(new_count, newest_count)

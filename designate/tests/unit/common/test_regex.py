@@ -16,7 +16,7 @@ from designate.common import constants
 
 class TestRegex(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestRegex, self).setUp()
+        super().setUp()
 
     def test_tldname_is_valid(self):
         valid_tldnames = [

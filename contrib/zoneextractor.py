@@ -200,7 +200,7 @@ def main():
                 zone.to_file(args.write)
             else:
                 zone.to_stdout()
-    except IOError as e:
+    except OSError as e:
         LOG.error(e)
 
 

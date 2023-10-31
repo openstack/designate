@@ -24,7 +24,8 @@ from designate.tests import TestCase
 
 metadata = sa.MetaData()
 
-dummy_table = sa.Table('dummy', metadata,
+dummy_table = sa.Table(
+    'dummy', metadata,
     sa.Column('id', sa.String(36)),
     sa.Column('a', sa.String()),
     sa.Column('int', sa.Integer()),
@@ -33,7 +34,7 @@ dummy_table = sa.Table('dummy', metadata,
 
 class SQLAlchemyTestCase(TestCase):
     def setUp(self):
-        super(SQLAlchemyTestCase, self).setUp()
+        super().setUp()
         self.query = mock.Mock()
 
     def test_wildcard(self):

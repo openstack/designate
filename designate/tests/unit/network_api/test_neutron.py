@@ -31,7 +31,7 @@ CONF = cfg.CONF
 
 class NeutronNetworkAPITest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(NeutronNetworkAPITest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
         CONF.set_override(

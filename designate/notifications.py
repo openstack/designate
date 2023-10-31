@@ -61,7 +61,7 @@ class NotificationPlugin(DriverPlugin):
     __plugin_ns__ = 'designate.notification.plugin'
 
     def __init__(self):
-        super(NotificationPlugin, self).__init__()
+        super().__init__()
 
     @abc.abstractmethod
     def emit(self, notification_type, context, result, *args, **kwargs):

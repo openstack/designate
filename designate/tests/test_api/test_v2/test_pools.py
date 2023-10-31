@@ -30,7 +30,7 @@ def _attributes_to_api(attributes):
 
 class ApiV2PoolsTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2PoolsTest, self).setUp()
+        super().setUp()
 
         # All Pool operations should be performed as an admin, so..
         # Override to policy to make everyone an admin.

@@ -34,7 +34,7 @@ class DesignateBackend(base.Backend):
     __backend_status__ = 'untested'
 
     def __init__(self, target):
-        super(DesignateBackend, self).__init__(target)
+        super().__init__(target)
 
         self.auth_url = self.options.get('auth_url')
         self.username = self.options.get('username')
@@ -76,7 +76,7 @@ class DesignateBackend(base.Backend):
         LOG.info('Creating zone %(d_id)s / %(d_name)s',
                  {'d_id': zone['id'], 'd_name': zone['name']})
 
-        masters = ["%s:%s" % (i.host, i.port) for i in self.masters]
+        masters = [f'{i.host}:{i.port}' for i in self.masters]
         self.client.zones.create(
             zone.name, 'SECONDARY', masters=masters)
 

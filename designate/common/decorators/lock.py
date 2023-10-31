@@ -23,7 +23,7 @@ LOG = logging.getLogger(__name__)
 
 class ZoneLockLocal(threading.local):
     def __init__(self):
-        super(ZoneLockLocal, self).__init__()
+        super().__init__()
         self._held = set()
 
     def hold(self, name):

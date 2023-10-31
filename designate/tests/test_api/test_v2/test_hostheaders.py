@@ -19,7 +19,7 @@ from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 class ApiV2HostHeadersTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2HostHeadersTest, self).setUp()
+        super().setUp()
 
         # Ensure v2 API and host headers are enabled
         self.config(enable_api_v2=True, group='service:api')

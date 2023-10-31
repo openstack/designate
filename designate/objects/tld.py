@@ -20,7 +20,7 @@ from designate.objects import fields
 class Tld(base.DictObjectMixin, base.PersistentObjectMixin,
           base.DesignateObject):
     def __init__(self, *args, **kwargs):
-        super(Tld, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     fields = {
         'name': fields.TldField(maxLength=255),

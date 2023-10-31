@@ -27,7 +27,7 @@ GOOD_STATUSES = [
 def get_backend(target):
     cls = base.Backend.get_driver(target.type)
 
-    message = "Backend Driver '%s' loaded. Has status of '%s'" % (
+    message = "Backend Driver '{}' loaded. Has status of '{}'".format(
         target.type, cls.__backend_status__
     )
 

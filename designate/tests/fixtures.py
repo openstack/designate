@@ -53,7 +53,7 @@ class CoordinatorFixture(fixtures.Fixture):
         self._kwargs = kwargs
 
     def setUp(self):
-        super(CoordinatorFixture, self).setUp()
+        super().setUp()
         self.coordinator = tooz.coordination.get_coordinator(
             *self._args, **self._kwargs)
 
@@ -67,7 +67,7 @@ class RPCFixture(fixtures.Fixture):
         self.conf = conf
 
     def setUp(self):
-        super(RPCFixture, self).setUp()
+        super().setUp()
         rpc.init(self.conf)
         self.addCleanup(self.deinit)
 
@@ -85,7 +85,7 @@ class ServiceFixture(fixtures.Fixture):
 
     @mock.patch.object(designate.service.DNSService, '_start')
     def setUp(self, mock_start):
-        super(ServiceFixture, self).setUp()
+        super().setUp()
         LOG.info('Starting service %s (%s)', self.svc_name, id(self.svc))
         self.svc.start()
         self.addCleanup(self.stop)
@@ -111,7 +111,7 @@ class ServiceFixture(fixtures.Fixture):
 
 class PolicyFixture(fixtures.Fixture):
     def setUp(self):
-        super(PolicyFixture, self).setUp()
+        super().setUp()
         self.addCleanup(policy.reset)
 
 
@@ -142,7 +142,7 @@ class DatabaseFixture(fixtures.Fixture):
         return path
 
     def __init__(self):
-        super(DatabaseFixture, self).__init__()
+        super().__init__()
 
         # Create the Golden DB
         self.golden_db = self._mktemp()
@@ -157,19 +157,19 @@ class DatabaseFixture(fixtures.Fixture):
         self.url = 'sqlite:///%s' % self.working_copy
 
     def setUp(self):
-        super(DatabaseFixture, self).setUp()
+        super().setUp()
         shutil.copyfile(self.golden_db, self.working_copy)
 
     def tearDown(self):
         # This is currently unused
-        super(DatabaseFixture, self).tearDown()
+        super().tearDown()
         LOG.debug("Deleting %s", self.working_copy)
         os.unlink(self.working_copy)
 
 
 class NetworkAPIFixture(fixtures.Fixture):
     def setUp(self):
-        super(NetworkAPIFixture, self).setUp()
+        super().setUp()
         self.api = network_api.get_network_api(cfg.CONF.network_api)
         self.fake = fake_network_api
         self.addCleanup(self.fake.reset_floatingips)
@@ -177,11 +177,11 @@ class NetworkAPIFixture(fixtures.Fixture):
 
 class ZoneManagerTaskFixture(fixtures.Fixture):
     def __init__(self, task_cls):
-        super(ZoneManagerTaskFixture, self).__init__()
+        super().__init__()
         self._task_cls = task_cls
 
     def setUp(self):
-        super(ZoneManagerTaskFixture, self).setUp()
+        super().setUp()
         self.task = self._task_cls()
         self.task.on_partition_change(range(0, 4095), None, None)
 
@@ -224,7 +224,7 @@ class StandardLogging(fixtures.Fixture):
     """
 
     def setUp(self):
-        super(StandardLogging, self).setUp()
+        super().setUp()
 
         # set root logger to debug
         root = std_logging.getLogger()

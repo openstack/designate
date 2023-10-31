@@ -35,7 +35,7 @@ INVALID_ID = [
 
 class ApiV2TestCase(designate.tests.TestCase):
     def setUp(self):
-        super(ApiV2TestCase, self).setUp()
+        super().setUp()
 
         # Create the application
         self.app = api_v2.factory({})
@@ -61,7 +61,7 @@ class ApiV2TestCase(designate.tests.TestCase):
         self.app = None
         self.client = None
 
-        super(ApiV2TestCase, self).tearDown()
+        super().tearDown()
 
     def _assert_invalid_uuid(self, method, url_format, *args, **kw):
         """

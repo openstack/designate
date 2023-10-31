@@ -26,17 +26,17 @@ LOG = logging.getLogger(__name__)
 
 class Service(service.WSGIService):
     def __init__(self):
-        super(Service, self).__init__(
+        super().__init__(
             self.wsgi_application,
             self.service_name,
             cfg.CONF['service:api'].listen,
         )
 
     def start(self):
-        super(Service, self).start()
+        super().start()
 
     def stop(self, graceful=True):
-        super(Service, self).stop(graceful)
+        super().stop(graceful)
 
     @property
     def service_name(self):

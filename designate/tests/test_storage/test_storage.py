@@ -34,7 +34,7 @@ LOG = logging.getLogger(__name__)
 
 class SqlalchemyStorageTest(TestCase):
     def setUp(self):
-        super(SqlalchemyStorageTest, self).setUp()
+        super().setUp()
         self.storage = storage.get_storage()
 
     # TODO(kiall): Someone, Somewhere, could probably make use of a
@@ -1512,7 +1512,7 @@ class SqlalchemyStorageTest(TestCase):
         records = []
         for i in range(10):
             records.append(
-                objects.Record.from_dict(({'data': '192.0.2.%d' % i}))
+                objects.Record.from_dict({'data': '192.0.2.%d' % i})
             )
 
         self.create_recordset(zone, type='A', records=records)
@@ -2145,7 +2145,7 @@ class SqlalchemyStorageTest(TestCase):
 
         # Create 10 Pools
         created = [self.create_pool(name='test%d' % i)
-            for i in range(10)]
+                   for i in range(10)]
 
         # Add in the existing pools
 
@@ -3281,7 +3281,7 @@ class SqlalchemyStorageTest(TestCase):
         criterion = dict(host=pool_also_notify_two['host'])
 
         results = self.storage.find_pool_also_notifies(self.admin_context,
-                                               criterion)
+                                                       criterion)
         self.assertEqual(1, len(results))
         self.assertEqual(pool_also_notify_two['host'], results[0]['host'])
 
@@ -3521,7 +3521,7 @@ class SqlalchemyStorageTest(TestCase):
 
     def test_get_zone_transfer_request_no_project_id(self):
         context1 = self.get_context(project_id='1',
-                                   roles=['member', 'reader'])
+                                    roles=['member', 'reader'])
         context2 = self.get_context(roles=['member', 'reader'])
 
         zone = self.create_zone(context=context1)
@@ -3533,7 +3533,7 @@ class SqlalchemyStorageTest(TestCase):
 
     def test_find_zone_transfer_requests_no_project_id(self):
         context1 = self.get_context(project_id='1',
-                                   roles=['member', 'reader'])
+                                    roles=['member', 'reader'])
         context2 = self.get_context(roles=['member', 'reader'])
 
         zone = self.create_zone(context=context1)
@@ -3764,7 +3764,7 @@ class SqlalchemyStorageTest(TestCase):
         criterion_one = dict(status=zone_import_one['status'])
 
         results = self.storage.find_zone_imports(self.admin_context,
-                                         criterion_one)
+                                                 criterion_one)
         self.assertEqual(1, len(results))
 
         self.assertEqual(zone_import_one['status'], results[0]['status'])
@@ -3772,7 +3772,7 @@ class SqlalchemyStorageTest(TestCase):
         criterion_two = dict(status=zone_import_two['status'])
 
         results = self.storage.find_zone_imports(self.admin_context,
-                                         criterion_two)
+                                                 criterion_two)
         self.assertEqual(1, len(results))
 
         self.assertEqual(zone_import_two['status'], results[0]['status'])
@@ -3781,7 +3781,7 @@ class SqlalchemyStorageTest(TestCase):
         # Create a zone_import
         expected = self.create_zone_import()
         actual = self.storage.get_zone_import(self.admin_context,
-                                 expected['id'])
+                                              expected['id'])
 
         self.assertEqual(expected['status'], actual['status'])
 

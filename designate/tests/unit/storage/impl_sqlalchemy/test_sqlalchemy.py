@@ -20,7 +20,7 @@ CONF = cfg.CONF
 
 class SqlalchemyTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(SqlalchemyTestCase, self).setUp()
+        super().setUp()
 
         self.storage = sqlalchemy.SQLAlchemyStorage()
 

@@ -33,7 +33,7 @@ CONF = cfg.CONF
 
 class TestTask(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestTask, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
         self.context = mock.Mock()
         self.task = base.Task(None)

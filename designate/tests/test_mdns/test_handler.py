@@ -51,7 +51,7 @@ ANSWER = [
 
 class MdnsRequestHandlerTest(designate.tests.TestCase):
     def setUp(self):
-        super(MdnsRequestHandlerTest, self).setUp()
+        super().setUp()
         self.mock_tg = mock.Mock()
         self.handler = handler.RequestHandler(self.storage, self.mock_tg)
         self.addr = ["0.0.0.0", 5556]
@@ -639,8 +639,8 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
                     expected_response[1], binascii.b2a_hex(response_two))
 
     @mock.patch.object(dns.renderer.Renderer, 'add_multi_tsig')
-    def test_dispatch_opcode_query_AXFR_multiple_messages_with_tsig(self,
-            mock_multi_tsig):
+    def test_dispatch_opcode_query_AXFR_multiple_messages_with_tsig(
+            self, mock_multi_tsig):
         # Query is for example.com. IN AXFR
         # id 18883
         # opcode QUERY
@@ -851,7 +851,7 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
             elif criterion['type'] == '!SOA':
                 return [
                     ['UUID2', 'NS', '3600', 'example.com.',
-                    'a' * 63 + '.' + 'a' * 63 + '.', 'ACTION'],
+                     'a' * 63 + '.' + 'a' * 63 + '.', 'ACTION'],
                 ]
 
         with mock.patch.object(self.storage, 'find_zone',

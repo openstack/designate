@@ -49,7 +49,7 @@ class FloatingIPAPIv2Adapter(base.APIv2Adapter):
     @classmethod
     def _get_resource_links(cls, obj, request):
         return {
-            'self': '%s%s/%s' % (
+            'self': '{}{}/{}'.format(
                 cls._get_base_url(request),
                 cls._get_path(request),
                 obj.key

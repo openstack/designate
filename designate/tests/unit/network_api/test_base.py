@@ -59,7 +59,7 @@ SERVICE_CATALOG = [
 
 class NetworkEndpointsTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(NetworkEndpointsTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
         self.base = base.NetworkAPI()
@@ -138,7 +138,7 @@ class NetworkEndpointsTest(oslotest.base.BaseTestCase):
 
 class NetworkEndpointsFromConfigTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(NetworkEndpointsFromConfigTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
         self.base = base.NetworkAPI()
@@ -215,7 +215,7 @@ class NetworkEndpointsFromConfigTest(oslotest.base.BaseTestCase):
 
 class NetworkEndpointsFromCatalogTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(NetworkEndpointsFromCatalogTest, self).setUp()
+        super().setUp()
 
         self.base = base.NetworkAPI()
 

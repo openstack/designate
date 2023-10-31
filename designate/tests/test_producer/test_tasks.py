@@ -37,7 +37,7 @@ class DeletedZonePurgeTest(TestCase):
     time_threshold = 24 * 60 * 60
 
     def setUp(self):
-        super(DeletedZonePurgeTest, self).setUp()
+        super().setUp()
         self.config(
             time_threshold=self.time_threshold,
             batch_size=self.batch_size,
@@ -103,7 +103,7 @@ class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
     batch_size = 5
 
     def setUp(self):
-        super(PeriodicGenerateDelayedNotifyTaskTest, self).setUp()
+        super().setUp()
         self.config(quota_zones=self.number_of_zones)
         self.config(
             batch_size=self.batch_size,
@@ -160,7 +160,7 @@ class PeriodicIncrementSerialTaskTest(TestCase):
     batch_size = 20
 
     def setUp(self):
-        super(PeriodicIncrementSerialTaskTest, self).setUp()
+        super().setUp()
         self.worker_api = mock.Mock()
         mock.patch.object(worker_api.WorkerAPI, 'get_instance',
                           return_value=self.worker_api).start()

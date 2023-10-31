@@ -43,6 +43,6 @@ def upgrade() -> None:
         sa.Column('target_project_id', sa.String(36), nullable=False),
 
         sa.UniqueConstraint('zone_id', 'project_id', 'target_project_id',
-                         name='unique_shared_zone'),
+                            name='unique_shared_zone'),
         sa.ForeignKeyConstraint(['zone_id'], ['zones.id'], ondelete='CASCADE'),
     )

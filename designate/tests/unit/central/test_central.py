@@ -32,7 +32,7 @@ class CentralTestCase(oslotest.base.BaseTestCase):
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(profiler, 'setup_profiler')
     def setUp(self, mock_setup_profiler, mock_rpc_init, mock_policy_init):
-        super(CentralTestCase, self).setUp()
+        super().setUp()
 
         self.storage = mock.Mock()
 
@@ -110,7 +110,7 @@ class ZoneAndRecordStatusTestCase(oslotest.base.BaseTestCase):
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(profiler, 'setup_profiler')
     def setUp(self, mock_setup_profiler, mock_rpc_init, mock_policy_init):
-        super(ZoneAndRecordStatusTestCase, self).setUp()
+        super().setUp()
 
         self.service = service.Service()
 

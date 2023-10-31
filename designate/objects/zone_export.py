@@ -19,14 +19,15 @@ from designate.objects import fields
 
 @base.DesignateRegistry.register
 class ZoneExport(base.DictObjectMixin, base.PersistentObjectMixin,
-               base.DesignateObject):
+                 base.DesignateObject):
     fields = {
-        'status': fields.EnumField(nullable=True,
-            valid_values=["ACTIVE", "PENDING",
-                          "DELETED", "ERROR", "COMPLETE"]
+        'status': fields.EnumField(
+            nullable=True, valid_values=[
+                'ACTIVE', 'PENDING', 'DELETED', 'ERROR', 'COMPLETE'
+            ]
         ),
-        'task_type': fields.EnumField(nullable=True,
-            valid_values=["EXPORT"]
+        'task_type': fields.EnumField(
+            nullable=True, valid_values=['EXPORT']
         ),
         'tenant_id': fields.StringFields(nullable=True),
         'location': fields.StringFields(nullable=True),
@@ -37,7 +38,7 @@ class ZoneExport(base.DictObjectMixin, base.PersistentObjectMixin,
 
 @base.DesignateRegistry.register
 class ZoneExportList(base.ListObjectMixin, base.DesignateObject,
-                   base.PagedListObjectMixin):
+                     base.PagedListObjectMixin):
     LIST_ITEM_TYPE = ZoneExport
 
     fields = {

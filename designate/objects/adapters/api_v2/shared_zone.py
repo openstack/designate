@@ -39,17 +39,17 @@ class SharedZoneAPIv2Adapter(base.APIv2Adapter):
 
     @classmethod
     def render_object(cls, object, *args, **kwargs):
-        obj = super(SharedZoneAPIv2Adapter, cls).render_object(
+        obj = super().render_object(
             object, *args, **kwargs)
 
         if obj['zone_id'] is not None:
             obj['links']['self'] = (
-                '%s/v2/zones/%s/shares/%s' % (
+                '{}/v2/zones/{}/shares/{}'.format(
                     cls._get_base_url(kwargs['request']), obj['zone_id'],
                     obj['id']))
             obj['links']['zone'] = (
-                '%s/v2/zones/%s' % (cls._get_base_url(kwargs['request']),
-                                    obj['zone_id']))
+                '{}/v2/zones/{}'.format(cls._get_base_url(kwargs['request']),
+                                        obj['zone_id']))
         return obj
 
 
@@ -74,7 +74,7 @@ class SharedZoneListAPIv2Adapter(base.APIv2Adapter):
 
         base_uri = cls._get_base_url(request)
 
-        href = "%s%s?%s" % (
+        href = '{}{}?{}'.format(
             base_uri,
             request.path,
             parse.urlencode(params))

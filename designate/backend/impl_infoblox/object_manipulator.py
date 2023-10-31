@@ -20,7 +20,7 @@ from designate.i18n import _
 LOG = log.getLogger(__name__)
 
 
-class InfobloxObjectManipulator(object):
+class InfobloxObjectManipulator:
     FIELDS = ['ttl', 'use_ttl']
 
     def __init__(self, connector):
@@ -73,8 +73,8 @@ class InfobloxObjectManipulator(object):
 
     def create_multi_tenant_dns_view(self, net_view, tenant):
         if not net_view:
-            net_view = "%s.%s" % (self.connector.network_view, tenant)
-        dns_view = "%s.%s" % (self.connector.dns_view, net_view)
+            net_view = f"{self.connector.network_view}.{tenant}"
+        dns_view = f"{self.connector.dns_view}.{net_view}"
 
         try:
             self.create_network_view(

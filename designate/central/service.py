@@ -64,7 +64,7 @@ class Service(service.RPCService):
         self._storage = None
         self._quota = None
 
-        super(Service, self).__init__(
+        super().__init__(
             self.service_name, cfg.CONF['service:central'].topic,
             threads=cfg.CONF['service:central'].threads,
         )
@@ -103,12 +103,12 @@ class Service(service.RPCService):
             LOG.warning("Managed Resource Tenant ID is not properly "
                         "configured")
 
-        super(Service, self).start()
+        super().start()
         self.coordination.start()
 
     def stop(self, graceful=True):
         self.coordination.stop()
-        super(Service, self).stop(graceful)
+        super().stop(graceful)
 
     @property
     def worker_api(self):
@@ -233,8 +233,10 @@ class Service(service.RPCService):
             except Exception:
                 continue
             else:
-                msg = ('RecordSet belongs in a child zone: %s' %
-                    child_zone['name'])
+                msg = (
+                    'RecordSet belongs in a child zone: {}'
+                    .format(child_zone['name'])
+                )
                 raise exceptions.InvalidRecordSetLocation(msg)
 
     def _is_valid_recordset_records(self, recordset):
@@ -1812,7 +1814,7 @@ class Service(service.RPCService):
         }
 
         records = self.find_records(elevated_context, criterion)
-        records = dict([(r['managed_extra'], r) for r in records])
+        records = {r['managed_extra']: r for r in records}
 
         invalid = []
         data = {}
@@ -1873,7 +1875,8 @@ class Service(service.RPCService):
     def _get_floatingip(self, context, region, floatingip_id, fips):
         if (region, floatingip_id) not in fips:
             raise exceptions.NotFound(
-                'FloatingIP %s in %s is not associated for project "%s"' % (
+                'FloatingIP {} in {} is not associated for project '
+                '"{}"'.format(
                     floatingip_id, region, context.project_id
                 )
             )
@@ -2023,7 +2026,7 @@ class Service(service.RPCService):
                 elevated_context, criterion=criterion
             )
         except exceptions.RecordNotFound:
-            msg = 'No such FloatingIP %s:%s' % (region, floatingip_id)
+            msg = f'No such FloatingIP {region}:{floatingip_id}'
             raise exceptions.NotFound(msg)
 
         self._delete_or_update_managed_recordset(
@@ -2309,10 +2312,10 @@ class Service(service.RPCService):
             return updated_pool
 
         # Find the current NS hostnames
-        existing_ns = set([n.hostname for n in original_pool_ns_records])
+        existing_ns = {n.hostname for n in original_pool_ns_records}
 
         # Find the desired NS hostnames
-        request_ns = set([n.hostname for n in pool.ns_records])
+        request_ns = {n.hostname for n in pool.ns_records}
 
         # Get the NS's to be created and deleted, ignoring the ones that
         # are in both sets, as those haven't changed.
@@ -2790,7 +2793,7 @@ class Service(service.RPCService):
                 zone_import.status = 'COMPLETE'
                 zone_import.zone_id = zone.id
                 zone_import.message = (
-                    '%(name)s imported' % {'name': zone.name}
+                    f'{zone.name} imported'
                 )
             except exceptions.DuplicateZone:
                 zone_import.status = 'ERROR'
@@ -2842,7 +2845,7 @@ class Service(service.RPCService):
             criterion['task_type'] = 'IMPORT'
 
         return self.storage.find_zone_imports(context, criterion, marker,
-                                      limit, sort_key, sort_dir)
+                                              limit, sort_key, sort_dir)
 
     @rpc.expected_exceptions()
     def get_zone_import(self, context, zone_import_id):
@@ -2912,7 +2915,7 @@ class Service(service.RPCService):
 
     @rpc.expected_exceptions()
     def find_zone_exports(self, context, criterion=None, marker=None,
-                  limit=None, sort_key=None, sort_dir=None):
+                          limit=None, sort_key=None, sort_dir=None):
 
         if policy.enforce_new_defaults():
             target = {constants.RBAC_PROJECT_ID: context.project_id}
@@ -2928,7 +2931,7 @@ class Service(service.RPCService):
             criterion['task_type'] = 'EXPORT'
 
         return self.storage.find_zone_exports(context, criterion, marker,
-                                      limit, sort_key, sort_dir)
+                                              limit, sort_key, sort_dir)
 
     @rpc.expected_exceptions()
     def get_zone_export(self, context, zone_export_id):

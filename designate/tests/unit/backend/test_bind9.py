@@ -28,9 +28,10 @@ import subprocess
 
 class Bind9BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(Bind9BackendTestCase, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
+
         self.admin_context = mock.Mock()
         mock.patch.object(
             context.DesignateContext, 'get_admin_context',

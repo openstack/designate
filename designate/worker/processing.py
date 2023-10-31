@@ -32,7 +32,7 @@ def default_executor():
     return futurist.GreenThreadPoolExecutor(CONF['service:worker'].threads)
 
 
-class Executor(object):
+class Executor:
     """
     Object to facilitate the running of a task, or a set of tasks on an
     executor that can map multiple tasks across a configurable number of

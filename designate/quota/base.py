@@ -38,7 +38,7 @@ class Quota(DriverPlugin, metaclass=abc.ABCMeta):
                     resources_exceeded.append(resource)
             else:
                 raise exceptions.QuotaResourceUnknown(
-                    "'%s' is not a valid quota resource." % resource
+                    f"'{resource}' is not a valid quota resource."
                 )
 
         if resources_exceeded:

@@ -19,7 +19,6 @@
 # under the License.
 
 import random
-import socket
 import ssl
 
 import eventlet
@@ -40,7 +39,7 @@ class NSD4Backend(base.Backend):
     NSDCT_VERSION = 'NSDCT1'
 
     def __init__(self, target):
-        super(NSD4Backend, self).__init__(target)
+        super().__init__(target)
 
         self.host = self.options.get('host', '127.0.0.1')
         self.port = int(self.options.get('port', 8952))
@@ -56,7 +55,7 @@ class NSD4Backend(base.Backend):
             keyfile=self.keyfile,
             certfile=self.certfile)
         stream = sock.makefile()
-        stream.write('%s %s\n' % (self.NSDCT_VERSION, command))
+        stream.write(f'{self.NSDCT_VERSION} {command}\n')
         stream.flush()
         result = stream.read()
         stream.close()
@@ -68,7 +67,7 @@ class NSD4Backend(base.Backend):
             LOG.debug('Executing NSD4 control call: %s on %s',
                       command, self.host)
             result = self._command(command)
-        except (ssl.SSLError, socket.error) as e:
+        except (ssl.SSLError, OSError) as e:
             LOG.debug('NSD4 control call failure: %s' % e)
             raise exceptions.Backend(e)
         if result.rstrip("\n") != 'ok':
@@ -80,12 +79,12 @@ class NSD4Backend(base.Backend):
         for master in self.masters:
             host = master['host']
             port = master['port']
-            masters.append('%s port %s' % (host, port))
+            masters.append(f'{host} port {port}')
 
         # Ensure different MiniDNS instances are targeted for AXFRs
         random.shuffle(masters)
 
-        command = 'addzone %s %s' % (zone['name'], self.pattern)
+        command = 'addzone {} {}'.format(zone['name'], self.pattern)
 
         try:
             self._execute_nsd4(command)

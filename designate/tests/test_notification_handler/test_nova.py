@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2012 Managed I.T.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
@@ -29,7 +28,7 @@ LOG = logging.getLogger(__name__)
 
 class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
     def setUp(self):
-        super(NovaFixedHandlerTest, self).setUp()
+        super().setUp()
 
         zone = self.create_zone()
         self.zone_id = zone['id']

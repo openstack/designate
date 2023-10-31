@@ -28,7 +28,7 @@ class YAMLAdapter(base.DesignateAdapter):
 
     @classmethod
     def parse(cls, values, output_object, *args, **kwargs):
-        obj = super(YAMLAdapter, cls).parse(
+        obj = super().parse(
             cls.ADAPTER_FORMAT, values, output_object, *args, **kwargs)
         return obj
 

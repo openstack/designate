@@ -25,7 +25,7 @@ CONF = cfg.CONF
 class TestApiVersion(oslotest.base.BaseTestCase):
 
     def setUp(self):
-        super(TestApiVersion, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     def test_add_a_version(self):

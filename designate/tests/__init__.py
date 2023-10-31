@@ -331,7 +331,7 @@ class TestCase(base.BaseTestCase):
     }]
 
     def setUp(self):
-        super(TestCase, self).setUp()
+        super().setUp()
 
         self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
 

@@ -22,7 +22,7 @@ from designate.api.v2.controllers import errors
 LOG = logging.getLogger(__name__)
 
 
-class RootController(object):
+class RootController:
     """
     This is /admin/ Controller. Pecan will find all controllers via the object
     properties attached to this.

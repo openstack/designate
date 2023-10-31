@@ -31,7 +31,7 @@ class InfobloxBackend(base.Backend):
     __plugin_name__ = 'infoblox'
 
     def __init__(self, *args, **kwargs):
-        super(InfobloxBackend, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.infoblox = object_manipulator.InfobloxObjectManipulator(
             connector.Infoblox(self.options))

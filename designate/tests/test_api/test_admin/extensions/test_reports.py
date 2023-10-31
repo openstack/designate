@@ -1,4 +1,3 @@
-# coding=utf-8
 # COPYRIGHT 2015 Rackspace
 #
 # Author: Betsy Luzader <betsy.luzader@rackspace.com>
@@ -25,7 +24,7 @@ cfg.CONF.import_opt('enabled_extensions_admin', 'designate.api.admin',
 class AdminApiReportsTest(AdminApiTestCase):
     def setUp(self):
         self.config(enabled_extensions_admin=['reports'], group='service:api')
-        super(AdminApiReportsTest, self).setUp()
+        super().setUp()
 
     def test_get_counts(self):
         self.policy({'count_tenants': '@'})

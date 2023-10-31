@@ -23,7 +23,7 @@ CONF = cfg.CONF
 
 class TestApiWsgi(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(TestApiWsgi, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     @mock.patch('paste.deploy.loadapp')

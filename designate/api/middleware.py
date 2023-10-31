@@ -130,7 +130,7 @@ class ContextMiddleware(base.Middleware):
 
 class KeystoneContextMiddleware(ContextMiddleware):
     def __init__(self, application):
-        super(KeystoneContextMiddleware, self).__init__(application)
+        super().__init__(application)
 
         LOG.info('Starting designate keystonecontext middleware')
 
@@ -170,7 +170,7 @@ class KeystoneContextMiddleware(ContextMiddleware):
 
 class NoAuthContextMiddleware(ContextMiddleware):
     def __init__(self, application):
-        super(NoAuthContextMiddleware, self).__init__(application)
+        super().__init__(application)
 
         LOG.info('Starting designate noauthcontext middleware')
 
@@ -188,7 +188,7 @@ class NoAuthContextMiddleware(ContextMiddleware):
 
 class TestContextMiddleware(ContextMiddleware):
     def __init__(self, application, tenant_id=None, user_id=None):
-        super(TestContextMiddleware, self).__init__(application)
+        super().__init__(application)
 
         LOG.critical('Starting designate testcontext middleware')
         LOG.critical('**** DO NOT USE IN PRODUCTION ****')
@@ -223,7 +223,7 @@ class TestContextMiddleware(ContextMiddleware):
 
 class MaintenanceMiddleware(base.Middleware):
     def __init__(self, application):
-        super(MaintenanceMiddleware, self).__init__(application)
+        super().__init__(application)
 
         LOG.info('Starting designate maintenance middleware')
 
@@ -257,7 +257,7 @@ class NormalizeURIMiddleware(base.Middleware):
 
 class FaultWrapperMiddleware(base.Middleware):
     def __init__(self, application):
-        super(FaultWrapperMiddleware, self).__init__(application)
+        super().__init__(application)
 
         LOG.info('Starting designate faultwrapper middleware')
 
@@ -338,7 +338,7 @@ class FaultWrapperMiddleware(base.Middleware):
 class APIv2ValidationErrorMiddleware(base.Middleware):
 
     def __init__(self, application):
-        super(APIv2ValidationErrorMiddleware, self).__init__(application)
+        super().__init__(application)
         self.api_version = 'API_v2'
         LOG.info('Starting designate validation middleware')
 

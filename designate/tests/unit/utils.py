@@ -37,7 +37,7 @@ def parameterized_class(cls):
 
         # add a new test function to the class for each entry in f._test_data
         for tag, args in f._test_data.items():
-            new_name = "{0}_{1}".format(f.__name__, tag)
+            new_name = f"{f.__name__}_{tag}"
             if hasattr(cls, new_name):
                 raise Exception(
                     "Parameterized test case '{0}.{1}' created from '{0}.{2}' "

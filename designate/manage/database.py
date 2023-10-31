@@ -73,7 +73,7 @@ class DatabaseCommands(base.Commands):
                                      stringio_buffer=latest_buffer))
         latest = latest_buffer.getvalue().replace('\n', ' ')
         latest_buffer.close()
-        print("Current: %s Latest: %s" % (current, latest))
+        print(f'Current: {current} Latest: {latest}')
 
     def sync(self, db_url=None, stringio_buffer=sys.stdout):
         alembic_command.upgrade(

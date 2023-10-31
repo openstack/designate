@@ -40,7 +40,7 @@ class FloatingIP(base.DictObjectMixin, base.PersistentObjectMixin,
 
     @property
     def key(self):
-        return '%s:%s' % (self.region, self.id)
+        return f'{self.region}:{self.id}'
 
 
 @base.DesignateRegistry.register

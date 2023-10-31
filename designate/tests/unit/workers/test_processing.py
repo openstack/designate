@@ -29,7 +29,7 @@ CONF = cfg.CONF
 
 class TestProcessingExecutor(TestCase):
     def setUp(self):
-        super(TestProcessingExecutor, self).setUp()
+        super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)

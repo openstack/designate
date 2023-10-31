@@ -34,7 +34,7 @@ def name(name):
     return _decorator
 
 
-class Commands(object):
+class Commands:
     def __init__(self):
         self.context = context.DesignateContext.get_admin_context(
             request_id='designate-manage'

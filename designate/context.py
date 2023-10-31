@@ -46,7 +46,7 @@ class DesignateContext(context.RequestContext):
                  edit_managed_records=False, hide_counts=False,
                  client_addr=None, user_auth_plugin=None,
                  hard_delete=False, delete_shares=False, **kwargs):
-        super(DesignateContext, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.user_auth_plugin = user_auth_plugin
         self.service_catalog = service_catalog
@@ -68,7 +68,7 @@ class DesignateContext(context.RequestContext):
         return self.from_dict(d)
 
     def to_dict(self):
-        d = super(DesignateContext, self).to_dict()
+        d = super().to_dict()
 
         # Override the user_identity field to account for TSIG. When a TSIG key
         # is used as authentication e.g. via MiniDNS, it will act as a form
@@ -232,7 +232,7 @@ class _ContextAuthPlugin(plugin.BaseAuthPlugin):
     auth data.
     """
     def __init__(self, auth_token, sc):
-        super(_ContextAuthPlugin, self).__init__()
+        super().__init__()
 
         self.auth_token = auth_token
         self.service_catalog = ksa_service_catalog.ServiceCatalogV2(sc)
@@ -257,7 +257,7 @@ class _ContextAuthPlugin(plugin.BaseAuthPlugin):
                 urlkw[k] = kwargs[k]
 
         endpoint = endpoint_override or self.service_catalog.url_for(**urlkw)
-        return super(_ContextAuthPlugin, self).get_endpoint_data(
+        return super().get_endpoint_data(
             session, endpoint_override=endpoint,
             discover_versions=discover_versions, **kwargs)
 

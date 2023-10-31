@@ -30,7 +30,7 @@ class NS1Backend(base.Backend):
     __backend_status__ = 'untested'
 
     def __init__(self, target):
-        super(NS1Backend, self).__init__(target)
+        super().__init__(target)
 
         self.api_endpoint = "https://" + self.options.get('api_endpoint')
         self.api_token = self.options.get('api_token')
@@ -43,7 +43,9 @@ class NS1Backend(base.Backend):
         }
 
     def _build_url(self, zone):
-        return "%s/v1/zones/%s" % (self.api_endpoint, zone.name.rstrip('.'))
+        return '{}/v1/zones/{}'.format(
+            self.api_endpoint, zone.name.rstrip('.')
+        )
 
     def _get_master(self):
         try:
@@ -103,16 +105,16 @@ class NS1Backend(base.Backend):
                 # check if the zone was actually created
                 if self._check_zone_exists(zone):
                     LOG.info("%s was created with an error. Deleting zone",
-                        zone.name)
+                             zone.name)
                     try:
                         self.delete_zone(context, zone)
                     except exceptions.Backend:
                         LOG.error('Could not delete errored zone %s',
-                            zone.name)
+                                  zone.name)
                 raise exceptions.Backend(e)
         else:
             LOG.info("Can't create zone %s because it already exists",
-                zone.name)
+                     zone.name)
 
     def delete_zone(self, context, zone, zone_params=None):
         """Delete a DNS zone"""

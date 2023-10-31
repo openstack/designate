@@ -19,7 +19,7 @@ LOG = logging.getLogger(__name__)
 
 class ApiV2QuotasTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2QuotasTest, self).setUp()
+        super().setUp()
 
     def test_get_quotas(self):
         self.config(quota_api_export_size=1)

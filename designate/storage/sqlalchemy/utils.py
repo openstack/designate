@@ -61,13 +61,13 @@ def paginate_query(query, table, limit, sort_keys, marker=None,
             crit_attrs = []
             for j in range(i):
                 table_attr = getattr(table.c, sort_keys[j])
-                crit_attrs.append((table_attr == marker_values[j]))
+                crit_attrs.append(table_attr == marker_values[j])
 
             table_attr = getattr(table.c, sort_keys[i])
             if sort_dirs[i] == 'desc':
-                crit_attrs.append((table_attr < marker_values[i]))
+                crit_attrs.append(table_attr < marker_values[i])
             else:
-                crit_attrs.append((table_attr > marker_values[i]))
+                crit_attrs.append(table_attr > marker_values[i])
 
             criteria = sqlalchemy.sql.and_(*crit_attrs)
             criteria_list.append(criteria)

@@ -32,7 +32,7 @@ CONF = cfg.CONF
 
 class WorkerNotifyTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(WorkerNotifyTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
         self.zone = RoObject(name='zn', serial=314)
         self.notify = worker_zone.GetZoneSerial(

@@ -27,7 +27,7 @@ from designate import rpc
 import designate.tests
 
 
-class FakeRequest(object):
+class FakeRequest:
     def __init__(self):
         self.headers = {}
         self.environ = {}

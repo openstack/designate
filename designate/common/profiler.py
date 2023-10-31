@@ -30,7 +30,7 @@ if profiler_opts:
     profiler_opts.set_defaults(CONF)
 
 
-class WsgiMiddleware(object):
+class WsgiMiddleware:
 
     def __init__(self, application, **kwargs):
         self.application = application

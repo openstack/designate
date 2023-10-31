@@ -25,7 +25,7 @@ class TestFakeHandler(oslotest.base.BaseTestCase,
 
     @mock.patch('designate.rpc.get_client')
     def setUp(self, mock_get_instance):
-        super(TestFakeHandler, self).setUp()
+        super().setUp()
 
         CONF.set_override(
             'enabled_notification_handlers',

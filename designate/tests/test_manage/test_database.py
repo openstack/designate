@@ -21,7 +21,7 @@ import designate.tests
 class TestManageDatabase(designate.tests.TestCase):
 
     def setUp(self):
-        super(TestManageDatabase, self).setUp()
+        super().setUp()
         self.stdlog = designate.tests.fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
