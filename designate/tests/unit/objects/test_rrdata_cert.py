@@ -23,6 +23,27 @@ LOG = logging.getLogger(__name__)
 
 
 class RRDataCERTTest(oslotest.base.BaseTestCase):
+    def test_cert_record(self):
+        recordset = objects.RecordSet(
+            name='example.org.', type='CERT',
+            records=objects.RecordList(objects=[
+                objects.Record(
+                    data=(
+                        '1 1 255 KR1L0GbocaIOOim1+qdHtOSrDcOsGiI2NCcxuX2/Tqc='
+                    )
+                ),
+            ])
+        )
+
+        recordset.validate()
+
+        self.assertEqual('example.org.', recordset.name)
+        self.assertEqual(
+            '1 1 255 KR1L0GbocaIOOim1+qdHtOSrDcOsGiI2NCcxuX2/Tqc=',
+            recordset.records[0].data
+        )
+        self.assertEqual('CERT', recordset.type)
+
     def test_parse_cert(self):
         cert_record = objects.CERT()
         cert_record.from_string(

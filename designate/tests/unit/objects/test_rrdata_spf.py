@@ -19,6 +19,23 @@ LOG = logging.getLogger(__name__)
 
 
 class RRDataSPFTest(oslotest.base.BaseTestCase):
+    def test_spf_record(self):
+        recordset = objects.RecordSet(
+            name='example.org.', type='SPF',
+            records=objects.RecordList(objects=[
+                objects.Record(
+                    data='"v=spf1 include:_spf.example.org ~all"'
+                ),
+            ])
+        )
+
+        recordset.validate()
+
+        self.assertEqual('example.org.', recordset.name)
+        self.assertEqual('"v=spf1 include:_spf.example.org ~all"',
+                         recordset.records[0].data)
+        self.assertEqual('SPF', recordset.type)
+
     def test_reject_non_quoted_spaces(self):
         recordset = objects.RecordSet(
             name='www.example.test.', type='SPF',
