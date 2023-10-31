@@ -44,6 +44,5 @@ oslo.context>=4.0.0 # Apache-2.0
 oslo.policy>=3.7.0 # Apache-2.0
 python-memcached>=1.56 # PSF
 tooz>=1.58.0 # Apache-2.0
-debtcollector>=1.19.0 # Apache-2.0
 futurist>=1.2.0 # Apache-2.0
 edgegrid-python>=1.1.1 # Apache-2.0
