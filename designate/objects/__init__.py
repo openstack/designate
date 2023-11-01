@@ -32,7 +32,6 @@ from designate.objects.pool_target_option import PoolTargetOption, PoolTargetOpt
 from designate.objects.quota import Quota, QuotaList  # noqa
 from designate.objects.record import Record, RecordList  # noqa
 from designate.objects.recordset import RecordSet, RecordSetList  # noqa
-from designate.objects.server import Server, ServerList  # noqa
 from designate.objects.service_status import ServiceStatus, ServiceStatusList  # noqa
 from designate.objects.shared_zone import SharedZone, SharedZoneList  # noqa
 from designate.objects.tenant import Tenant, TenantList  # noqa

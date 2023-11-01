@@ -60,14 +60,6 @@ Objects Recordset
     :show-inheritance:
 
 
-Objects Server
-==============
-.. automodule:: designate.objects.server
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 Objects Tenant
 ==============
 .. automodule:: designate.objects.tenant
