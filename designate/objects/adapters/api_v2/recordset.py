@@ -104,10 +104,9 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
             new_recordset_records = objects.RecordList()
 
             # Remove deleted records if we have provided a records array
-            if record_update:
-                for record in recordset.records:
-                    if record.data not in records_to_rm:
-                        new_recordset_records.append(record)
+            for record in recordset.records:
+                if record.data not in records_to_rm:
+                    new_recordset_records.append(record)
 
             # Add new records
             for record in records_to_add:
