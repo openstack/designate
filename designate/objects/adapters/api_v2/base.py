@@ -18,13 +18,10 @@ from designate import exceptions
 from designate.objects.adapters import base
 from designate.objects import base as ovoobj_base
 
-
-cfg.CONF.import_opt('api_base_uri', 'designate.api', group='service:api')
-cfg.CONF.import_opt('enable_host_header', 'designate.api', group='service:api')
+CONF = cfg.CONF
 
 
 class APIv2Adapter(base.DesignateAdapter):
-    BASE_URI = cfg.CONF['service:api'].api_base_uri.rstrip('/')
     ADAPTER_FORMAT = 'API_v2'
 
     #####################
@@ -75,13 +72,9 @@ class APIv2Adapter(base.DesignateAdapter):
 
     @classmethod
     def _get_base_url(cls, request):
-        if cfg.CONF['service:api'].enable_host_header:
-            try:
-                return request.host_url
-            except Exception:
-                return cls.BASE_URI
-        else:
-            return cls.BASE_URI
+        if CONF['service:api'].enable_host_header:
+            return request.host_url
+        return CONF['service:api'].api_base_uri.rstrip('/')
 
     @classmethod
     def _get_resource_links(cls, obj, request):
@@ -110,12 +103,12 @@ class APIv2Adapter(base.DesignateAdapter):
         params = request.GET
 
         # defined in etc/designate/designate.conf.sample
-        limit = cfg.CONF['service:api'].default_limit_v2
+        limit = CONF['service:api'].default_limit_v2
 
         if 'limit' in params:
             limit = params['limit']
             if limit.lower() == 'max':
-                limit = cfg.CONF['service:api'].max_limit_v2
+                limit = CONF['service:api'].max_limit_v2
             else:
                 try:
                     limit = int(limit)

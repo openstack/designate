@@ -36,14 +36,17 @@ class APIv2AdapterTest(oslotest.base.BaseTestCase):
 
     def test_get_base_url(self):
         CONF.set_override('enable_host_header', False, 'service:api')
+        CONF.set_override(
+            'api_base_uri', 'http://192.0.2.1:9001/', 'service:api'
+        )
 
         mock_request = mock.Mock()
         mock_request.GET = {'foo': 'bar'}
-        mock_request.host_url = 'http://127.0.0.1'
+        mock_request.host_url = 'http://192.0.2.2'
         mock_request.path = '/v2/zones'
 
         base_url = base.APIv2Adapter._get_base_url(mock_request)
-        self.assertEqual('http://127.0.0.1:9001', base_url)
+        self.assertEqual('http://192.0.2.1:9001', base_url)
 
     def test_get_base_url_enable_host_header(self):
         CONF.set_override('enable_host_header', True, 'service:api')
@@ -55,18 +58,6 @@ class APIv2AdapterTest(oslotest.base.BaseTestCase):
 
         base_url = base.APIv2Adapter._get_base_url(mock_request)
         self.assertEqual('http://192.0.2.1', base_url)
-
-    def test_get_base_url_enable_host_header_exception_raised(self):
-        CONF.set_override('enable_host_header', True, 'service:api')
-
-        mock_host_url = mock.PropertyMock(side_effect=Exception)
-        mock_request = mock.Mock()
-        mock_request.GET = {'foo': 'bar'}
-        type(mock_request).host_url = mock_host_url
-        mock_request.path = '/v2/zones'
-
-        base_url = base.APIv2Adapter._get_base_url(mock_request)
-        self.assertEqual('http://127.0.0.1:9001', base_url)
 
 
 class RecordAPIv2AdapterTest(oslotest.base.BaseTestCase):
