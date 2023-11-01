@@ -12,13 +12,14 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 from stevedore import named
 
 from designate.api.v2.controllers import errors
+import designate.conf
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -29,7 +30,7 @@ class RootController:
     """
 
     def __init__(self):
-        enabled_ext = cfg.CONF['service:api'].enabled_extensions_admin
+        enabled_ext = CONF['service:api'].enabled_extensions_admin
         if len(enabled_ext) > 0:
             self._mgr = named.NamedExtensionManager(
                 namespace='designate.api.admin.extensions',

@@ -22,18 +22,15 @@ import dns.rdatatype
 import dns.renderer
 import dns.resolver
 import dns.rrset
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import exceptions
 from designate.worker import rpcapi as worker_api
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
-
-CONF.import_opt('default_pool_id', 'designate.central',
-                group='service:central')
 
 # 10 Bytes of RR metadata, 64 bytes of TSIG RR data, variable length TSIG Key
 # name (restricted in designate to 160 chars), 1 byte for trailing dot.

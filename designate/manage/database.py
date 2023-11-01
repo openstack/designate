@@ -19,12 +19,12 @@ import sys
 
 from alembic import command as alembic_command
 from alembic.config import Config
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate.manage import base
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 

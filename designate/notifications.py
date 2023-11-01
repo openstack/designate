@@ -17,7 +17,6 @@
 # Copied: nova.notifications
 import abc
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 import designate.conf
@@ -25,8 +24,9 @@ from designate import objects
 from designate.plugin import DriverPlugin
 from designate import rpc
 
-LOG = logging.getLogger(__name__)
+
 CONF = designate.conf.CONF
+LOG = logging.getLogger(__name__)
 NOTIFICATION_PLUGIN = None
 
 
@@ -42,8 +42,8 @@ def send_api_fault(context, url, status, exception):
 
 
 def init_notification_plugin():
-    LOG.debug("Loading notification plugin: %s", cfg.CONF.notification_plugin)
-    cls = NotificationPlugin.get_driver(cfg.CONF.notification_plugin)
+    LOG.debug("Loading notification plugin: %s", CONF.notification_plugin)
+    cls = NotificationPlugin.get_driver(CONF.notification_plugin)
 
     global NOTIFICATION_PLUGIN
     NOTIFICATION_PLUGIN = cls()

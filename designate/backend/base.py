@@ -15,14 +15,15 @@
 # under the License.
 import abc
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate.context import DesignateContext
 from designate.plugin import DriverPlugin
 
+
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class Backend(DriverPlugin):

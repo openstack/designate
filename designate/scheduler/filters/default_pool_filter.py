@@ -11,10 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
-
+import designate.conf
 from designate import objects
 from designate.scheduler.filters import base
+
+
+CONF = designate.conf.CONF
 
 
 class DefaultPoolFilter(base.Filter):
@@ -36,5 +38,5 @@ class DefaultPoolFilter(base.Filter):
     def filter(self, context, pools, zone):
         pools = objects.PoolList()
         pools.append(
-            objects.Pool(id=cfg.CONF['service:central'].default_pool_id))
+            objects.Pool(id=CONF['service:central'].default_pool_id))
         return pools

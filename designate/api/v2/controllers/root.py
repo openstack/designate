@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from stevedore import named
 
 from designate.api.v2.controllers import blacklists
@@ -27,6 +26,10 @@ from designate.api.v2.controllers import service_status
 from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import tsigkeys
 from designate.api.v2.controllers import zones
+import designate.conf
+
+
+CONF = designate.conf.CONF
 
 
 class RootController:
@@ -36,7 +39,7 @@ class RootController:
     """
 
     def __init__(self):
-        enabled_ext = cfg.CONF['service:api'].enabled_extensions_v2
+        enabled_ext = CONF['service:api'].enabled_extensions_v2
         if len(enabled_ext) > 0:
             self._mgr = named.NamedExtensionManager(
                 namespace='designate.api.v2.extensions',

@@ -16,17 +16,18 @@
 from unittest import mock
 
 from openstack import exceptions as sdk_exceptions
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+import designate.conf
 from designate import context
 from designate import exceptions
 from designate.network_api import get_network_api
 from designate.network_api import neutron
 from designate import version
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class NeutronNetworkAPITest(oslotest.base.BaseTestCase):

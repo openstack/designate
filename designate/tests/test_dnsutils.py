@@ -16,15 +16,15 @@
 import dns
 import dns.query
 import dns.tsigkeyring
-from oslo_config import cfg
 
+import designate.conf
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
 from designate import storage
 import designate.tests
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 SAMPLES = {
     ("cname.example.com.", "CNAME"): {
         "ttl": 10800,

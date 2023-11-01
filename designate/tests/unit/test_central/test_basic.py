@@ -18,7 +18,6 @@ from unittest import mock
 from unittest.mock import patch
 
 import fixtures
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log import log as logging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
@@ -27,12 +26,15 @@ import testtools
 
 import designate.central.service
 from designate.central.service import Service
+import designate.conf
 from designate import exceptions
 from designate import objects
 from designate.storage import sqlalchemy
 from designate.tests.fixtures import random_seed
 from designate.tests import TestCase
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -222,7 +224,7 @@ class NotMockedError(NotImplementedError):
 class CentralBasic(TestCase):
     def setUp(self):
         super().setUp()
-        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
+        self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
         self.CONF([], project='designate')
         mock_storage = mock.Mock(spec=sqlalchemy.SQLAlchemyStorage)
 
@@ -279,7 +281,7 @@ class CentralBasic(TestCase):
 
 class CentralServiceTestCase(CentralBasic):
     def test_conf_fixture(self):
-        assert 'service:central' in cfg.CONF
+        assert 'service:central' in CONF
 
     def test_init(self):
         self.assertTrue(self.service.check_for_tlds)
@@ -633,7 +635,7 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_is_valid_recordset_name_too_long(self):
         zone = RoObject(name='example.org.')
-        cfg.CONF['service:central'].max_recordset_name_len = 255
+        CONF['service:central'].max_recordset_name_len = 255
         rs_name = 'a' * 255 + '.org.'
         with testtools.ExpectedException(exceptions.InvalidRecordSetName) as e:
             self.service._is_valid_recordset_name(self.context, zone, rs_name)
@@ -1831,8 +1833,8 @@ class CentralStatusTests(CentralBasic):
 class CentralQuotaTest(unittest.TestCase):
 
     def setUp(self):
-        self.CONF = cfg_fixture.Config(cfg.CONF)
-        cfg.CONF([], project='designate')
+        self.CONF = cfg_fixture.Config(CONF)
+        CONF([], project='designate')
         self.CONF.config(quota_driver="noop")
         self.context = mock.Mock()
         self.zone = mock.Mock()

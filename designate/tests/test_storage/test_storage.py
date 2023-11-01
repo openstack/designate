@@ -17,10 +17,10 @@ import math
 from sqlalchemy import text
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 
+import designate.conf
 from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate import exceptions
 from designate import objects
@@ -29,6 +29,8 @@ from designate.storage import sql
 from designate.tests import TestCase
 from designate.utils import generate_uuid
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -651,7 +653,7 @@ class SqlalchemyStorageTest(TestCase):
 
     # Zone Tests
     def test_create_zone(self):
-        pool_id = cfg.CONF['service:central'].default_pool_id
+        pool_id = CONF['service:central'].default_pool_id
         values = {
             'tenant_id': self.admin_context.project_id,
             'name': 'example.net.',

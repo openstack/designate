@@ -11,16 +11,16 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-from oslo_config import cfg
 import oslo_messaging as messaging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 from oslo_serialization import jsonutils
 from oslo_utils import importutils
 
+import designate.conf
 import designate.context
 import designate.exceptions
 from designate import objects
+
 
 profiler = importutils.try_import('osprofiler.profiler')
 
@@ -37,7 +37,7 @@ __all__ = [
     'get_notifier',
 ]
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 NOTIFICATION_TRANSPORT = None
 NOTIFIER = None
 TRANSPORT = None

@@ -13,14 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 from paste import deploy
 
+import designate.conf
 from designate import exceptions
 from designate import service
 from designate import utils
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -29,7 +31,7 @@ class Service(service.WSGIService):
         super().__init__(
             self.wsgi_application,
             self.service_name,
-            cfg.CONF['service:api'].listen,
+            CONF['service:api'].listen,
         )
 
     def start(self):
@@ -44,7 +46,7 @@ class Service(service.WSGIService):
 
     @property
     def wsgi_application(self):
-        api_paste_config = cfg.CONF['service:api'].api_paste_config
+        api_paste_config = CONF['service:api'].api_paste_config
         config_paths = utils.find_config(api_paste_config)
 
         if not config_paths:

@@ -11,14 +11,15 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from oslo_config import cfg
 from urllib import parse
 
+import designate.conf
 from designate import exceptions
 from designate.objects.adapters import base
 from designate.objects import base as ovoobj_base
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class APIv2Adapter(base.DesignateAdapter):

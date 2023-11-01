@@ -14,12 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import eventlet.patcher
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import exceptions
 from designate.plugin import DriverPlugin
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 # NOTE(kiall): This is a workaround for bug #1424621, a broken reimplementation
 #              of eventlet's 0.17.0 monkey patching of dnspython.
@@ -110,7 +112,7 @@ class NetworkAPI(DriverPlugin):
         """
         if not config_section:
             return None
-        cfg_group = cfg.CONF[config_section]
+        cfg_group = CONF[config_section]
         return cfg_group.endpoints
 
     def list_floatingips(self, context, region=None):

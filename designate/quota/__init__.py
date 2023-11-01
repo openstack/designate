@@ -13,17 +13,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate.quota import base
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
 def get_quota():
-    quota_driver = cfg.CONF.quota_driver
+    quota_driver = CONF.quota_driver
 
     LOG.debug("Loading quota driver: %s", quota_driver)
 

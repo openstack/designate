@@ -10,17 +10,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 from keystoneauth1 import exceptions as kse
 from keystoneauth1 import loading as ksa_loading
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import exceptions
 from designate.i18n import _
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 

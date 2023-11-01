@@ -14,22 +14,23 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+import designate.conf
 from designate import notification_handler
 from designate import rpc
 from designate import service
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
 class Service(service.Service):
     def __init__(self):
         super().__init__(
-            self.service_name, threads=cfg.CONF['service:sink'].threads
+            self.service_name, threads=CONF['service:sink'].threads
         )
 
         # Initialize extensions
@@ -45,8 +46,9 @@ class Service(service.Service):
     def _init_extensions():
         """Loads and prepares all enabled extensions"""
 
-        enabled_notification_handlers = cfg.CONF[
-            'service:sink'].enabled_notification_handlers
+        enabled_notification_handlers = (
+            CONF['service:sink'].enabled_notification_handlers
+        )
 
         notification_handlers = notification_handler.get_notification_handlers(
             enabled_notification_handlers)
@@ -75,7 +77,7 @@ class Service(service.Service):
         if targets:
             self._server = rpc.get_notification_listener(
                 targets, [self],
-                pool=cfg.CONF['service:sink'].listener_pool_name
+                pool=CONF['service:sink'].listener_pool_name
             )
             self._server.start()
 

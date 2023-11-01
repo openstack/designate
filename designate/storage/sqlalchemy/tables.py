@@ -17,15 +17,15 @@ from sqlalchemy import (Table, MetaData, Column, String, Text, Integer,
                         SmallInteger, CHAR, DateTime, Enum, Boolean, Unicode,
                         UniqueConstraint, ForeignKeyConstraint)
 
-from oslo_config import cfg
 from oslo_db.sqlalchemy import types
 from oslo_utils import timeutils
 
+import designate.conf
 from designate.storage.sqlalchemy.types import UUID
 from designate import utils
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR']
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',

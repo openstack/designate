@@ -22,15 +22,16 @@ import dns.rdatatype
 import dns.resolver
 import dns.rrset
 import dns.tsigkeyring
-from oslo_config import cfg
 import testtools
 
+import designate.conf
 from designate import context
 from designate.mdns import handler
 from designate import objects
 import designate.tests
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 default_pool_id = CONF['service:central'].default_pool_id
 
 ANSWER = [
@@ -127,7 +128,7 @@ class MdnsRequestHandlerTest(designate.tests.TestCase):
         attributes = attributes or []
         masters = masters or [{"host": "192.0.2.1", "port": 53}]
         fixture = self.get_zone_fixture("SECONDARY", values=values)
-        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['email'] = CONF['service:central'].managed_resource_email
 
         zone = objects.Zone(**fixture)
         zone.attributes = objects.ZoneAttributeList().from_list(attributes)

@@ -15,7 +15,6 @@
 # under the License.
 import sys
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
@@ -28,8 +27,7 @@ from designate import version
 
 
 CONF = designate.conf.CONF
-CONF.import_opt('workers', 'designate.api', group='service:api')
-cfg.CONF.import_group('keystone_authtoken', 'keystonemiddleware.auth_token')
+CONF.import_group('keystone_authtoken', 'keystonemiddleware.auth_token')
 
 
 def main():

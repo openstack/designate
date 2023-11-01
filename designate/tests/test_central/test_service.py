@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 from collections import namedtuple
 from concurrent import futures
 import copy
@@ -24,7 +23,6 @@ import random
 import unittest
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_db import exception as db_exception
 from oslo_log import log as logging
@@ -35,6 +33,7 @@ from oslo_versionedobjects import exception as ovo_exc
 import testtools
 
 from designate.common import constants
+import designate.conf
 from designate import exceptions
 from designate import objects
 from designate.storage import sql
@@ -44,6 +43,8 @@ from designate.tests import fixtures
 from designate import utils
 from designate.worker import rpcapi as worker_api
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -942,7 +943,7 @@ class CentralServiceTest(designate.tests.TestCase):
 
     def test_update_zone_master_for_secondary_zone(self):
         fixture = self.get_zone_fixture('SECONDARY', 0)
-        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['email'] = CONF['service:central'].managed_resource_email
         fixture['masters'] = [{'host': '192.0.2.10', 'port': 53}]
 
         # Create a zone
@@ -1447,7 +1448,7 @@ class CentralServiceTest(designate.tests.TestCase):
     def test_xfr_zone(self):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
-        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['email'] = CONF['service:central'].managed_resource_email
         fixture['masters'] = [{"host": "192.0.2.10", "port": 53}]
 
         # Create a zone
@@ -1466,7 +1467,7 @@ class CentralServiceTest(designate.tests.TestCase):
     def test_xfr_zone_same_serial(self):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
-        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['email'] = CONF['service:central'].managed_resource_email
         fixture['masters'] = [{"host": "192.0.2.10", "port": 53}]
 
         # Create a zone
@@ -1484,7 +1485,7 @@ class CentralServiceTest(designate.tests.TestCase):
     def test_xfr_zone_lower_serial(self):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
-        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['email'] = CONF['service:central'].managed_resource_email
         fixture['masters'] = [{"host": "192.0.2.10", "port": 53}]
         fixture['serial'] = 10
 
@@ -1573,8 +1574,8 @@ class CentralServiceTest(designate.tests.TestCase):
         # Create the Object
         recordset = objects.RecordSet(name='www.%s' % zone.name, type='A')
 
-        self.useFixture(cfg_fixture.Config(cfg.CONF))
-        cfg.CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
+        self.useFixture(cfg_fixture.Config(CONF))
+        CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
         context = self.get_context(project_id='1', roles=['member', 'reader'])
 
         self.share_zone(context=self.admin_context, zone_id=zone.id,
@@ -3854,7 +3855,7 @@ class CentralServiceTest(designate.tests.TestCase):
         self.assertEqual('foo', result.message)
 
     def test_create_ptr_zone(self):
-        cfg.CONF.set_override(
+        CONF.set_override(
             'managed_resource_tenant_id',
             self.admin_context.project_id,
             'service:central'
@@ -3869,7 +3870,7 @@ class CentralServiceTest(designate.tests.TestCase):
         self.assertEqual('example.org.', zones[0]['name'])
 
     def test_create_duplicate_ptr_zone(self):
-        cfg.CONF.set_override(
+        CONF.set_override(
             'managed_resource_tenant_id',
             self.admin_context.project_id,
             'service:central'
@@ -4035,8 +4036,8 @@ class CentralServiceTest(designate.tests.TestCase):
 
     def test_share_zone_new_policy_defaults(self):
         # Configure designate for enforcing the new policy defaults
-        self.useFixture(cfg_fixture.Config(cfg.CONF))
-        cfg.CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
+        self.useFixture(cfg_fixture.Config(CONF))
+        CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
         context = self.get_context(project_id='1', roles=['member', 'reader'])
 
         # Create a Shared Zone
@@ -4077,8 +4078,8 @@ class CentralServiceTest(designate.tests.TestCase):
 
     def test_unshare_zone_new_policy_defaults(self):
         # Configure designate for enforcing the new policy defaults
-        self.useFixture(cfg_fixture.Config(cfg.CONF))
-        cfg.CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
+        self.useFixture(cfg_fixture.Config(CONF))
+        CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
         context = self.get_context(project_id='1', roles=['member', 'reader'])
 
         # Create a Shared Zone
@@ -4178,8 +4179,8 @@ class CentralServiceTest(designate.tests.TestCase):
             context=context, zone_id=zone.id, target_project_id="second_tenant"
         )
 
-        self.useFixture(cfg_fixture.Config(cfg.CONF))
-        cfg.CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
+        self.useFixture(cfg_fixture.Config(CONF))
+        CONF.set_override('enforce_new_defaults', True, 'oslo_policy')
 
         # Ensure we can retrieve both shared_zones
         shared_zones = self.central_service.find_shared_zones(

@@ -21,10 +21,10 @@ Create Date: 2022-07-28 23:06:40.731452
 
 """
 from alembic import op
-from oslo_config import cfg
 from oslo_utils import timeutils
 import sqlalchemy as sa
 
+import designate.conf
 from designate.conf import central
 from designate.storage.sqlalchemy.alembic import legacy_utils
 from designate.storage.sqlalchemy.types import UUID
@@ -37,7 +37,7 @@ depends_on = None
 
 # Equivalent to legacy sqlalchemy-migrate revision 070_liberty
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 central.register_opts(CONF)
 
 ACTIONS = ('CREATE', 'DELETE', 'UPDATE', 'NONE')

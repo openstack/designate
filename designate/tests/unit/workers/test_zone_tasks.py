@@ -16,10 +16,10 @@
 from unittest import mock
 
 import dns.exception
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+import designate.conf
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
@@ -27,7 +27,8 @@ from designate.tests.unit import utils
 from designate.worker import processing
 from designate.worker.tasks import zone
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 QUERY_RESULTS = {
     'delete_success_all': {
@@ -309,7 +310,7 @@ class TestZoneActor(oslotest.base.BaseTestCase):
         )
 
         self.assertEqual(
-            cfg.CONF['service:worker'].threshold_percentage,
+            CONF['service:worker'].threshold_percentage,
             actor.threshold_percentage
         )
 

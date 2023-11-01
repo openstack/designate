@@ -16,15 +16,18 @@
 # under the License.
 from unittest import mock
 
-from oslo_config import cfg
 import oslo_messaging as messaging
 from oslo_messaging.notify import notifier
 
 from designate.api import middleware
+import designate.conf
 from designate import context
 from designate import exceptions
 from designate import rpc
 import designate.tests
+
+
+CONF = designate.conf.CONF
 
 
 class FakeRequest:
@@ -289,7 +292,7 @@ class FaultMiddlewareTest(designate.tests.TestCase):
     @mock.patch.object(notifier.Notifier, 'error')
     def test_notify_of_fault(self, mock_notifier):
         self.config(notify_api_faults=True)
-        rpc.init(cfg.CONF)
+        rpc.init(CONF)
         app = middleware.FaultWrapperMiddleware({})
 
         class RaisingRequest(FakeRequest):

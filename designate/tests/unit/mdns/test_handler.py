@@ -16,18 +16,19 @@
 from unittest import mock
 
 import dns
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_messaging import conffixture as messaging_fixture
 import oslotest.base
 
+import designate.conf
 from designate import exceptions
 from designate.mdns import handler
 from designate import objects
 from designate.tests import fixtures
 from designate.worker import rpcapi as worker_rpcapi
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class MdnsHandleTest(oslotest.base.BaseTestCase):

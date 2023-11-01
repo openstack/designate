@@ -20,14 +20,15 @@ from keystoneauth1 import session
 from keystoneauth1 import token_endpoint
 import openstack
 from openstack import exceptions as sdk_exceptions
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import exceptions
 from designate.network_api import base
 from designate import version
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 

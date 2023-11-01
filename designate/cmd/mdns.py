@@ -27,7 +27,6 @@ from designate import version
 
 
 CONF = designate.conf.CONF
-CONF.import_opt('workers', 'designate.mdns', group='service:mdns')
 
 
 def main():

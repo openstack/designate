@@ -14,11 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-from oslo_config import cfg
 
 from designate.common import constants
+import designate.conf
 
-cfg.CONF.import_opt('enable_host_header', 'designate.api', group='service:api')
+
+CONF = designate.conf.CONF
 
 
 def _add_a_version(versions, version, api_url, status, timestamp):
@@ -38,10 +39,10 @@ def factory(global_config, **local_conf):
 
     @app.route('/', methods=['GET'])
     def version_list():
-        if cfg.CONF['service:api'].enable_host_header:
+        if CONF['service:api'].enable_host_header:
             url_root = flask.request.url_root
         else:
-            url_root = cfg.CONF['service:api'].api_base_uri
+            url_root = CONF['service:api'].api_base_uri
         api_url = url_root.rstrip('/') + '/v2'
 
         versions = []

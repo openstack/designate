@@ -18,18 +18,19 @@ import errno
 import time
 
 import dns
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
 from designate.common import constants
+import designate.conf
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
 from designate.worker.tasks import base
 
+
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 ######################
 # CRUD Zone Operations

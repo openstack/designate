@@ -13,19 +13,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
-
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.central import rpcapi as central_rpcapi
+import designate.conf
 from designate import exceptions
 from designate import quota
 from designate import storage
 from designate import utils
 from designate.worker import rpcapi as worker_rpcapi
 
+
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 def percentage(part, whole):

@@ -15,13 +15,15 @@
 # under the License.
 import abc
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from stevedore import driver
 from stevedore import enabled
 
+import designate.conf
+
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 
 
 class Plugin(metaclass=abc.ABCMeta):

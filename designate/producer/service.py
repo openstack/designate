@@ -13,19 +13,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
 from designate.central import rpcapi
+import designate.conf
 from designate import coordination
 from designate import exceptions
 from designate.producer import tasks
 from designate import service
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 
 NS = 'designate.periodic_tasks'
 
@@ -42,8 +42,8 @@ class Service(service.RPCService):
         self._quota = None
 
         super().__init__(
-            self.service_name, cfg.CONF['service:producer'].topic,
-            threads=cfg.CONF['service:producer'].threads,
+            self.service_name, CONF['service:producer'].topic,
+            threads=CONF['service:producer'].threads,
         )
 
         self.coordination = coordination.Coordination(

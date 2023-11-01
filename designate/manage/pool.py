@@ -13,8 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 import stevedore.exception
@@ -22,6 +20,7 @@ import yaml
 
 from designate.backend import base as backend_base
 from designate.central import rpcapi as central_rpcapi
+import designate.conf
 from designate import exceptions
 from designate.manage import base
 from designate import objects
@@ -30,8 +29,9 @@ from designate import policy
 from designate import rpc
 from designate import utils
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 
 
 class PoolCommands(base.Commands):
@@ -44,7 +44,7 @@ class PoolCommands(base.Commands):
     def _setup(self, dry_run=False, skip_verify_drivers=False):
         self.dry_run = dry_run
         self.skip_verify_drivers = skip_verify_drivers
-        rpc.init(cfg.CONF)
+        rpc.init(CONF)
         self.central_api = central_rpcapi.CentralAPI()
 
     @base.args('--file', help='The path to the file the yaml output should be '

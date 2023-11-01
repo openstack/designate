@@ -13,15 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
 from designate.common import profiler
+import designate.conf
 from designate.loggingutils import rpc_logging
 from designate import rpc
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 CENTRAL_API = None
@@ -80,7 +81,7 @@ class CentralAPI:
     LOGGING_BLACKLIST = ['update_service_status']
 
     def __init__(self, topic=None):
-        self.topic = topic if topic else cfg.CONF['service:central'].topic
+        self.topic = topic if topic else CONF['service:central'].topic
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)

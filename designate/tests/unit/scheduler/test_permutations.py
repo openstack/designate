@@ -11,13 +11,16 @@
 # under the License.
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 
+import designate.conf
 from designate import exceptions
 from designate import objects
 from designate import scheduler
 from designate import tests
+
+
+CONF = designate.conf.CONF
 
 DEFAULT_POOL_ID = BRONZE_POOL_ID = '67d71c2a-645c-4dde-a6b8-60a172c9ede8'
 SILVER_POOL_ID = '5fabcd37-262c-4cf3-8625-7f419434b6df'
@@ -64,7 +67,7 @@ def build_test_pools():
 class AttributeSchedulerPermutationsTest(tests.TestCase):
     def setUp(self):
         super().setUp()
-        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
+        self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
         self.context = self.get_context()
 
         self.CONF.set_override(
@@ -182,7 +185,7 @@ class AttributeSchedulerPermutationsTest(tests.TestCase):
 class DefaultSchedulerPermutationsTest(tests.TestCase):
     def setUp(self):
         super().setUp()
-        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
+        self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
         self.context = self.get_context()
 
         self.CONF.set_override(
@@ -214,7 +217,7 @@ class DefaultSchedulerPermutationsTest(tests.TestCase):
 class FallbackSchedulerPermutationsTest(tests.TestCase):
     def setUp(self):
         super().setUp()
-        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
+        self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
         self.context = self.get_context()
 
         self.CONF.set_override(

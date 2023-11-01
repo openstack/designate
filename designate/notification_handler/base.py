@@ -16,15 +16,17 @@
 # under the License.
 import abc
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 import re
 
 from designate.central import rpcapi as central_rpcapi
+import designate.conf
 from designate.context import DesignateContext
 from designate.plugin import ExtensionPlugin
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -88,13 +90,13 @@ class BaseAddressHandler(NotificationHandler):
 
     def _get_formatv4(self):
         return (
-            cfg.CONF[self.name].get('formatv4') or
+            CONF[self.name].get('formatv4') or
             self.default_formatv4
         )
 
     def _get_formatv6(self):
         return (
-            cfg.CONF[self.name].get('formatv6') or
+            CONF[self.name].get('formatv6') or
             self.default_formatv6
         )
 

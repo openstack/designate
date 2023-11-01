@@ -11,17 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from oslo_config import cfg
-
+import designate.conf
 from designate import objects
 from designate.scheduler.filters import base
 
-cfg.CONF.register_opts([
-    cfg.StrOpt('default_pool_id',
-               default='794ccc2c-d751-44fe-b57f-8894c9f5c842',
-               help="The name of the default pool"),
-], group='service:central')
+
+CONF = designate.conf.CONF
 
 
 class FallbackFilter(base.Filter):
@@ -43,6 +38,6 @@ class FallbackFilter(base.Filter):
         if not pools:
             pools = objects.PoolList()
             pools.append(
-                objects.Pool(id=cfg.CONF['service:central'].default_pool_id)
+                objects.Pool(id=CONF['service:central'].default_pool_id)
             )
         return pools

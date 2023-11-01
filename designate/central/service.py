@@ -24,7 +24,6 @@ import time
 
 from dns import exception as dnsexception
 from dns import zone as dnszone
-from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_utils import timeutils
@@ -33,6 +32,7 @@ from designate.common import constants
 from designate.common.decorators import lock
 from designate.common.decorators import notification
 from designate.common.decorators import rpc
+import designate.conf
 from designate import coordination
 from designate import dnsutils
 from designate import exceptions
@@ -48,6 +48,8 @@ from designate.storage import transaction_shallow_copy
 from designate import utils
 from designate.worker import rpcapi as worker_rpcapi
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -65,13 +67,13 @@ class Service(service.RPCService):
         self._quota = None
 
         super().__init__(
-            self.service_name, cfg.CONF['service:central'].topic,
-            threads=cfg.CONF['service:central'].threads,
+            self.service_name, CONF['service:central'].topic,
+            threads=CONF['service:central'].threads,
         )
         self.coordination = coordination.Coordination(
             self.service_name, self.tg, grouping_enabled=False
         )
-        self.network_api = network_api.get_network_api(cfg.CONF.network_api)
+        self.network_api = network_api.get_network_api(CONF.network_api)
 
     @property
     def scheduler(self):
@@ -98,7 +100,7 @@ class Service(service.RPCService):
         return 'central'
 
     def start(self):
-        if (cfg.CONF['service:central'].managed_resource_tenant_id ==
+        if (CONF['service:central'].managed_resource_tenant_id ==
                 "00000000-0000-0000-0000-000000000000"):
             LOG.warning("Managed Resource Tenant ID is not properly "
                         "configured")
@@ -119,7 +121,7 @@ class Service(service.RPCService):
         if zone_name is None:
             raise exceptions.InvalidObject
 
-        if len(zone_name) > cfg.CONF['service:central'].max_zone_name_len:
+        if len(zone_name) > CONF['service:central'].max_zone_name_len:
             raise exceptions.InvalidZoneName('Name too long')
 
         # Break the zone name up into its component labels
@@ -172,7 +174,7 @@ class Service(service.RPCService):
             raise ValueError('Please supply a FQDN')
 
         # Validate record name length
-        max_len = cfg.CONF['service:central'].max_recordset_name_len
+        max_len = CONF['service:central'].max_recordset_name_len
         if len(recordset_name) > max_len:
             raise exceptions.InvalidRecordSetName('Name too long')
 
@@ -336,7 +338,7 @@ class Service(service.RPCService):
     def _is_valid_ttl(self, context, ttl):
         if ttl is None:
             return
-        min_ttl = cfg.CONF['service:central'].min_ttl
+        min_ttl = CONF['service:central'].min_ttl
         if min_ttl is not None and ttl < int(min_ttl):
             try:
                 policy.check('use_low_ttl', context)
@@ -705,11 +707,11 @@ class Service(service.RPCService):
         maximum val: default_soa_refresh_min
         minimum val: default_soa_refresh_max
         """
-        assert cfg.CONF.default_soa_refresh_min is not None
-        assert cfg.CONF.default_soa_refresh_max is not None
-        dispersion = (cfg.CONF.default_soa_refresh_max -
-                      cfg.CONF.default_soa_refresh_min) * random.random()
-        refresh_time = cfg.CONF.default_soa_refresh_min + dispersion
+        assert CONF.default_soa_refresh_min is not None
+        assert CONF.default_soa_refresh_max is not None
+        dispersion = (CONF.default_soa_refresh_max -
+                      CONF.default_soa_refresh_min) * random.random()
+        refresh_time = CONF.default_soa_refresh_min + dispersion
         return int(refresh_time)
 
     def _get_pool_ns_records(self, context, pool_id):
@@ -901,7 +903,7 @@ class Service(service.RPCService):
     def get_zone_ns_records(self, context, zone_id=None, criterion=None):
         if zone_id is None:
             policy.check('get_zone_ns_records', context)
-            pool_id = cfg.CONF['service:central'].default_pool_id
+            pool_id = CONF['service:central'].default_pool_id
         else:
             zone = self.storage.get_zone(context, zone_id)
 
@@ -1988,8 +1990,8 @@ class Service(service.RPCService):
         zone_values = {
             'type': 'PRIMARY',
             'name': zone_name,
-            'email': cfg.CONF['service:central'].managed_resource_email,
-            'tenant_id': cfg.CONF['service:central'].managed_resource_tenant_id
+            'email': CONF['service:central'].managed_resource_email,
+            'tenant_id': CONF['service:central'].managed_resource_tenant_id
         }
         try:
             zone = self.create_zone(

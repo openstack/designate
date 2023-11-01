@@ -13,17 +13,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 import pecan
 import pecan.deploy
 
 from designate.api.v2 import patches
+import designate.conf
+
+
+CONF = designate.conf.CONF
 
 
 def setup_app(pecan_config):
     config = dict(pecan_config)
 
-    config['app']['debug'] = cfg.CONF['service:api'].pecan_debug
+    config['app']['debug'] = CONF['service:api'].pecan_debug
 
     pecan.configuration.set_config(config, overwrite=True)
 

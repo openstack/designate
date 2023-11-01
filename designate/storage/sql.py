@@ -27,13 +27,16 @@ from oslo_utils import importutils
 from osprofiler import opts as profiler
 from sqlalchemy import inspect
 
+import designate.conf
+
+
 osprofiler_sqlalchemy = importutils.try_import('osprofiler.sqlalchemy')
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
-CONF = cfg.CONF
 try:
-    CONF.import_group("profiler", "designate.service")
+    CONF.import_group('profiler', 'designate.service')
 except cfg.NoSuchGroupError:
     pass
 
@@ -45,7 +48,7 @@ _MAIN_CONTEXT_MANAGER = None
 
 def initialize():
     """Initialize the module."""
-    connection = cfg.CONF['storage:sqlalchemy'].connection
+    connection = CONF['storage:sqlalchemy'].connection
     db_options.set_defaults(
         CONF, connection=connection
     )

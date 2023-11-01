@@ -13,9 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate import dnsmiddleware
 from designate import dnsutils
@@ -24,8 +24,9 @@ from designate import service
 from designate import storage
 from designate import utils
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 
 
 class Service(service.Service):
@@ -35,13 +36,13 @@ class Service(service.Service):
         self._storage = None
 
         super().__init__(
-            self.service_name, threads=cfg.CONF['service:mdns'].threads,
+            self.service_name, threads=CONF['service:mdns'].threads,
         )
         self.dns_service = service.DNSService(
             self.dns_application, self.tg,
-            cfg.CONF['service:mdns'].listen,
-            cfg.CONF['service:mdns'].tcp_backlog,
-            cfg.CONF['service:mdns'].tcp_recv_timeout,
+            CONF['service:mdns'].listen,
+            CONF['service:mdns'].tcp_backlog,
+            CONF['service:mdns'].tcp_recv_timeout,
         )
 
     def start(self):

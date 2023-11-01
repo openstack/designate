@@ -15,18 +15,19 @@
 # under the License.
 import datetime
 
+from oslo_log import log as logging
+from oslo_utils import timeutils
+
 from designate.central import rpcapi
+import designate.conf
 from designate import context
 from designate import plugin
 from designate import rpc
 from designate.worker import rpcapi as worker_rpcapi
 
-from oslo_config import cfg
-from oslo_log import log as logging
-from oslo_utils import timeutils
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 
 
 class PeriodicTask(plugin.ExtensionPlugin):

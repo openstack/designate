@@ -25,9 +25,9 @@ from designate import service
 from designate import utils
 from designate import version
 
-LOG = logging.getLogger(__name__)
+
 CONF = designate.conf.CONF
-CONF.import_opt('workers', 'designate.producer', group='service:producer')
+LOG = logging.getLogger(__name__)
 
 
 def main():

@@ -15,17 +15,18 @@
 import csv
 import os
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.central import rpcapi as central_rpcapi
 from designate.common import constants
+import designate.conf
 from designate import exceptions
 from designate.manage import base
 from designate import objects
 from designate import rpc
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -59,7 +60,7 @@ class TLDCommands(base.Commands):
         super().__init__()
 
     def _startup(self):
-        rpc.init(cfg.CONF)
+        rpc.init(CONF)
         self.central_api = central_rpcapi.CentralAPI()
 
     # The dictionary function __str__() does not list the fields in any

@@ -11,13 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from oslo_config import cfg
 from oslo_log import log as logging
 from stevedore import named
 
+import designate.conf
 from designate import exceptions
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -31,7 +32,7 @@ class Scheduler:
     """The list of filters enabled on this scheduler"""
 
     def __init__(self, storage):
-        enabled_filters = cfg.CONF['service:central'].scheduler_filters
+        enabled_filters = CONF['service:central'].scheduler_filters
         self.filters = list()
         self.storage = storage
 

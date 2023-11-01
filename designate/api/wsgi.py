@@ -19,12 +19,13 @@ from paste import deploy
 
 from designate.common import config
 from designate.common import profiler
-from designate import conf
+import designate.conf
 from designate import heartbeat_emitter
 from designate import policy
 from designate import rpc
 
-CONF = conf.CONF
+
+CONF = designate.conf.CONF
 
 CONFIG_FILES = ['api-paste.ini', 'designate.conf']
 
@@ -41,7 +42,7 @@ def init_application():
     logging.register_options(cfg.CONF)
     cfg.CONF([], project='designate', default_config_files=conf_files)
     config.set_defaults()
-    logging.setup(cfg.CONF, 'designate')
+    logging.setup(CONF, 'designate')
 
     policy.init()
 

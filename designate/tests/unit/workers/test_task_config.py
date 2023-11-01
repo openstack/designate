@@ -13,9 +13,10 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+import designate.conf
 from designate.worker.tasks import base
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class TestTaskConfig(oslotest.base.BaseTestCase):

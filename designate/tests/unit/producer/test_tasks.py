@@ -27,6 +27,7 @@ from oslo_utils import timeutils
 import oslotest.base
 
 from designate.central import rpcapi as central_api
+import designate.conf
 from designate import context
 from designate.producer import tasks
 from designate import rpc
@@ -44,7 +45,7 @@ DUMMY_TASK_OPTS = [
                help='Default amount of results returned per page'),
 ]
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 CONF.register_group(DUMMY_TASK_GROUP)
 CONF.register_opts(DUMMY_TASK_OPTS, group=DUMMY_TASK_GROUP)
 

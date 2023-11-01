@@ -22,7 +22,6 @@ import time
 from unittest import mock
 
 import eventlet
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log import log as logging
 from oslo_messaging import conffixture as messaging_fixture
@@ -45,14 +44,6 @@ eventlet.monkey_patch(os=False)
 CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
-CONF.import_opt('auth_strategy', 'designate.api',
-                group='service:api')
-CONF.import_opt('connection', 'designate.storage.sqlalchemy',
-                group='storage:sqlalchemy')
-CONF.import_opt('emitter_type', 'designate.heartbeat_emitter',
-                group="heartbeat_emitter")
-CONF.import_opt('scheduler_filters', 'designate.scheduler',
-                group="service:central")
 default_pool_id = CONF['service:central'].default_pool_id
 
 _TRUE_VALUES = ('true', '1', 'yes', 'y')
@@ -432,7 +423,7 @@ class TestCase(base.BaseTestCase):
         group = kwargs.pop('group', None)
 
         for k, v in kwargs.items():
-            cfg.CONF.set_override(k, v, group)
+            CONF.set_override(k, v, group)
 
     def policy(self, rules, default_rule='allow', overwrite=True):
         # Inject an allow and deny rule

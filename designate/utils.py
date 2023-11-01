@@ -30,10 +30,12 @@ from oslo_utils import uuidutils
 import pkg_resources
 
 from designate.common import config
+import designate.conf
 from designate import exceptions
 from designate.i18n import _
 
 LOG = logging.getLogger(__name__)
+CONF = designate.conf.CONF
 
 # Default datetime format
 
@@ -51,9 +53,9 @@ def find_config(config_path):
     """
     possible_locations = [
         config_path,
-        os.path.join(cfg.CONF.pybasedir, "etc", "designate", config_path),
-        os.path.join(cfg.CONF.pybasedir, "etc", config_path),
-        os.path.join(cfg.CONF.pybasedir, config_path),
+        os.path.join(CONF.pybasedir, "etc", "designate", config_path),
+        os.path.join(CONF.pybasedir, "etc", config_path),
+        os.path.join(CONF.pybasedir, config_path),
         "/etc/designate/%s" % config_path,
     ]
 
@@ -69,7 +71,7 @@ def find_config(config_path):
 
 
 def read_config(prog, argv):
-    logging.register_options(cfg.CONF)
+    logging.register_options(CONF)
     config_files = find_config('%s.conf' % prog)
     cfg.CONF(argv[1:], project='designate', prog=prog,
              default_config_files=config_files)
@@ -112,7 +114,7 @@ def render_template(template, **template_context):
 def execute(*cmd, **kw):
     """Execute a command in a subprocess, blocking.
     """
-    root_helper = kw.pop('root_helper', cfg.CONF.root_helper)
+    root_helper = kw.pop('root_helper', CONF.root_helper)
     run_as_root = kw.pop('run_as_root', True)
     return processutils.execute(*cmd, run_as_root=run_as_root,
                                 root_helper=root_helper, **kw)
@@ -192,13 +194,13 @@ def get_proxies():
     consumption in clients when we need to proxy requests.
     """
     proxies = {}
-    if cfg.CONF.proxy.no_proxy:
-        proxies['no_proxy'] = cfg.CONF.proxy.no_proxy
-    if cfg.CONF.proxy.http_proxy is not None:
-        proxies['http'] = cfg.CONF.proxy.http_proxy
+    if CONF.proxy.no_proxy:
+        proxies['no_proxy'] = CONF.proxy.no_proxy
+    if CONF.proxy.http_proxy is not None:
+        proxies['http'] = CONF.proxy.http_proxy
 
-    if cfg.CONF.proxy.https_proxy is not None:
-        proxies['https'] = cfg.CONF.proxy.https_proxy
+    if CONF.proxy.https_proxy is not None:
+        proxies['https'] = CONF.proxy.https_proxy
     elif 'http' in proxies:
         proxies['https'] = proxies['http']
 
@@ -242,10 +244,10 @@ def get_paging_params(context, params, sort_keys):
     Extract any paging parameters
     """
     marker = params.pop('marker', None)
-    limit = params.pop('limit', cfg.CONF['service:api'].default_limit_v2)
+    limit = params.pop('limit', CONF['service:api'].default_limit_v2)
     sort_key = params.pop('sort_key', None)
     sort_dir = params.pop('sort_dir', None)
-    max_limit = cfg.CONF['service:api'].max_limit_v2
+    max_limit = CONF['service:api'].max_limit_v2
 
     if isinstance(limit, str) and limit.lower() == "max":
         # Support for retrieving the max results at once. If set to "max",

@@ -15,10 +15,10 @@
 
 from copy import deepcopy
 
-from oslo_config import cfg
 from oslo_log import log
 from oslo_versionedobjects import exception as ovo_exc
 
+import designate.conf
 from designate import exceptions
 from designate.objects import base
 from designate.objects import fields
@@ -27,9 +27,8 @@ from designate.objects.validation_error import ValidationErrorList
 from designate import utils
 
 
+CONF = designate.conf.CONF
 LOG = log.getLogger(__name__)
-
-cfg.CONF.import_opt('supported_record_type', 'designate')
 
 
 @base.DesignateRegistry.register
@@ -125,7 +124,7 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
                        % {'type': self.type})
             self._validate_fail(errors, err_msg)
 
-        if self.type not in cfg.CONF.supported_record_type:
+        if self.type not in CONF.supported_record_type:
             err_msg = ("'%(type)s' is not a supported record type"
                        % {'type': self.type})
             self._validate_fail(errors, err_msg)

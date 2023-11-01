@@ -10,15 +10,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 from unittest import mock
 
 from designate.api import wsgi
+import designate.conf
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class TestApiWsgi(oslotest.base.BaseTestCase):

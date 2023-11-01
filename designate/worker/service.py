@@ -15,13 +15,13 @@
 # under the License.
 import time
 
-from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
 from designate import backend
 from designate.central import rpcapi as central_api
 from designate.common.decorators import rpc
+import designate.conf
 from designate.context import DesignateContext
 from designate import exceptions
 from designate import service
@@ -31,7 +31,7 @@ from designate.worker.tasks import zone as zonetasks
 
 
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class AlsoNotifyTask:
@@ -54,8 +54,8 @@ class Service(service.RPCService):
         self._pools_map = None
 
         super().__init__(
-            self.service_name, cfg.CONF['service:worker'].topic,
-            threads=cfg.CONF['service:worker'].threads,
+            self.service_name, CONF['service:worker'].topic,
+            threads=CONF['service:worker'].threads,
         )
 
     @property

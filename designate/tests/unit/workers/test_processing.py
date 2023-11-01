@@ -15,16 +15,16 @@
 # under the License.mport threading
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 
+import designate.conf
 from designate import exceptions
 from designate.tests import fixtures
 from designate.tests import TestCase
 from designate.worker import processing
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class TestProcessingExecutor(TestCase):

@@ -15,10 +15,12 @@
 # under the License.
 import abc
 
-from oslo_config import cfg
-
+import designate.conf
 from designate import exceptions
 from designate.plugin import DriverPlugin
+
+
+CONF = designate.conf.CONF
 
 
 class Quota(DriverPlugin, metaclass=abc.ABCMeta):
@@ -61,11 +63,11 @@ class Quota(DriverPlugin, metaclass=abc.ABCMeta):
 
     def get_default_quotas(self, context):
         return {
-            'zones': cfg.CONF.quota_zones,
-            'zone_recordsets': cfg.CONF.quota_zone_recordsets,
-            'zone_records': cfg.CONF.quota_zone_records,
-            'recordset_records': cfg.CONF.quota_recordset_records,
-            'api_export_size': cfg.CONF.quota_api_export_size,
+            'zones': CONF.quota_zones,
+            'zone_recordsets': CONF.quota_zone_recordsets,
+            'zone_records': CONF.quota_zone_records,
+            'recordset_records': CONF.quota_recordset_records,
+            'api_export_size': CONF.quota_api_export_size,
         }
 
     def get_quota(self, context, tenant_id, resource):

@@ -12,11 +12,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -160,7 +162,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self.assertEqual(1, len(response.json['pools']))
 
         # GET the default pool
-        pool_id = cfg.CONF['service:central'].default_pool_id
+        pool_id = CONF['service:central'].default_pool_id
         default_pool = self.central_service.get_pool(self.admin_context,
                                                      pool_id)
 

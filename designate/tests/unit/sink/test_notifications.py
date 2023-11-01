@@ -9,19 +9,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
-
 from unittest import mock
 
-from oslo_config import cfg
 import oslotest.base
 
+import designate.conf
 from designate.notification_handler import fake
 from designate.sink import service
 from designate.tests import fixtures
 from designate.tests import test_notification_handler
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class TestSinkNotification(oslotest.base.BaseTestCase,

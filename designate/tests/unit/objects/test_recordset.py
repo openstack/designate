@@ -16,16 +16,18 @@
 import itertools
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log import log as logging
 import oslotest.base
 
+
+import designate.conf
 from designate import exceptions
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 

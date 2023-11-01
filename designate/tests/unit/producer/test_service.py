@@ -20,16 +20,17 @@ Unit-test Producer service
 
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+import designate.conf
 from designate import exceptions
 from designate.producer import service
 import designate.service
 from designate.tests import fixtures
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 @mock.patch.object(service.rpcapi.CentralAPI, 'get_instance', mock.Mock())

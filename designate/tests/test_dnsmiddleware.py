@@ -14,15 +14,15 @@ from unittest import mock
 import dns
 import dns.query
 import dns.tsigkeyring
-from oslo_config import cfg
 
+import designate.conf
 from designate import dnsmiddleware
 from designate import dnsutils
 from designate.mdns import handler
 from designate import storage
 import designate.tests
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class TestSerializationMiddleware(designate.tests.TestCase):

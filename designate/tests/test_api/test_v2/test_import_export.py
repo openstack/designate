@@ -14,16 +14,11 @@
 import unittest
 
 from dns import zone as dnszone
-from oslo_config import cfg
 from webtest import TestApp
 
 from designate.api import admin as admin_api
 from designate.api import middleware
 from designate.tests.test_api.test_v2 import ApiV2TestCase
-
-
-cfg.CONF.import_opt('enabled_extensions_admin', 'designate.api.admin',
-                    group='service:api')
 
 
 class APIV2ZoneImportExportTest(ApiV2TestCase):

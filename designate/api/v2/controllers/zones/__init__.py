@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 import pecan
 
@@ -22,14 +21,14 @@ from designate.api.v2.controllers.zones import nameservers
 from designate.api.v2.controllers.zones import recordsets
 from designate.api.v2.controllers.zones import sharedzones
 from designate.api.v2.controllers.zones import tasks
+import designate.conf
 from designate import exceptions
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
 from designate import utils
 
-CONF = cfg.CONF
 
-
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 

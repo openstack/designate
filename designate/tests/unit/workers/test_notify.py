@@ -19,15 +19,16 @@ from unittest import mock
 import dns
 import dns.rdataclass
 import dns.rdatatype
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+import designate.conf
 from designate import dnsutils
 from designate.tests.unit import RoObject
 from designate.worker.tasks import zone as worker_zone
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class WorkerNotifyTest(oslotest.base.BaseTestCase):

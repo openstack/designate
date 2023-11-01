@@ -14,15 +14,16 @@ from unittest import mock
 
 import jinja2
 from oslo_concurrency import processutils
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+import designate.conf
 from designate import exceptions
 from designate.tests import fixtures
 from designate import utils
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class TestUtils(oslotest.base.BaseTestCase):

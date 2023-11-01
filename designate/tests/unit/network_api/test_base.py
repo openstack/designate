@@ -9,13 +9,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
-import designate.exceptions
-from designate.network_api import base
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
-CONF = cfg.CONF
+import designate.conf
+import designate.exceptions
+from designate.network_api import base
+
+
+CONF = designate.conf.CONF
 
 SERVICE_CATALOG = [
     {
@@ -149,7 +151,7 @@ class NetworkEndpointsFromConfigTest(oslotest.base.BaseTestCase):
         )
 
         result = self.base.endpoints_from_config(
-            cfg.CONF['network_api:neutron'].endpoints,
+            CONF['network_api:neutron'].endpoints,
         )
 
         self.assertEqual(
@@ -163,7 +165,7 @@ class NetworkEndpointsFromConfigTest(oslotest.base.BaseTestCase):
         )
 
         result = self.base.endpoints_from_config(
-            cfg.CONF['network_api:neutron'].endpoints,
+            CONF['network_api:neutron'].endpoints,
         )
 
         self.assertEqual(
@@ -177,7 +179,7 @@ class NetworkEndpointsFromConfigTest(oslotest.base.BaseTestCase):
         )
 
         result = self.base.endpoints_from_config(
-            cfg.CONF['network_api:neutron'].endpoints,
+            CONF['network_api:neutron'].endpoints,
             region='RegionFour',
         )
 
@@ -195,7 +197,7 @@ class NetworkEndpointsFromConfigTest(oslotest.base.BaseTestCase):
             designate.exceptions.ConfigurationError,
             'Endpoints are not correctly configured',
             self.base.endpoints_from_config,
-            cfg.CONF['network_api:neutron'].endpoints,
+            CONF['network_api:neutron'].endpoints,
             region='RegionFive',
         )
 
@@ -209,7 +211,7 @@ class NetworkEndpointsFromConfigTest(oslotest.base.BaseTestCase):
             designate.exceptions.ConfigurationError,
             'Endpoints are not correctly configured',
             self.base.endpoints_from_config,
-            cfg.CONF['network_api:neutron'].endpoints,
+            CONF['network_api:neutron'].endpoints,
         )
 
 

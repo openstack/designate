@@ -12,12 +12,13 @@
 from unittest import mock
 
 import dns.message
-from oslo_config import cfg
 
+import designate.conf
 from designate import dnsmiddleware
 import oslotest.base
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class TestDNSMiddleware(oslotest.base.BaseTestCase):

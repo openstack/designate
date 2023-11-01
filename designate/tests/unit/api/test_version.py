@@ -10,16 +10,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 import webtest
 
 from designate.api import versions
 from designate.common import constants
+import designate.conf
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class TestApiVersion(oslotest.base.BaseTestCase):

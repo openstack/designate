@@ -15,10 +15,10 @@
 # under the License.
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+import designate.conf
 from designate import dnsmiddleware
 from designate.mdns import handler
 from designate.mdns import service
@@ -27,7 +27,8 @@ from designate import storage
 from designate.tests import fixtures
 import designate.utils
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class MdnsServiceTest(oslotest.base.BaseTestCase):

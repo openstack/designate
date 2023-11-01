@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_middleware import base
@@ -23,6 +22,7 @@ from oslo_serialization import jsonutils
 from oslo_utils import strutils
 import webob.dec
 
+import designate.conf
 from designate import context
 from designate import exceptions
 from designate import notifications
@@ -30,6 +30,7 @@ from designate import objects
 from designate.objects.adapters import DesignateAdapter
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -39,7 +40,7 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
 
     Code nabbed from cinder.
     """
-    pipeline = local_conf[cfg.CONF['service:api'].auth_strategy]
+    pipeline = local_conf[CONF['service:api'].auth_strategy]
     pipeline = pipeline.split()
     LOG.info('Getting auth pipeline: %s', pipeline[:-1])
     filters = [loader.get_filter(n) for n in pipeline[:-1]]
@@ -227,8 +228,8 @@ class MaintenanceMiddleware(base.Middleware):
 
         LOG.info('Starting designate maintenance middleware')
 
-        self.enabled = cfg.CONF['service:api'].maintenance_mode
-        self.role = cfg.CONF['service:api'].maintenance_mode_role
+        self.enabled = CONF['service:api'].maintenance_mode
+        self.role = CONF['service:api'].maintenance_mode_role
 
     def process_request(self, request):
         # If maintaince mode is not enabled, pass the request on as soon as

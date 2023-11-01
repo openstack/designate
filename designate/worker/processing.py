@@ -16,13 +16,14 @@
 import time
 
 import futurist
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import exceptions
 
+
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 def default_executor():

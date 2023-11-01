@@ -13,16 +13,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 import pecan
 
 from designate.api.v2.controllers import rest
 from designate.common import keystone
+import designate.conf
 from designate import exceptions
 from designate.objects.adapters import DesignateAdapter
 from designate.objects import QuotaList
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -59,7 +61,7 @@ class QuotasController(rest.RestController):
         # on a best effort basis
         # this will raise only if KeystoneV3 endpoint is not found at all,
         # or the creds are passing but the project is not found
-        if cfg.CONF['service:api'].quotas_verify_project_id:
+        if CONF['service:api'].quotas_verify_project_id:
             keystone.verify_project_id(context, project_id)
 
         quotas = DesignateAdapter.parse('API_v2', body, QuotaList())

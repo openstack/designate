@@ -11,13 +11,14 @@
 # under the License.mport threading
 from unittest import mock
 
-from oslo_config import cfg
 import oslotest.base
 
+import designate.conf
 from designate.notification_handler import fake
 from designate.tests import test_notification_handler
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class TestFakeHandler(oslotest.base.BaseTestCase,

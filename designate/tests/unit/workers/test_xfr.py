@@ -15,18 +15,19 @@
 # under the License.
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 from designate.common import constants
+import designate.conf
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
 from designate.tests import fixtures
 from designate.worker.tasks import zone as worker_zone
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class TestXfr(oslotest.base.BaseTestCase):

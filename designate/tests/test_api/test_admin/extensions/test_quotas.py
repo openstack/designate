@@ -13,12 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
-
+import designate.conf
 from designate.tests.test_api.test_admin import AdminApiTestCase
 
-cfg.CONF.import_opt('enabled_extensions_admin', 'designate.api.admin',
-                    group='service:api')
+
+CONF = designate.conf.CONF
 
 
 class AdminApiQuotasTest(AdminApiTestCase):
@@ -46,8 +45,8 @@ class AdminApiQuotasTest(AdminApiTestCase):
 
         max_zones = response.json['quota']['zones']
         max_zone_records = response.json['quota']['zone_records']
-        self.assertEqual(cfg.CONF.quota_zones, max_zones)
-        self.assertEqual(cfg.CONF.quota_zone_records, max_zone_records)
+        self.assertEqual(CONF.quota_zones, max_zones)
+        self.assertEqual(CONF.quota_zone_records, max_zone_records)
 
     def test_patch_quotas(self):
         self.policy({'set_quotas': '@'})

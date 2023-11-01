@@ -16,18 +16,19 @@
 import time
 
 from eventlet import Timeout
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 import requests
 from requests.adapters import HTTPAdapter
 
 from designate.backend import base
+import designate.conf
 from designate import exceptions
 from designate import utils
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 CFG_GROUP_NAME = 'backend:dynect'
 
 

@@ -14,16 +14,17 @@
 import time
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_service import loopingcall
 import oslotest.base
 
+import designate.conf
 from designate import heartbeat_emitter
 from designate import objects
 from designate.tests import fixtures
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
@@ -105,7 +106,7 @@ class RpcEmitterTest(oslotest.base.BaseTestCase):
 
             mock_service_status.assert_called_once_with(
                 service_name='svc',
-                hostname=cfg.CONF.host,
+                hostname=CONF.host,
                 status='UP',
                 stats={},
                 capabilities={},

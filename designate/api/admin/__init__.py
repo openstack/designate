@@ -12,15 +12,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 import pecan.deploy
 
+import designate.conf
+
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
 def factory(global_config, **local_conf):
-    if not cfg.CONF['service:api'].enable_api_admin:
+    if not CONF['service:api'].enable_api_admin:
         def disabled_app(environ, start_response):
             status = '404 Not Found'
             start_response(status, [])

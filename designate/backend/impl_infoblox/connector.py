@@ -14,16 +14,17 @@
 #    under the License.
 from urllib import parse
 
-from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import strutils
 import requests
 
 from designate.backend.impl_infoblox import ibexceptions as exc
+import designate.conf
+
 
 CFG_GROUP_NAME = 'backend:infoblox'
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 LOG = log.getLogger(__name__)
 
 

@@ -15,15 +15,16 @@ import ipaddress
 import os.path
 import urllib
 
-from oslo_config import cfg
 from oslo_log import log as logging
 import requests
 
 from designate.backend import base
+import designate.conf
 from designate import exceptions
 
+
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class PDNS4Backend(base.Backend):

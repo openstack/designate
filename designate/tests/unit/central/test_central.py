@@ -12,19 +12,19 @@
 
 from unittest import mock
 
-from oslo_config import cfg
 import oslotest.base
 
 
 from designate.central import service
 from designate.common import profiler
+import designate.conf
 from designate import exceptions
 from designate.objects import record
 from designate.objects import zone
 from designate import policy
 from designate import rpc
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class CentralTestCase(oslotest.base.BaseTestCase):

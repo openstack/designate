@@ -28,11 +28,11 @@ import shutil
 import tempfile
 
 import fixtures
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
 import tooz.coordination
 
+import designate.conf
 from designate.manage import database as db_commands
 from designate import network_api
 from designate.network_api import fake as fake_network_api
@@ -44,6 +44,7 @@ import designate.utils
 """Test fixtures
 """
 _TRUE_VALUES = ('True', 'true', '1', 'yes')
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -170,7 +171,7 @@ class DatabaseFixture(fixtures.Fixture):
 class NetworkAPIFixture(fixtures.Fixture):
     def setUp(self):
         super().setUp()
-        self.api = network_api.get_network_api(cfg.CONF.network_api)
+        self.api = network_api.get_network_api(CONF.network_api)
         self.fake = fake_network_api
         self.addCleanup(self.fake.reset_floatingips)
 

@@ -15,15 +15,15 @@
 # under the License.
 from urllib import parse
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import exceptions
 from designate import objects
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 
 
 class BaseView:
@@ -141,12 +141,12 @@ class BaseView:
         #                                                 parents)
 
         # defined in etc/designate/designate.conf.sample
-        limit = cfg.CONF['service:api'].default_limit_admin
+        limit = CONF['service:api'].default_limit_admin
 
         if 'limit' in params:
             limit = params['limit']
             if limit.lower() == 'max':
-                limit = cfg.CONF['service:api'].max_limit_admin
+                limit = CONF['service:api'].max_limit_admin
             else:
                 try:
                     limit = int(limit)

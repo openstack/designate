@@ -15,13 +15,13 @@
 # under the License.mport threading
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslo_messaging as messaging
 import oslotest.base
 
 from designate import backend
 from designate.central import rpcapi as central_rpcapi
+import designate.conf
 from designate import exceptions
 from designate import objects
 import designate.service
@@ -31,7 +31,8 @@ from designate.tests import fixtures
 from designate.worker import processing
 from designate.worker import service
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class TestService(oslotest.base.BaseTestCase):

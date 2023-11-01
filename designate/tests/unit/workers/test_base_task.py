@@ -13,12 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 from unittest import mock
 
 from designate.central import rpcapi as central_rpcapi
+import designate.conf
 from designate import exceptions
 from designate import objects
 import designate.quota.base
@@ -28,7 +28,7 @@ from designate.worker import rpcapi as worker_rpcapi
 from designate.worker.tasks import base
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 class TestTask(oslotest.base.BaseTestCase):

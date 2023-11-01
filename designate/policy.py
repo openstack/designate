@@ -19,10 +19,11 @@ from oslo_policy import opts
 from oslo_policy import policy
 
 from designate.common import policies
+import designate.conf
 from designate import exceptions
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 # Add the default policy opts
 # TODO(gmann): Remove setting the default value of config policy_file
@@ -45,7 +46,7 @@ def reset():
 
 
 def set_rules(data, default_rule=None, overwrite=True):
-    default_rule = default_rule or cfg.CONF.policy_default_rule
+    default_rule = default_rule or CONF.policy_default_rule
     if not _ENFORCER:
         LOG.debug("Enforcer not present, recreating at rules stage.")
         init()

@@ -15,14 +15,15 @@
 # under the License.
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_log import log as logging
 import testscenarios
 
+import designate.conf
 from designate import exceptions
 from designate import quota
 import designate.tests
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 load_tests = testscenarios.load_tests_apply_scenarios
 
@@ -45,11 +46,11 @@ class QuotaTestCase(designate.tests.TestCase):
 
         self.assertIsNotNone(quotas)
         self.assertEqual({
-            'api_export_size': cfg.CONF.quota_api_export_size,
-            'zones': cfg.CONF.quota_zones,
-            'zone_recordsets': cfg.CONF.quota_zone_recordsets,
-            'zone_records': cfg.CONF.quota_zone_records,
-            'recordset_records': cfg.CONF.quota_recordset_records,
+            'api_export_size': CONF.quota_api_export_size,
+            'zones': CONF.quota_zones,
+            'zone_recordsets': CONF.quota_zone_recordsets,
+            'zone_records': CONF.quota_zone_records,
+            'recordset_records': CONF.quota_recordset_records,
         }, quotas)
 
     def test_limit_check_unknown(self):
@@ -78,11 +79,11 @@ class QuotaTestCase(designate.tests.TestCase):
                                zone_records=0)
 
         self.quota.limit_check(context, 'tenant_id',
-                               zones=(cfg.CONF.quota_zones - 1))
+                               zones=(CONF.quota_zones - 1))
         self.quota.limit_check(
             context,
             'tenant_id',
-            zone_records=(cfg.CONF.quota_zone_records - 1))
+            zone_records=(CONF.quota_zone_records - 1))
 
     def test_limit_check_at(self):
         context = self.get_admin_context()
@@ -90,13 +91,13 @@ class QuotaTestCase(designate.tests.TestCase):
         self.assertRaisesRegex(
             exceptions.OverQuota, 'Quota exceeded for zones\\.',
             self.quota.limit_check,
-            context, 'tenant_id', zones=cfg.CONF.quota_zones + 1
+            context, 'tenant_id', zones=CONF.quota_zones + 1
         )
 
         self.assertRaisesRegex(
             exceptions.OverQuota, 'Quota exceeded for zone_records\\.',
             self.quota.limit_check,
-            context, 'tenant_id', zone_records=cfg.CONF.quota_zone_records + 1
+            context, 'tenant_id', zone_records=CONF.quota_zone_records + 1
         )
 
     def test_limit_check_unlimited(self):

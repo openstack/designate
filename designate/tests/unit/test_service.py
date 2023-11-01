@@ -13,19 +13,20 @@ import errno
 import socket
 from unittest import mock
 
-from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_service import service
 import oslotest.base
 
 from designate.common import profiler
+import designate.conf
 from designate.mdns import handler
 from designate import policy
 from designate import rpc
 from designate import service as designate_service
 from designate import utils
 
-CONF = cfg.CONF
+
+CONF = designate.conf.CONF
 
 
 class TestBaseService(oslotest.base.BaseTestCase):

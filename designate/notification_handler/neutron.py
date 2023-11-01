@@ -13,12 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate.notification_handler import base
 
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -27,9 +28,9 @@ class NeutronFloatingHandler(base.BaseAddressHandler):
     __plugin_name__ = 'neutron_floatingip'
 
     def get_exchange_topics(self):
-        exchange = cfg.CONF[self.name].control_exchange
+        exchange = CONF[self.name].control_exchange
 
-        topics = [topic for topic in cfg.CONF[self.name].notification_topics]
+        topics = [topic for topic in CONF[self.name].notification_topics]
 
         return (exchange, topics)
 
@@ -43,7 +44,7 @@ class NeutronFloatingHandler(base.BaseAddressHandler):
         LOG.debug('%s received notification - %s',
                   self.get_canonical_name(), event_type)
 
-        zone_id = cfg.CONF[self.name].zone_id
+        zone_id = CONF[self.name].zone_id
 
         if not zone_id:
             LOG.error('NeutronFloatingHandler: zone_id is None, '

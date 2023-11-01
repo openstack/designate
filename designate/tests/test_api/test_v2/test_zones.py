@@ -16,14 +16,17 @@
 from unittest import mock
 from unittest.mock import patch
 
-from oslo_config import cfg
 import oslo_messaging as messaging
 
 from designate.central import service as central_service
+import designate.conf
 from designate import exceptions
 from designate import objects
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 from designate.worker import rpcapi as worker_api
+
+
+CONF = designate.conf.CONF
 
 
 class ApiV2ZonesTest(ApiV2TestCase):
@@ -541,7 +544,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertIn('id', response.json)
         self.assertIn('created_at', response.json)
         self.assertEqual('PENDING', response.json['status'])
-        self.assertEqual(cfg.CONF['service:central'].managed_resource_email,
+        self.assertEqual(CONF['service:central'].managed_resource_email,
                          response.json['email'])
 
         self.assertIsNone(response.json['updated_at'])
@@ -571,7 +574,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
                 {'host': '192.0.2.2', 'port': 69}
             ])
         )
-        zone.email = cfg.CONF['service:central'].managed_resource_email
+        zone.email = CONF['service:central'].managed_resource_email
 
         # Create a zone
         zone = self.central_service.create_zone(self.admin_context, zone)
@@ -603,7 +606,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_xfr_request(self):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
-        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['email'] = CONF['service:central'].managed_resource_email
         fixture['masters'] = [{"host": "192.0.2.10", "port": 53}]
 
         # Create a zone
@@ -641,7 +644,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_update_secondary_email_invalid_object(self):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
-        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['email'] = CONF['service:central'].managed_resource_email
 
         # Create a zone
         zone = self.create_zone(**fixture)
