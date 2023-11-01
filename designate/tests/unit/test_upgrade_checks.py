@@ -35,7 +35,7 @@ class TestDuplicateServiceStatus(tests.TestCase):
     def test_success(self):
         fake_record = {'id': '1',
                        'service_name': 'worker',
-                       'hostname': 'localhost',
+                       'hostname': '203.0.113.1',
                        'status': 'UP',
                        'stats': '',
                        'capabilities': '',

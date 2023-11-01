@@ -188,10 +188,10 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
 
     @mock.patch.object(dnsutils, 'send_dns_message')
     def test_notify(self, mock_send_dns_message):
-        dnsutils.notify('notify.test.', 'localhost', port=54)
+        dnsutils.notify('notify.test.', '203.0.113.1', port=54)
 
         mock_send_dns_message.assert_called_with(
-            mock.ANY, 'localhost', port=54, timeout=10
+            mock.ANY, '203.0.113.1', port=54, timeout=10
         )
 
         query = mock_send_dns_message.call_args[0][0]
@@ -209,10 +209,10 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
 
     @mock.patch.object(dnsutils, 'send_dns_message')
     def test_soa(self, mock_send_dns_message):
-        dnsutils.soa_query('soa.test.', 'localhost', port=54)
+        dnsutils.soa_query('soa.test.', '203.0.113.1', port=54)
 
         mock_send_dns_message.assert_called_with(
-            mock.ANY, 'localhost', port=54, timeout=10
+            mock.ANY, '203.0.113.1', port=54, timeout=10
         )
 
         query = mock_send_dns_message.call_args[0][0]
@@ -239,7 +239,7 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
         mock_send_dns_message.return_value = mock_result
 
         self.assertEqual(
-            5, dnsutils.get_serial('serial.test.', 'localhost', port=54)
+            5, dnsutils.get_serial('serial.test.', '203.0.113.1', port=54)
         )
 
         query = mock_send_dns_message.call_args[0][0]
@@ -262,7 +262,7 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
         mock_send_dns_message.return_value = mock_result
 
         self.assertFalse(
-            dnsutils.get_serial('serial.test.', 'localhost', port=54)
+            dnsutils.get_serial('serial.test.', '203.0.113.1', port=54)
         )
 
     @mock.patch.object(dnsutils, 'send_dns_message')
@@ -275,5 +275,5 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
         mock_send_dns_message.return_value = mock_result
 
         self.assertFalse(
-            dnsutils.get_serial('serial.test.', 'localhost', port=54)
+            dnsutils.get_serial('serial.test.', '203.0.113.1', port=54)
         )

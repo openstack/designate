@@ -205,7 +205,7 @@ class TestDNSService(oslotest.base.BaseTestCase):
         self.service._running.is_set.side_effect = [True, True, False]
 
         mock_client = mock.Mock()
-        addr = ('192.0.2.1', 5353, '127.0.0.1', 5353)
+        addr = ('192.0.2.1', 5353, '203.0.113.2', 5353)
 
         mock_sock_tcp = mock.Mock()
         mock_sock_tcp.accept.return_value = (mock_client, addr)

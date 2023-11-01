@@ -33,7 +33,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             context.DesignateContext, 'get_admin_context',
             return_value=self.admin_context).start()
 
-        self.base_address = 'http://localhost:8081/api/v1/servers'
+        self.base_address = 'http://203.0.113.1:8081/api/v1/servers'
         self.zone = objects.Zone(
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             name='example.com.',
@@ -47,7 +47,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
                 {'host': '192.0.2.2', 'port': 35},
             ],
             'options': [
-                {'key': 'api_endpoint', 'value': 'http://localhost:8081'},
+                {'key': 'api_endpoint', 'value': 'http://203.0.113.1:8081'},
                 {'key': 'api_token', 'value': 'api_key'},
                 {'key': 'api_ca_cert', 'value': ''}
             ],

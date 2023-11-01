@@ -35,7 +35,7 @@ class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
 
         CONF.set_override('emitter_type', 'noop', 'heartbeat_emitter')
         CONF.set_override('heartbeat_interval', 0.1, 'heartbeat_emitter')
-        CONF.set_override('host', 'localhost')
+        CONF.set_override('host', '203.0.113.1')
 
     @mock.patch.object(loopingcall, 'FixedIntervalLoopingCall')
     def test_start(self, mock_looping):
@@ -75,7 +75,7 @@ class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
         noop_emitter.stop()
 
         self.assertIn(
-            "<ServiceStatus service_name:'svc' hostname:'localhost' "
+            "<ServiceStatus service_name:'svc' hostname:'203.0.113.1' "
             "status:'UP'>",
             self.stdlog.logger.output
         )

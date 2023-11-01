@@ -903,7 +903,7 @@ class SqlalchemyStorageTest(TestCase):
             objects=[objects.ZoneAttribute(key='foo', value='bar')]
         )
         zone.masters = objects.ZoneMasterList(
-            objects=[objects.ZoneMaster(host='127.0.0.1', port=80)]
+            objects=[objects.ZoneMaster(host='192.0.2.1', port=80)]
         )
 
         # Perform the update
@@ -1563,13 +1563,13 @@ class SqlalchemyStorageTest(TestCase):
     def test_find_records_criterion_wildcard(self):
         zone = self.create_zone()
 
-        records = [objects.Record.from_dict({'data': '127.0.0.1'})]
+        records = [objects.Record.from_dict({'data': '192.0.2.1'})]
         recordset = self.create_recordset(zone, type='A', records=records)
 
         criterion = dict(
             zone_id=zone['id'],
             recordset_id=recordset['id'],
-            data='%.0.0.1',
+            data='%.0.2.1',
         )
 
         results = self.storage.find_records(self.admin_context, criterion)
@@ -2906,7 +2906,7 @@ class SqlalchemyStorageTest(TestCase):
         # Update the pool_target
         pool_target.description = 'Two'
         pool_target.masters = objects.PoolTargetMasterList(
-            objects=[objects.PoolTargetMaster(host='127.0.0.1', port=80)]
+            objects=[objects.PoolTargetMaster(host='192.0.2.1', port=80)]
         )
         pool_target.options = objects.PoolTargetOptionList(
             objects=[objects.PoolTargetOption(key='foo', value='bar')]
@@ -3006,7 +3006,7 @@ class SqlalchemyStorageTest(TestCase):
 
         target = self.storage.create_pool_target_master(
             self.admin_context, pool_target['id'],
-            objects.PoolTargetMaster(host='127.0.0.1', port=80)
+            objects.PoolTargetMaster(host='192.0.2.1', port=80)
         )
 
         result = self.storage._find_pool_target_masters(
@@ -3020,7 +3020,7 @@ class SqlalchemyStorageTest(TestCase):
 
         target = self.storage.create_pool_target_master(
             self.admin_context, pool_target['id'],
-            objects.PoolTargetMaster(host='127.0.0.1', port=80)
+            objects.PoolTargetMaster(host='192.0.2.1', port=80)
         )
 
         target.port = 443
@@ -3037,7 +3037,7 @@ class SqlalchemyStorageTest(TestCase):
 
         target = self.storage.create_pool_target_master(
             self.admin_context, pool_target['id'],
-            objects.PoolTargetMaster(host='127.0.0.1', port=80)
+            objects.PoolTargetMaster(host='192.0.2.1', port=80)
         )
 
         self.storage.delete_pool_target_master(
@@ -3102,7 +3102,7 @@ class SqlalchemyStorageTest(TestCase):
 
         zone_master = self.storage.create_zone_master(
             self.admin_context, zone['id'],
-            objects.ZoneMaster(host='127.0.0.1', port='80')
+            objects.ZoneMaster(host='192.0.2.1', port='80')
         )
 
         result = self.storage._find_zone_masters(
@@ -3115,7 +3115,7 @@ class SqlalchemyStorageTest(TestCase):
 
         zone_master = self.storage.create_zone_master(
             self.admin_context, zone['id'],
-            objects.ZoneMaster(host='127.0.0.1', port='80')
+            objects.ZoneMaster(host='192.0.2.1', port='80')
         )
 
         zone_master.port = 443
@@ -3133,7 +3133,7 @@ class SqlalchemyStorageTest(TestCase):
 
         zone_master = self.storage.create_zone_master(
             self.admin_context, zone['id'],
-            objects.ZoneMaster(host='127.0.0.1', port='80')
+            objects.ZoneMaster(host='192.0.2.1', port='80')
         )
 
         self.storage.delete_zone_master(

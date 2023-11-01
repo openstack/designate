@@ -29,7 +29,7 @@ class TestApiVersion(oslotest.base.BaseTestCase):
         self.useFixture(cfg_fixture.Config(CONF))
 
     def test_add_a_version(self):
-        api_url = 'http://localhost/v2'
+        api_url = 'http://203.0.113.1/v2'
         results = []
 
         versions._add_a_version(
@@ -45,7 +45,7 @@ class TestApiVersion(oslotest.base.BaseTestCase):
     def test_get_versions(self):
         CONF.set_override('enable_host_header', False, 'service:api')
         CONF.set_override(
-            'api_base_uri', 'http://127.0.0.2:9001/', 'service:api'
+            'api_base_uri', 'http://203.0.113.1:9001/', 'service:api'
         )
 
         self.app = versions.factory({})
@@ -57,7 +57,7 @@ class TestApiVersion(oslotest.base.BaseTestCase):
 
         self.assertEqual(3, len(response.json['versions']))
         self.assertEqual(
-            'http://127.0.0.2:9001/v2',
+            'http://203.0.113.1:9001/v2',
             response.json['versions'][0]['links'][0]['href']
         )
 

@@ -158,7 +158,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'fake',
             'options': [
-                {'key': 'host', 'value': '127.0.0.1'},
+                {'key': 'host', 'value': '203.0.113.1'},
                 {'key': 'port', 'value': 53},
             ],
             'backend': self.backend,
@@ -183,7 +183,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
 
         mock_notify.assert_called_once_with(
             self.zone.name,
-            '127.0.0.1',
+            '203.0.113.1',
             port=53
         )
 
@@ -202,7 +202,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
 
         mock_notify.assert_called_once_with(
             self.zone.name,
-            '127.0.0.1',
+            '203.0.113.1',
             port=53
         )
 
@@ -248,7 +248,7 @@ class TestSendNotify(oslotest.base.BaseTestCase):
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'fake',
             'options': [
-                {'key': 'host', 'value': '127.0.0.1'},
+                {'key': 'host', 'value': '203.0.113.1'},
                 {'key': 'port', 'value': 53},
             ],
         })
@@ -268,7 +268,7 @@ class TestSendNotify(oslotest.base.BaseTestCase):
 
         mock_notify.assert_called_once_with(
             self.zone.name,
-            '127.0.0.1',
+            '203.0.113.1',
             port=53
         )
 

@@ -92,7 +92,7 @@
     "_context_timestamp": "2012-11-03T17:54:27.320555",
     "_context_read_deleted": "no",
     "_context_user_id": "953f8394fa044302b7d42f47228e427d",
-    "_context_remote_address": "127.0.0.1",
+    "_context_remote_address": "192.0.2.1",
     "publisher_id": "scheduler.stack01",
     "payload": {
         "request_spec": {

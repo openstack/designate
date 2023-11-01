@@ -143,14 +143,14 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         request = dns.message.make_query(
             'www.example.org.', dns.rdatatype.SOA
         )
-        request.environ = dict(addr=['127.0.0.1', 53], context=self.context)
+        request.environ = dict(addr=['203.0.113.1', 53], context=self.context)
 
         response = self.handler._handle_notify(request)
 
         self.assertEqual(dns.rcode.REFUSED, tuple(response)[0].rcode())
 
         self.assertIn(
-            'NOTIFY for None from non-master server 127.0.0.1, refusing.',
+            'NOTIFY for None from non-master server 203.0.113.1, refusing.',
             self.stdlog.logger.output
         )
 

@@ -37,7 +37,7 @@ class WorkerNotifyTest(TestCase):
         super(WorkerNotifyTest, self).setUp()
         self.nameserver = objects.PoolNameserver.from_dict({
             'id': 'f278782a-07dc-4502-9177-b5d85c5f7c7e',
-            'host': '127.0.0.1',
+            'host': '192.0.2.1',
             'port': 65255
         })
         self.mock_tg = mock.Mock()

@@ -44,7 +44,7 @@ class TestXfr(oslotest.base.BaseTestCase):
             name='example.com.',
             serial=1,
             masters=objects.ZoneMasterList.from_list(
-                [{'host': '127.0.0.1', 'port': 53}, ]
+                [{'host': '203.0.113.1', 'port': 53}, ]
             ),
             type=constants.ZONE_SECONDARY,
         )
@@ -73,7 +73,7 @@ class TestXfr(oslotest.base.BaseTestCase):
             name='example.com.',
             serial=1,
             masters=objects.ZoneMasterList.from_list(
-                [{'host': '127.0.0.1', 'port': 53}, ]
+                [{'host': '203.0.113.1', 'port': 53}, ]
             ),
             type=constants.ZONE_SECONDARY,
             recordsets=objects.RecordSetList(objects=[]),
@@ -103,7 +103,7 @@ class TestXfr(oslotest.base.BaseTestCase):
 
         self.xfr = worker_zone.ZoneXfr(
             mock.Mock(), self.context, zone,
-            servers=[{'host': '127.0.0.1', 'port': 53}, ]
+            servers=[{'host': '203.0.113.1', 'port': 53}, ]
         )
         self.xfr._central_api = mock.Mock()
 
@@ -122,7 +122,7 @@ class TestXfr(oslotest.base.BaseTestCase):
             name='example.com.',
             serial=1,
             masters=objects.ZoneMasterList.from_list(
-                [{'host': '127.0.0.1', 'port': 53}, ]
+                [{'host': '203.0.113.1', 'port': 53}, ]
             ),
             type=constants.ZONE_SECONDARY,
         )
@@ -144,7 +144,7 @@ class TestXfr(oslotest.base.BaseTestCase):
             name='example.com.',
             serial=1,
             masters=objects.ZoneMasterList.from_list(
-                [{'host': '127.0.0.1', 'port': 53}, ]
+                [{'host': '203.0.113.1', 'port': 53}, ]
             ),
             type=constants.ZONE_PRIMARY,
         )

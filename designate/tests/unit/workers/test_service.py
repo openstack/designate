@@ -316,13 +316,13 @@ class TestService(oslotest.base.BaseTestCase):
         zone = mock.Mock()
 
         self.service.get_serial_number(
-            self.context, zone, 'localhost', 53
+            self.context, zone, '203.0.113.1', 53
         )
 
         mock_get_serial_number.assert_called_with(
             self.service.executor,
             self.context,
             zone,
-            'localhost',
+            '203.0.113.1',
             53
         )

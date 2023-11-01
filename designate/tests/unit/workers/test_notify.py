@@ -36,7 +36,7 @@ class WorkerNotifyTest(oslotest.base.BaseTestCase):
         self.useFixture(cfg_fixture.Config(CONF))
         self.zone = RoObject(name='zn', serial=314)
         self.notify = worker_zone.GetZoneSerial(
-            mock.Mock(), mock.Mock(), self.zone, 'localhost', 1234
+            mock.Mock(), mock.Mock(), self.zone, '203.0.113.1', 1234
         )
 
     @mock.patch('time.sleep', mock.Mock())
@@ -53,7 +53,7 @@ class WorkerNotifyTest(oslotest.base.BaseTestCase):
         )
         zone = RoObject(name='zn', serial=314)
         notify = worker_zone.GetZoneSerial(mock.Mock(), mock.Mock(),
-                                           zone, 'localhost',
+                                           zone, '203.0.113.1',
                                            1234)
         notify._make_and_send_soa_message = mock.Mock(
             return_value=response
@@ -73,7 +73,7 @@ class WorkerNotifyTest(oslotest.base.BaseTestCase):
         )
         zone = RoObject(name='zn', serial=0, action='DELETE')
         notify = worker_zone.GetZoneSerial(mock.Mock(), mock.Mock(),
-                                           zone, 'localhost',
+                                           zone, '203.0.113.1',
                                            1234)
         notify._make_and_send_soa_message = mock.Mock(
             return_value=response
@@ -96,7 +96,7 @@ class WorkerNotifyTest(oslotest.base.BaseTestCase):
             ednsflags=dns.rcode.NOERROR,
         )
         notify = worker_zone.GetZoneSerial(mock.Mock(), mock.Mock(),
-                                           zone, 'localhost',
+                                           zone, '203.0.113.1',
                                            1234)
         notify._make_and_send_soa_message = mock.Mock(
             return_value=response
@@ -117,7 +117,7 @@ class WorkerNotifyTest(oslotest.base.BaseTestCase):
         mock_send_dns_message.return_value = response
 
         notify = worker_zone.GetZoneSerial(mock.Mock(), mock.Mock(),
-                                           self.zone, 'localhost',
+                                           self.zone, '203.0.113.1',
                                            1234)
 
         self.assertEqual(('ERROR', None), notify())
@@ -135,7 +135,7 @@ class WorkerNotifyTest(oslotest.base.BaseTestCase):
         mock_send_dns_message.return_value = response
 
         notify = worker_zone.GetZoneSerial(mock.Mock(), mock.Mock(),
-                                           self.zone, 'localhost',
+                                           self.zone, '203.0.113.1',
                                            1234)
 
         self.assertEqual(('ERROR', None), notify())

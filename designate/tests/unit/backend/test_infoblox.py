@@ -30,7 +30,7 @@ class InfobloxConnectorTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(InfobloxConnectorTestCase, self).setUp()
         self.options = {
-            'wapi_url': 'https://localhost/wapi/v2.0/',
+            'wapi_url': 'https://203.0.113.1/wapi/v2.0/',
             'username': 'username',
             'password': 'password',
             'ns_group': 'ns_group',
@@ -40,7 +40,7 @@ class InfobloxConnectorTestCase(oslotest.base.BaseTestCase):
 
     def test_infoblox_constructor(self):
         options = {
-            'wapi_url': 'https://localhost/wapi/v2.0/',
+            'wapi_url': 'https://203.0.113.1/wapi/v2.0/',
             'username': 'username',
             'password': 'password',
             'ns_group': 'ns_group',
@@ -53,23 +53,23 @@ class InfobloxConnectorTestCase(oslotest.base.BaseTestCase):
 
     def test_construct_url(self):
         self.assertEqual(
-            'https://localhost/wapi/v2.0/test',
+            'https://203.0.113.1/wapi/v2.0/test',
             self.infoblox._construct_url('test')
         )
         self.assertEqual(
-            'https://localhost/wapi/v2.0/test?*foo=bar&foo=0&bar=1',
+            'https://203.0.113.1/wapi/v2.0/test?*foo=bar&foo=0&bar=1',
             self.infoblox._construct_url(
                 'test', {'foo': 0, 'bar': 1}, {'foo': {'value': 'bar'}}
             )
         )
         self.assertEqual(
-            'https://localhost/wapi/v2.0/test?*foo=bar&foo=0',
+            'https://203.0.113.1/wapi/v2.0/test?*foo=bar&foo=0',
             self.infoblox._construct_url(
                 'test', {'foo': 0}, {'foo': {'value': 'bar'}}
             )
         )
         self.assertEqual(
-            'https://localhost/wapi/v2.0/test?foo=0',
+            'https://203.0.113.1/wapi/v2.0/test?foo=0',
             self.infoblox._construct_url(
                 'test', {'foo': 0}
             )
@@ -98,7 +98,7 @@ class InfobloxConnectorTestCase(oslotest.base.BaseTestCase):
 class InfobloxBackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super(InfobloxBackendTestCase, self).setUp()
-        self.base_address = 'https://localhost/wapi'
+        self.base_address = 'https://203.0.113.1/wapi'
 
         self.context = mock.Mock()
         self.admin_context = mock.Mock()
@@ -118,7 +118,7 @@ class InfobloxBackendTestCase(oslotest.base.BaseTestCase):
                 {'host': '1.1.1.1', 'port': 53},
             ],
             'options': [
-                {'key': 'wapi_url', 'value': 'https://localhost/wapi/v2.0/'},
+                {'key': 'wapi_url', 'value': 'https://203.0.113.1/wapi/v2.0/'},
                 {'key': 'username', 'value': 'test'},
                 {'key': 'password', 'value': 'test'},
                 {'key': 'ns_group', 'value': 'test'},

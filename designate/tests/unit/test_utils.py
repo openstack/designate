@@ -362,16 +362,16 @@ class TestUtils(oslotest.base.BaseTestCase):
         mock_sock = mock.MagicMock()
         mock_sock_impl.return_value = mock_sock
 
-        utils.bind_tcp('127.0.0.1', 53, 100, 1)
+        utils.bind_tcp('203.0.113.1', 53, 100, 1)
 
         mock_sock.settimeout.assert_called_once_with(1)
 
-        mock_sock.bind.assert_called_once_with(('127.0.0.1', 53))
+        mock_sock.bind.assert_called_once_with(('203.0.113.1', 53))
 
         mock_sock.listen.assert_called_once_with(100)
 
         self.assertIn(
-            'Opening TCP Listening Socket on 127.0.0.1:53',
+            'Opening TCP Listening Socket on 203.0.113.1:53',
             self.stdlog.logger.output
         )
 
@@ -381,9 +381,9 @@ class TestUtils(oslotest.base.BaseTestCase):
         mock_sock = mock.MagicMock()
         mock_sock_impl.return_value = mock_sock
 
-        mock_sock.getsockname.return_value = ('127.0.0.1', random_port)
+        mock_sock.getsockname.return_value = ('203.0.113.1', random_port)
 
-        utils.bind_tcp('127.0.0.1', 0, 100, 1)
+        utils.bind_tcp('203.0.113.1', 0, 100, 1)
 
         self.assertIn(
             'Listening on TCP port %(port)d' % {'port': random_port},
@@ -396,7 +396,7 @@ class TestUtils(oslotest.base.BaseTestCase):
         mock_sock_impl.return_value = mock_sock
         mock_sock.setsockopt.side_effect = [None, None, AttributeError, None]
 
-        utils.bind_tcp('127.0.0.1', 53, 100, 1)
+        utils.bind_tcp('203.0.113.1', 53, 100, 1)
 
         self.assertIn(
             'SO_REUSEPORT not available, ignoring.',
@@ -408,14 +408,14 @@ class TestUtils(oslotest.base.BaseTestCase):
         mock_sock = mock.MagicMock()
         mock_sock_impl.return_value = mock_sock
 
-        utils.bind_udp('127.0.0.1', 53)
+        utils.bind_udp('203.0.113.1', 53)
 
         mock_sock.settimeout.assert_called_once_with(1)
 
-        mock_sock.bind.assert_called_once_with(('127.0.0.1', 53))
+        mock_sock.bind.assert_called_once_with(('203.0.113.1', 53))
 
         self.assertIn(
-            'Opening UDP Listening Socket on 127.0.0.1:53',
+            'Opening UDP Listening Socket on 203.0.113.1:53',
             self.stdlog.logger.output
         )
 
@@ -425,9 +425,9 @@ class TestUtils(oslotest.base.BaseTestCase):
         mock_sock = mock.MagicMock()
         mock_sock_impl.return_value = mock_sock
 
-        mock_sock.getsockname.return_value = ('127.0.0.1', random_port)
+        mock_sock.getsockname.return_value = ('203.0.113.1', random_port)
 
-        utils.bind_udp('127.0.0.1', 0)
+        utils.bind_udp('203.0.113.1', 0)
 
         self.assertIn(
             'Listening on UDP port %(port)d' % {'port': random_port},
@@ -440,7 +440,7 @@ class TestUtils(oslotest.base.BaseTestCase):
         mock_sock_impl.return_value = mock_sock
         mock_sock.setsockopt.side_effect = [None, AttributeError]
 
-        utils.bind_udp('127.0.0.1', 53)
+        utils.bind_udp('203.0.113.1', 53)
 
         self.assertIn(
             'SO_REUSEPORT not available, ignoring.',

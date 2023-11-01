@@ -3184,8 +3184,8 @@ class CentralServiceTest(designate.tests.TestCase):
             name='www.%s' % zone.name,
             type='A',
             records=objects.RecordList(objects=[
-                objects.Record(data='127.0.0.1'),
-                objects.Record(data='127.0.0.2'),
+                objects.Record(data='192.0.2.1'),
+                objects.Record(data='203.0.113.2'),
             ]),
         )
 
@@ -3896,7 +3896,7 @@ class CentralServiceTest(designate.tests.TestCase):
         recordset.records = [record]
         recordset.ttl = 3600
         fip = {
-            'address': '127.0.0.1',
+            'address': '192.0.2.1',
             'id': '1',
             'region': 'region',
         }
@@ -3904,11 +3904,11 @@ class CentralServiceTest(designate.tests.TestCase):
             self.admin_context, fip, record, zone, recordset
         )
         self.assertEqual('srv1.example.com.', result.ptrdname)
-        self.assertEqual('127.0.0.1', result.address)
+        self.assertEqual('192.0.2.1', result.address)
 
     def test_create_floating_ip_with_no_record(self):
         fip = {
-            'address': '127.0.0.1',
+            'address': '192.0.2.1',
             'id': '1',
             'region': 'region',
         }
@@ -3916,7 +3916,7 @@ class CentralServiceTest(designate.tests.TestCase):
 
     def test_create_floating_ip_zone_not_found(self):
         fip = {
-            'address': '127.0.0.1',
+            'address': '192.0.2.1',
             'id': '1',
             'region': 'region',
         }
