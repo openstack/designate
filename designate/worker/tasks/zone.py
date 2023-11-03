@@ -790,7 +790,7 @@ class RecoverShard(base.Task):
 
     def _get_zones(self):
         criterion = {
-            'shard': f"BETWEEN {self.begin_shard},{self.end_shard}",
+            'shard': f'BETWEEN {self.begin_shard},{self.end_shard}',
             'status': 'ERROR'
         }
         error_zones = self.storage.find_zones(self.context, criterion)
@@ -799,9 +799,9 @@ class RecoverShard(base.Task):
         # status for longer than they should
         # Generate the current serial, will provide a UTC Unix TS.
         stale_criterion = {
-            'shard': f"BETWEEN {self.begin_shard},{self.end_shard}",
+            'shard': f'BETWEEN {self.begin_shard},{self.end_shard}',
             'status': 'PENDING',
-            'serial': "<%s" % (timeutils.utcnow_ts() - self.max_prop_time)
+            'serial': '<%s' % (timeutils.utcnow_ts() - self.max_prop_time)
         }
 
         stale_zones = self.storage.find_zones(self.context, stale_criterion)
