@@ -19,6 +19,7 @@ import dns.exception
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+from designate.central import rpcapi as central_api
 import designate.conf
 from designate import dnsutils
 from designate import exceptions
@@ -100,7 +101,7 @@ class TestZoneAction(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.context = mock.Mock()
-        self.pool = 'default_pool'
+        self.pool = mock.Mock()
         self.executor = mock.Mock()
         self.task = zone.ZoneAction(
             self.executor, self.context, self.pool, mock.Mock(), 'CREATE'
@@ -113,12 +114,35 @@ class TestZoneAction(oslotest.base.BaseTestCase):
     def test_call(self):
         self.task._zone_action_on_targets = mock.Mock(return_value=True)
         self.task._poll_for_zone = mock.Mock(return_value=True)
-        result = self.task()
-        self.assertTrue(result)
 
-        self.assertTrue(self.task._wait_for_nameservers.called)
-        self.assertTrue(self.task._zone_action_on_targets.called)
-        self.assertTrue(self.task._poll_for_zone.called)
+        self.assertTrue(self.task())
+
+        self.task._wait_for_nameservers.assert_called()
+        self.task._zone_action_on_targets.assert_called()
+        self.task._poll_for_zone.assert_called()
+
+    @mock.patch.object(zone, 'ZoneActor')
+    @mock.patch.object(zone, 'ZonePoller')
+    def test_call_action_on_targets_false(self, mock_zone_poller,
+                                          mock_zone_actor):
+        mock_zone_poller().return_value = True
+        mock_zone_actor().return_value = False
+
+        self.assertFalse(self.task())
+
+        mock_zone_actor().assert_called_with()
+        mock_zone_poller().assert_not_called()
+
+    @mock.patch.object(zone, 'ZoneActor')
+    @mock.patch.object(zone, 'ZonePoller')
+    def test_call_poll_for_zone_false(self, mock_zone_poller, mock_zone_actor):
+        mock_zone_poller().return_value = False
+        mock_zone_actor().return_value = True
+
+        self.assertFalse(self.task())
+
+        mock_zone_actor().assert_called_with()
+        mock_zone_poller().assert_called_with()
 
     def test_call_on_delete(self):
         mock_zone = mock.Mock()
@@ -300,7 +324,9 @@ class TestZoneActor(oslotest.base.BaseTestCase):
             self.executor,
             self.context,
             self.pool,
-            mock.Mock(action='CREATE'),
+            mock.Mock(
+                action='CREATE', name='example.org.', id='123', serial=0
+            ),
             self.zone_params
         )
 
@@ -334,15 +360,15 @@ class TestZoneActor(oslotest.base.BaseTestCase):
 
         self.assertTrue(self.actor._threshold_met(results))
 
-    def test_threshold_met_false(self):
+    @mock.patch.object(central_api.CentralAPI, 'get_instance')
+    def test_threshold_met_false(self, mock_get_instance):
         self.actor._threshold = 90
-        self.actor._update_status = mock.Mock()
 
         results = [False] + [True] * 8 + [False]
 
         self.assertFalse(self.actor._threshold_met(results))
-        self.assertTrue(self.actor._update_status.called)
         self.assertEqual('ERROR', self.actor.zone.status)
+        mock_get_instance.assert_called()
 
 
 @utils.parameterized_class
@@ -361,6 +387,17 @@ class TestParseQueryResults(oslotest.base.BaseTestCase):
         self.assertEqual(case['no_zones'], result.no_zones)
         self.assertEqual(case['consensus_serial'], result.consensus_serial)
 
+    def test_no_serial(self):
+        mock_zone = mock.Mock(
+            action='ERROR', name='example.org.', id='123', serial=1
+        )
+        result = zone.parse_query_results(
+            [None], mock_zone
+        )
+        self.assertEqual(0, result.positives)
+        self.assertEqual(0, result.no_zones)
+        self.assertEqual(0, result.consensus_serial)
+
 
 class TestZonePoller(oslotest.base.BaseTestCase):
     def setUp(self):
@@ -370,21 +407,23 @@ class TestZonePoller(oslotest.base.BaseTestCase):
         self.zone = mock.Mock(name='example.com.', serial=1)
         self.threshold_percentage = 80
         self.executor = mock.Mock()
-        self.poller = zone.ZonePoller(
+        self.task = zone.ZonePoller(
             self.executor,
             self.context,
             self.pool,
             self.zone,
         )
-        self.poller._threshold = self.threshold_percentage
+        self.task._central_api = mock.Mock()
+        self.task._threshold = self.threshold_percentage
 
     def test_constructor(self):
-        self.assertTrue(self.poller)
+        self.assertTrue(self.task)
         self.assertEqual(
-            self.threshold_percentage, self.poller.threshold_percentage
+            self.threshold_percentage, self.task.threshold_percentage
         )
 
-    def test_call_on_success(self):
+    @mock.patch.object(central_api.CentralAPI, 'get_instance')
+    def test_call_on_success(self, mock_get_instance):
         ns_results = [2] * 8 + [0] * 2
         result = zone.DNSQueryResult(
             positives=8,
@@ -392,18 +431,35 @@ class TestZonePoller(oslotest.base.BaseTestCase):
             consensus_serial=2,
             results=ns_results,
         )
-        self.poller.zone.action = 'UPDATE'
-        self.poller.zone.serial = 2
-        self.poller._do_poll = mock.Mock(return_value=result)
-        self.poller._on_success = mock.Mock(return_value=True)
-        self.poller._update_status = mock.Mock()
+        self.task.zone.action = 'UPDATE'
+        self.task.zone.serial = 2
+        self.task._do_poll = mock.Mock(return_value=result)
+        self.task._on_success = mock.Mock(return_value=True)
 
-        self.assertTrue(self.poller())
+        self.assertTrue(self.task())
 
-        self.poller._on_success.assert_called_with(result, 'SUCCESS')
-        self.poller._update_status.called
-        self.poller.zone.serial = 2
-        self.poller.zone.status = 'SUCCESS'
+        self.task._on_success.assert_called_with(result, 'SUCCESS')
+        self.task.zone.serial = 2
+        self.task.zone.status = 'SUCCESS'
+        mock_get_instance.assert_called()
+
+    @mock.patch.object(central_api.CentralAPI, 'get_instance')
+    def test_call_on_failure(self, mock_get_instance):
+        result = zone.DNSQueryResult(
+            positives=8,
+            no_zones=2,
+            consensus_serial=2,
+            results=[0],
+        )
+        self.task.zone.action = 'UPDATE'
+        self.task.zone.serial = 2
+        self.task._do_poll = mock.Mock(return_value=result)
+        self.task._on_failure = mock.Mock(return_value=True)
+
+        self.assertTrue(self.task())
+
+        self.task._on_failure.assert_called_with('NO_ZONE')
+        mock_get_instance.assert_called()
 
     def test_threshold_met_true(self):
         ns_results = [2] * 8 + [0] * 2
@@ -414,7 +470,7 @@ class TestZonePoller(oslotest.base.BaseTestCase):
             results=ns_results,
         )
 
-        success, status = self.poller._threshold_met(result)
+        success, status = self.task._threshold_met(result)
 
         self.assertTrue(success)
         self.assertEqual('SUCCESS', status)
@@ -429,7 +485,7 @@ class TestZonePoller(oslotest.base.BaseTestCase):
             results=ns_results,
         )
 
-        success, status = self.poller._threshold_met(result)
+        success, status = self.task._threshold_met(result)
 
         self.assertFalse(success)
         self.assertEqual('ERROR', status)
@@ -446,10 +502,10 @@ class TestZonePoller(oslotest.base.BaseTestCase):
         )
 
         # Set the threshold to 30%
-        self.poller._threshold = 30
-        self.poller.zone.action = 'UPDATE'
+        self.task._threshold = 30
+        self.task.zone.action = 'UPDATE'
 
-        success, status = self.poller._threshold_met(result)
+        success, status = self.task._threshold_met(result)
 
         self.assertTrue(success)
         self.assertEqual('SUCCESS', status)
@@ -466,10 +522,10 @@ class TestZonePoller(oslotest.base.BaseTestCase):
         )
 
         # Set the threshold to 100%
-        self.poller._threshold = 100
-        self.poller.zone.action = 'UPDATE'
+        self.task._threshold = 100
+        self.task.zone.action = 'UPDATE'
 
-        success, status = self.poller._threshold_met(result)
+        success, status = self.task._threshold_met(result)
 
         self.assertFalse(success)
         self.assertEqual('NO_ZONE', status)
@@ -486,10 +542,10 @@ class TestZonePoller(oslotest.base.BaseTestCase):
         )
 
         # Set the threshold to 100%
-        self.poller._threshold = 100
-        self.poller.zone.action = 'UPDATE'
+        self.task._threshold = 100
+        self.task.zone.action = 'UPDATE'
 
-        success, status = self.poller._threshold_met(result)
+        success, status = self.task._threshold_met(result)
 
         self.assertFalse(success)
         self.assertEqual('NO_ZONE', status)
@@ -497,20 +553,20 @@ class TestZonePoller(oslotest.base.BaseTestCase):
     def test_on_success(self):
         query_result = mock.Mock(consensus_serial=10)
 
-        result = self.poller._on_success(query_result, 'FOO')
+        result = self.task._on_success(query_result, 'FOO')
 
         self.assertTrue(result)
         self.assertEqual(10, self.zone.serial)
         self.assertEqual('FOO', self.zone.status)
 
     def test_on_error_failure(self):
-        result = self.poller._on_failure('FOO')
+        result = self.task._on_failure('FOO')
 
         self.assertFalse(result)
         self.assertEqual('FOO', self.zone.status)
 
     def test_on_no_zones_failure(self):
-        result = self.poller._on_failure('NO_ZONE')
+        result = self.task._on_failure('NO_ZONE')
 
         self.assertFalse(result)
         self.assertEqual('NO_ZONE', self.zone.status)
@@ -594,7 +650,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
 
         self.assertEqual('DELETE', self.task.zone.action)
         self.assertEqual('SUCCESS', self.task.zone.status)
-        self.assertTrue(self.task.central_api.update_status.called)
+        self.task.central_api.update_status.assert_called()
 
     def test_call_on_success(self):
         self.task.zone.action = 'UPDATE'
@@ -604,7 +660,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
         self.task()
 
         self.assertEqual('UPDATE', self.task.zone.action)
-        self.assertTrue(self.task.central_api.update_status.called)
+        self.task.central_api.update_status.assert_called()
 
     def test_call_central_call(self):
         self.task.zone.status = 'SUCCESS'
@@ -629,7 +685,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
 
         self.assertEqual('DELETE', self.task.zone.action)
         self.assertEqual('ERROR', self.task.zone.status)
-        self.assertTrue(self.task.central_api.update_status.called)
+        self.task.central_api.update_status.assert_called()
 
     def test_call_on_create_error(self):
         self.task.zone.action = 'CREATE'
@@ -640,7 +696,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
 
         self.assertEqual('CREATE', self.task.zone.action)
         self.assertEqual('ERROR', self.task.zone.status)
-        self.assertTrue(self.task.central_api.update_status.called)
+        self.task.central_api.update_status.assert_called()
 
     def test_call_on_update_error(self):
         self.task.zone.action = 'UPDATE'
@@ -651,7 +707,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
 
         self.assertEqual('UPDATE', self.task.zone.action)
         self.assertEqual('ERROR', self.task.zone.status)
-        self.assertTrue(self.task.central_api.update_status.called)
+        self.task.central_api.update_status.assert_called()
 
 
 class TestPollForZone(oslotest.base.BaseTestCase):
@@ -701,6 +757,7 @@ class TestPollForZone(oslotest.base.BaseTestCase):
 class TestExportZone(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
         self.zone = mock.Mock(name='example.com.', serial=1)
         self.export = mock.Mock()
         self.export.id = '1'
@@ -716,7 +773,6 @@ class TestExportZone(oslotest.base.BaseTestCase):
 
         self.task._quota.limit_check = mock.Mock()
         self.task._storage.count_recordsets = mock.Mock(return_value=1)
-        self.task._synchronous_export = mock.Mock(return_value=True)
 
     def test_sync_export_right_size(self):
         self.task()
@@ -734,7 +790,7 @@ class TestExportZone(oslotest.base.BaseTestCase):
         self.assertEqual('ERROR', self.export.status)
 
     def test_async_export_fails(self):
-        self.task._synchronous_export = mock.Mock(return_value=False)
+        CONF.set_override('export_synchronous', False, 'service:worker')
 
         self.task()
         self.assertEqual('ERROR', self.export.status)
