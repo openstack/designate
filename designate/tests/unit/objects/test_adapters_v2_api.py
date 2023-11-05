@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 
 class APIv2AdapterTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        super(APIv2AdapterTest, self).setUp()
+        super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
     def test_get_base_url(self):
