@@ -48,6 +48,30 @@ class AdminApiQuotasTest(AdminApiTestCase):
         self.assertEqual(CONF.quota_zones, max_zones)
         self.assertEqual(CONF.quota_zone_records, max_zone_records)
 
+    def test_get_quotas_detailed(self):
+        self.policy({'get_quotas': '@'})
+        context = self.get_admin_context()
+
+        response = self.client.get(
+            '/quotas/%s?detail=yes' % context.project_id,
+            headers={'X-Test-Tenant-Id': context.project_id}
+        )
+
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        self.assertIn('quota', response.json)
+        self.assertIn('zones', response.json['quota'])
+        self.assertIn('api_export_size', response.json['quota'])
+        self.assertIn('zone_records', response.json['quota'])
+        self.assertIn('zone_recordsets', response.json['quota'])
+        self.assertIn('recordset_records', response.json['quota'])
+
+        max_zones = response.json['quota']['zones']
+        max_zone_records = response.json['quota']['zone_records']
+        self.assertEqual(CONF.quota_zones, max_zones)
+        self.assertEqual(CONF.quota_zone_records, max_zone_records)
+
     def test_patch_quotas(self):
         self.policy({'set_quotas': '@'})
         context = self.get_context(project_id='a', is_admin=True)
