@@ -81,9 +81,6 @@ class DesignateContext(context.RequestContext):
         user_idt = (
             self.user_idt_format.format(
                 user=user,
-                # TODO(johnsom) Remove tenant once oslo.context>=4.0.0 is
-                #               the lower bound version.
-                tenant=self.project_id or '-',
                 project_id=self.project_id or '-',
                 domain=self.domain_id or '-',
                 user_domain=self.user_domain_id or '-',
@@ -92,9 +89,6 @@ class DesignateContext(context.RequestContext):
 
         # Update the dict with Designate specific extensions and overrides
         d.update({
-            # TODO(johnsom) Remove project_id once oslo.context>=4.0.0 is
-            #               the lower bound version.
-            'project_id': self.project_id,
             'user_identity': user_idt,
             'original_project_id': self.original_project_id,
             'service_catalog': self.service_catalog,
