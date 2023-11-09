@@ -184,7 +184,7 @@ class ZoneManagerTaskFixture(fixtures.Fixture):
     def setUp(self):
         super().setUp()
         self.task = self._task_cls()
-        self.task.on_partition_change(range(0, 4095), None, None)
+        self.task.on_partition_change(range(0, 4096), None, None)
 
 
 # Logging handlers imported from Nova.
