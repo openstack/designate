@@ -56,4 +56,7 @@ def upgrade() -> None:
         sa.Column('status', sa.Enum(name='service_statuses_enum',
                                     *SERVICE_STATES), nullable=False),
         sa.Column('stats', sa.Text, nullable=False),
-        sa.Column('capabilities', sa.Text, nullable=False))
+        sa.Column('capabilities', sa.Text, nullable=False),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )

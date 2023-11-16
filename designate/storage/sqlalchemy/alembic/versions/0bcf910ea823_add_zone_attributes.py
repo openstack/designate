@@ -60,7 +60,10 @@ def upgrade() -> None:
         sa.Column('port', sa.Integer, nullable=False),
         sa.Column('zone_id', UUID, nullable=False),
         sa.UniqueConstraint('host', 'port', 'zone_id', name='unique_masters'),
-        sa.ForeignKeyConstraint(['zone_id'], ['zones.id'], ondelete='CASCADE'))
+        sa.ForeignKeyConstraint(['zone_id'], ['zones.id'], ondelete='CASCADE'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     zone_attr_sql = sa.text(
         'SELECT id, version, created_at, updated_at, value, zone_id FROM '
