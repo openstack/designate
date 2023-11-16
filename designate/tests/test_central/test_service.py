@@ -533,6 +533,37 @@ class CentralServiceTest(designate.tests.TestCase):
 
         self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
+    def test_create_zone_custom_ttl(self):
+        self.config(default_ttl=30)
+
+        values = dict(
+            name='example.com.',
+            email='info@example.com',
+            type='PRIMARY',
+            ttl=90,
+        )
+
+        zone = self.central_service.create_zone(
+            self.admin_context, zone=objects.Zone.from_dict(values)
+        )
+
+        self.assertEqual(90, zone.ttl)
+
+    def test_create_zone_override_default_ttl(self):
+        self.config(default_ttl=30)
+
+        values = dict(
+            name='example.com.',
+            email='info@example.com',
+            type='PRIMARY'
+        )
+
+        zone = self.central_service.create_zone(
+            self.admin_context, zone=objects.Zone.from_dict(values)
+        )
+
+        self.assertEqual(30, zone.ttl)
+
     def test_create_subzone(self):
         # Create the Parent Zone using fixture 0
         parent_zone = self.create_zone(fixture=0)
