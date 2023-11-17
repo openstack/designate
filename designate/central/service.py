@@ -530,11 +530,9 @@ class Service(service.RPCService):
         else:
             target = {'tenant_id': tenant_id}
         policy.check('get_quotas', context, target)
-
-        # TODO(johnsom) Deprecated since Wallaby, remove with legacy default
-        #               policies. System scoped admin doesn't have a project_id
-        if (tenant_id != context.project_id and not context.all_tenants and not
-                policy.enforce_new_defaults()):
+        # NOTE(tkajinam): get_quotas now requires project scope so we assume
+        #                 the context should contain project_id
+        if (tenant_id != context.project_id and not context.all_tenants):
             raise exceptions.Forbidden()
 
         return self.quota.get_quotas(context, tenant_id)
@@ -556,10 +554,9 @@ class Service(service.RPCService):
             }
 
         policy.check('set_quota', context, target)
-        # TODO(johnsom) Deprecated since Wallaby, remove with legacy default
-        #               policies. System scoped admin doesn't have a project_id
-        if (tenant_id != context.project_id and not context.all_tenants and not
-                policy.enforce_new_defaults()):
+        # NOTE(tkajinam): set_quota now requires project scope so we assume
+        #                 the context should contain project_id
+        if (tenant_id != context.project_id and not context.all_tenants):
             raise exceptions.Forbidden()
 
         return self.quota.set_quota(context, tenant_id, resource, hard_limit)
