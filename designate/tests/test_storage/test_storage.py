@@ -683,6 +683,36 @@ class SqlalchemyStorageTest(TestCase):
 
         self.assertEqual(exceptions.DuplicateZone, exc.exc_info[0])
 
+    def test_create_zone_standard_ttl(self):
+        values = self.get_zone_fixture()
+        new_zone = self.storage.create_zone(
+            self.admin_context, zone=objects.Zone.from_dict(values)
+        )
+
+        # default fallback ttl is 3600 when no ttl value is provided.
+        self.assertEqual(3600, new_zone.ttl)
+
+    def test_create_zone_custom_ttl(self):
+        self.config(default_ttl=60)
+
+        values = self.get_zone_fixture()
+        values['ttl'] = 30
+        new_zone = self.storage.create_zone(
+            self.admin_context, zone=objects.Zone.from_dict(values)
+        )
+
+        self.assertEqual(30, new_zone.ttl)
+
+    def test_create_zone_override_default_ttl(self):
+        self.config(default_ttl=60)
+
+        values = self.get_zone_fixture()
+        new_zone = self.storage.create_zone(
+            self.admin_context, zone=objects.Zone.from_dict(values)
+        )
+
+        self.assertEqual(60, new_zone.ttl)
+
     def test_find_zones(self):
         self.config(quota_zones=20)
 
