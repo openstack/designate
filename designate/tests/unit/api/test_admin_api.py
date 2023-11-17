@@ -17,6 +17,7 @@ from unittest import mock
 
 from designate.api.admin.views import base
 from designate import exceptions
+from designate import objects
 import designate.tests
 
 
@@ -29,6 +30,58 @@ class TestAdminAPI(designate.tests.TestCase):
 
     def setUp(self):
         super().setUp()
+
+    def test_show_basic(self):
+        zone_list = objects.ZoneList(objects=[objects.Zone()])
+
+        base_view = base.BaseView()
+
+        self.assertRaises(
+            NotImplementedError,
+            base_view.list,
+            mock.Mock(),
+            MockRequest(GET=dict(limit='1')),
+            zone_list
+        )
+
+    def test_show_detailed(self):
+        zone_list = objects.ZoneList(objects=[objects.Zone()])
+
+        base_view = base.BaseView()
+
+        self.assertRaises(
+            NotImplementedError,
+            base_view.list,
+            mock.Mock(),
+            MockRequest(GET=dict(limit='1', detail='yes')),
+            zone_list
+        )
+
+    def test_load_invalid_keys(self):
+        body = {'zone': {'one': 1, 'four': 4}}
+        valid_keys = ('one', 'two', 'three',)
+
+        base_view = base.BaseView()
+        base_view._resource_name = 'zone'
+
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema.',
+            base_view._load, None, None, body, valid_keys
+        )
+
+    @mock.patch.object(base.BaseView, 'show_detail')
+    def test_paged_list(self, mock_show_detail):
+        zone_list = objects.ZoneList(objects=[objects.Zone()], total_count=1)
+
+        base_view = base.BaseView()
+
+        result = base_view.list(
+            mock.Mock(),
+            MockRequest(GET=dict(limit='1', detail='yes')),
+            zone_list
+        )
+        self.assertEqual(1, result['metadata']['total_count'])
 
     @mock.patch.object(base.BaseView, '_get_collection_href')
     @mock.patch.object(base.BaseView, '_get_next_href')

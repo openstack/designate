@@ -145,6 +145,21 @@ class AdminApiReportsTest(AdminApiTestCase):
 
         self.assertEqual(1, response.json['tenants'][0]['zone_count'])
 
+    def test_get_tenants_detailed(self):
+        self.policy({'find_tenants': '@'})
+        self.create_zone(fixture=0)
+        self.create_zone(fixture=1)
+
+        response = self.client.get('/reports/tenants?detail=yes')
+
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        self.assertIn('tenants', response.json)
+        self.assertIn('zones_count', response.json['tenants'][0])
+
+        self.assertEqual(2, response.json['tenants'][0]['zones_count'])
+
     def test_get_tenant(self):
         self.policy({'find_tenants': '@'})
         zone = self.create_zone()
