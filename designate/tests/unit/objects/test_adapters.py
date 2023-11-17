@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import datetime
+from unittest import mock
 
 from oslo_log import log as logging
 from oslo_utils import timeutils
@@ -97,6 +98,29 @@ class DesignateAdapterTest(oslotest.base.BaseTestCase):
         self.assertIsInstance(test_obj, DesignateTestObject)
         self.assertEqual('example.test.', test_obj.name)
 
+    @mock.patch.object(DesignateTestAdapter, 'parse_object')
+    def test_parse_type_error(self, mock_parse_object):
+        mock_parse_object.side_effect = TypeError('test')
+
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object is not valid. Got a TypeError with message test',
+            adapters.DesignateAdapter.parse, 'TEST_API', {},
+            DesignateTestObject()
+        )
+
+    @mock.patch.object(DesignateTestAdapter, 'parse_object')
+    def test_parse_attribute_error(self, mock_parse_object):
+        mock_parse_object.side_effect = AttributeError('test')
+
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object is not valid. Got an AttributeError '
+            'with message test',
+            adapters.DesignateAdapter.parse, 'TEST_API', {},
+            DesignateTestObject()
+        )
+
     def test_parse_schema_does_not_match(self):
         self.assertRaisesRegex(
             exceptions.InvalidObject,
@@ -112,6 +136,13 @@ class DesignateAdapterTest(oslotest.base.BaseTestCase):
         )
 
         self.assertIsInstance(adapter(), DesignateTestAdapter)
+
+    def test_get_object_adapter_not_found(self):
+        self.assertRaisesRegex(
+            exceptions.AdapterNotFound,
+            'Adapter for DesignateTestObject to format None not found',
+            adapters.DesignateAdapter.get_object_adapter, DesignateTestObject()
+        )
 
     def test_object_render(self):
         test_obj = adapters.DesignateAdapter.render(

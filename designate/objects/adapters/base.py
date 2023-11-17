@@ -68,7 +68,7 @@ class DesignateAdapter(metaclass=DesignateObjectAdapterMetaclass):
         try:
             return cls._adapter_classes[key]
         except KeyError as e:
-            keys = str(e).split(':')
+            keys = str(e).strip('\'').split(':')
             raise exceptions.AdapterNotFound(
                 'Adapter for %(obj)s to format %(format)s not found' %
                 {
