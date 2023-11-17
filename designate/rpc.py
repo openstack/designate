@@ -165,9 +165,8 @@ class RequestContextSerializer(messaging.Serializer):
 
     def deserialize_context(self, context):
         trace_info = context.pop("trace_info", None)
-        if trace_info is not None:
-            if profiler is not None:
-                profiler.init(**trace_info)
+        if trace_info is not None and profiler is not None:
+            profiler.init(**trace_info)
         return designate.context.DesignateContext.from_dict(context)
 
 
