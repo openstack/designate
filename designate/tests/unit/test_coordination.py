@@ -13,19 +13,34 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from unittest import mock
 
+from oslo_config import fixture as cfg_fixture
+import oslotest.base
+import tooz.coordination
+
+import designate.conf
 from designate import coordination
 from designate.tests import fixtures
-from designate.tests import TestCase
 
 
-class TestCoordination(TestCase):
+CONF = designate.conf.CONF
+
+
+class TestCoordination(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
         self.name = 'coordination'
         self.tg = mock.Mock()
-        self.config(backend_url="zake://", group="coordination")
+        CONF.set_override('backend_url', 'zake://', group='coordination')
+
+    def test_retry_if_tooz_error(self):
+        self.assertFalse(coordination._retry_if_tooz_error(Exception()))
+        self.assertTrue(coordination._retry_if_tooz_error(
+            tooz.coordination.ToozError('error'))
+        )
 
     def test_start(self):
         service = coordination.Coordination(self.name, self.tg)
@@ -61,23 +76,91 @@ class TestCoordination(TestCase):
         self.assertFalse(service.started)
 
     def test_start_no_coordination(self):
-        self.config(backend_url=None, group="coordination")
+        CONF.set_override('backend_url', None, group='coordination')
+        # self.config(backend_url=None, group="coordination")
         service = coordination.Coordination(self.name, self.tg)
         service.start()
         self.assertIsNone(service.coordinator)
 
     def test_stop_no_coordination(self):
-        self.config(backend_url=None, group="coordination")
+        CONF.set_override('backend_url', None, group='coordination')
         service = coordination.Coordination(self.name, self.tg)
         self.assertIsNone(service.coordinator)
         service.start()
         service.stop()
 
+    def test_get_lock(self):
+        service = coordination.Coordination(self.name, self.tg)
+        service._coordinator = mock.Mock()
 
-class TestPartitioner(TestCase):
+        service.get_lock('lock')
+
+        service._coordinator.get_lock.assert_called_with(b'lock')
+
+    def test_un_watchers(self):
+        service = coordination.Coordination(self.name, self.tg)
+        service._started = True
+        service._coordinator = mock.Mock()
+
+        service._coordinator_run_watchers()
+
+        service._coordinator.run_watchers.assert_called_with()
+
+    def test_run_watchers_not_started(self):
+        service = coordination.Coordination(self.name, self.tg)
+        service._started = False
+        service._coordinator = mock.Mock()
+
+        service._coordinator_run_watchers()
+
+        service._coordinator.run_watchers.assert_not_called()
+
+    def test_create_group(self):
+        service = coordination.Coordination(self.name, self.tg)
+        service._coordinator = mock.Mock()
+
+        service._create_group()
+
+        service._coordinator.create_group.assert_called_with(b'coordination')
+
+    def test_create_group_already_exists(self):
+        service = coordination.Coordination(self.name, self.tg)
+        service._coordinator = mock.Mock()
+        service._coordinator.create_group.side_effect = (
+            tooz.coordination.GroupAlreadyExist('')
+        )
+
+        service._create_group()
+
+        service._coordinator.create_group.assert_called_with(b'coordination')
+
+    def test_disable_grouping(self):
+        service = coordination.Coordination(self.name, self.tg)
+        service._coordinator = mock.Mock()
+
+        service._disable_grouping()
+
+        service._coordinator.leave_group.assert_called_with(b'coordination')
+
+    def test_disable_grouping_already_exists(self):
+        service = coordination.Coordination(self.name, self.tg)
+        service._coordinator = mock.Mock()
+        service._coordinator.leave_group.side_effect = (
+            tooz.coordination.GroupNotCreated('')
+        )
+
+        service._disable_grouping()
+
+        service._coordinator.leave_group.assert_called_with(b'coordination')
+
+
+@mock.patch('tenacity.nap.time', mock.Mock())
+class TestPartitioner(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super().setUp()
+
     def _get_partitioner(self, partitions, host=b'a'):
-        fixture = self.useFixture(fixtures.CoordinatorFixture(
-            'zake://', host))
+        fixture = self.useFixture(fixtures.CoordinatorFixture('zake://', host))
         group = 'group'
         fixture.coordinator.create_group(group)
         fixture.coordinator.join_group(group)
@@ -178,8 +261,72 @@ class TestPartitioner(TestCase):
         self.assertEqual([4, 5, 6, 7], p_two.my_partitions)
         self.assertEqual([8, 9, 10], p_three.my_partitions)
 
+    def test_get_members(self):
+        partitioner = coordination.Partitioner(
+            mock.Mock(), 'group', 'host', mock.Mock()
+        )
 
-class TestPartitionerWithoutBackend(TestCase):
+        mock_get_members = mock.Mock()
+
+        partitioner._coordinator.get_members = mock.Mock()
+        partitioner._coordinator.get_members.return_value = mock_get_members
+
+        partitioner._get_members('group_id')
+
+        mock_get_members.get.assert_called_with()
+
+    def test_get_members_group_not_created(self):
+        partitioner = coordination.Partitioner(
+            mock.Mock(), 'group', 'host', mock.Mock()
+        )
+
+        mock_get_members = mock.Mock()
+
+        partitioner._coordinator.get_members = mock.Mock()
+        partitioner._coordinator.get_members.return_value = mock_get_members
+
+        mock_get_members.get.side_effect = tooz.coordination.GroupNotCreated(
+            'group_id'
+        )
+
+        self.assertRaisesRegex(
+            tooz.coordination.GroupNotCreated,
+            'Group group_id does not exist',
+            partitioner._get_members, 'group_id'
+        )
+
+    def test_get_members_tooz_error(self):
+        partitioner = coordination.Partitioner(
+            mock.Mock(), 'group', 'host', mock.Mock()
+        )
+
+        mock_get_members = mock.Mock()
+
+        partitioner._coordinator.get_members = mock.Mock()
+        partitioner._coordinator.get_members.return_value = mock_get_members
+
+        mock_get_members.get.side_effect = tooz.coordination.ToozError(
+            'error'
+        )
+
+        self.assertRaisesRegex(
+            tooz.coordination.ToozError,
+            'error',
+            partitioner._get_members, 'group_id'
+        )
+
+    def test_unwatch_partition_change(self):
+        partitioner = coordination.Partitioner(
+            mock.Mock(), 'group', 'host', mock.Mock()
+        )
+        partitioner._callbacks = mock.Mock()
+
+        partitioner.unwatch_partition_change('partition')
+
+        partitioner._callbacks.remove.assert_called_with('partition')
+
+
+class TestPartitionerWithoutBackend(oslotest.base.BaseTestCase):
     def test_start(self):
         # We test starting the partitioner and calling the watch func first
         partitions = list(range(0, 10))
