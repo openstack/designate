@@ -73,7 +73,10 @@ def upgrade() -> None:
         sa.Column('provisioner', sa.Enum(name='pool_provisioner',
                                          *POOL_PROVISIONERS),
                   nullable=False, server_default='UNMANAGED'),
-        sa.UniqueConstraint('name', name='unique_pool_name'))
+        sa.UniqueConstraint('name', name='unique_pool_name'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.bulk_insert(
         pools_table,
@@ -90,7 +93,10 @@ def upgrade() -> None:
         sa.Column('pool_id', UUID, nullable=False),
         sa.Column('priority', sa.Integer, nullable=False),
         sa.Column('hostname', sa.String(255), nullable=False),
-        sa.ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'))
+        sa.ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'pool_attributes', metadata,
@@ -103,7 +109,10 @@ def upgrade() -> None:
         sa.Column('pool_id', UUID, nullable=False),
         sa.UniqueConstraint('pool_id', 'key', 'value',
                             name='unique_pool_attribute'),
-        sa.ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'))
+        sa.ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'domains', metadata,
@@ -146,7 +155,10 @@ def upgrade() -> None:
         sa.Index('zone_deleted', 'deleted'),
         sa.Index('zone_tenant_deleted', 'tenant_id', 'deleted'),
         sa.Index('reverse_name_deleted', 'reverse_name', 'deleted'),
-        sa.Index('zone_created_at', 'created_at'))
+        sa.Index('zone_created_at', 'created_at'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'domain_attributes', metadata,
@@ -160,7 +172,10 @@ def upgrade() -> None:
         sa.UniqueConstraint('key', 'value', 'domain_id',
                             name='unique_attributes'),
         sa.ForeignKeyConstraint(['domain_id'], ['domains.id'],
-                                ondelete='CASCADE'))
+                                ondelete='CASCADE'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
     op.create_table(
         'recordsets', metadata,
         sa.Column('id', UUID, primary_key=True),
@@ -184,7 +199,10 @@ def upgrade() -> None:
         sa.Index('rrset_type_domainid', 'type', 'domain_id'),
         sa.Index('recordset_type_name', 'type', 'name'),
         sa.Index('reverse_name_dom_id', 'reverse_name', 'domain_id'),
-        sa.Index('recordset_created_at', 'created_at'))
+        sa.Index('recordset_created_at', 'created_at'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'records', metadata,
@@ -233,7 +251,10 @@ def upgrade() -> None:
         sa.Index('records_tenant', 'tenant_id'),
         sa.Index('record_created_at', 'created_at'),
         sa.Index('update_status_index', 'status', 'domain_id', 'tenant_id',
-                 'created_at', 'serial'))
+                 'created_at', 'serial'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'quotas', metadata,
@@ -246,7 +267,10 @@ def upgrade() -> None:
         sa.Column('tenant_id', sa.String(36), nullable=False),
         sa.Column('resource', sa.String(32), nullable=False),
         sa.Column('hard_limit', sa.Integer, nullable=False),
-        sa.UniqueConstraint('tenant_id', 'resource', name='unique_quota'))
+        sa.UniqueConstraint('tenant_id', 'resource', name='unique_quota'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'tsigkeys', metadata,
@@ -262,7 +286,10 @@ def upgrade() -> None:
         sa.Column('scope', sa.Enum(name='tsig_scopes', *TSIG_SCOPES),
                   nullable=False, server_default='POOL'),
         sa.Column('resource_id', UUID, nullable=False),
-        sa.UniqueConstraint('name', name='unique_tsigkey_name'))
+        sa.UniqueConstraint('name', name='unique_tsigkey_name'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'tlds', metadata,
@@ -274,7 +301,10 @@ def upgrade() -> None:
                   onupdate=lambda: timeutils.utcnow()),
         sa.Column('name', sa.String(255), nullable=False),
         sa.Column('description', sa.Unicode(160), nullable=True),
-        sa.UniqueConstraint('name', name='unique_tld_name'))
+        sa.UniqueConstraint('name', name='unique_tld_name'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'zone_transfer_requests', metadata,
@@ -293,7 +323,10 @@ def upgrade() -> None:
                           *TASK_STATUSES),
                   nullable=False, server_default='ACTIVE', default='ACTIVE'),
         sa.ForeignKeyConstraint(['domain_id'], ['domains.id'],
-                                ondelete='CASCADE'))
+                                ondelete='CASCADE'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'zone_transfer_accepts', metadata,
@@ -312,7 +345,10 @@ def upgrade() -> None:
                                 ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['zone_transfer_request_id'],
                                 ['zone_transfer_requests.id'],
-                                ondelete='CASCADE'))
+                                ondelete='CASCADE'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'zone_tasks', metadata,
@@ -328,7 +364,10 @@ def upgrade() -> None:
         sa.Column('status', sa.Enum(name='zone_tasks_resource_statuses',
                                     *TASK_STATUSES),
                   nullable=False, server_default='ACTIVE', default='ACTIVE'),
-        sa.Column('location', sa.String(160), nullable=True))
+        sa.Column('location', sa.String(160), nullable=True),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'blacklists', metadata,
@@ -338,4 +377,7 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime),
         sa.Column('pattern', sa.String(255), nullable=False),
         sa.Column('description', sa.Unicode(160), nullable=True),
-        sa.UniqueConstraint('pattern', name='pattern'))
+        sa.UniqueConstraint('pattern', name='pattern'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )

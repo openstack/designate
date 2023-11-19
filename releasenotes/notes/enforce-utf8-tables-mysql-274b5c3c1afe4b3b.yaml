@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Database tables are now explicitly created with charset=utf8. This resolves
+    an issue running ``designate-manage database sync`` when the designate
+    database was not created with the default charset set to utf8.

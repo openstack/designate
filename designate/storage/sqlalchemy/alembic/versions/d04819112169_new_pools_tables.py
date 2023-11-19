@@ -57,7 +57,10 @@ def upgrade() -> None:
         sa.Column('port', sa.Integer, nullable=False),
         sa.ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
         sa.UniqueConstraint('pool_id', 'host', 'port',
-                            name='unique_pool_host_port'))
+                            name='unique_pool_host_port'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'pool_targets', metadata,
@@ -71,7 +74,10 @@ def upgrade() -> None:
         sa.Column('type', sa.String(50), nullable=False),
         sa.Column('tsigkey_id', UUID, nullable=True),
         sa.Column('description', sa.Unicode(160), nullable=True),
-        sa.ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'))
+        sa.ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'pool_target_masters', metadata,
@@ -87,7 +93,10 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['pool_target_id'], ['pool_targets.id'],
                                 ondelete='CASCADE'),
         sa.UniqueConstraint('pool_target_id', 'host', 'port',
-                            name='unique_pool_target_host_port'))
+                            name='unique_pool_target_host_port'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'pool_target_options', metadata,
@@ -103,7 +112,10 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['pool_target_id'], ['pool_targets.id'],
                                 ondelete='CASCADE'),
         sa.UniqueConstraint('pool_target_id', 'key',
-                            name='unique_pool_target_key'))
+                            name='unique_pool_target_key'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
     op.create_table(
         'pool_also_notifies', metadata,
@@ -118,4 +130,7 @@ def upgrade() -> None:
         sa.Column('port', sa.Integer, nullable=False),
         sa.ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
         sa.UniqueConstraint('pool_id', 'host', 'port',
-                            name='unique_pool_also_notifies_pool0host0port'))
+                            name='unique_pool_also_notifies_pool0host0port'),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
