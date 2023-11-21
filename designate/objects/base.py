@@ -64,9 +64,6 @@ class DesignateObject(base.VersionedObject):
     def __repr__(self):
         return self._make_obj_str(self.to_dict())
 
-    def save(self, context):
-        pass
-
     def _obj_check_relation(self, name):
         if name in self.fields:
             if hasattr(self.fields.get(name), 'objname'):
@@ -188,10 +185,6 @@ class DesignateObject(base.VersionedObject):
     def obj_cls_from_name(cls, name):
         return cls.obj_class_from_name(name, '1.0')
 
-    @classmethod
-    def obj_get_schema(cls):
-        return cls.to_json_schema()
-
     def obj_reset_changes(self, fields=None, recursive=False):
         """Reset the list of fields that have been changed.
 
@@ -250,20 +243,6 @@ class DesignateObject(base.VersionedObject):
     @property
     def obj_fields(self):
         return list(self.fields.keys()) + self.obj_extra_fields
-
-    @property
-    def obj_context(self):
-        return self._context
-
-    @property
-    def is_valid(self):
-        """Returns True if the Object is valid."""
-        try:
-            self.validate()
-        except Exception:
-            return False
-        else:
-            return True
 
     def validate(self):
         # NOTE(kiall, daidv): We make use of the Object registry here
