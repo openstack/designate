@@ -188,6 +188,16 @@ class TestService(oslotest.base.BaseTestCase):
             self.context, self.zone, self.zone_params
         )
 
+    def test_delete_zone_hard(self):
+        self.service._do_zone_action = mock.Mock()
+        self.zone_params = {'hard_delete': True}
+
+        self.service.delete_zone(self.context, self.zone, hard_delete=True)
+
+        self.service._do_zone_action.assert_called_with(
+            self.context, self.zone, self.zone_params
+        )
+
     def test_update_zone(self):
         self.service._do_zone_action = mock.Mock()
 
