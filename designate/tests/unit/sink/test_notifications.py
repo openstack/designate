@@ -11,6 +11,7 @@
 # under the License.mport threading
 from unittest import mock
 
+from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 import designate.conf
@@ -29,6 +30,7 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
     def setUp(self):
         super().setUp()
         self.stdlog = fixtures.StandardLogging()
+        self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)
 
         CONF.set_override(
