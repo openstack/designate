@@ -39,6 +39,18 @@ class TestDNSUtils(oslotest.base.BaseTestCase):
         super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
 
+    @mock.patch('socket.getaddrinfo')
+    def test_get_ip_address(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [
+            (socket.AF_INET, socket.SOCK_STREAM, 0, '', ('192.0.2.1', 0))
+        ]
+        self.assertEqual('192.0.2.1', dnsutils.get_ip_address('test'))
+
+    @mock.patch('socket.getaddrinfo')
+    def test_get_ip_address_none(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = []
+        self.assertIsNone(dnsutils.get_ip_address('test'))
+
     @mock.patch.object(dns.query, 'udp')
     def test_send_udp_dns_message(self, mock_udp):
         CONF.set_override('all_tcp', False, 'service:worker')
