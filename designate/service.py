@@ -294,8 +294,7 @@ class DNSService:
                 query = buf
 
                 # Call into the DNS Application itself with payload and addr
-                for response in self.app(
-                        {'payload': query, 'addr': addr}):
+                for response in self.app({'payload': query, 'addr': addr}):
 
                     # Send back a response only if present
                     if response is None:
@@ -342,8 +341,7 @@ class DNSService:
                 }
             )
         finally:
-            if client:
-                client.close()
+            client.close()
 
     def _dns_handle_udp(self, sock_udp):
         """Handle a DNS Query over UDP in a dedicated thread

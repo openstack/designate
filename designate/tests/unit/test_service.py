@@ -13,6 +13,7 @@
 
 import errno
 import socket
+import struct
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
@@ -176,10 +177,90 @@ class TestRpcService(oslotest.base.BaseTestCase):
         self.assertIsNone(self.service.wait())
 
 
+@mock.patch.object(policy, 'init', mock.Mock())
+@mock.patch.object(rpc, 'init', mock.Mock())
+@mock.patch.object(profiler, 'setup_profiler', mock.Mock())
+class TestWSGIService(oslotest.base.BaseTestCase):
+    @mock.patch('oslo_service.wsgi.Server')
+    def test_service_start(self, mock_wsgi_server):
+        mock_server = mock.Mock(name='server')
+        mock_wsgi_server.return_value = mock_server
+        listen = [
+            ('192.0.2.1', '80'),
+            ('192.0.2.2', '443'),
+            ('192.0.2.2', '53')
+        ]
+
+        self.mock_app = mock.Mock()
+
+        self.service = designate_service.WSGIService(
+            self.mock_app, 'test-wsgi-service', listen
+        )
+        mock_wsgi_server.assert_called()
+        self.assertEqual(3, mock_wsgi_server.call_count)
+
+        self.assertIsNone(self.service.start())
+        mock_server.start.assert_called()
+        self.assertEqual(3, mock_server.start.call_count)
+
+    @mock.patch('oslo_service.wsgi.Server')
+    def test_service_stop(self, mock_wsgi_server):
+        mock_server = mock.Mock(name='server')
+        mock_wsgi_server.return_value = mock_server
+        listen = [('192.0.2.1', '80')]
+
+        self.mock_app = mock.Mock()
+
+        self.service = designate_service.WSGIService(
+            self.mock_app, 'test-wsgi-service', listen
+        )
+        mock_wsgi_server.assert_called_once()
+
+        self.assertIsNone(self.service.start())
+        mock_server.start.assert_called_once()
+
+        self.assertIsNone(self.service.stop())
+        mock_server.stop.assert_called_once()
+
+    @mock.patch('oslo_service.wsgi.Server')
+    def test_service_wait(self, mock_wsgi_server):
+        mock_server = mock.Mock(name='server')
+        mock_wsgi_server.return_value = mock_server
+        self.mock_app = mock.Mock()
+        listen = [('192.0.2.1', '80')]
+
+        self.service = designate_service.WSGIService(
+            self.mock_app, 'test-wsgi-service', listen
+        )
+        mock_wsgi_server.assert_called_once()
+
+        self.assertIsNone(self.service.wait())
+        mock_server.wait.assert_called_once()
+
+    @mock.patch('oslo_service.wsgi.Server')
+    def test_service_wait_multiple_servers(self, mock_wsgi_server):
+        mock_server = mock.Mock(name='server')
+        mock_wsgi_server.return_value = mock_server
+        self.mock_app = mock.Mock()
+        listen = [('192.0.2.1', '80'), ('192.0.2.2', '80')]
+
+        self.service = designate_service.WSGIService(
+            self.mock_app, 'test-wsgi-service', listen
+        )
+        mock_wsgi_server.assert_called()
+        self.assertEqual(2, mock_wsgi_server.call_count)
+
+        self.assertIsNone(self.service.wait())
+        mock_server.wait.assert_called()
+        self.assertEqual(2, mock_server.wait.call_count)
+
+
 class TestDNSService(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
 
         self.tg = mock.Mock()
         self.storage = mock.Mock()
@@ -251,6 +332,20 @@ class TestDNSService(oslotest.base.BaseTestCase):
 
         mock_sock_tcp.accept.assert_called()
 
+    def test_handle_tcp_os_error(self):
+        self.service._running.is_set.side_effect = [True, True, True, False]
+
+        mock_socket = mock.Mock()
+        mock_sock_tcp = mock.Mock()
+        mock_sock_tcp.accept.return_value = (mock_socket, None,)
+        mock_socket.settimeout.side_effect = [
+            OSError(errno.EACCES), Exception()
+        ]
+
+        self.assertIsNone(self.service._dns_handle_tcp(mock_sock_tcp))
+
+        mock_sock_tcp.accept.assert_called()
+
     def test_handle_tcp_without_timeout(self):
         CONF.set_override('tcp_recv_timeout', 0, 'service:mdns')
 
@@ -303,3 +398,67 @@ class TestDNSService(oslotest.base.BaseTestCase):
         self.assertIsNone(self.service._dns_handle_udp(mock_sock_tcp))
 
         mock_sock_tcp.recvfrom.assert_called()
+
+    def test_dns_handle_udp_query(self):
+        mock_sock = mock.Mock()
+
+        addr = ('192.0.2.1', 53)
+
+        self.service.app = mock.Mock()
+        self.service.app.return_value = [None, 'response']
+
+        self.service._dns_handle_udp_query(mock_sock, addr, 'payload')
+
+        mock_sock.sendto.assert_called_with('response', addr)
+
+    def test_dns_handle_tcp_conn_expected_length_raw_zero(self):
+        mock_client = mock.Mock()
+        mock_client.recv.return_value = []
+        addr = ('192.0.2.1', 53)
+
+        self.assertIsNone(self.service._dns_handle_tcp_conn(addr, mock_client))
+
+        mock_client.recv.assert_called_with(2)
+
+    def test_dns_handle_tcp_conn_buffer_empty(self):
+        mock_client = mock.Mock()
+        mock_client.recv.side_effect = (struct.pack('!H', 2), None)
+        addr = ('192.0.2.1', 53)
+
+        self.service.app = mock.Mock()
+        self.service.app.return_value = [None]
+
+        self.service._dns_handle_tcp_conn(addr, mock_client)
+
+        mock_client.recv.assert_called_with(2)
+
+    def test_dns_handle_tcp_conn_no_app_response(self):
+        mock_client = mock.Mock()
+        mock_client.recv.side_effect = (struct.pack('!H', 2), b'buffer', b'')
+        addr = ('192.0.2.1', 53)
+
+        self.service.app = mock.Mock()
+        self.service.app.return_value = [None]
+
+        self.service._dns_handle_tcp_conn(addr, mock_client)
+
+        mock_client.recv.assert_called_with(2)
+
+    @mock.patch('struct.unpack')
+    def test_dns_handle_tcp_conn_struct_error(self, mock_struct_unpack):
+        mock_client = mock.Mock()
+        mock_struct_unpack.side_effect = struct.error()
+        mock_client.recv.side_effect = ('bad data',)
+        addr = ('192.0.2.1', 53)
+
+        self.service.app = mock.Mock()
+        self.service.app.return_value = [None]
+
+        self.service._dns_handle_tcp_conn(addr, mock_client)
+
+        mock_client.recv.assert_called_with(2)
+
+        self.assertIn(
+            'Invalid packet from: 192.0.2.1:53',
+            self.stdlog.logger.output
+        )
