@@ -37,15 +37,6 @@ if is_fedora; then
     BIND_GROUP=named
 fi
 
-if is_suse; then
-    BIND_SERVICE_NAME=named
-    BIND_CFG_DIR=/etc/named
-    BIND_CFG_FILE=/etc/named.conf
-    BIND_VAR_DIR=/var/lib/named
-    BIND_USER=named
-    BIND_GROUP=named
-fi
-
 # Entry Points
 # ------------
 
@@ -54,8 +45,6 @@ function install_designate_backend {
     if is_ubuntu; then
         install_package bind9
     elif is_fedora; then
-        install_package bind
-    elif is_suse; then
         install_package bind
     fi
 
