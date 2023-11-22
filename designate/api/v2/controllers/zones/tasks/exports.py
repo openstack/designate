@@ -27,7 +27,6 @@ LOG = logging.getLogger(__name__)
 
 
 class ZoneExportController(rest.RestController):
-
     @pecan.expose(template=None, content_type='text/dns')
     @utils.validate_uuid('export_id')
     def get_all(self, export_id):
@@ -44,8 +43,9 @@ class ZoneExportController(rest.RestController):
         if export.location and export.location.startswith('designate://'):
             return self.central_api.export_zone(context, export['zone_id'])
         else:
-            msg = 'Zone can not be exported synchronously'
-            raise exceptions.BadRequest(msg)
+            raise exceptions.BadRequest(
+                'Zone can not be exported synchronously'
+            )
 
 
 class ZoneExportCreateController(rest.RestController):
