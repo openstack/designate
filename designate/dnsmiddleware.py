@@ -131,6 +131,7 @@ class SerializationMiddleware(DNSMiddleware):
             #                   leaving functionality as it was.
             # error_response = self._build_error_response()
             # yield error_response.to_wire()
+            yield
             return
 
         # Hand the Deserialized packet onto the Application
@@ -168,8 +169,8 @@ class TsigInfoMiddleware(DNSMiddleware):
             request.environ['context'].tsigkey_id = tsigkey.id
 
         except exceptions.TsigKeyNotFound:
-            # This should never happen, as we just validated the key.. Except
-            # for race conditions..
+            # This should never happen, as we just validated the key. Except
+            # for race conditions.
             return self._build_error_response()
 
         return None
