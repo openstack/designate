@@ -70,7 +70,7 @@ class Zone(base.DesignateObject, base.DictObjectMixin,
     }
 
     STRING_KEYS = [
-        'id', 'type', 'name', 'pool_id', 'serial', 'action', 'status'
+        'id', 'type', 'name', 'pool_id', 'serial', 'action', 'status', 'shard'
     ]
 
     def get_master_by_ip(self, host):

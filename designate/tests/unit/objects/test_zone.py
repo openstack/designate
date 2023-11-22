@@ -176,3 +176,14 @@ class ZoneTest(oslotest.base.BaseTestCase):
             'Provided object does not match schema',
             zone.validate
         )
+
+    def test_include_shard_id_in_string_representation(self):
+        zone = objects.Zone(
+            name='example.org.',
+            type='PRIMARY',
+            email='foo@example.com',
+            shard=4095
+        )
+        zone.validate()
+
+        self.assertIn("shard:'4095'", str(zone))

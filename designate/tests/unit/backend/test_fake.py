@@ -57,7 +57,7 @@ class FakeBackendTestCase(oslotest.base.BaseTestCase):
         self.assertIn(
             "Create Zone <Zone id:'cca7908b-dad4-4c50-adba-fb67d4c556e8' "
             "type:'None' name:'example.test.' pool_id:'None' serial:'None' "
-            "action:'None' status:'None'>",
+            "action:'None' status:'None' shard:'None'>",
             self.stdlog.logger.output
         )
 
@@ -67,6 +67,6 @@ class FakeBackendTestCase(oslotest.base.BaseTestCase):
         self.assertIn(
             "Delete Zone <Zone id:'cca7908b-dad4-4c50-adba-fb67d4c556e8' "
             "type:'None' name:'example.test.' pool_id:'None' serial:'None' "
-            "action:'None' status:'None'>",
+            "action:'None' status:'None' shard:'None'>",
             self.stdlog.logger.output
         )

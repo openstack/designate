@@ -200,7 +200,7 @@ class NS1BackendTestCase(oslotest.base.BaseTestCase):
             "Trying to delete zone "
             "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' type:'None' "
             "name:'example.com.' pool_id:'None' serial:'None' action:'None' "
-            "status:'None'> "
+            "status:'None' shard:'None'> "
             "but that zone is not "
             "present in the ns1 backend. Assuming success.",
             self.stdlog.logger.output

@@ -169,14 +169,14 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             "Could not delete pre-existing zone "
             "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' "
             "type:'None' name:'example.com.' pool_id:'None' serial:'None' "
-            "action:'None' status:'None'>",
+            "action:'None' status:'None' shard:'None'>",
             self.stdlog.logger.output
         )
 
         self.assertIn(
             "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' type:'None' "
             "name:'example.com.' pool_id:'None' serial:'None' action:'None' "
-            "status:'None'> exists on the server. "
+            "status:'None' shard:'None'> exists on the server. "
             "Deleting zone before creation",
             self.stdlog.logger.output
         )
@@ -266,7 +266,8 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
         self.assertIn(
             "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' type:'None' "
             "name:'example.com.' pool_id:'None' serial:'None' action:'None' "
-            "status:'None'> was created with an error. Deleting zone",
+            "status:'None' shard:'None'> was created with an error. "
+            "Deleting zone",
             self.stdlog.logger.output
         )
 
@@ -274,7 +275,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
             "Could not delete errored zone "
             "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' type:'None' "
             "name:'example.com.' pool_id:'None' serial:'None' action:'None' "
-            "status:'None'>",
+            "status:'None' shard:'None'>",
             self.stdlog.logger.output
         )
 

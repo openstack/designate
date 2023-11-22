@@ -40,7 +40,8 @@ def create_test_recordset():
         records=objects.RecordList(objects=[
             objects.Record(data='192.0.2.1'),
             objects.Record(data='192.0.2.2'),
-        ])
+        ]),
+        shard=0
     )
     return record_set
 
@@ -60,7 +61,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
         self.assertEqual(
             "<RecordSet id:'f6a2cbd6-7f9a-4e0c-a00d-98a02aa73fc8' type:'A' "
             "name:'www.example.org.' "
-            "zone_id:'74038683-cab1-4056-bdf8-b39bd155ff21'>",
+            "zone_id:'74038683-cab1-4056-bdf8-b39bd155ff21' shard:'0'>",
             repr(record_set)
         )
 

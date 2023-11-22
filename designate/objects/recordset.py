@@ -229,7 +229,7 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
         self.records = old_records
 
     STRING_KEYS = [
-        'id', 'type', 'name', 'zone_id'
+        'id', 'type', 'name', 'zone_id', 'shard'
     ]
 
 
