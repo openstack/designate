@@ -15,13 +15,26 @@
 # under the License.
 from oslo_log import log as logging
 
+from designate import objects
 from designate.tests import TestCase
+
 
 LOG = logging.getLogger(__name__)
 
 
 class ProducerServiceTest(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.producer_service = self.start_service('producer')
+
     def test_stop(self):
-        # Test stopping the service
-        service = self.start_service("producer")
-        service.stop()
+        self.producer_service.stop()
+
+    def test_validate_partition_range(self):
+        self.producer_service.start()
+
+        min_partition = objects.Zone.fields['shard'].min
+        max_partition = objects.Zone.fields['shard'].max
+
+        self.assertIn(min_partition, self.producer_service.partition_range)
+        self.assertIn(max_partition, self.producer_service.partition_range)
