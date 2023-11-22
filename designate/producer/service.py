@@ -64,7 +64,7 @@ class Service(service.RPCService):
 
         self._partitioner = coordination.Partitioner(
             self.coordination.coordinator, self.service_name,
-            self.coordination.coordination_id.encode(), range(0, 4095)
+            self.coordination.coordination_id.encode(), range(0, 4096)
         )
 
         self._partitioner.start()
