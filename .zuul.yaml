@@ -82,19 +82,6 @@
     nodeset: devstack-single-node-centos-9-stream
 
 - job:
-    name: designate-bind9-sqlalchemy-2x
-    parent: designate-bind9
-    description: |
-      Run tempest tests with main branch of SQLAlchemy, alembic and oslo.db.
-    # The job only tests the latest and shouldn't be run on the stable branches
-    branches: ^(?!stable)
-    required-projects:
-      - name: openstack/oslo.db
-    vars:
-      devstack_localrc:
-        USE_SQLALCHEMY_LATEST: true
-
-- job:
     name: designate-pdns4
     post-run: playbooks/designate-pdns4/post.yaml
     parent: designate-base
@@ -188,22 +175,6 @@
     irrelevant-files: *base_irrelevant_files
     vars:
       tox_envlist: dnspython-latest
-
-# Temporary job until SQLAlchemy 2.0 is no longer blocked by upper-requirements
-- job:
-    name: designate-tox-py310-with-sqlalchemy-2x
-    parent: openstack-tox-py310
-    description: |
-      Run unit tests with main branch of SQLAlchemy, alembic and oslo.db.
-      Takes advantage of the base tox job's install-siblings feature.
-    # The job only tests the latest and shouldn't be run on the stable branches
-    branches: ^(?!stable)
-    required-projects:
-      - name: github.com/sqlalchemy/sqlalchemy
-        override-checkout: main
-      - name: github.com/sqlalchemy/alembic
-        override-checkout: main
-      - name: openstack/oslo.db
 
 - project-template:
     name: designate-devstack-jobs
