@@ -63,9 +63,7 @@ class DesignateContext(context.RequestContext):
         self.delete_shares = delete_shares
 
     def deepcopy(self):
-        d = self.to_dict()
-
-        return self.from_dict(d)
+        return self.from_dict(self.to_dict())
 
     def to_dict(self):
         d = super().to_dict()
@@ -215,14 +213,13 @@ class DesignateContext(context.RequestContext):
     def get_auth_plugin(self):
         if self.user_auth_plugin:
             return self.user_auth_plugin
-        else:
-            return _ContextAuthPlugin(self.auth_token, self.service_catalog)
+        return _ContextAuthPlugin(self.auth_token, self.service_catalog)
 
 
 class _ContextAuthPlugin(plugin.BaseAuthPlugin):
     """A keystoneauth auth plugin that uses the values from the Context.
     Ideally we would use the plugin provided by auth_token middleware however
-    this plugin isn't serialized yet so we construct one from the serialized
+    this plugin isn't serialized yet, so we construct one from the serialized
     auth data.
     """
     def __init__(self, auth_token, sc):
@@ -234,26 +231,13 @@ class _ContextAuthPlugin(plugin.BaseAuthPlugin):
     def get_token(self, *args, **kwargs):
         return self.auth_token
 
-    def get_endpoint(self, session, **kwargs):
-        endpoint_data = self.get_endpoint_data(session, **kwargs)
-        if not endpoint_data:
-            return None
-        return endpoint_data.url
-
-    def get_endpoint_data(self, session,
-                          endpoint_override=None,
-                          discover_versions=True,
-                          **kwargs):
-        urlkw = {}
-        for k in ('service_type', 'service_name', 'service_id', 'endpoint_id',
-                  'region_name', 'interface'):
-            if k in kwargs:
-                urlkw[k] = kwargs[k]
-
-        endpoint = endpoint_override or self.service_catalog.url_for(**urlkw)
-        return super().get_endpoint_data(
-            session, endpoint_override=endpoint,
-            discover_versions=discover_versions, **kwargs)
+    def get_endpoint(self, session, service_type=None, interface=None,
+                     region_name=None, service_name=None, **kwargs):
+        endpoint = self.service_catalog.url_for(
+            service_type=service_type, service_name=service_name,
+            interface=interface, region_name=region_name
+        )
+        return self.get_endpoint_data(session, endpoint_override=endpoint).url
 
 
 def get_current():

@@ -13,25 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from unittest import mock
 
-import testtools
+import oslotest.base
 
 from designate import context
-from designate import exceptions
 from designate import policy
-import designate.tests
 
 
-class TestDesignateContext(designate.tests.TestCase):
-    def test_deepcopy(self):
-        orig = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        copy = orig.deepcopy()
-
-        self.assertEqual(orig.to_dict(), copy.to_dict())
-
+class TestDesignateContext(oslotest.base.BaseTestCase):
     def test_tsigkey_id_override(self):
         orig = context.DesignateContext(
             tsigkey_id='12345', project_id='54321'
@@ -39,89 +30,6 @@ class TestDesignateContext(designate.tests.TestCase):
         copy = orig.to_dict()
 
         self.assertEqual('TSIG:12345 54321 - - -', copy['user_identity'])
-
-    def test_elevated(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        admin_ctxt = ctxt.elevated()
-
-        self.assertFalse(ctxt.is_admin)
-        self.assertTrue(admin_ctxt.is_admin)
-        self.assertEqual(0, len(ctxt.roles))
-
-    def test_elevated_hard_delete(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        admin_ctxt = ctxt.elevated(hard_delete=True)
-
-        self.assertTrue(admin_ctxt.hard_delete)
-
-    def test_elevated_with_show_deleted(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        admin_ctxt = ctxt.elevated(show_deleted=True)
-
-        self.assertTrue(admin_ctxt.show_deleted)
-
-    def test_all_tenants(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        admin_ctxt = ctxt.elevated()
-        admin_ctxt.all_tenants = True
-
-        self.assertFalse(ctxt.is_admin)
-        self.assertTrue(admin_ctxt.is_admin)
-        self.assertTrue(admin_ctxt.all_tenants)
-
-    def test_all_tenants_policy_failure(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-
-        with testtools.ExpectedException(exceptions.Forbidden):
-            ctxt.all_tenants = True
-
-    def test_edit_managed_records(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        admin_ctxt = ctxt.elevated()
-
-        admin_ctxt.edit_managed_records = True
-
-        self.assertFalse(ctxt.is_admin)
-        self.assertTrue(admin_ctxt.is_admin)
-        self.assertTrue(admin_ctxt.edit_managed_records)
-
-    def test_edit_managed_records_failure(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        with testtools.ExpectedException(exceptions.Forbidden):
-            ctxt.edit_managed_records = True
-
-    def test_hard_delete(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        admin_ctxt = ctxt.elevated()
-
-        admin_ctxt.hard_delete = True
-
-        self.assertFalse(ctxt.is_admin)
-        self.assertTrue(admin_ctxt.is_admin)
-        self.assertTrue(admin_ctxt.hard_delete)
-
-    def test_hard_delete_failure(self):
-        ctxt = context.DesignateContext(
-            user_id='12345', project_id='54321'
-        )
-        with testtools.ExpectedException(exceptions.Forbidden):
-            ctxt.hard_delete = True
 
     @mock.patch.object(policy, 'check')
     def test_sudo(self, mock_policy_check):
@@ -133,3 +41,36 @@ class TestDesignateContext(designate.tests.TestCase):
         self.assertTrue(mock_policy_check.called)
         self.assertEqual('new_project', ctxt.project_id)
         self.assertEqual('old_project', ctxt.original_project_id)
+
+    def test_get_auth_plugin(self):
+        ctx = context.DesignateContext()
+        self.assertIsInstance(
+            ctx.get_auth_plugin(), context._ContextAuthPlugin
+        )
+
+    @mock.patch('keystoneauth1.access.service_catalog.ServiceCatalogV2')
+    def test_get_auth_plugin_get_endpoint(self, mock_sc):
+        mock_session = mock.Mock()
+        mock_service_catalog = mock.Mock()
+        mock_sc.return_value = mock_service_catalog
+
+        ctx = context.DesignateContext(
+            auth_token='token', service_catalog='catalog'
+        )
+
+        auth_plugin = ctx.get_auth_plugin()
+        auth_plugin.get_endpoint_data = mock.Mock()
+        auth_plugin.get_endpoint(mock_session)
+
+        mock_sc.assert_called_with('catalog')
+        mock_service_catalog.url_for.assert_called_with(
+            service_type=None, service_name=None, interface=None,
+            region_name=None
+        )
+        auth_plugin.get_endpoint_data.assert_called()
+
+    def test_get_auth_plugin_user(self):
+        ctx = context.DesignateContext(
+            user_auth_plugin='user_auth_plugin'
+        )
+        self.assertEqual('user_auth_plugin', ctx.get_auth_plugin())
