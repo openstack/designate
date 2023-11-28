@@ -50,6 +50,14 @@ class TestDesignateContext(designate.tests.TestCase):
         self.assertTrue(admin_ctxt.is_admin)
         self.assertEqual(0, len(ctxt.roles))
 
+    def test_elevated_hard_delete(self):
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
+        admin_ctxt = ctxt.elevated(hard_delete=True)
+
+        self.assertTrue(admin_ctxt.hard_delete)
+
     def test_elevated_with_show_deleted(self):
         ctxt = context.DesignateContext(
             user_id='12345', project_id='54321'
