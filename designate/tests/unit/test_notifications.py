@@ -13,22 +13,23 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import unittest
 from unittest import mock
 
 from oslo_log import log as logging
+import oslotest.base
 
 from designate import notifications
 from designate import objects
+from designate.tests import fixtures
+
 
 LOG = logging.getLogger(__name__)
 
 
-class DefaultNotificationTest(unittest.TestCase):
-
+class DefaultNotificationTest(oslotest.base.BaseTestCase):
     def setUp(self):
+        super().setUp()
         self.driver = notifications.Default()
-
         self.context = mock.Mock()
 
     def test_default_notifications(self):
@@ -42,29 +43,29 @@ class DefaultNotificationTest(unittest.TestCase):
         self.assertEqual(driver_result, ['result'])
 
 
-class AuditNotificationTest(unittest.TestCase):
-    zone__id = '1c85d9b0-1e9d-4e99-aede-a06664f1af2e'
-    record__id = 'b81ebcfb-6236-4424-b77f-2dd0179fa041'
-    pool__id = '769ca3fc-5924-4a44-8c1f-7efbe52fbd59'
-    recordset__id = '9c85d9b0-1e9d-4e99-aede-a06664f1af2e'
-    zone__import = 'rwe12-gr3-4424-sde56-2dd0179fa041'
-    zone__export = 'de21s-4e99-4424-b77f-2dd0179fa041'
-    zone__transfer = '4a44-6236-4424-aede-2dd0179fa041'
+class AuditNotificationTest(oslotest.base.BaseTestCase):
+    zone_id = '1c85d9b0-1e9d-4e99-aede-a06664f1af2e'
+    record_id = 'b81ebcfb-6236-4424-b77f-2dd0179fa041'
+    pool_id = '769ca3fc-5924-4a44-8c1f-7efbe52fbd59'
+    recordset_id = '9c85d9b0-1e9d-4e99-aede-a06664f1af2e'
+    zone_import = 'rwe12-gr3-4424-sde56-2dd0179fa041'
+    zone_export = 'de21s-4e99-4424-b77f-2dd0179fa041'
+    zone_transfer = '4a44-6236-4424-aede-2dd0179fa041'
 
     def setUp(self):
+        super().setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
+
         self.driver = notifications.Audit()
 
         self.context = mock.Mock()
         self.maxDiff = None
 
-    #
-    # Zone changes
-    #
-
     def test_audit_zone_name(self):
         zone = objects.Zone(
-                name='example.com.',
-                type='PRIMARY',
+            name='example.com.',
+            type='PRIMARY',
         )
 
         result = zone
@@ -86,9 +87,9 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_zone_id(self):
         zone = objects.Zone(
-                id=AuditNotificationTest.zone__id,
-                name='example.com.',
-                type='PRIMARY',
+            id=AuditNotificationTest.zone_id,
+            name='example.com.',
+            type='PRIMARY',
         )
 
         result = zone
@@ -101,7 +102,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
@@ -110,10 +111,10 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_zone_update(self):
         zone = objects.Zone(
-                id=AuditNotificationTest.zone__id,
-                name='example.com.',
-                type='PRIMARY',
-                ttl=1
+            id=AuditNotificationTest.zone_id,
+            name='example.com.',
+            type='PRIMARY',
+            ttl=1
         )
         zone.ttl = 300
 
@@ -127,7 +128,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': '300',
             'old_data': '1',
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
@@ -136,15 +137,15 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_zone_delete(self):
         zone = objects.Zone(
-                id=AuditNotificationTest.zone__id,
-                name='example.com.',
-                type='PRIMARY',
-                ttl=1
+            id=AuditNotificationTest.zone_id,
+            name='example.com.',
+            type='PRIMARY',
+            ttl=1
         )
 
         result = zone
         event = 'dns.zone.delete'
-        args = (AuditNotificationTest.zone__id,)
+        args = (AuditNotificationTest.zone_id,)
         kwargs = {'wumbo': 'mumbo'}
 
         expected = [{
@@ -152,22 +153,18 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
             event, self.context, result, args, kwargs)
         self.assertEqual(driver_result, expected)
 
-    #
-    # Recordset Changes
-    #
-
     def test_audit_rrset_name(self):
         rrset = objects.RecordSet(
-                name='foo.example.com.',
-                type='PRIMARY',
-                records=objects.RecordList.from_list([])
+            name='foo.example.com.',
+            type='PRIMARY',
+            records=objects.RecordList.from_list([])
         )
 
         rrset.records = objects.RecordList.from_list(
@@ -192,11 +189,11 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_rrset_create(self):
         rrset = objects.RecordSet(
-                name='foo.example.com.',
-                type='PRIMARY',
-                records=objects.RecordList.from_list([]),
-                zone_id=AuditNotificationTest.zone__id,
-                zone_name='example.com.'
+            name='foo.example.com.',
+            type='PRIMARY',
+            records=objects.RecordList.from_list([]),
+            zone_id=AuditNotificationTest.zone_id,
+            zone_name='example.com.'
         )
 
         rrset.records = objects.RecordList.from_list(
@@ -212,7 +209,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': '192.0.2.1',
             'old_data': '',
             'recordset_name': 'foo.example.com.',
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
@@ -221,12 +218,12 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_rrset_update_records(self):
         rrset = objects.RecordSet(
-                name='foo.example.com.',
-                type='PRIMARY',
-                records=objects.RecordList.from_list(
-                    [{'data': '192.0.2.1'}]),
-                zone_id=AuditNotificationTest.zone__id,
-                zone_name='example.com.'
+            name='foo.example.com.',
+            type='PRIMARY',
+            records=objects.RecordList.from_list(
+                [{'data': '192.0.2.1'}]),
+            zone_id=AuditNotificationTest.zone_id,
+            zone_name='example.com.'
         )
 
         rrset.records = objects.RecordList.from_list(
@@ -242,7 +239,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': '192.0.2.2',
             'old_data': '192.0.2.1',
             'recordset_name': 'foo.example.com.',
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
@@ -251,13 +248,13 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_rrset_update_other(self):
         rrset = objects.RecordSet(
-                name='foo.example.com.',
-                type='PRIMARY',
-                records=objects.RecordList.from_list(
-                    [{'data': '192.0.2.1'}]),
-                zone_id=AuditNotificationTest.zone__id,
-                zone_name='example.com.',
-                ttl=300
+            name='foo.example.com.',
+            type='PRIMARY',
+            records=objects.RecordList.from_list(
+                [{'data': '192.0.2.1'}]),
+            zone_id=AuditNotificationTest.zone_id,
+            zone_name='example.com.',
+            ttl=300
         )
 
         rrset.ttl = 400
@@ -272,7 +269,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': '400',
             'old_data': '300',
             'recordset_name': 'foo.example.com.',
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
@@ -281,18 +278,18 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_rrset_delete(self):
         rrset = objects.RecordSet(
-                name='foo.example.com.',
-                type='PRIMARY',
-                records=objects.RecordList.from_list([]),
-                zone_id=AuditNotificationTest.zone__id,
-                zone_name='example.com.',
-                id=AuditNotificationTest.recordset__id,
+            name='foo.example.com.',
+            type='PRIMARY',
+            records=objects.RecordList.from_list([]),
+            zone_id=AuditNotificationTest.zone_id,
+            zone_name='example.com.',
+            id=AuditNotificationTest.recordset_id,
         )
 
         result = rrset
         event = 'dns.recordset.delete'
-        args = (AuditNotificationTest.zone__id,
-                AuditNotificationTest.recordset__id)
+        args = (AuditNotificationTest.zone_id,
+                AuditNotificationTest.recordset_id)
         kwargs = {'wumbo': 'mumbo'}
 
         expected = [{
@@ -300,20 +297,16 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': 'foo.example.com.',
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
             event, self.context, result, args, kwargs)
         self.assertEqual(driver_result, expected)
 
-    #
-    # Zone Imports
-    #
-
     def test_audit_import_create(self):
         zimport = objects.ZoneImport(
-                zone_id=AuditNotificationTest.zone__id,
+            zone_id=AuditNotificationTest.zone_id,
         )
 
         result = zimport
@@ -326,7 +319,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': None
         }]
         driver_result = self.driver.emit(
@@ -335,12 +328,12 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_import_delete(self):
         zimport = objects.ZoneImport(
-                zone_id=AuditNotificationTest.zone__id,
+            zone_id=AuditNotificationTest.zone_id,
         )
 
         result = zimport
         event = 'dns.zone_import.create'
-        args = (AuditNotificationTest.zone__import)
+        args = (AuditNotificationTest.zone_import,)
         kwargs = {'wumbo': 'mumbo'}
 
         expected = [{
@@ -348,20 +341,16 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': None
         }]
         driver_result = self.driver.emit(
             event, self.context, result, args, kwargs)
         self.assertEqual(driver_result, expected)
 
-    #
-    # Zone Exports
-    #
-
     def test_audit_export_create(self):
         zexport = objects.ZoneExport(
-                zone_id=AuditNotificationTest.zone__id,
+            zone_id=AuditNotificationTest.zone_id,
         )
 
         result = zexport
@@ -374,7 +363,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': None
         }]
         driver_result = self.driver.emit(
@@ -383,12 +372,12 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_export_delete(self):
         zexport = objects.ZoneExport(
-                zone_id=AuditNotificationTest.zone__id,
+            zone_id=AuditNotificationTest.zone_id,
         )
 
         result = zexport
         event = 'dns.zone_export.create'
-        args = (AuditNotificationTest.zone__export)
+        args = (AuditNotificationTest.zone_export,)
         kwargs = {'wumbo': 'mumbo'}
 
         expected = [{
@@ -396,21 +385,18 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': None
         }]
         driver_result = self.driver.emit(
             event, self.context, result, args, kwargs)
         self.assertEqual(driver_result, expected)
 
-    #
-    # Zone Transfer Requests
-    #
     def test_audit_transfer_request_create(self):
         ztransfer_request = objects.ZoneTransferRequest(
-                zone_id=AuditNotificationTest.zone__id,
-                zone_name='example.com.',
-                target_tenant_id='tenant_a',
+            zone_id=AuditNotificationTest.zone_id,
+            zone_name='example.com.',
+            target_tenant_id='tenant_a',
         )
 
         result = ztransfer_request
@@ -423,7 +409,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
@@ -432,9 +418,9 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_transfer_request_update(self):
         ztransfer_request = objects.ZoneTransferRequest(
-                zone_id=AuditNotificationTest.zone__id,
-                zone_name='example.com.',
-                target_tenant_id='tenant_a',
+            zone_id=AuditNotificationTest.zone_id,
+            zone_name='example.com.',
+            target_tenant_id='tenant_a',
         )
 
         ztransfer_request.target_tenant_id = 'tenant_b'
@@ -449,7 +435,7 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': 'tenant_b',
             'old_data': 'tenant_a',
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
@@ -458,14 +444,14 @@ class AuditNotificationTest(unittest.TestCase):
 
     def test_audit_transfer_request_delete(self):
         ztransfer_request = objects.ZoneTransferRequest(
-                zone_id=AuditNotificationTest.zone__id,
-                zone_name='example.com.',
-                target_tenant_id='tenant_a',
+            zone_id=AuditNotificationTest.zone_id,
+            zone_name='example.com.',
+            target_tenant_id='tenant_a',
         )
 
         result = ztransfer_request
         event = 'dns.zone_transfer_request.create'
-        args = (AuditNotificationTest.zone__transfer)
+        args = (AuditNotificationTest.zone_transfer,)
         kwargs = {'wumbo': 'mumbo'}
 
         expected = [{
@@ -473,19 +459,16 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': 'example.com.'
         }]
         driver_result = self.driver.emit(
             event, self.context, result, args, kwargs)
         self.assertEqual(driver_result, expected)
 
-    #
-    # Zone Transfer Requests
-    #
     def test_audit_transfer_accept_create(self):
         ztransfer_accept = objects.ZoneTransferAccept(
-                zone_id=AuditNotificationTest.zone__id,
+            zone_id=AuditNotificationTest.zone_id,
         )
 
         result = ztransfer_accept
@@ -498,9 +481,90 @@ class AuditNotificationTest(unittest.TestCase):
             'new_data': None,
             'old_data': None,
             'recordset_name': None,
-            'zone_id': AuditNotificationTest.zone__id,
+            'zone_id': AuditNotificationTest.zone_id,
             'zone_name': None
         }]
         driver_result = self.driver.emit(
             event, self.context, result, args, kwargs)
         self.assertEqual(driver_result, expected)
+
+    def test_zone_name(self):
+        self.assertEqual(
+            'a.', self.driver.zone_name([], objects.Zone(name='a.'))
+        )
+        self.assertIsNone(self.driver.zone_name([], objects.Zone()))
+
+    def test_zone_id(self):
+        self.assertEqual(
+            self.zone_id,
+            self.driver.zone_id([], objects.Zone(id=self.zone_id))
+        )
+        self.assertIsNone(self.driver.zone_id([], objects.Zone()))
+
+    def test_recordset_name(self):
+        self.assertEqual(
+            'a.b.',
+            self.driver.recordset_name([], objects.RecordSet(name='a.b.'))
+        )
+        self.assertIsNone(self.driver.recordset_name([], objects.RecordSet()))
+
+    def test_other_data(self):
+        mock_recordset = mock.Mock(spec_set=objects.Zone)
+        mock_recordset.name = 'name'
+        mock_recordset.obj_get_original_value.return_value = 'different'
+        mock_recordset.obj_what_changed.side_effect = [['name']]
+
+        changes = self.driver.other_data([mock_recordset], None)
+
+        self.assertEqual(
+            {
+                'change': 'name',
+                'old_value': 'different',
+                'new_value': 'name'
+            },
+            changes[0]
+        )
+
+    def test_other_data_handle_unexpected_values(self):
+        mock_recordset = mock.Mock(spec_set=objects.Zone)
+        mock_recordset.name = 'name'
+        mock_recordset.obj_get_original_value.return_value = mock.Mock()
+        mock_recordset.obj_what_changed.side_effect = [['name']]
+
+        self.driver.other_data([mock_recordset], None)
+
+        self.assertIn(
+            'Nulling notification values after unexpected values',
+            self.stdlog.logger.output
+        )
+
+    def test_recordset_data_result_not_recordset(self):
+        rrset = objects.RecordSet(
+            name='foo.example.com.',
+            type='PRIMARY',
+            records=objects.RecordList.from_list([])
+        )
+
+        self.assertFalse(self.driver.recordset_data([rrset], None))
+
+    def test_recordset_data_nothing_changed_in_recordset_records(self):
+        rrset = objects.RecordSet(
+            name='foo.example.com.',
+            type='PRIMARY',
+            records=objects.RecordList.from_list([])
+        )
+        rrset.obj_reset_changes(recursive=True)
+
+        self.assertFalse(self.driver.recordset_data([rrset], rrset))
+
+    def test_recordset_data_nothing_to_do(self):
+        mock_zone = mock.Mock()
+
+        rrset = objects.RecordSet(
+            name='foo.example.com.',
+            type='PRIMARY',
+            records=objects.RecordList.from_list([])
+        )
+        rrset.obj_reset_changes(recursive=True)
+
+        self.assertFalse(self.driver.recordset_data([mock_zone], rrset))

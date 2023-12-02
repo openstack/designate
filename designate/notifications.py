@@ -142,30 +142,33 @@ class Audit(NotificationPlugin):
         changes = []
 
         for arg in arglist:
-            if isinstance(arg, objects.DesignateObject):
-                for change in arg.obj_what_changed():
-                    if change != 'records':
-                        old_value = arg.obj_get_original_value(change)
-                        new_value = getattr(arg, change)
+            if not isinstance(arg, objects.DesignateObject):
+                continue
 
-                        # Just in case something odd makes it here
-                        if any(not isinstance(val,
-                                              (int, float, bool,
-                                               str, type(None)))
-                               for val in (old_value, new_value)):
-                            LOG.warning("Nulling notification values after "
-                                        "unexpected values (%s, %s)",
-                                        old_value, new_value)
-                            old_value, new_value = None, None
+            for change in arg.obj_what_changed():
+                if change == 'records':
+                    continue
 
-                        if old_value == new_value:
-                            continue
+                old_value = arg.obj_get_original_value(change)
+                new_value = getattr(arg, change)
 
-                        changes.append({
-                            'change': change,
-                            'old_value': str(old_value),
-                            'new_value': str(new_value),
-                        })
+                # Just in case something odd makes it here
+                if any(not isinstance(val, (int, float, bool, str, type(None)))
+                       for val in (old_value, new_value)):
+                    LOG.warning(
+                        'Nulling notification values after unexpected values '
+                        '(%s, %s)', old_value, new_value
+                    )
+                    old_value, new_value = None, None
+
+                if old_value == new_value:
+                    continue
+
+                changes.append({
+                    'change': change,
+                    'old_value': str(old_value),
+                    'new_value': str(new_value),
+                })
 
         return changes
 
