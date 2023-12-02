@@ -23,6 +23,7 @@ from unittest import mock
 import fixtures
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+from oslo_log import log as logging
 from oslo_utils import timeutils
 import oslotest.base
 
@@ -31,6 +32,7 @@ import designate.conf
 from designate import context
 from designate.producer import tasks
 from designate import rpc
+from designate.tests import fixtures as tests_fixtures
 from designate.tests.unit import RoObject
 from designate.tests.unit import RwObject
 from designate.utils import generate_uuid
@@ -48,6 +50,7 @@ DUMMY_TASK_OPTS = [
 CONF = designate.conf.CONF
 CONF.register_group(DUMMY_TASK_GROUP)
 CONF.register_opts(DUMMY_TASK_OPTS, group=DUMMY_TASK_GROUP)
+LOG = logging.getLogger(__name__)
 
 
 class DummyTask(tasks.PeriodicTask):
@@ -220,12 +223,26 @@ class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
 
         self.assertFalse(self.central.xfr_zone.called)
 
+    def test_transferred_at_is_none(self):
+        zone = RoObject(
+            id=generate_uuid(),
+            transferred_at=None,
+            refresh=3600
+        )
+
+        with mock.patch.object(self.task, '_iter') as _iter:
+            _iter.return_value = [zone]
+            self.task()
+
+        self.assertFalse(self.central.xfr_zone.called)
+
     def test_refresh_zone(self):
         transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=62)
         zone = RoObject(
             id=generate_uuid(),
             transferred_at=datetime.datetime.isoformat(transferred),
-            refresh=3600)
+            refresh=3600
+        )
 
         with mock.patch.object(self.task, '_iter') as _iter:
             _iter.return_value = [zone]
@@ -326,3 +343,55 @@ class PeriodicIncrementSerialTest(oslotest.base.BaseTestCase):
 
         self.central_api.increment_zone_serial.assert_not_called()
         self.worker_api.update_zone.assert_not_called()
+
+
+class PeriodicGenerateDelayedNotifyTaskTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+        self.stdlog = tests_fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
+
+        self.central_api = mock.Mock()
+        self.context = mock.Mock()
+        self.worker_api = mock.Mock()
+        mock.patch.object(worker_api.WorkerAPI, 'get_instance',
+                          return_value=self.worker_api).start()
+        mock.patch.object(central_api.CentralAPI, 'get_instance',
+                          return_value=self.central_api).start()
+        mock.patch.object(context.DesignateContext, 'get_admin_context',
+                          return_value=self.context).start()
+        self.task = tasks.PeriodicGenerateDelayedNotifyTask()
+        self.task.my_partitions = 0, 9
+
+    def test_zone_action_none(self):
+        zone = RwObject(
+            id='a6c7dcc6-8070-481b-8d5a-310100f5fc31',
+            action='NONE',
+            status='ACTIVE',
+            increment_serial=False,
+            delayed_notify=True,
+        )
+        self.central_api.find_zones.return_value = [zone]
+
+        self.task()
+
+        self.assertEqual('UPDATE', zone.action)
+        self.assertEqual('PENDING', zone.status)
+
+    def test_skip_deleted_zone(self):
+        zone = RoObject(
+            id='a6c7dcc6-8070-481b-8d5a-310100f5fc31',
+            action='DELETE',
+            increment_serial=False,
+            delayed_notify=True,
+        )
+        self.central_api.find_zones.return_value = [zone]
+
+        self.task()
+
+        self.assertIn(
+            'Skipping delayed NOTIFY for a6c7dcc6-8070-481b-8d5a-310100f5fc31 '
+            'being DELETED',
+            self.stdlog.logger.output
+        )

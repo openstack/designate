@@ -206,9 +206,14 @@ class PeriodicSecondaryRefreshTask(PeriodicTask):
             transferred = timeutils.parse_isotime(zone.transferred_at)
             seconds = timeutils.delta_seconds(transferred, now)
             if seconds > zone.refresh:
-                msg = ("Zone %(id)s has %(seconds)d seconds since last "
-                       "transfer, executing AXFR")
-                LOG.debug(msg, {"id": zone.id, "seconds": seconds})
+                LOG.debug(
+                    "Zone %(id)s has %(seconds)d seconds since last transfer, "
+                    "executing AXFR",
+                    {
+                        "id": zone.id,
+                        "seconds": seconds
+                    }
+                )
                 self.central_api.xfr_zone(ctxt, zone.id)
 
 
