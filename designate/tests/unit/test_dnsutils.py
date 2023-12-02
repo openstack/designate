@@ -19,6 +19,7 @@ from unittest import mock
 import dns
 import dns.exception
 import dns.message
+import dns.name
 import dns.rcode
 import dns.rdatatype
 import dns.zone
@@ -38,6 +39,19 @@ class TestDNSUtils(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
+
+    def test_dnspyrecords_to_recordsetlist(self):
+        node = dns.node.Node()
+        node.rdatasets.append(
+            dns.rdataset.from_text('in', 'a', 0, '192.0.2.1')
+        )
+        dnspython_records = {
+            dns.name.Name(labels=[b'ipv4', b'example', b'org', b'']): node
+        }
+        recorset = dnsutils.dnspyrecords_to_recordsetlist(dnspython_records)
+        self.assertEqual(1, len(recorset))
+        self.assertEqual('ipv4.example.org.', recorset[0].name)
+        self.assertIsNone(recorset[0].ttl)
 
     @mock.patch('socket.getaddrinfo')
     def test_get_ip_address(self, mock_getaddrinfo):

@@ -130,9 +130,24 @@ class TestUtils(designate.tests.TestCase):
 
         self.assertIsInstance(zone, objects.zone.Zone)
 
+    def test_from_dnspython_zone_zero_soa(self):
+        CONF.set_override('min_ttl', 1234, 'service:central')
+
+        zone_file = self.get_zonefile_fixture(variant='zerosoa')
+
+        dnspython_zone = dns.zone.from_text(
+            zone_file,
+            relativize=False,
+            check_origin=False
+        )
+
+        zone = dnsutils.from_dnspython_zone(dnspython_zone)
+
+        self.assertIsInstance(zone, objects.zone.Zone)
+        self.assertEqual(1234, zone.ttl)
+
     def test_from_dnspython_zone_no_soa(self):
         zone_file = self.get_zonefile_fixture(variant='nosoa')
-
         dnspython_zone = dns.zone.from_text(
             zone_file,
             relativize=False,
