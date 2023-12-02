@@ -158,8 +158,6 @@ class TsigInfoMiddleware(DNSMiddleware):
 
         try:
             name = request.keyname.to_text(True)
-            if isinstance(name, bytes):
-                name = name.decode('utf-8')
             criterion = {'name': name}
             tsigkey = self.storage.find_tsigkey(
                 context.get_current(), criterion

@@ -143,6 +143,4 @@ class NetworkAPI(DriverPlugin):
         Get the name for the address
         """
         name = reversename.from_address(address).to_text()
-        if isinstance(name, bytes):
-            name = name.decode('utf-8')
         return name

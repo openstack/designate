@@ -50,8 +50,6 @@ class TsigKeyring(dict):
     def get(self, key, default=None):
         try:
             name = key.to_text(True)
-            if isinstance(name, bytes):
-                name = name.decode('utf-8')
             criterion = {'name': name}
             tsigkey = self.storage.find_tsigkey(
                 context.get_current(), criterion
@@ -119,14 +117,9 @@ def from_dnspython_zone(dnspython_zone):
     if soa.ttl == 0:
         soa.ttl = CONF['service:central'].min_ttl
     email = soa[0].rname.to_text(omit_final_dot=True)
-    if isinstance(email, bytes):
-        email = email.decode('utf-8')
     email = email.replace('.', '@', 1)
 
     name = dnspython_zone.origin.to_text()
-    if isinstance(name, bytes):
-        name = name.decode('utf-8')
-
     values = {
         'name': name,
         'email': email,
@@ -161,8 +154,6 @@ def dnspythonrecord_to_recordset(rname, rdataset):
     record_type = dns.rdatatype.to_text(rdataset.rdtype)
 
     name = rname.to_text()
-    if isinstance(name, bytes):
-        name = name.decode('utf-8')
 
     # Create the other recordsets
 

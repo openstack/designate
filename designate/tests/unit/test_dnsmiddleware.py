@@ -103,18 +103,6 @@ class TestTsigInfoMiddleware(oslotest.base.BaseTestCase):
             mock.ANY, {'name': 'test'}
         )
 
-    def test_process_request_bytes(self):
-        mock_context = mock.Mock()
-        mock_request = mock.Mock()
-        mock_request.keyname.to_text.return_value = b'test'
-        mock_request.environ = {'context': mock_context}
-
-        self.assertIsNone(self.dns_middleware.process_request(mock_request))
-
-        self.storage.find_tsigkey.assert_called_with(
-            mock.ANY, {'name': 'test'}
-        )
-
     def test_process_request_tsig_key_not_found(self):
         mock_context = mock.Mock()
         mock_request = mock.Mock()

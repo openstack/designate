@@ -106,9 +106,6 @@ class RequestHandler:
             question = request.question[0]
 
         name = question.name.to_text()
-        if isinstance(name, bytes):
-            name = name.decode('utf-8')
-
         criterion = {
             'name': name,
             'type': 'SECONDARY',
@@ -203,8 +200,6 @@ class RequestHandler:
         # validate the parameters
         try:
             name = q_rrset.name.to_text()
-            if isinstance(name, bytes):
-                name = name.decode('utf-8')
             criterion = self._zone_criterion_from_request(
                 request, {'name': name})
             zone = self.storage.find_zone(context, criterion)
@@ -302,8 +297,6 @@ class RequestHandler:
         try:
             q_rrset = request.question[0]
             name = q_rrset.name.to_text()
-            if isinstance(name, bytes):
-                name = name.decode('utf-8')
             # TODO(vinod) once validation is separated from the api,
             # validate the parameters
             criterion = {
