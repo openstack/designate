@@ -16,6 +16,7 @@
 from oslo_log import log as logging
 
 from designate.common import constants
+from designate import exceptions
 from designate import quota
 from designate import tests
 
@@ -73,6 +74,27 @@ class StorageQuotaTest(tests.TestCase):
             self.assertEqual('tenant_id', quota['tenant_id'])
             self.assertEqual(current_quota, quota['resource'])
             self.assertEqual(constants.MAX_QUOTA, quota['hard_limit'])
+
+    def test_get_quota(self):
+        context = self.get_admin_context()
+        context.all_tenants = True
+
+        for current_quota in constants.VALID_QUOTAS:
+            self.quota.set_quota(context, 'tenant_id', current_quota, 1500)
+            self.assertEqual(
+                {current_quota: 1500},
+                self.quota.get_quota(context, 'tenant_id', current_quota)
+            )
+
+    def test_set_unknown_quota(self):
+        context = self.get_admin_context()
+        context.all_tenants = True
+
+        self.assertRaisesRegex(
+            exceptions.QuotaResourceUnknown,
+            'unknown is not a valid quota resource',
+            self.quota.set_quota, context, 'tenant_id', 'unknown', 1500
+        )
 
     def test_set_quota_update(self):
         context = self.get_admin_context()

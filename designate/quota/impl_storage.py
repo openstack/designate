@@ -33,6 +33,7 @@ class StorageQuota(base.Quota):
         self.storage = storage.get_storage()
 
     def _get_quotas(self, context, tenant_id):
+        """Internal Get Quotas used by get_quotas"""
         quotas = self.storage.find_quotas(context, {
             'tenant_id': tenant_id,
         })
@@ -40,6 +41,7 @@ class StorageQuota(base.Quota):
         return {q['resource']: q['hard_limit'] for q in quotas}
 
     def get_quota(self, context, tenant_id, resource):
+        """Get Quota"""
         context = context.deepcopy()
         context.all_tenants = True
 
@@ -48,10 +50,13 @@ class StorageQuota(base.Quota):
             'resource': resource,
         })
 
-        return {resource: quota['hard_limit']}
+        return {
+            resource: quota['hard_limit']
+        }
 
     @transaction
     def set_quota(self, context, tenant_id, resource, hard_limit):
+        """Set Quota"""
         context = context.deepcopy()
         context.all_tenants = True
 
@@ -83,6 +88,7 @@ class StorageQuota(base.Quota):
 
     @transaction
     def reset_quotas(self, context, tenant_id):
+        """Reset Quotas"""
         context = context.deepcopy()
         context.all_tenants = True
 
