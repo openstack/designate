@@ -231,12 +231,6 @@ class StandardLogging(fixtures.Fixture):
         root = std_logging.getLogger()
         root.setLevel(std_logging.DEBUG)
 
-        # supports collecting debug level for local runs
-        if os.environ.get('OS_DEBUG') in _TRUE_VALUES:
-            level = std_logging.DEBUG
-        else:
-            level = std_logging.INFO
-
         # Collect logs
         fs = '%(asctime)s %(levelname)s [%(name)s] %(message)s'
         self.logger = self.useFixture(
@@ -244,17 +238,7 @@ class StandardLogging(fixtures.Fixture):
         # TODO(sdague): why can't we send level through the fake
         # logger? Tests prove that it breaks, but it's worth getting
         # to the bottom of.
-        root.handlers[0].setLevel(level)
-
-        if level > std_logging.DEBUG:
-            # Just attempt to format debug level logs, but don't save them
-            handler = NullHandler()
-            self.useFixture(fixtures.LogHandler(handler, nuke_handlers=False))
-            handler.setLevel(std_logging.DEBUG)
-
-            # Don't log every single DB migration step
-            std_logging.getLogger(
-                'migrate.versioning.api').setLevel(std_logging.WARNING)
+        root.handlers[0].setLevel(std_logging.DEBUG)
 
         # At times we end up calling back into main() functions in
         # testing. This has the possibility of calling logging.setup

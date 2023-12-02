@@ -16,9 +16,9 @@
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+from designate.common.decorators import rpc as rpc_decorator
 from designate.common import profiler
 import designate.conf
-from designate.loggingutils import rpc_logging
 from designate import rpc
 
 
@@ -29,7 +29,7 @@ WORKER_API = None
 
 
 @profiler.trace_cls("rpc")
-@rpc_logging(LOG, 'worker')
+@rpc_decorator.rpc_logging(LOG, 'worker')
 class WorkerAPI:
     """
     Client side of the worker RPC API.
