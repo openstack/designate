@@ -190,8 +190,10 @@ class RequestHandler:
             elif tsigkey.scope == 'ZONE':
                 criterion['id'] = tsigkey.resource_id
             else:
-                raise NotImplementedError('Support for %s scoped TSIG Keys is '
-                                          'not implemented')
+                raise NotImplementedError(
+                    'Support for %s scoped TSIG Keys is not implemented' %
+                    tsigkey.scope
+                )
         return criterion
 
     def _handle_axfr(self, request):

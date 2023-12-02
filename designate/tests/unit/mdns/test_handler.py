@@ -217,6 +217,35 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
             65300, self.handler._get_max_message_size(had_tsig=True)
         )
 
+    def test_zone_criterion_from_request_unknown_scope(self):
+        mock_tsigkey = mock.Mock()
+        mock_tsigkey.scope = 'UNKNOWN'
+
+        request = dns.message.make_query(
+            'www.example.org.', dns.rdatatype.AXFR
+        )
+        request.environ = dict(context=self.context, tsigkey=mock_tsigkey)
+
+        self.assertRaisesRegex(
+            NotImplementedError,
+            'Support for UNKNOWN scoped TSIG Keys is not implemented',
+            self.handler._zone_criterion_from_request, request
+        )
+
+    def test_zone_criterion_from_request_enforce_tsig(self):
+        CONF.set_override('query_enforce_tsig', True, 'service:mdns')
+
+        request = dns.message.make_query(
+            'www.example.org.', dns.rdatatype.AXFR
+        )
+        request.environ = dict(context=self.context, tsigkey=None)
+
+        self.assertRaisesRegex(
+            exceptions.Forbidden,
+            'Request is not TSIG signed',
+            self.handler._zone_criterion_from_request, request
+        )
+
 
 class TestRequestHandlerCall(oslotest.base.BaseTestCase):
     def setUp(self):
