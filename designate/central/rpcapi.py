@@ -71,8 +71,9 @@ class CentralAPI:
         6.6 - Add methods for shared zones
         6.7 - Add increment_zone_serial
         6.8 - Add managed recordset methods
+        6.9 - Removed unused methods
     """
-    RPC_API_VERSION = '6.8'
+    RPC_API_VERSION = '6.9'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -85,7 +86,7 @@ class CentralAPI:
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.8')
+        self.client = rpc.get_client(target, version_cap='6.9')
 
     @classmethod
     def get_instance(cls):
@@ -230,9 +231,6 @@ class CentralAPI:
                                 limit=limit, sort_key=sort_key,
                                 sort_dir=sort_dir, force_index=force_index)
 
-    def find_recordset(self, context, criterion=None):
-        return self.client.call(context, 'find_recordset', criterion=criterion)
-
     def create_managed_records(self, context, zone_id, records_values,
                                recordset_values):
         return self.client.call(context, 'create_managed_records',
@@ -258,13 +256,6 @@ class CentralAPI:
                                 zone_id=zone_id,
                                 recordset_id=recordset_id,
                                 increment_serial=increment_serial)
-
-    # Record Methods
-    def find_records(self, context, criterion=None, marker=None, limit=None,
-                     sort_key=None, sort_dir=None):
-        return self.client.call(context, 'find_records', criterion=criterion,
-                                marker=marker, limit=limit, sort_key=sort_key,
-                                sort_dir=sort_dir)
 
     # Misc. Report combining counts for tenants, zones and records
     def count_report(self, context, criterion=None):
@@ -394,10 +385,6 @@ class CentralAPI:
     def get_zone_import(self, context, zone_import_id):
         return self.client.call(context, 'get_zone_import',
                                 zone_import_id=zone_import_id)
-
-    def update_zone_import(self, context, zone_import):
-        return self.client.call(context, 'update_zone_import',
-                                zone_import=zone_import)
 
     def delete_zone_import(self, context, zone_import_id):
         return self.client.call(context, 'delete_zone_import',
