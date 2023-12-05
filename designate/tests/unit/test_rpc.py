@@ -103,55 +103,47 @@ class RequestContextSerializerTest(oslotest.base.BaseTestCase):
 
 
 class RPCTest(oslotest.base.BaseTestCase):
-    def setUp(self):
-        super().setUp()
-
-    def tearDown(self):
-        rpc.TRANSPORT = None
-        rpc.NOTIFICATION_TRANSPORT = None
-        rpc.NOTIFIER = None
-        rpc.clear_extra_exmods()
-        super().tearDown()
-
-    def test_cleanup(self):
-        mock_transport = mock.Mock()
-        mock_notification_transport = mock.Mock()
-        rpc.TRANSPORT = mock_transport
-        rpc.NOTIFICATION_TRANSPORT = mock_notification_transport
-        rpc.NOTIFIER = mock.Mock()
+    @mock.patch.object(designate.rpc, 'NOTIFIER', mock.Mock())
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT')
+    @mock.patch.object(designate.rpc, 'TRANSPORT')
+    def test_cleanup(self, mock_transport, mock_notification_transport):
+        self.assertTrue(rpc.TRANSPORT)
+        self.assertTrue(rpc.NOTIFICATION_TRANSPORT)
+        self.assertTrue(rpc.NOTIFIER)
 
         rpc.cleanup()
 
-        mock_transport.cleanup.assert_called_with()
-        mock_notification_transport.cleanup.assert_called_with()
+        mock_transport.cleanup.assert_called_once()
+        mock_notification_transport.cleanup.assert_called_once()
 
         self.assertIsNone(rpc.TRANSPORT)
         self.assertIsNone(rpc.NOTIFICATION_TRANSPORT)
+        self.assertIsNone(rpc.NOTIFIER)
 
+    @mock.patch.object(designate.rpc, 'NOTIFIER', True)
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', True)
+    @mock.patch.object(designate.rpc, 'TRANSPORT', None)
     def test_cleanup_no_transport(self):
-        rpc.TRANSPORT = None
-
         self.assertRaisesRegex(
             AssertionError,
             r"'TRANSPORT' must not be None",
             rpc.cleanup
         )
 
+    @mock.patch.object(designate.rpc, 'NOTIFIER', True)
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', None)
+    @mock.patch.object(designate.rpc, 'TRANSPORT', True)
     def test_cleanup_no_notification_transport(self):
-        rpc.TRANSPORT = mock.Mock()
-        rpc.NOTIFICATION_TRANSPORT = None
-
         self.assertRaisesRegex(
             AssertionError,
             r"'NOTIFICATION_TRANSPORT' must not be None",
             rpc.cleanup
         )
 
+    @mock.patch.object(designate.rpc, 'NOTIFIER', None)
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', True)
+    @mock.patch.object(designate.rpc, 'TRANSPORT', True)
     def test_cleanup_no_notifier(self):
-        rpc.TRANSPORT = mock.Mock()
-        rpc.NOTIFICATION_TRANSPORT = mock.Mock()
-        rpc.NOTIFIER = None
-
         self.assertRaisesRegex(
             AssertionError,
             r"'NOTIFIER' must not be None",
@@ -161,6 +153,8 @@ class RPCTest(oslotest.base.BaseTestCase):
     def test_add_extra_exmods(self):
         rpc.add_extra_exmods('arg1', 'arg2', 'arg3')
         self.assertEqual(['arg1', 'arg2', 'arg3'], rpc.EXTRA_EXMODS)
+
+        rpc.clear_extra_exmods()
 
     def test_clear_extra_exmods(self):
         rpc.add_extra_exmods('arg1', 'arg2', 'arg3')
@@ -174,10 +168,11 @@ class RPCTest(oslotest.base.BaseTestCase):
 
         mock_set_transport_defaults.assert_called_with('test')
 
+    @mock.patch.object(designate.rpc, 'NOTIFIER', True)
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', True)
+    @mock.patch.object(designate.rpc, 'TRANSPORT', True)
     @mock.patch.object(messaging, 'get_rpc_server')
     def test_get_server(self, mock_get_rpc_server):
-        rpc.TRANSPORT = True
-
         rpc.get_server(None, None, True)
 
         mock_get_rpc_server.assert_called_with(
@@ -186,6 +181,7 @@ class RPCTest(oslotest.base.BaseTestCase):
             access_policy=mock.ANY,
         )
 
+    @mock.patch.object(designate.rpc, 'TRANSPORT', None)
     def test_get_server_transport_is_none(self):
         self.assertRaisesRegex(
             AssertionError,
@@ -193,10 +189,9 @@ class RPCTest(oslotest.base.BaseTestCase):
             rpc.get_server, None, None
         )
 
+    @mock.patch.object(designate.rpc, 'TRANSPORT', True)
     @mock.patch.object(messaging, 'get_rpc_client')
     def test_get_client(self, mock_get_rpc_client):
-        rpc.TRANSPORT = True
-
         rpc.get_client(None, None, True)
 
         mock_get_rpc_client.assert_called_with(
@@ -204,6 +199,7 @@ class RPCTest(oslotest.base.BaseTestCase):
             version_cap=None, serializer=mock.ANY,
         )
 
+    @mock.patch.object(designate.rpc, 'TRANSPORT', None)
     def test_get_client_is_none(self):
         self.assertRaisesRegex(
             AssertionError,
@@ -211,10 +207,9 @@ class RPCTest(oslotest.base.BaseTestCase):
             rpc.get_client, None, None
         )
 
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', True)
     @mock.patch.object(messaging, 'get_notification_listener')
-    def test_get_notification(self, mock_get_notification_listener):
-        rpc.NOTIFICATION_TRANSPORT = True
-
+    def test_get_notification_listener(self, mock_get_notification_listener):
         rpc.get_notification_listener('target', 'endpoint', serializer=None)
 
         mock_get_notification_listener.assert_called_with(
@@ -222,11 +217,10 @@ class RPCTest(oslotest.base.BaseTestCase):
             serializer=mock.ANY
         )
 
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', True)
     @mock.patch.object(messaging, 'get_notification_listener')
-    def test_get_notification_serializer_set(self,
+    def test_get_notification_listener_serializer_set(self,
                                              mock_get_notification_listener):
-        rpc.NOTIFICATION_TRANSPORT = True
-
         rpc.get_notification_listener('target', 'endpoint', serializer=True)
 
         mock_get_notification_listener.assert_called_with(
@@ -234,6 +228,7 @@ class RPCTest(oslotest.base.BaseTestCase):
             serializer=True
         )
 
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', None)
     def test_get_notification_listener_transport_is_none(self):
         self.assertRaisesRegex(
             AssertionError,
@@ -241,13 +236,9 @@ class RPCTest(oslotest.base.BaseTestCase):
             rpc.get_notification_listener, None, None
         )
 
-    def test_get_notifierr_notifier_is_none(self):
-        self.assertRaisesRegex(
-            AssertionError,
-            r"'NOTIFIER' must not be None",
-            rpc.get_notifier
-        )
-
+    @mock.patch.object(designate.rpc, 'NOTIFIER', None)
+    @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', None)
+    @mock.patch.object(designate.rpc, 'TRANSPORT', None)
     @mock.patch('oslo_messaging.notify.notifier.Notifier.prepare')
     def test_get_notifier(self, mock_prepare):
         rpc.init(CONF)
@@ -255,3 +246,11 @@ class RPCTest(oslotest.base.BaseTestCase):
         rpc.get_notifier(publisher_id=True)
 
         mock_prepare.assert_called_with(publisher_id=True)
+
+    @mock.patch.object(designate.rpc, 'NOTIFIER', None)
+    def test_get_notifier_is_none(self):
+        self.assertRaisesRegex(
+            AssertionError,
+            r"'NOTIFIER' must not be None",
+            rpc.get_notifier
+        )
