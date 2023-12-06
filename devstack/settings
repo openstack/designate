@@ -60,7 +60,7 @@ DESIGNATE_ROOTWRAP_CONF=$DESIGNATE_CONF_DIR/rootwrap.conf
 DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
 DESIGNATE_PLUGINS=$DESIGNATE_DIR/devstack/designate_plugins
 
-DESIGNATE_UWSGI=$DESIGNATE_BIN_DIR/designate-api-wsgi
+DESIGNATE_UWSGI=designate.wsgi.api:application
 DESIGNATE_UWSGI_CONF=$DESIGNATE_CONF_DIR/designate-api-uwsgi.ini
 
 # Default repositories

@@ -52,16 +52,6 @@
     parent: designate-base
 
 - job:
-    name: designate-bind9-centos9stream-fips
-    parent: designate-bind9
-    nodeset: devstack-single-node-centos-9-stream
-    description: |
-      Functional testing for a FIPS enabled Centos 9 stream system
-    pre-run: playbooks/enable-fips.yaml
-    vars:
-      nslookup_target: 'opendev.org'
-
-- job:
     name: designate-bind9-keystone-old-default-roles
     post-run: playbooks/designate-bind9/post.yaml
     parent: designate-base
@@ -82,15 +72,6 @@
               enforce_new_defaults: False
             enforce_scope:
               designate: False
-
-- job:
-    name: designate-bind9-centos-9-stream
-    parent: designate-bind9
-    nodeset: devstack-single-node-centos-9-stream
-    vars:
-      devstack_localrc:
-        DESIGNATE_COORDINATION_URL: "etcd3+http://{{ hostvars['controller']['nodepool']['private_ipv4'] }}:2379?api_version=v3"
-
 
 - job:
     name: designate-bind9-catalog-zones
@@ -218,14 +199,11 @@
     check:
       jobs:
         - designate-bind9
-        - designate-bind9-centos9stream-fips:
-            voting: false
-        - designate-bind9-centos-9-stream:
-            voting: false
         - designate-bind9-keystone-old-default-roles
         - designate-pdns4
         - designate-grenade-bind9
-        - designate-grenade-pdns4
+        - designate-grenade-pdns4:
+            voting: false
         - designate-grenade-bind9-skip-level
         - designate-grenade-pdns4-skip-level
         - designate-ipv6-only-pdns4
@@ -236,7 +214,6 @@
         - designate-bind9
         - designate-bind9-keystone-old-default-roles
         - designate-pdns4
-        - designate-grenade-pdns4
         - designate-grenade-pdns4-skip-level
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9

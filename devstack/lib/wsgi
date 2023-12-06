@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function designate_configure_uwsgi {
-    write_uwsgi_config "$DESIGNATE_UWSGI_CONF" "$DESIGNATE_UWSGI" "/dns"
+    write_uwsgi_config "$DESIGNATE_UWSGI_CONF" "$DESIGNATE_UWSGI" "/dns" "" "designate-api-wsgi"
 
     # We are using the http transport to work around an issue with
     # broken connections when using the uwsgi protocol of a local socket
