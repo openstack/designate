@@ -11,11 +11,18 @@
 # under the License.
 
 import functools
+import inspect
 import threading
 
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 
 import designate.exceptions
+
+
+RPC_LOGGING_DISALLOW = [
+    'get_instance',
+    '__init__'
+]
 
 
 class ExceptionThreadLocal(threading.local):
@@ -47,3 +54,27 @@ def expected_exceptions():
                 cls.exception_thread_local.reset_depth()
         return exception_wrapper
     return outer
+
+
+def log_rpc_call(func, rpcapi, logger):
+    def wrapped(*args, **kwargs):
+        logger.debug(
+            'Calling designate.%(rpcapi)s.%(function)s() over RPC',
+            {
+                'function': func.__name__,
+                'rpcapi': rpcapi
+            }
+        )
+        return func(*args, **kwargs)
+    return wrapped
+
+
+def rpc_logging(logger, rpcapi):
+    def wrapper(cls):
+        disallow = getattr(cls, 'RPC_LOGGING_DISALLOW', [])
+        disallow.extend(RPC_LOGGING_DISALLOW)
+        for name, value in inspect.getmembers(cls, inspect.ismethod):
+            if name not in disallow:
+                setattr(cls, name, log_rpc_call(value, rpcapi, logger))
+        return cls
+    return wrapper

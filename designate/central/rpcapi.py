@@ -16,9 +16,9 @@
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+from designate.common.decorators import rpc as rpc_decorator
 from designate.common import profiler
 import designate.conf
-from designate.loggingutils import rpc_logging
 from designate import rpc
 
 
@@ -34,7 +34,7 @@ def reset():
 
 
 @profiler.trace_cls("rpc")
-@rpc_logging(LOG, 'central')
+@rpc_decorator.rpc_logging(LOG, 'central')
 class CentralAPI:
     """
     Client side of the central RPC API.
@@ -79,7 +79,7 @@ class CentralAPI:
     # This can be for a few reasons - some methods my not actually call over
     # RPC, or may be so noisy that logging them is not useful
     # This should be an array of strings that match the function names
-    LOGGING_BLACKLIST = ['update_service_status']
+    RPC_LOGGING_DISALLOW = ['update_service_status']
 
     def __init__(self, topic=None):
         self.topic = topic if topic else CONF['service:central'].topic
