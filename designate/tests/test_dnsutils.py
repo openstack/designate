@@ -174,20 +174,3 @@ class TestUtils(designate.tests.TestCase):
 
         self.assertEqual(len(SAMPLES), len(zone.recordsets))
         self.assertEqual('example.com.', zone.name)
-
-    def test_zone_lock(self):
-        # Initialize a ZoneLock
-        lock = dnsutils.ZoneLock(0.1)
-
-        # Ensure there's no lock for different zones
-        for zone_name in ['foo.com.', 'bar.com.', 'example.com.']:
-            self.assertTrue(lock.acquire(zone_name))
-
-        # Ensure a lock for successive calls for the same zone
-        self.assertTrue(lock.acquire('example2.com.'))
-        self.assertFalse(lock.acquire('example2.com.'))
-
-        # Acquire, release, and reacquire
-        self.assertTrue(lock.acquire('example3.com.'))
-        lock.release('example3.com.')
-        self.assertTrue(lock.acquire('example3.com.'))

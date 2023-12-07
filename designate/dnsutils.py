@@ -15,8 +15,6 @@
 # under the License.
 import random
 import socket
-import threading
-import time
 
 import dns.exception
 import dns.message
@@ -59,53 +57,6 @@ class TsigKeyring(dict):
 
         except exceptions.TsigKeyNotFound:
             return default
-
-
-class ZoneLock:
-    """A Lock across all zones that enforces a rate limit on NOTIFYs"""
-
-    def __init__(self, delay):
-        self.lock = threading.Lock()
-        self.data = {}
-        self.delay = delay
-
-    def acquire(self, zone):
-        with self.lock:
-            # If no one holds the lock for the zone, grant it
-            if zone not in self.data:
-                self.data[zone] = time.monotonic()
-                return True
-
-            # Otherwise, get the time that it was locked
-            locktime = self.data[zone]
-            now = time.monotonic()
-
-            period = now - locktime
-
-            # If it has been locked for longer than the allowed period
-            # give the lock to the new requester
-            if period > self.delay:
-                self.data[zone] = now
-                return True
-
-            LOG.debug(
-                'Lock for %(zone)s can\'t be released for %(period)s seconds',
-                {
-                    'zone': zone,
-                    'period': str(self.delay - period)
-                }
-            )
-
-            # Don't grant the lock for the zone
-            return False
-
-    def release(self, zone):
-        # Release the lock
-        with self.lock:
-            try:
-                self.data.pop(zone)
-            except KeyError:
-                pass
 
 
 def from_dnspython_zone(dnspython_zone):
