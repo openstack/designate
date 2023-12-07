@@ -89,15 +89,9 @@ def from_dnspython_zone(dnspython_zone):
 
 def dnspyrecords_to_recordsetlist(dnspython_records):
     rrsets = objects.RecordSetList()
-
     for rname in dnspython_records.keys():
         for rdataset in dnspython_records[rname]:
-            rrset = dnspythonrecord_to_recordset(rname, rdataset)
-
-            if rrset is None:
-                continue
-
-            rrsets.append(rrset)
+            rrsets.append(dnspythonrecord_to_recordset(rname, rdataset))
     return rrsets
 
 
@@ -112,6 +106,7 @@ def dnspythonrecord_to_recordset(rname, rdataset):
         'name': name,
         'type': record_type
     }
+
     if rdataset.ttl != 0:
         values['ttl'] = rdataset.ttl
 
