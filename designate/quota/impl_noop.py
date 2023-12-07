@@ -24,4 +24,14 @@ class NoopQuota(base.Quota):
     __plugin_name__ = 'noop'
 
     def _get_quotas(self, context, tenant_id):
+        """Internal Get Quotas used by get_quotas"""
         return {}
+
+    def get_quota(self, context, tenant_id, resource):
+        """Get Quota"""
+
+    def set_quota(self, context, tenant_id, resource, hard_limit):
+        """Set Quota"""
+
+    def reset_quotas(self, context, tenant_id):
+        """Reset Quotas"""

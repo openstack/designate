@@ -46,20 +46,14 @@ class Quota(DriverPlugin, metaclass=abc.ABCMeta):
         if resources_exceeded:
             resources_exceeded.sort(key=len)
             raise exceptions.OverQuota(
-                'Quota exceeded for %s.' %
-                ', '.join(resources_exceeded)
+                'Quota exceeded for %s.' % ', '.join(resources_exceeded)
             )
 
     def get_quotas(self, context, tenant_id):
         quotas = self.get_default_quotas(context)
-
         quotas.update(self._get_quotas(context, tenant_id))
 
         return quotas
-
-    @abc.abstractmethod
-    def _get_quotas(self, context, tenant_id):
-        pass
 
     def get_default_quotas(self, context):
         return {
@@ -70,17 +64,18 @@ class Quota(DriverPlugin, metaclass=abc.ABCMeta):
             'api_export_size': CONF.quota_api_export_size,
         }
 
+    @abc.abstractmethod
+    def _get_quotas(self, context, tenant_id):
+        """Internal Get Quotas used by get_quotas"""
+
+    @abc.abstractmethod
     def get_quota(self, context, tenant_id, resource):
-        quotas = self._get_quotas(context, tenant_id)
+        """Get Quota"""
 
-        if resource not in quotas:
-            raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
-                                                  "resource" % resource)
-
-        return quotas[resource]
-
+    @abc.abstractmethod
     def set_quota(self, context, tenant_id, resource, hard_limit):
-        raise NotImplementedError()
+        """Set Quota"""
 
+    @abc.abstractmethod
     def reset_quotas(self, context, tenant_id):
-        raise NotImplementedError()
+        """Reset Quotas"""
