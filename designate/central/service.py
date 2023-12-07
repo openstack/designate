@@ -54,7 +54,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.8'
+    RPC_API_VERSION = '6.9'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1522,9 +1522,7 @@ class Service(service.RPCService):
 
         return recordsets
 
-    @rpc.expected_exceptions()
     def find_recordset(self, context, criterion=None):
-
         # TODO(johnsom) Fix this to be useful
         if policy.enforce_new_defaults():
             target = {constants.RBAC_PROJECT_ID: context.project_id}
@@ -1767,7 +1765,6 @@ class Service(service.RPCService):
         return self.storage.count_recordsets(context, criterion)
 
     # Record Methods
-    @rpc.expected_exceptions()
     def find_records(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
 
@@ -2814,7 +2811,6 @@ class Service(service.RPCService):
 
         self.update_zone_import(context, zone_import)
 
-    @rpc.expected_exceptions()
     @notification.notify_type('dns.zone_import.update')
     def update_zone_import(self, context, zone_import):
         if policy.enforce_new_defaults():
