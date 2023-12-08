@@ -145,6 +145,14 @@ class ApiV2TldsTest(ApiV2TestCase):
         self.assertEqual('prefix-%s' % tld['description'],
                          response.json['description'])
 
+    def test_update_tld_json_patch_not_implemented(self):
+        self._assert_exception(
+            'unknown', 500, self.client.patch_json,
+            '/tlds/f8efb6cb-68c2-4dfb-954c-c6792369d553',
+            {'description': 'Tester'},
+            content_type='application/json-patch+json'
+        )
+
     def test_update_tld_description_too_long(self):
         tld = self.create_tld(fixture=0)
         self.policy({'update_tld': '@'})

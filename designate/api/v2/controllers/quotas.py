@@ -73,7 +73,8 @@ class QuotasController(rest.RestController):
         if context.project_id is None and not context.all_tenants:
             raise exceptions.MissingProjectID(
                 "The all-projects flag must be used when using non-project "
-                "scoped tokens.")
+                "scoped tokens."
+            )
 
         for quota in quotas:
             self.central_api.set_quota(context, project_id, quota.resource,

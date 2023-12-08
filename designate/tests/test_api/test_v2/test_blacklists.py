@@ -126,7 +126,15 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         self.assertEqual('prefix-%s' % blacklist['description'],
                          response.json['description'])
 
-    def test_update_bkaclist_invalid_id(self):
+    def test_update_blacklist_json_patch_not_implemented(self):
+        self._assert_exception(
+            'unknown', 500, self.client.patch_json,
+            '/blacklists/04955322-1d35-4761-949c-89fcec220de6',
+            {'description': 'Tester'},
+            content_type='application/json-patch+json'
+        )
+
+    def test_update_blacklist_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/blacklists/%s')
 
     def test_get_blacklists_filter(self):

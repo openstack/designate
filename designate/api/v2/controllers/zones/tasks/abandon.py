@@ -38,7 +38,7 @@ class AbandonController(rest.RestController):
         zone = self.central_api.delete_zone(context, zone_id)
         if zone.deleted_at:
             response.status_int = 204
-            LOG.info("Abandoned %(zone)s", {'zone': zone})
+            LOG.info('Abandoned %(zone)s', {'zone': zone})
         else:
             response.status_int = 500
 

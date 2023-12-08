@@ -242,6 +242,14 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
         self.assertEqual('prefix-%s' % tsigkey['secret'],
                          response.json['secret'])
 
+    def test_update_tsigkey_json_patch_not_implemented(self):
+        self._assert_exception(
+            'unknown', 500, self.client.patch_json,
+            '/tsigkeys/b0f331f1-7683-4444-aa68-b1d29e40924b',
+            {'secret': 'secret'},
+            content_type='application/json-patch+json'
+        )
+
     def test_update_tsigkey_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/tsigkeys/%s')
 

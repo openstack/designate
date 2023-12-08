@@ -166,6 +166,15 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
             'TEST', response.json['description'])
         self.assertIn('updated_at', response.json)
 
+    def test_update_zone_transfer_request_json_patch_not_implemented(self):
+        self._assert_exception(
+            'unknown', 500, self.client.patch_json,
+            '/zones/tasks/transfer_requests/'
+            '5c0614e6-1a04-487d-818a-441c3971d401',
+            {'description': 'Tester'},
+            content_type='application/json-patch+json'
+        )
+
     def test_delete_zone_transfer_request(self):
         initial = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % self.zone.id,
