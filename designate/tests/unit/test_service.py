@@ -83,24 +83,31 @@ class TestBaseService(oslotest.base.BaseTestCase):
 
 @mock.patch.object(policy, 'init')
 @mock.patch.object(rpc, 'init')
+@mock.patch.object(rpc, 'initialized')
 @mock.patch.object(profiler, 'setup_profiler')
 class TestServiceInit(oslotest.base.BaseTestCase):
-    def test_service_init(self, mock_setup_profiler, mock_rpc_init,
-                          mock_policy_init):
+    def test_service_init(self, mock_setup_profiler, mock_rpc_initialized,
+                          mock_rpc_init, mock_policy_init):
+        mock_rpc_initialized.return_value = False
+
         service = designate_service.Service('test-service')
 
+        mock_rpc_initialized.assert_called_once()
         mock_policy_init.assert_called_once()
         mock_rpc_init.assert_called_once()
         mock_setup_profiler.assert_called_once()
 
         self.assertEqual('test-service', service.name)
 
-    def test_rpc_service_init(self, mock_setup_profiler, mock_rpc_init,
-                              mock_policy_init):
+    def test_rpc_service_init(self, mock_setup_profiler, mock_rpc_initialized,
+                              mock_rpc_init, mock_policy_init):
+        mock_rpc_initialized.return_value = False
+
         service = designate_service.RPCService(
             'test-rpc-service', 'test-topic'
         )
 
+        mock_rpc_initialized.assert_called_once()
         mock_policy_init.assert_called_once()
         mock_rpc_init.assert_called_once()
         mock_setup_profiler.assert_called_once()
@@ -113,15 +120,20 @@ class TestServiceInit(oslotest.base.BaseTestCase):
 class TestRpcService(oslotest.base.BaseTestCase):
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'init')
+    @mock.patch.object(rpc, 'initialized')
     @mock.patch.object(profiler, 'setup_profiler')
-    def setUp(self, mock_setup_profiler, mock_rpc_init,
+    def setUp(self, mock_setup_profiler, mock_rpc_initialized, mock_rpc_init,
               mock_policy_init):
         super().setUp()
+
+        mock_rpc_initialized.return_value = False
+
         self.service = designate_service.RPCService(
             'test-rpc-service', 'test-topic'
         )
 
         mock_policy_init.assert_called_once()
+        mock_rpc_initialized.assert_called_once()
         mock_rpc_init.assert_called_once()
         mock_setup_profiler.assert_called_once()
 
