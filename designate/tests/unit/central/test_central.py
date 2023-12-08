@@ -10,10 +10,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 from unittest import mock
 
 import oslotest.base
-
 
 from designate.central import service
 from designate.common import profiler
@@ -24,15 +24,20 @@ from designate.objects import zone
 from designate import policy
 from designate import rpc
 
+
 CONF = designate.conf.CONF
 
 
 class CentralTestCase(oslotest.base.BaseTestCase):
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'init')
+    @mock.patch.object(rpc, 'initialized')
     @mock.patch.object(profiler, 'setup_profiler')
-    def setUp(self, mock_setup_profiler, mock_rpc_init, mock_policy_init):
+    def setUp(self, mock_setup_profiler, mock_rpc_initialized,
+              mock_rpc_init, mock_policy_init):
         super().setUp()
+
+        mock_rpc_initialized.return_value = False
 
         self.storage = mock.Mock()
 
@@ -108,9 +113,13 @@ class CentralTestCase(oslotest.base.BaseTestCase):
 class ZoneAndRecordStatusTestCase(oslotest.base.BaseTestCase):
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'init')
+    @mock.patch.object(rpc, 'initialized')
     @mock.patch.object(profiler, 'setup_profiler')
-    def setUp(self, mock_setup_profiler, mock_rpc_init, mock_policy_init):
+    def setUp(self, mock_setup_profiler, mock_rpc_initialized,
+              mock_rpc_init, mock_policy_init):
         super().setUp()
+
+        mock_rpc_initialized.return_value = False
 
         self.service = service.Service()
 

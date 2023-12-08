@@ -9,6 +9,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+
 import errno
 import socket
 from unittest import mock
@@ -23,16 +25,20 @@ from designate.mdns import handler
 from designate import policy
 from designate import rpc
 from designate import service as designate_service
+from designate.tests import fixtures
 from designate import utils
 
 
 CONF = designate.conf.CONF
 
 
-class TestBaseService(oslotest.base.BaseTestCase):
-    def tearDown(self):
-        designate_service._launcher = None
-        super().tearDown()
+@mock.patch.object(designate_service, '_launcher', None)
+class BaseServiceTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
 
     @mock.patch.object(service, 'launch')
     def test_serve(self, mock_service_launch):
@@ -43,8 +49,8 @@ class TestBaseService(oslotest.base.BaseTestCase):
             mock.ANY, server, workers=None, restart_method='mutate'
         )
 
-    @mock.patch.object(service, 'launch')
-    def test_serve_twice(self, _):
+    @mock.patch.object(service, 'launch', mock.Mock())
+    def test_serve_twice(self):
         server = mock.Mock()
         designate_service.serve(server)
         self.assertRaisesRegex(
@@ -79,6 +85,11 @@ class TestBaseService(oslotest.base.BaseTestCase):
         designate_service.wait()
 
         mock_rpc_cleanup.assert_called()
+
+        self.assertIn(
+            'Caught KeyboardInterrupt, shutting down now',
+            self.stdlog.logger.output
+        )
 
 
 @mock.patch.object(policy, 'init')

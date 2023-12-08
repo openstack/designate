@@ -14,9 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""
-Unit-test Producer service
-"""
 
 from unittest import mock
 
@@ -25,7 +22,9 @@ import oslotest.base
 
 import designate.conf
 from designate import exceptions
+from designate import policy
 from designate.producer import service
+from designate import rpc
 import designate.service
 from designate.tests import fixtures
 
@@ -34,24 +33,31 @@ CONF = designate.conf.CONF
 
 
 @mock.patch.object(service.rpcapi.CentralAPI, 'get_instance', mock.Mock())
-class ProducerTest(oslotest.base.BaseTestCase):
-    def setUp(self):
-        conf = self.useFixture(cfg_fixture.Config(CONF))
-        conf.conf([], project='designate')
-
+class ProducerServiceTest(oslotest.base.BaseTestCase):
+    @mock.patch.object(policy, 'init')
+    @mock.patch.object(rpc, 'get_client')
+    @mock.patch.object(rpc, 'init')
+    @mock.patch.object(rpc, 'initialized')
+    def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_rpc_get_client,
+              mock_policy_init):
         super().setUp()
+
+        self.useFixture(cfg_fixture.Config(CONF))
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
+
+        mock_rpc_initialized.return_value = False
 
         self.tg = mock.Mock()
         self.service = service.Service()
         self.service.coordination = mock.Mock()
-        self.service.rpc_server = mock.Mock()
         self.service.tg = self.tg
-        self.service._storage = mock.Mock()
-        self.service._quota = mock.Mock()
-        self.service._quota.limit_check = mock.Mock()
 
+        mock_policy_init.assert_called_once()
+        mock_rpc_initialized.assert_called_once()
+        mock_rpc_init.assert_called_once()
+
+    @mock.patch.object(rpc, 'get_notifier', mock.Mock())
     @mock.patch.object(service.coordination, 'Partitioner')
     @mock.patch.object(designate.service.RPCService, 'start')
     def test_service_start(self, mock_rpc_start, mock_partitioner):
@@ -98,6 +104,11 @@ class ProducerTest(oslotest.base.BaseTestCase):
     def test_service_name(self):
         self.assertEqual('producer', self.service.service_name)
 
+    @mock.patch.object(policy, 'init', mock.Mock())
+    @mock.patch.object(rpc, 'get_client', mock.Mock())
+    @mock.patch.object(rpc, 'init', mock.Mock())
+    @mock.patch.object(rpc, 'initialized', mock.Mock(return_value=False))
+    @mock.patch.object(rpc, 'get_notifier', mock.Mock())
     def test_producer_rpc_topic(self):
         CONF.set_override('topic', 'test-topic', 'service:producer')
 

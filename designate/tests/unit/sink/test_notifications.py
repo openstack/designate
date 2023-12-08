@@ -9,6 +9,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
+
+
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
@@ -16,6 +18,8 @@ import oslotest.base
 
 import designate.conf
 from designate.notification_handler import fake
+from designate import policy
+from designate import rpc
 from designate.sink import service
 from designate.tests import fixtures
 from designate.tests import test_notification_handler
@@ -27,8 +31,16 @@ CONF = designate.conf.CONF
 class TestSinkNotification(oslotest.base.BaseTestCase,
                            test_notification_handler.NotificationHandlerMixin):
 
-    def setUp(self):
+    @mock.patch.object(policy, 'init')
+    @mock.patch.object(rpc, 'get_client')
+    @mock.patch.object(rpc, 'init')
+    @mock.patch.object(rpc, 'initialized')
+    def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_rpc_get_client,
+              mock_policy_init):
         super().setUp()
+
+        mock_rpc_initialized.return_value = False
+
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)
@@ -42,10 +54,13 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
             'allowed_event_types', ['compute.instance.create.end'],
             'handler:fake'
         )
-        CONF([], project='designate')
 
         self.context = mock.Mock()
         self.service = service.Service()
+
+        mock_policy_init.assert_called_once()
+        mock_rpc_initialized.assert_called_once()
+        mock_rpc_init.assert_called_once()
 
     def test_notification(self):
         event_type = 'compute.instance.create.end'
@@ -71,8 +86,13 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
             self.stdlog.logger.output
         )
 
+    @mock.patch.object(policy, 'init', mock.Mock())
+    @mock.patch.object(rpc, 'get_client', mock.Mock())
+    @mock.patch.object(rpc, 'init', mock.Mock())
+    @mock.patch.object(rpc, 'initialized', mock.Mock(return_value=False))
     def test_notification_without_handler(self):
         CONF.set_override('enabled_notification_handlers', [], 'service:sink')
+
         self.service = service.Service()
 
         event_type = 'compute.instance.create.end'

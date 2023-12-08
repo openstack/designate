@@ -13,17 +13,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+
 from unittest import mock
 
 import dns
 from oslo_config import fixture as cfg_fixture
-from oslo_messaging import conffixture as messaging_fixture
 import oslotest.base
 
 import designate.conf
 from designate import exceptions
 from designate.mdns import handler
 from designate import objects
+from designate import rpc
 from designate.tests import fixtures
 from designate.worker import rpcapi as worker_rpcapi
 
@@ -37,16 +39,14 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))
+
         self.context = mock.Mock()
         self.storage = mock.Mock()
         self.tg = mock.Mock()
-        self.handler = handler.RequestHandler(self.storage, self.tg)
-        self.messaging_conf = messaging_fixture.ConfFixture(CONF)
-        self.messaging_conf.transport_url = 'fake:/'
-        self.messaging_conf.response_timeout = 5
-        self.useFixture(self.messaging_conf)
-        self.useFixture(fixtures.RPCFixture(CONF))
 
+        self.handler = handler.RequestHandler(self.storage, self.tg)
+
+    @mock.patch.object(rpc, 'get_client', mock.Mock())
     def test_worker_api(self):
         self.assertIsNone(self.handler._worker_api)
         self.assertIsInstance(self.handler.worker_api,
@@ -55,6 +55,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         self.assertIsInstance(self.handler.worker_api,
                               worker_rpcapi.WorkerAPI)
 
+    @mock.patch.object(rpc, 'get_client', mock.Mock())
     @mock.patch.object(dns.resolver.Resolver, 'resolve')
     def test_notify(self, mock_query):
         self.storage.find_zone.return_value = objects.Zone(

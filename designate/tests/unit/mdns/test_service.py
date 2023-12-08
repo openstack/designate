@@ -13,15 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+
 from unittest import mock
 
-from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 import designate.conf
 from designate import dnsmiddleware
-from designate.mdns import handler
 from designate.mdns import service
+from designate import policy
+from designate import rpc
 import designate.service
 from designate import storage
 from designate.tests import fixtures
@@ -33,40 +35,40 @@ CONF = designate.conf.CONF
 
 class MdnsServiceTest(oslotest.base.BaseTestCase):
     @mock.patch.object(storage, 'get_storage', mock.Mock())
-    def setUp(self):
+    @mock.patch.object(policy, 'init')
+    @mock.patch.object(rpc, 'init')
+    @mock.patch.object(rpc, 'initialized')
+    def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_policy_init):
         super().setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
-        conf = self.useFixture(cfg_fixture.Config(CONF))
-        conf.conf([], project='designate')
+        mock_rpc_initialized.return_value = False
 
         self.service = service.Service()
+
+        mock_policy_init.assert_called_once()
+        mock_rpc_initialized.assert_called_once()
+        mock_rpc_init.assert_called_once()
 
     @mock.patch.object(designate.service.DNSService, 'start')
     def test_service_start(self, mock_dns_start):
         self.service.start()
 
-        self.assertTrue(mock_dns_start.called)
+        mock_dns_start.assert_called()
 
     def test_service_stop(self):
         self.service.dns_service.stop = mock.Mock()
 
         self.service.stop()
 
-        self.assertTrue(self.service.dns_service.stop.called)
+        self.service.dns_service.stop.assert_called()
 
         self.assertIn('Stopping mdns service', self.stdlog.logger.output)
 
     def test_service_name(self):
         self.assertEqual('mdns', self.service.service_name)
 
-    @mock.patch.object(handler, 'RequestHandler')
-    @mock.patch.object(designate.service.DNSService, 'start')
-    @mock.patch.object(designate.utils, 'cache_result')
-    def test_dns_application(self, mock_cache_result, mock_dns_start,
-                             mock_request_handler):
-
+    def test_dns_application(self):
         app = self.service.dns_application
-
         self.assertIsInstance(app, dnsmiddleware.DNSMiddleware)
