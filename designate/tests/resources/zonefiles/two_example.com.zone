@@ -6,16 +6,16 @@ example2.com. 600 IN SOA ns1.example2.com. nsadmin.example2.com. (
     2419200     ; expire
     10800       ; minimum
 )
-ipv4.example2.com.       300 IN A        192.0.0.1
-ipv6.example2.com.       IN AAAA     fd00::1
+ipv4.example2.com.       300 IN A        192.0.2.1
+ipv6.example2.com.       IN AAAA     2001:db8::
 cname.example2.com.      IN CNAME    example2.com.
-example2.com.            IN MX       5   192.0.0.2
-example2.com.            IN MX       10  192.0.0.3
-_http._tcp.example2.com. IN SRV      10  0   80  192.0.0.4
-_http._tcp.example2.com. IN SRV      10  5   80  192.0.0.5
+example2.com.            IN MX       5   192.0.2.2
+example2.com.            IN MX       10  192.0.2.3
+_http._tcp.example2.com. IN SRV      10  0   80  192.0.2.4
+_http._tcp.example2.com. IN SRV      10  5   80  192.0.2.5
 example2.com.            IN TXT      "abc" "def"
 example2.com.            IN SPF      "v=spf1 mx a"
 example2.com.            IN NS       ns1.example2.com.
 example2.com.            IN NS       ns2.example2.com.
 delegation.example2.com. IN NS       ns1.example2.com.
-1.0.0.192.in-addr.arpa. IN PTR      ipv4.example2.com.
+1.2.0.192.in-addr.arpa. IN PTR      ipv4.example2.com.
