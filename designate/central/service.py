@@ -1128,8 +1128,7 @@ class Service(service.RPCService):
         policy.check('xfr_zone', context, target)
 
         if zone.type != constants.ZONE_SECONDARY:
-            msg = "Can't XFR a non Secondary zone."
-            raise exceptions.BadRequest(msg)
+            raise exceptions.BadRequest("Can't XFR a non Secondary zone.")
 
         # Ensure the format of the servers are correct, then poll the
         # serial
