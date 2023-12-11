@@ -19,3 +19,4 @@ zake>=0.1.6 # Apache-2.0
 doc8>=0.6.0 # Apache-2.0
 Pygments>=2.2.0 # BSD license
 pymemcache!=1.3.0,>=1.2.9 # Apache 2.0 License
+PyMySQL>=0.8.0 # MIT License
