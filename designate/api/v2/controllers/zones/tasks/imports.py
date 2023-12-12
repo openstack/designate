@@ -74,7 +74,8 @@ class ZoneImportController(rest.RestController):
 
         if request.content_type != 'text/dns':
             raise exceptions.UnsupportedContentType(
-                'Content-type must be text/dns')
+                'Content-type must be text/dns'
+            )
 
         # Create the zone_import
         zone_import = self.central_api.create_zone_import(

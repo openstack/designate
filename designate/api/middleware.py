@@ -201,7 +201,8 @@ class TestContextMiddleware(ContextMiddleware):
         headers = request.headers
 
         all_tenants = strutils.bool_from_string(
-            headers.get('X-Test-All-Tenants', 'False'))
+            headers.get('X-Test-All-Tenants', 'False')
+        )
 
         role_header = headers.get('X-Test-Role', None)
         role_header = role_header.lower() if role_header else None

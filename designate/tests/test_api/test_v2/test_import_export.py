@@ -130,6 +130,13 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         exported.delete_rdataset(exported.origin, 'NS')
         self.assertEqual(imported, exported)
 
+    def test_import_method_not_allowed(self):
+        self._assert_exception(
+            'unsupported_content_type', 415, self.client.post,
+            '/zones/tasks/imports', {},
+            content_type='application/json'
+        )
+
     def test_delete_import(self):
         post_response = self.client.post('/zones/tasks/imports',
                                          self.get_zonefile_fixture(),

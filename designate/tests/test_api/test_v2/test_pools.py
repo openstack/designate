@@ -280,6 +280,14 @@ class ApiV2PoolsTest(ApiV2TestCase):
             [n.hostname for n in pool['ns_records']],
             [n['hostname'] for n in response.json['ns_records']])
 
+    def test_update_pool_json_patch_not_implemented(self):
+        self._assert_exception(
+            'unknown', 500, self.client.patch_json,
+            '/pools/c82bab73-3d63-44df-af85-374be67de38b',
+            {'description': 'Tester'},
+            content_type='application/json-patch+json'
+        )
+
     def test_update_pool_ns_records(self):
         # Create a pool
         pool = self.create_pool()

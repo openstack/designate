@@ -46,7 +46,7 @@ class FloatingIPController(rest.RestController):
 
         fips = self.central_api.list_floatingips(context)
 
-        LOG.info("Retrieved %(fips)s", {'fips': fips})
+        LOG.info('Retrieved %(fips)s', {'fips': fips})
 
         return DesignateAdapter.render('API_v2', fips, request=request)
 
@@ -59,14 +59,7 @@ class FloatingIPController(rest.RestController):
         response = pecan.response
 
         context = request.environ['context']
-        try:
-            body = request.body_dict
-        except Exception as e:
-            if str(e) != 'TODO: Unsupported Content Type':
-                raise
-            else:
-                # Got a blank body
-                body = dict()
+        body = request.body_dict
 
         region, id_ = fip_key_to_data(fip_key)
 
@@ -74,7 +67,7 @@ class FloatingIPController(rest.RestController):
 
         fip.validate()
 
-        LOG.info("Updated %(fip)s", {'fip': fip})
+        LOG.info('Updated %(fip)s', {'fip': fip})
 
         fip = self.central_api.update_floatingip(context, region, id_, fip)
 
@@ -95,6 +88,6 @@ class FloatingIPController(rest.RestController):
 
         fip = self.central_api.get_floatingip(context, region, id_)
 
-        LOG.info("Retrieved %(fip)s", {'fip': fip})
+        LOG.info('Retrieved %(fip)s', {'fip': fip})
 
         return DesignateAdapter.render('API_v2', fip, request=request)
