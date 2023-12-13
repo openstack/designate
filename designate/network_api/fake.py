@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+
 from oslo_log import log as logging
 
 from designate.network_api import base
@@ -20,8 +22,7 @@ from designate.utils import generate_uuid
 
 
 LOG = logging.getLogger(__name__)
-
-POOL = {generate_uuid(): '192.168.2.%s' % i for i in range(0, 254)}
+POOL = {generate_uuid(): '192.0.2.%s' % i for i in range(1, 254)}
 ALLOCATIONS = {}
 
 
@@ -43,7 +44,7 @@ def allocate_floatingip(project_id, floatingip_id=None):
 
     ALLOCATIONS[project_id][id_] = POOL.pop(id_)
     values = _format_floatingip(id_, ALLOCATIONS[project_id][id_])
-    LOG.debug("Allocated to id_ %s to %s - %s", id_, project_id, values)
+    LOG.debug('Allocated to id_ %s to %s - %s', id_, project_id, values)
     return values
 
 
@@ -56,8 +57,6 @@ def deallocate_floatingip(id_):
         if id_ in allocated:
             POOL[id_] = allocated.pop(id_)
             break
-    else:
-        raise KeyError('No such FloatingIP %s' % id_)
 
 
 def reset_floatingips():
@@ -79,6 +78,7 @@ class FakeNetworkAPI(base.NetworkAPI):
             data = list(ALLOCATIONS.get(context.project_id, {}).items())
 
         formatted = [_format_floatingip(k, v) for k, v in data]
-        LOG.debug('Returning %i FloatingIPs: %s',
-                  len(formatted), formatted)
+        LOG.debug(
+            'Returning %i FloatingIPs: %s', len(formatted), formatted
+        )
         return formatted

@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 from oslo_config import cfg
 from oslo_log import log
 
@@ -30,7 +31,7 @@ cfg.CONF.register_opts(neutron_opts)
 
 
 def get_network_api(network_api_driver):
-    LOG.debug("Loading network_api driver: %s", network_api_driver)
+    LOG.debug('Loading network_api driver: %s', network_api_driver)
 
     cls = base.NetworkAPI.get_driver(network_api_driver)
 
