@@ -56,7 +56,6 @@ class AttributeFilter(base.Filter):
     """
 
     def filter(self, context, pools, zone):
-
         try:
             zone_attributes = zone.attributes.to_dict()
         except exceptions.RelationNotLoaded:

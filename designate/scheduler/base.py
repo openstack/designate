@@ -64,8 +64,9 @@ class Scheduler:
         pools = self.storage.find_pools(context)
 
         if not self.filters:
-            raise exceptions.NoFiltersConfigured('There are no scheduling '
-                                                 'filters configured')
+            raise exceptions.NoFiltersConfigured(
+                'There are no scheduling filters configured'
+            )
 
         for plugin in self.filters:
             LOG.debug(

@@ -34,14 +34,14 @@ class SchedulerFilterTest(oslotest.base.BaseTestCase):
         super().setUp()
         self.context = mock.Mock()
         self.zone = objects.Zone(
-            name="example.com.",
-            type="PRIMARY",
-            email="hostmaster@example.com"
+            name='example.com.',
+            type='PRIMARY',
+            email='hostmaster@example.com'
         )
 
         attrs = {
             'get_pool.return_value': objects.Pool(
-                id="6c346011-e581-429b-a7a2-6cdf0aba91c3")
+                id='6c346011-e581-429b-a7a2-6cdf0aba91c3')
         }
 
         mock_storage = mock.Mock(**attrs)
@@ -53,28 +53,28 @@ class SchedulerDefaultPoolFilterTest(SchedulerFilterTest):
 
     def test_default_operation(self):
         pools = objects.PoolList.from_list(
-            [{"id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"}]
+            [{'id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'}]
         )
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual(pools[0].id, "794ccc2c-d751-44fe-b57f-8894c9f5c842")
+        self.assertEqual(pools[0].id, '794ccc2c-d751-44fe-b57f-8894c9f5c842')
 
     def test_multiple_pools(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"},
-                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                {'id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
             ]
         )
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual(pools[0].id, "794ccc2c-d751-44fe-b57f-8894c9f5c842")
+        self.assertEqual(pools[0].id, '794ccc2c-d751-44fe-b57f-8894c9f5c842')
 
     def test_no_pools(self):
         pools = objects.PoolList()
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual(pools[0].id, "794ccc2c-d751-44fe-b57f-8894c9f5c842")
+        self.assertEqual(pools[0].id, '794ccc2c-d751-44fe-b57f-8894c9f5c842')
 
 
 class SchedulerFallbackFilterTest(SchedulerFilterTest):
@@ -82,17 +82,17 @@ class SchedulerFallbackFilterTest(SchedulerFilterTest):
 
     def test_default_operation(self):
         pools = objects.PoolList.from_list(
-            [{"id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"}]
+            [{'id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'}]
         )
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual(pools[0].id, "794ccc2c-d751-44fe-b57f-8894c9f5c842")
+        self.assertEqual(pools[0].id, '794ccc2c-d751-44fe-b57f-8894c9f5c842')
 
     def test_multiple_pools(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
-                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                {'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
             ]
         )
         pools = self.test_filter.filter(self.context, pools, self.zone)
@@ -103,8 +103,8 @@ class SchedulerFallbackFilterTest(SchedulerFilterTest):
             self.assertIn(
                 pool.id,
                 [
-                    "6c346011-e581-429b-a7a2-6cdf0aba91c3",
-                    "5fabcd37-262c-4cf3-8625-7f419434b6df",
+                    '6c346011-e581-429b-a7a2-6cdf0aba91c3',
+                    '5fabcd37-262c-4cf3-8625-7f419434b6df',
                 ]
             )
 
@@ -112,7 +112,7 @@ class SchedulerFallbackFilterTest(SchedulerFilterTest):
         pools = objects.PoolList()
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual(pools[0].id, "794ccc2c-d751-44fe-b57f-8894c9f5c842")
+        self.assertEqual(pools[0].id, '794ccc2c-d751-44fe-b57f-8894c9f5c842')
 
 
 class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
@@ -121,14 +121,14 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
     def setUp(self):
         super().setUp()
         self.zone = objects.Zone(
-            name="example.com.",
-            type="PRIMARY",
-            email="hostmaster@example.com",
+            name='example.com.',
+            type='PRIMARY',
+            email='hostmaster@example.com',
             attributes=objects.ZoneAttributeList.from_list(
                 [
                     {
-                        "key": "pool_id",
-                        "value": "6c346011-e581-429b-a7a2-6cdf0aba91c3"
+                        'key': 'pool_id',
+                        'value': '6c346011-e581-429b-a7a2-6cdf0aba91c3'
                     }
                 ]
             )
@@ -136,7 +136,7 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
 
     def test_default_operation(self):
         pools = objects.PoolList.from_list(
-            [{"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"}]
+            [{'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'}]
         )
         self.useFixture(fixtures.MockPatchObject(
             policy, 'check',
@@ -145,13 +145,13 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
 
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual("6c346011-e581-429b-a7a2-6cdf0aba91c3", pools[0].id)
+        self.assertEqual('6c346011-e581-429b-a7a2-6cdf0aba91c3', pools[0].id)
 
     def test_multiple_pools(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
-                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                {'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
             ]
         )
 
@@ -164,7 +164,7 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
 
         self.assertEqual(len(pools), 1)
 
-        self.assertEqual("6c346011-e581-429b-a7a2-6cdf0aba91c3", pools[0].id)
+        self.assertEqual('6c346011-e581-429b-a7a2-6cdf0aba91c3', pools[0].id)
 
     def test_no_pools(self):
         pools = objects.PoolList()
@@ -178,9 +178,32 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
 
         self.assertEqual(len(pools), 0)
 
+    def test_pools_missing_from_attribute_list(self):
+        zone = objects.Zone(
+            name='example.com.',
+            type='PRIMARY',
+            email='hostmaster@example.com',
+            attributes=objects.ZoneAttributeList.from_list([])
+        )
+        pools = objects.PoolList()
+        pools = self.test_filter.filter(self.context, pools, zone)
+
+        self.assertEqual(len(pools), 0)
+
+    def test_get_pool_failure(self):
+        mock_storage = mock.Mock()
+        mock_storage.get_pool.side_effect = Exception()
+
+        test_filter = self.FILTER(storage=mock_storage)
+
+        pools = objects.PoolList()
+        pools = test_filter.filter(self.context, pools, self.zone)
+
+        self.assertEqual(len(pools), 0)
+
     def test_policy_failure(self):
         pools = objects.PoolList.from_list(
-            [{"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"}]
+            [{'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'}]
         )
 
         self.useFixture(fixtures.MockPatchObject(
@@ -194,9 +217,8 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
         )
 
         policy.check.assert_called_once_with(
-            'zone_create_forced_pool',
-            self.context,
-            pools[0])
+            'zone_create_forced_pool', self.context, pools[0]
+        )
 
 
 class SchedulerAttributeFilterTest(SchedulerFilterTest):
@@ -205,22 +227,22 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
     def setUp(self):
         super().setUp()
         self.zone = objects.Zone(
-            name="example.com.",
-            type="PRIMARY",
-            email="hostmaster@example.com",
+            name='example.com.',
+            type='PRIMARY',
+            email='hostmaster@example.com',
             attributes=objects.ZoneAttributeList.from_list(
                 [
                     {
-                        "key": "attribute_one",
-                        "value": "True"
+                        'key': 'attribute_one',
+                        'value': 'True'
                     },
                     {
-                        "key": "attribute_two",
-                        "value": "False"
+                        'key': 'attribute_two',
+                        'value': 'False'
                     },
                     {
-                        "key": "attribute_three",
-                        "value": "foo"
+                        'key': 'attribute_three',
+                        'value': 'foo'
                     }
                 ]
             )
@@ -230,7 +252,7 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
         pools = objects.PoolList.from_list(
             [
                 {
-                    "id": "6c346011-e581-429b-a7a2-6cdf0aba91c3",
+                    'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3',
                 }
             ]
         )
@@ -238,28 +260,28 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
         pools[0].attributes = objects.PoolAttributeList.from_list(
             [
                 {
-                    "key": "attribute_one",
-                    "value": "True"
+                    'key': 'attribute_one',
+                    'value': 'True'
                 },
                 {
-                    "key": "attribute_two",
-                    "value": "False"
+                    'key': 'attribute_two',
+                    'value': 'False'
                 },
                 {
-                    "key": "attribute_three",
-                    "value": "foo"
+                    'key': 'attribute_three',
+                    'value': 'foo'
                 }
             ])
 
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual("6c346011-e581-429b-a7a2-6cdf0aba91c3", pools[0].id)
+        self.assertEqual('6c346011-e581-429b-a7a2-6cdf0aba91c3', pools[0].id)
 
     def test_multiple_pools_all_match(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
-                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                {'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
             ]
 
         )
@@ -267,16 +289,16 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
         attributes = objects.PoolAttributeList.from_list(
             [
                 {
-                    "key": "attribute_one",
-                    "value": "True"
+                    'key': 'attribute_one',
+                    'value': 'True'
                 },
                 {
-                    "key": "attribute_two",
-                    "value": "False"
+                    'key': 'attribute_two',
+                    'value': 'False'
                 },
                 {
-                    "key": "attribute_three",
-                    "value": "foo"
+                    'key': 'attribute_three',
+                    'value': 'foo'
                 }
             ])
 
@@ -290,8 +312,8 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
     def test_multiple_pools_one_match(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
-                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                {'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
             ]
 
         )
@@ -299,32 +321,32 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
         pool_0_attributes = objects.PoolAttributeList.from_list(
             [
                 {
-                    "key": "attribute_one",
-                    "value": "True"
+                    'key': 'attribute_one',
+                    'value': 'True'
                 },
                 {
-                    "key": "attribute_two",
-                    "value": "False"
+                    'key': 'attribute_two',
+                    'value': 'False'
                 },
                 {
-                    "key": "attribute_three",
-                    "value": "foo"
+                    'key': 'attribute_three',
+                    'value': 'foo'
                 }
             ])
 
         pool_1_attributes = objects.PoolAttributeList.from_list(
             [
                 {
-                    "key": "attribute_four",
-                    "value": "True"
+                    'key': 'attribute_four',
+                    'value': 'True'
                 },
                 {
-                    "key": "attribute_five",
-                    "value": "False"
+                    'key': 'attribute_five',
+                    'value': 'False'
                 },
                 {
-                    "key": "attribute_three",
-                    "value": "foo"
+                    'key': 'attribute_three',
+                    'value': 'foo'
                 }
             ])
 
@@ -334,13 +356,13 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
         self.assertEqual(1, len(pools))
-        self.assertEqual("6c346011-e581-429b-a7a2-6cdf0aba91c3", pools[0].id)
+        self.assertEqual('6c346011-e581-429b-a7a2-6cdf0aba91c3', pools[0].id)
 
     def test_multiple_pools_no_match(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
-                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                {'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
             ]
 
         )
@@ -348,32 +370,32 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
         pool_0_attributes = objects.PoolAttributeList.from_list(
             [
                 {
-                    "key": "attribute_six",
-                    "value": "True"
+                    'key': 'attribute_six',
+                    'value': 'True'
                 },
                 {
-                    "key": "attribute_two",
-                    "value": "False"
+                    'key': 'attribute_two',
+                    'value': 'False'
                 },
                 {
-                    "key": "attribute_seven",
-                    "value": "foo"
+                    'key': 'attribute_seven',
+                    'value': 'foo'
                 }
             ])
 
         pool_1_attributes = objects.PoolAttributeList.from_list(
             [
                 {
-                    "key": "attribute_four",
-                    "value": "True"
+                    'key': 'attribute_four',
+                    'value': 'True'
                 },
                 {
-                    "key": "attribute_five",
-                    "value": "False"
+                    'key': 'attribute_five',
+                    'value': 'False'
                 },
                 {
-                    "key": "attribute_three",
-                    "value": "foo"
+                    'key': 'attribute_three',
+                    'value': 'foo'
                 }
             ])
 
@@ -387,7 +409,7 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
     def test_no_match_non_bool(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
+                {'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'},
             ]
 
         )
@@ -395,16 +417,16 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
         pool_0_attributes = objects.PoolAttributeList.from_list(
             [
                 {
-                    "key": "attribute_one",
-                    "value": "True"
+                    'key': 'attribute_one',
+                    'value': 'True'
                 },
                 {
-                    "key": "attribute_two",
-                    "value": "False"
+                    'key': 'attribute_two',
+                    'value': 'False'
                 },
                 {
-                    "key": "attribute_three",
-                    "value": "bar"
+                    'key': 'attribute_three',
+                    'value': 'bar'
                 }
             ])
 
@@ -414,6 +436,31 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
 
         self.assertEqual(0, len(pools))
 
+    def test_zone_attributes_not_set(self):
+        pools = objects.PoolList.from_list([])
+
+        zone = objects.Zone(
+            name='example.com.',
+            type='PRIMARY',
+            email='hostmaster@example.com',
+        )
+
+        pools = self.test_filter.filter(self.context, pools, zone)
+
+        self.assertEqual(0, len(pools))
+
+    def test_pool_attributes_not_set(self):
+        pools = objects.PoolList.from_list(
+            [
+                {'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'},
+            ]
+
+        )
+
+        pools = self.test_filter.filter(self.context, pools, self.zone)
+
+        self.assertEqual(1, len(pools))
+
 
 class SchedulerInDoubtDefaultPoolFilterTest(SchedulerFilterTest):
     FILTER = in_doubt_default_pool_filter.InDoubtDefaultPoolFilter
@@ -421,20 +468,20 @@ class SchedulerInDoubtDefaultPoolFilterTest(SchedulerFilterTest):
     def test_pools_with_default(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
-                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                {'id': '6c346011-e581-429b-a7a2-6cdf0aba91c3'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
             ]
         )
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
         self.assertEqual(1, len(pools))
-        self.assertEqual(pools[0].id, "6c346011-e581-429b-a7a2-6cdf0aba91c3")
+        self.assertEqual(pools[0].id, '6c346011-e581-429b-a7a2-6cdf0aba91c3')
 
     def test_pools_without_default(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "24702e43-8a52-440f-ab74-19fc16048860"},
-                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                {'id': '24702e43-8a52-440f-ab74-19fc16048860'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
             ]
         )
         pools = self.test_filter.filter(self.context, pools, self.zone)
@@ -446,3 +493,19 @@ class SchedulerInDoubtDefaultPoolFilterTest(SchedulerFilterTest):
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
         self.assertEqual(0, len(pools))
+
+    def test_get_pool_failure(self):
+        mock_storage = mock.Mock()
+        mock_storage.get_pool.side_effect = Exception()
+
+        test_filter = self.FILTER(storage=mock_storage)
+
+        pools = objects.PoolList.from_list(
+            [
+                {'id': '24702e43-8a52-440f-ab74-19fc16048860'},
+                {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
+            ]
+        )
+        pools = test_filter.filter(self.context, pools, self.zone)
+
+        self.assertEqual(len(pools), 2)

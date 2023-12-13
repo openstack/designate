@@ -32,15 +32,15 @@ class SchedulerTest(oslotest.base.BaseTestCase):
         self.useFixture(cfg_fixture.Config(CONF))
         self.context = mock.Mock()
         self.zone = objects.Zone(
-            name="example.com.",
-            type="PRIMARY",
-            email="hostmaster@example.com"
+            name='example.com.',
+            type='PRIMARY',
+            email='hostmaster@example.com'
         )
 
     def test_default_operation(self):
         attrs = {
             'find_pools.return_value': objects.PoolList.from_list(
-                [{"id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"}])
+                [{'id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'}])
         }
         mock_storage = mock.Mock(**attrs)
 
@@ -50,14 +50,14 @@ class SchedulerTest(oslotest.base.BaseTestCase):
                                                          self.zone)
 
         self.assertEqual(self.zone.pool_id,
-                         "794ccc2c-d751-44fe-b57f-8894c9f5c842")
+                         '794ccc2c-d751-44fe-b57f-8894c9f5c842')
 
     def test_multiple_pools(self):
         attrs = {
             'find_pools.return_value': objects.PoolList.from_list(
                 [
-                    {"id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"},
-                    {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+                    {'id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'},
+                    {'id': '5fabcd37-262c-4cf3-8625-7f419434b6df'}
                 ]
             )
         }
@@ -72,8 +72,8 @@ class SchedulerTest(oslotest.base.BaseTestCase):
         self.assertIn(
             self.zone.pool_id,
             [
-                "794ccc2c-d751-44fe-b57f-8894c9f5c842",
-                "5fabcd37-262c-4cf3-8625-7f419434b6df",
+                '794ccc2c-d751-44fe-b57f-8894c9f5c842',
+                '5fabcd37-262c-4cf3-8625-7f419434b6df',
             ]
         )
 
@@ -109,4 +109,14 @@ class SchedulerTest(oslotest.base.BaseTestCase):
             exceptions.NoFiltersConfigured,
             'There are no scheduling filters configured',
             scheduler.get_scheduler, mock_storage,
+        )
+
+    def test_no_filters_when_scheduling_zone(self):
+        test_scheduler = scheduler.get_scheduler(storage=mock.Mock())
+        test_scheduler.filters = list()
+
+        self.assertRaisesRegex(
+            exceptions.NoFiltersConfigured,
+            'There are no scheduling filters configured',
+            test_scheduler.schedule_zone, self.context, self.zone,
         )
