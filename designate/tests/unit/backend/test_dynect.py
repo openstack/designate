@@ -14,14 +14,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 from unittest import mock
 
+from oslo_config import fixture as cfg_fixture
 import oslotest.base
 import requests_mock
 
 from designate.backend import impl_dynect
+import designate.conf
 from designate import context
+from designate import exceptions
 from designate import objects
+from designate.tests import base_fixtures
+
+CONF = designate.conf.CONF
 
 MASTERS = [
     '192.0.2.1'
@@ -146,9 +153,32 @@ ACTIVATE_SUCCESS = {
 }
 
 
+class DynClientTestsCase(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+    def test_dyn_client_auth_error(self):
+        client = impl_dynect.DynClient(
+            'customer_name', 'user_name', 'password', 'timeout', 'timings'
+        )
+        client.token = 'fake'
+        client._request = mock.Mock()
+        client._request.side_effect = impl_dynect.DynClientAuthError()
+
+        self.assertRaisesRegex(
+            impl_dynect.DynClientAuthError,
+            r'None \(HTTP None to None - None\) - None',
+            client.request, 'POST', '/Test/'
+        )
+
+
 class DynECTTestsCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
+
+        self.useFixture(cfg_fixture.Config(CONF))
+        self.stdlog = base_fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
 
         self.context = mock.Mock()
         self.admin_context = mock.Mock()
@@ -181,6 +211,17 @@ class DynECTTestsCase(oslotest.base.BaseTestCase):
             objects.PoolTarget.from_dict(self.target)
         )
 
+    def test_masters_only_allow_port_53(self):
+        self.target['masters'] = [
+            {'host': '192.0.2.1', 'port': 5354}
+        ]
+        self.assertRaisesRegex(
+            exceptions.ConfigurationError,
+            'DynECT only supports mDNS instances on port 53',
+            impl_dynect.DynECTBackend,
+            objects.PoolTarget.from_dict(self.target)
+        )
+
     @requests_mock.mock()
     def test_create_zone(self, req_mock):
         req_mock.post(
@@ -204,6 +245,65 @@ class DynECTTestsCase(oslotest.base.BaseTestCase):
         )
 
         self.backend.create_zone(self.context, self.zone)
+
+    @requests_mock.mock()
+    def test_create_zone_with_timings(self, req_mock):
+        CONF.set_override('timings', True, 'backend:dynect')
+
+        req_mock.post(
+            '%s/Session' % self.base_address,
+            json=LOGIN_SUCCESS,
+        )
+        req_mock.delete(
+            '%s/Session' % self.base_address,
+            json=LOGOUT_SUCCESS,
+        )
+
+        req_mock.post(
+            '%s/Secondary/example.com' % self.base_address,
+            json=ZONE_CREATE,
+            status_code=200,
+        )
+        req_mock.put(
+            '%s/Secondary/example.com' % self.base_address,
+            json=ACTIVATE_SUCCESS,
+            status_code=200,
+        )
+
+        self.backend.create_zone(self.context, self.zone)
+
+    @requests_mock.mock()
+    def test_create_zone_missing_contact_and_tsig(self, req_mock):
+        self.target['options'] = [
+            {'key': 'username', 'value': 'example'},
+            {'key': 'password', 'value': 'secret'},
+        ]
+
+        backend = impl_dynect.DynECTBackend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+
+        req_mock.post(
+            '%s/Session' % self.base_address,
+            json=LOGIN_SUCCESS,
+        )
+        req_mock.delete(
+            '%s/Session' % self.base_address,
+            json=LOGOUT_SUCCESS,
+        )
+
+        req_mock.post(
+            '%s/Secondary/example.com' % self.base_address,
+            json=ZONE_CREATE,
+            status_code=200,
+        )
+        req_mock.put(
+            '%s/Secondary/example.com' % self.base_address,
+            json=ACTIVATE_SUCCESS,
+            status_code=200,
+        )
+
+        backend.create_zone(self.context, self.zone)
 
     @requests_mock.mock()
     def test_create_zone_raise_dynclienterror(self, req_mock):
@@ -274,6 +374,36 @@ class DynECTTestsCase(oslotest.base.BaseTestCase):
         self.backend.delete_zone(self.context, self.zone)
 
     @requests_mock.mock()
+    def test_delete_zone_not_found(self, req_mock):
+        req_mock.post(
+            '%s/Session' % self.base_address,
+            json=LOGIN_SUCCESS,
+        )
+        req_mock.delete(
+            '%s/Session' % self.base_address,
+            json=LOGOUT_SUCCESS,
+        )
+
+        req_mock.delete(
+            '%s/Zone/example.com' % self.base_address,
+            json=INVALID_ZONE_DELETE_DATA,
+            status_code=404
+        )
+        req_mock.put(
+            '%s/Secondary/example.com' % self.base_address,
+            json=ACTIVATE_SUCCESS,
+            status_code=200,
+        )
+
+        self.backend.delete_zone(self.context, self.zone)
+
+        self.assertIn(
+            'Attempt to delete e2bed4dc-9d01-11e4-89d3-123b93f75cba / '
+            'example.com. caused 404, ignoring.',
+            self.stdlog.logger.output
+        )
+
+    @requests_mock.mock()
     def test_delete_zone_raise_dynclienterror(self, req_mock):
         req_mock.post(
             '%s/Session' % self.base_address,
@@ -299,6 +429,28 @@ class DynECTTestsCase(oslotest.base.BaseTestCase):
             impl_dynect.DynClientError, 'Zone not deleted',
             self.backend.delete_zone, self.context, self.zone,
         )
+
+    @requests_mock.mock()
+    def test_request(self, req_mock):
+        req_mock.post(
+            '%s/Session' % self.base_address,
+            json=LOGIN_SUCCESS,
+        )
+        req_mock.post(
+            'https://api.dynect.net:443/'
+        )
+        req_mock.post(
+            'https://api.dynect.net:443/REST'
+        )
+
+        client = self.backend.get_client()
+
+        self.assertEqual(200,
+                         client._request(
+                             'POST',
+                             'https://api.dynect.net:443/REST').status_code
+                         )
+        self.assertEqual(200, client._request('POST', '').status_code)
 
     def test_error_from_response(self):
         error_data = dict(INVALID_ZONE_DELETE_DATA)

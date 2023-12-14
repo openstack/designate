@@ -15,7 +15,6 @@
 # under the License.
 import time
 
-from eventlet import Timeout
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 import requests
@@ -25,7 +24,6 @@ from designate.backend import base
 import designate.conf
 from designate import exceptions
 from designate import utils
-
 
 CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
@@ -46,12 +44,9 @@ class DynClientError(exceptions.Backend):
         self.url = url
         self.method = method
         self.details = details
-        formatted_string = '{} (HTTP {} to {} - {}) - {}'.format(
-            self.msgs,
-            self.method,
-            self.url,
-            self.http_status,
-            self.details
+        formatted_string = (
+            f'{self.msgs} (HTTP {self.method} to {self.url} - '
+            f'{self.http_status}) - {self.details}'
         )
         if job_id:
             formatted_string += f' (Job-ID: {job_id})'
@@ -101,16 +96,14 @@ class DynClient:
     https://help.dynect.net/rest/
     """
 
-    def __init__(self, customer_name, user_name, password,
-                 endpoint="https://api.dynect.net:443",
-                 api_version='3.5.6', headers=None, verify=True, retries=1,
-                 timeout=10, timings=False, pool_maxsize=10,
-                 pool_connections=10):
+    def __init__(self, customer_name, user_name, password, timeout, timings,
+                 verify=True, retries=1, pool_maxsize=10, pool_connections=10):
+        self.endpoint = 'https://api.dynect.net:443'
+        self.api_version = '3.5.6'
+
         self.customer_name = customer_name
         self.user_name = user_name
         self.password = password
-        self.endpoint = endpoint
-        self.api_version = api_version
 
         self.times = []  # [("item", starttime, endtime), ...]
         self.timings = timings
@@ -125,17 +118,17 @@ class DynClient:
         session.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'API-Version': api_version,
-            'User-Agent': 'DynECTClient'}
+            'API-Version': self.api_version,
+            'User-Agent': 'DynECTClient'
+        }
 
-        if headers is not None:
-            session.headers.update(headers)
-
-        adapter = HTTPAdapter(max_retries=int(retries),
-                              pool_maxsize=int(pool_maxsize),
-                              pool_connections=int(pool_connections),
-                              pool_block=True)
-        session.mount(endpoint, adapter)
+        adapter = HTTPAdapter(
+            max_retries=int(retries),
+            pool_maxsize=int(pool_maxsize),
+            pool_connections=int(pool_connections),
+            pool_block=True
+        )
+        session.mount(self.endpoint, adapter)
         self.http = session
 
     def _http_log_req(self, method, url, kwargs):
@@ -149,25 +142,12 @@ class DynClient:
             header = "-H '{}: {}'".format(element, kwargs['headers'][element])
             string_parts.append(header)
 
-        LOG.debug("REQ: %s", " ".join(string_parts))
+        LOG.debug('REQ: %s', ' '.join(string_parts))
         if 'data' in kwargs:
-            LOG.debug("REQ BODY: %s\n" % (kwargs['data']))
+            LOG.debug('REQ BODY: %s\n', kwargs['data'])
 
     def _http_log_resp(self, resp):
-        LOG.debug(
-            "RESP: [%s] %s\n" %
-            (resp.status_code,
-             resp.headers))
-        if resp._content_consumed:
-            LOG.debug(
-                "RESP BODY: %s\n" %
-                resp.text)
-
-    def get_timings(self):
-        return self.times
-
-    def reset_timings(self):
-        self.times = []
+        LOG.debug('RESP: [%s] %s\n', resp.status_code, resp.headers)
 
     def _request(self, method, url, **kwargs):
         """
@@ -206,8 +186,7 @@ class DynClient:
         else:
             self._http_log_req(method, url, kwargs)
 
-        if self.timings:
-            start_time = time.monotonic()
+        start_time = time.monotonic()
         resp = self.http.request(method, url, **kwargs)
         if self.timings:
             self.times.append((f"{method} {url}",
@@ -215,34 +194,9 @@ class DynClient:
         self._http_log_resp(resp)
 
         if resp.status_code >= 400:
-            LOG.debug(
-                "Request returned failure status: %s",
-                resp.status_code)
+            LOG.debug('Request returned failure status: %s', resp.status_code)
             raise DynClientError.from_response(resp)
         return resp
-
-    def poll_response(self, response):
-        """
-        The API might return a job nr in the response in case of a async
-        response: https://github.com/fog/fog/issues/575
-        """
-        status = response.status
-
-        timeout = Timeout(CONF[CFG_GROUP_NAME].job_timeout)
-        try:
-            while status == 307:
-                time.sleep(1)
-                url = response.headers.get('Location')
-                LOG.debug("Polling %s", url)
-
-                polled_response = self.get(url)
-                status = response.status
-        except Timeout as t:
-            if t == timeout:
-                raise DynTimeoutError('Timeout reached when pulling job.')
-        finally:
-            timeout.cancel()
-        return polled_response
 
     def request(self, method, url, retries=2, **kwargs):
         if self.token is None and not self.authing:
@@ -257,9 +211,6 @@ class DynClient:
                 return self.request(method, url, retries, **kwargs)
             else:
                 raise
-
-        if response.status_code == 307:
-            response = self.poll_response(response)
 
         return response.json()
 
@@ -282,16 +233,8 @@ class DynClient:
         response = self.request('POST', *args, **kwargs)
         return response
 
-    def get(self, *args, **kwargs):
-        response = self.request('GET', *args, **kwargs)
-        return response
-
     def put(self, *args, **kwargs):
         response = self.request('PUT', *args, **kwargs)
-        return response
-
-    def patch(self, *args, **kwargs):
-        response = self.request('PATCH', *args, **kwargs)
         return response
 
     def delete(self, *args, **kwargs):
@@ -330,8 +273,13 @@ class DynECTBackend(base.Backend):
             timings=CONF[CFG_GROUP_NAME].timings)
 
     def create_zone(self, context, zone):
-        LOG.info('Creating zone %(d_id)s / %(d_name)s',
-                 {'d_id': zone['id'], 'd_name': zone['name']})
+        LOG.info(
+            'Creating zone %(d_id)s / %(d_name)s',
+            {
+                'd_id': zone['id'],
+                'd_name': zone['name']
+            }
+        )
 
         url = '/Secondary/%s' % zone['name'].rstrip('.')
         data = {
@@ -351,8 +299,10 @@ class DynECTBackend(base.Backend):
         except DynClientError as e:
             for emsg in e.msgs:
                 if emsg['ERR_CD'] == 'TARGET_EXISTS':
-                    LOG.info("Zone already exists, updating existing "
-                             "zone instead %s", zone['name'])
+                    LOG.info(
+                        'Zone already exists, updating existing zone '
+                        'instead %s', zone['name']
+                    )
                     client.put(url, data=data)
                     break
             else:
@@ -362,17 +312,25 @@ class DynECTBackend(base.Backend):
         client.logout()
 
     def delete_zone(self, context, zone, zone_params=None):
-        LOG.info('Deleting zone %(d_id)s / %(d_name)s',
-                 {'d_id': zone['id'], 'd_name': zone['name']})
+        LOG.info(
+            'Deleting zone %(d_id)s / %(d_name)s', {
+                'd_id': zone['id'],
+                'd_name': zone['name']
+            }
+        )
         url = '/Zone/%s' % zone['name'].rstrip('.')
         client = self.get_client()
         try:
             client.delete(url)
         except DynClientError as e:
             if e.http_status == 404:
-                LOG.warning("Attempt to delete %(d_id)s / %(d_name)s "
-                            "caused 404, ignoring.",
-                            {'d_id': zone['id'], 'd_name': zone['name']})
+                LOG.warning(
+                    'Attempt to delete %(d_id)s / %(d_name)s caused 404, '
+                    'ignoring.', {
+                        'd_id': zone['id'],
+                        'd_name': zone['name']
+                    }
+                )
                 pass
             else:
                 raise
