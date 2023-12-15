@@ -11,9 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+
 from unittest import mock
 
 import fixtures
+
+import oslotest.base
 
 from designate import exceptions
 from designate import objects
@@ -23,13 +27,12 @@ from designate.scheduler.filters import default_pool_filter
 from designate.scheduler.filters import fallback_filter
 from designate.scheduler.filters import in_doubt_default_pool_filter
 from designate.scheduler.filters import pool_id_attribute_filter
-from designate import tests
 
 
-class SchedulerFilterTest(tests.TestCase):
+class SchedulerFilterTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.context = self.get_context()
+        self.context = mock.Mock()
         self.zone = objects.Zone(
             name="example.com.",
             type="PRIMARY",

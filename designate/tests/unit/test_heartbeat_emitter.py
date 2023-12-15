@@ -21,7 +21,7 @@ import oslotest.base
 import designate.conf
 from designate import heartbeat_emitter
 from designate import objects
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 
 
 CONF = designate.conf.CONF
@@ -30,7 +30,7 @@ CONF = designate.conf.CONF
 class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))
 

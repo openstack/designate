@@ -13,12 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+
 from unittest import mock
+
+import oslotest.base
 
 from designate.api.admin.views import base
 from designate import exceptions
 from designate import objects
-import designate.tests
 
 
 class MockRequest:
@@ -26,7 +29,7 @@ class MockRequest:
         self.GET = GET
 
 
-class TestAdminAPI(designate.tests.TestCase):
+class TestAdminAPI(oslotest.base.BaseTestCase):
 
     def setUp(self):
         super().setUp()

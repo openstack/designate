@@ -31,7 +31,7 @@ from designate import rpc
 import designate.service
 from designate import storage
 import designate.tests
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 from designate.worker import processing
 from designate.worker import service
 
@@ -50,7 +50,7 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
 
         mock_rpc_initialized.return_value = False
 
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))
 

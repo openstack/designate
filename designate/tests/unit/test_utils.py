@@ -19,7 +19,7 @@ import oslotest.base
 
 import designate.conf
 from designate import exceptions
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 from designate import utils
 
 
@@ -29,7 +29,7 @@ CONF = designate.conf.CONF
 class TestUtils(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)
 

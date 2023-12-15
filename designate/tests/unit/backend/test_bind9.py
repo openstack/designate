@@ -20,7 +20,7 @@ from designate.backend import impl_bind9
 from designate import context
 from designate import exceptions
 from designate import objects
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 from designate import utils
 
 import subprocess
@@ -29,7 +29,7 @@ import subprocess
 class Bind9BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
         self.admin_context = mock.Mock()
@@ -68,7 +68,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
 
     @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
     def test_create_zone(self, mock_execute):
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.backend.create_zone(self.admin_context, self.zone)
 
         mock_execute.assert_called_with(
@@ -80,7 +80,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
 
     @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
     def test_update_zone(self, mock_execute):
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.backend.update_zone(self.admin_context, self.zone)
 
         mock_execute.assert_called_with(
@@ -96,7 +96,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         mock_get_zone.return_value = True
         mock_execute.side_effect = exceptions.Backend('error')
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.backend.update_zone(self.admin_context, self.zone)
 
         self.assertIn('Error updating zone', self.stdlog.logger.output)
@@ -112,7 +112,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
 
     @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
     def test_get_zone(self, mock_execute):
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.backend.get_zone(self.admin_context, self.zone)
 
         mock_execute.assert_called_with(
@@ -145,7 +145,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
             objects.PoolTarget.from_dict(self.target)
         )
 
-        with fixtures.random_seed(1):
+        with base_fixtures.random_seed(1):
             backend.create_zone(self.admin_context, self.zone)
 
         mock_execute.assert_called_with(

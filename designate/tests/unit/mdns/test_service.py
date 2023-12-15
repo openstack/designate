@@ -26,7 +26,7 @@ from designate import policy
 from designate import rpc
 import designate.service
 from designate import storage
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 import designate.utils
 
 
@@ -40,7 +40,7 @@ class MdnsServiceTest(oslotest.base.BaseTestCase):
     @mock.patch.object(rpc, 'initialized')
     def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_policy_init):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
         mock_rpc_initialized.return_value = False

@@ -13,17 +13,24 @@
 # under the License.
 from unittest import mock
 
+from oslo_config import fixture as cfg_fixture
+import oslotest.base
+
+import designate.conf
 from designate import exceptions
 from designate import objects
 from designate import scheduler
-from designate import tests
 
 
-class SchedulerTest(tests.TestCase):
+CONF = designate.conf.CONF
+
+
+class SchedulerTest(oslotest.base.BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.context = self.get_context()
+        self.useFixture(cfg_fixture.Config(CONF))
+        self.context = mock.Mock()
         self.zone = objects.Zone(
             name="example.com.",
             type="PRIMARY",
@@ -76,7 +83,7 @@ class SchedulerTest(tests.TestCase):
         }
         mock_storage = mock.Mock(**attrs)
 
-        self.CONF.set_override(
+        CONF.set_override(
             'scheduler_filters', ['random'], 'service:central'
         )
 
@@ -89,7 +96,7 @@ class SchedulerTest(tests.TestCase):
         )
 
     def test_no_filters_enabled(self):
-        self.CONF.set_override(
+        CONF.set_override(
             'scheduler_filters', [], 'service:central'
         )
 

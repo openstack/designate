@@ -12,12 +12,12 @@
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
+import oslotest.base
 
 import designate.conf
 from designate import exceptions
 from designate import objects
 from designate import scheduler
-from designate import tests
 
 
 CONF = designate.conf.CONF
@@ -64,11 +64,11 @@ def build_test_pools():
     return pools
 
 
-class AttributeSchedulerPermutationsTest(tests.TestCase):
+class AttributeSchedulerPermutationsTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
-        self.context = self.get_context()
+        self.context = mock.Mock()
 
         self.CONF.set_override(
             'scheduler_filters', ['attribute'], 'service:central'
@@ -182,11 +182,11 @@ class AttributeSchedulerPermutationsTest(tests.TestCase):
         )
 
 
-class DefaultSchedulerPermutationsTest(tests.TestCase):
+class DefaultSchedulerPermutationsTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
-        self.context = self.get_context()
+        self.context = mock.Mock()
 
         self.CONF.set_override(
             'scheduler_filters', ['default_pool'], 'service:central'
@@ -214,11 +214,11 @@ class DefaultSchedulerPermutationsTest(tests.TestCase):
         self.assertEqual(DEFAULT_POOL_ID, result)
 
 
-class FallbackSchedulerPermutationsTest(tests.TestCase):
+class FallbackSchedulerPermutationsTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
-        self.context = self.get_context()
+        self.context = mock.Mock()
 
         self.CONF.set_override(
             'scheduler_filters', ['attribute', 'fallback'], 'service:central'

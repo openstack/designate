@@ -16,7 +16,7 @@ import oslotest.base
 
 from designate.common.decorators import rpc
 import designate.conf
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 
 
 CONF = designate.conf.CONF
@@ -39,7 +39,7 @@ class RPCLog:
 class TestRPCLogging(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
     def test_rpc_logging(self):

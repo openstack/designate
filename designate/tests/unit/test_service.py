@@ -26,7 +26,7 @@ from designate.mdns import handler
 from designate import policy
 from designate import rpc
 from designate import service as designate_service
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 from designate import utils
 
 
@@ -38,7 +38,7 @@ class BaseServiceTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
     @mock.patch.object(service, 'launch')
@@ -259,7 +259,7 @@ class TestDNSService(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
         self.tg = mock.Mock()

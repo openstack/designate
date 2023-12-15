@@ -24,7 +24,7 @@ from designate.backend import impl_akamai_v2 as akamai
 from designate import context
 from designate import exceptions
 from designate import objects
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 
 
 class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
@@ -81,7 +81,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             client_token='client_token'
         )
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.assertRaisesRegex(
                 exceptions.Backend,
                 'contractId is required for zone creation',
@@ -101,7 +101,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             client_token='client_token'
         )
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             backend.create_zone(self.admin_context, self.zone)
 
         project_id = self.admin_context.project_id or self.zone.tenant_id
@@ -132,7 +132,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
 
         mock_post.return_value = self.gen_response(409, 'Conflict')
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             backend.create_zone(self.admin_context, self.zone)
 
         project_id = self.admin_context.project_id or self.zone.tenant_id
@@ -166,7 +166,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             client_token='client_token'
         )
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             backend.create_zone(self.admin_context, self.zone)
 
         project_id = self.admin_context.project_id or self.zone.tenant_id
@@ -209,7 +209,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
         mock_post.return_value = self.gen_response(
             400, 'Bad Request', json_data)
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.assertRaisesRegex(
                 exceptions.Backend,
                 'Zone creation failed due to: Missed A option',
@@ -244,7 +244,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
 
         mock_post.return_value = self.gen_response(200, 'Success')
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             backend.delete_zone(self.admin_context, self.zone)
 
         mock_post.assert_called_once_with(
@@ -273,7 +273,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
         mock_post.return_value = self.gen_response(
             403, 'Bad Request', {'detail': 'Unexpected error'})
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.assertRaisesRegex(
                 exceptions.Backend,
                 'Zone deletion failed due to: Unexpected error',
@@ -305,7 +305,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
         mock_post.return_value = self.gen_response(
             404, 'Bad Request', {'detail': 'Unexpected error'})
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             backend.delete_zone(self.admin_context, self.zone)
 
         mock_post.assert_called_once_with(
@@ -346,8 +346,8 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             self.gen_response(200, 'Success', {'isComplete': True})
         ]
 
-        with fixtures.random_seed(0), mock.patch.object(akamai.time,
-                                                        'sleep') as mock_sleep:
+        with base_fixtures.random_seed(0), mock.patch.object(
+                akamai.time, 'sleep') as mock_sleep:
             mock_sleep.return_value = None
             backend.delete_zone(self.admin_context, self.zone)
 
@@ -396,8 +396,8 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             self.gen_response(200, 'Success', {'isComplete': False})
         ]
 
-        with fixtures.random_seed(0), mock.patch.object(akamai.time,
-                                                        'sleep') as mock_sleep:
+        with base_fixtures.random_seed(0), mock.patch.object(
+                akamai.time, 'sleep') as mock_sleep:
             mock_sleep.return_value = None
             self.assertRaisesRegex(
                 exceptions.Backend,
@@ -442,7 +442,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             self.gen_response(409, 'Conflict', {'detail': 'Intenal Error'})
         ]
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.assertRaisesRegex(
                 exceptions.Backend,
                 'Zone deletion failed due to: Intenal Error',
@@ -481,7 +481,7 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             self.gen_response(200, 'Success')
         ]
 
-        with fixtures.random_seed(0):
+        with base_fixtures.random_seed(0):
             self.assertRaisesRegex(
                 exceptions.Backend,
                 'Zone deletion failed due to: requestId missed in response',

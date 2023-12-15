@@ -14,9 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""
-Unit test Producer tasks
-"""
+
 import datetime
 from unittest import mock
 
@@ -32,11 +30,12 @@ import designate.conf
 from designate import context
 from designate.producer import tasks
 from designate import rpc
-from designate.tests import fixtures as tests_fixtures
+from designate.tests import base_fixtures
 from designate.tests.unit import RoObject
 from designate.tests.unit import RwObject
 from designate.utils import generate_uuid
 from designate.worker import rpcapi as worker_api
+
 
 DUMMY_TASK_GROUP = cfg.OptGroup(
     name='producer_task:dummy',
@@ -349,7 +348,7 @@ class PeriodicGenerateDelayedNotifyTaskTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
-        self.stdlog = tests_fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
         self.central_api = mock.Mock()

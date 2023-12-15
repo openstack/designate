@@ -26,7 +26,7 @@ from designate import exceptions
 from designate.mdns import handler
 from designate import objects
 from designate import rpc
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 from designate.worker import rpcapi as worker_rpcapi
 
 
@@ -36,7 +36,7 @@ CONF = designate.conf.CONF
 class MdnsHandleTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))
 

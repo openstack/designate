@@ -22,7 +22,7 @@ import tooz.coordination
 
 import designate.conf
 from designate import coordination
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 
 
 CONF = designate.conf.CONF
@@ -160,7 +160,9 @@ class TestPartitioner(oslotest.base.BaseTestCase):
         super().setUp()
 
     def _get_partitioner(self, partitions, host=b'a'):
-        fixture = self.useFixture(fixtures.CoordinatorFixture('zake://', host))
+        fixture = self.useFixture(base_fixtures.CoordinatorFixture(
+            'zake://', host)
+        )
         group = 'group'
         fixture.coordinator.create_group(group)
         fixture.coordinator.join_group(group)

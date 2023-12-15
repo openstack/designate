@@ -26,7 +26,7 @@ from designate import policy
 from designate.producer import service
 from designate import rpc
 import designate.service
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 
 
 CONF = designate.conf.CONF
@@ -43,7 +43,7 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
         super().setUp()
 
         self.useFixture(cfg_fixture.Config(CONF))
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
         mock_rpc_initialized.return_value = False

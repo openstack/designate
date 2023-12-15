@@ -18,13 +18,13 @@ from designate.backend import impl_pdns4
 from designate import context
 from designate import exceptions
 from designate import objects
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 
 
 class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
         self.context = mock.Mock()

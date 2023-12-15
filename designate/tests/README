@@ -1,0 +1,9 @@
+This directory contains all Designate tests.
+
+Examples:
+
+tox -e py3
+tox -e py3 -- tests.unit
+tox -e py3 -- tests.unit.backend
+tox -e py3 -- tests.functional
+tox -e py3 -- tests.functional.api

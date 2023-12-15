@@ -16,21 +16,21 @@
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
+import oslotest.base
 
 import designate.conf
 from designate import exceptions
-from designate.tests import fixtures
-from designate.tests import TestCase
+from designate.tests import base_fixtures
 from designate.worker import processing
 
 
 CONF = designate.conf.CONF
 
 
-class TestProcessingExecutor(TestCase):
+class TestProcessingExecutor(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)
 

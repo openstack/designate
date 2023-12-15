@@ -9,22 +9,34 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
+
+
 from unittest import mock
 
+from oslo_config import fixture as cfg_fixture
+import oslotest.base
+
+import designate.conf
 import designate.rpc
 from designate.sink import service
-import designate.tests
-from designate.tests import fixtures
+from designate.tests import base_fixtures
+import designate.tests.functional
 
 
-class TestSinkService(designate.tests.TestCase):
+CONF = designate.conf.CONF
+
+
+class TestSinkService(oslotest.base.BaseTestCase):
+    @mock.patch('designate.policy.init', mock.Mock())
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
+        self.useFixture(cfg_fixture.Config(CONF))
 
-        self.CONF.set_override('enabled_notification_handlers', ['fake'],
-                               'service:sink')
+        CONF.set_override(
+            'enabled_notification_handlers', ['fake'], 'service:sink'
+        )
 
         self.service = service.Service()
 

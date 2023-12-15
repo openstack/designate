@@ -21,15 +21,15 @@ from designate.notification_handler import fake
 from designate import policy
 from designate import rpc
 from designate.sink import service
-from designate.tests import fixtures
-from designate.tests import test_notification_handler
+from designate.tests import base_fixtures
+from designate.tests.functional import notification_handler
 
 
 CONF = designate.conf.CONF
 
 
 class TestSinkNotification(oslotest.base.BaseTestCase,
-                           test_notification_handler.NotificationHandlerMixin):
+                           notification_handler.NotificationHandlerMixin):
 
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'get_client')
@@ -41,7 +41,7 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
 
         mock_rpc_initialized.return_value = False
 
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)
 

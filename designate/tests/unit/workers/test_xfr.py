@@ -23,7 +23,7 @@ import designate.conf
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
-from designate.tests import fixtures
+from designate.tests import base_fixtures
 from designate.worker.tasks import zone as worker_zone
 
 
@@ -33,7 +33,7 @@ CONF = designate.conf.CONF
 class TestXfr(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.stdlog = fixtures.StandardLogging()
+        self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))
         self.context = mock.Mock()
