@@ -46,16 +46,18 @@ class PoolMoveController(rest.RestController):
         if 'pool_id' in body:
             if zone.pool_id == body['pool_id']:
                 raise exceptions.BadRequest(
-                    'Target pool must be different for zone pool move')
+                    'Target pool must be different for zone pool move'
+                )
             target_pool_id = body['pool_id']
 
         # Update the zone object with the new values
         zone = DesignateAdapter.parse('API_v2', body, zone)
         zone.validate()
 
-        LOG.info("Triggered pool move for %(zone)s", {'zone': zone})
+        LOG.info('Triggered pool move for %(zone)s', {'zone': zone})
         zone = self.central_api.pool_move_zone(
-            context, zone_id, target_pool_id)
+            context, zone_id, target_pool_id
+        )
         if zone.status == 'PENDING':
             response.status_int = 202
         else:
