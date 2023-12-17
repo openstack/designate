@@ -70,7 +70,8 @@ class RecordSetsController(rest.RestController):
         # SOA recordsets cannot be created manually
         if recordset.type == 'SOA':
             raise exceptions.BadRequest(
-                "Creating a SOA recordset is not allowed")
+                'Creating a SOA recordset is not allowed'
+            )
 
         # Create the recordset
         recordset = self.central_api.create_recordset(
@@ -102,7 +103,6 @@ class RecordSetsController(rest.RestController):
         # Fetch the existing recordset
         recordset = self.central_api.get_recordset(context, zone_id,
                                                    recordset_id)
-
         # TODO(graham): Move this further down the stack
         if recordset.managed and not context.edit_managed_records:
             raise exceptions.BadRequest('Managed records may not be updated')
@@ -110,14 +110,16 @@ class RecordSetsController(rest.RestController):
         # SOA recordsets cannot be updated manually
         if recordset['type'] == 'SOA':
             raise exceptions.BadRequest(
-                'Updating SOA recordsets is not allowed')
+                'Updating SOA recordsets is not allowed'
+            )
 
         # NS recordsets at the zone root cannot be manually updated
         if recordset['type'] == 'NS':
             zone = self.central_api.get_zone(context, zone_id)
             if recordset['name'] == zone['name']:
                 raise exceptions.BadRequest(
-                    'Updating a root zone NS record is not allowed')
+                    'Updating a root zone NS record is not allowed'
+                )
 
         # Convert to APIv2 Format
 

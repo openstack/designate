@@ -33,7 +33,8 @@ class Request(pecan.core.Request):
         """
         if self.content_type not in JSON_TYPES:
             raise exceptions.UnsupportedContentType(
-                'Content-type must be application/json')
+                'Content-type must be application/json'
+            )
 
         try:
             json_dict = jsonutils.load(self.body_file)

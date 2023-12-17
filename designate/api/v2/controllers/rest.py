@@ -24,6 +24,8 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
 import inspect
 
 import pecan
@@ -63,9 +65,9 @@ class RestController(pecan.rest.RestController):
             return criterion
 
     def _handle_post(self, method, remainder, request=None):
-        '''
+        """
         Routes ``POST`` actions to the appropriate controller.
-        '''
+        """
         # route to a post_all or get if no additional parts are available
         if not remainder or remainder == ['']:
             controller = self._find_controller('post_all', 'post')
@@ -86,9 +88,9 @@ class RestController(pecan.rest.RestController):
         pecan.abort(405)
 
     def _handle_patch(self, method, remainder, request=None):
-        '''
+        """
         Routes ``PATCH`` actions to the appropriate controller.
-        '''
+        """
         # route to a patch_all or get if no additional parts are available
         if not remainder or remainder == ['']:
             controller = self._find_controller('patch_all', 'patch')
@@ -109,9 +111,9 @@ class RestController(pecan.rest.RestController):
         pecan.abort(405)
 
     def _handle_put(self, method, remainder, request=None):
-        '''
+        """
         Routes ``PUT`` actions to the appropriate controller.
-        '''
+        """
         # route to a put_all or get if no additional parts are available
         if not remainder or remainder == ['']:
             controller = self._find_controller('put_all', 'put')
@@ -132,9 +134,9 @@ class RestController(pecan.rest.RestController):
         pecan.abort(405)
 
     def _handle_delete(self, method, remainder, request=None):
-        '''
+        """
         Routes ``DELETE`` actions to the appropriate controller.
-        '''
+        """
         # route to a delete_all or get if no additional parts are available
         if not remainder or remainder == ['']:
             controller = self._find_controller('delete_all', 'delete')

@@ -53,7 +53,7 @@ class ZonesController(rest.RestController):
 
         zone = self.central_api.get_zone(context, zone_id)
 
-        LOG.info("Retrieved %(zone)s", {'zone': zone})
+        LOG.info('Retrieved %(zone)s', {'zone': zone})
 
         return DesignateAdapter.render('API_v2', zone, request=request)
 
@@ -76,7 +76,7 @@ class ZonesController(rest.RestController):
         zones = self.central_api.find_zones(
             context, criterion, marker, limit, sort_key, sort_dir)
 
-        LOG.info("Retrieved %(zones)s", {'zones': zones})
+        LOG.info('Retrieved %(zones)s', {'zones': zones})
 
         return DesignateAdapter.render('API_v2', zones, request=request)
 
@@ -89,9 +89,8 @@ class ZonesController(rest.RestController):
 
         zone = request.body_dict
 
-        if isinstance(zone, dict):
-            if 'type' not in zone:
-                zone['type'] = 'PRIMARY'
+        if 'type' not in zone:
+            zone['type'] = 'PRIMARY'
 
         zone = DesignateAdapter.parse('API_v2', zone, objects.Zone())
         zone.validate()
@@ -107,11 +106,10 @@ class ZonesController(rest.RestController):
         # new zone cannot yet be shared.
         zone.shared = False
 
-        LOG.info("Created %(zone)s", {'zone': zone})
+        LOG.info('Created %(zone)s', {'zone': zone})
 
         # Prepare the response headers
         # If the zone has been created asynchronously
-
         if zone['status'] == 'PENDING':
             response.status_int = 202
         else:
@@ -141,7 +139,7 @@ class ZonesController(rest.RestController):
         zone = self.central_api.get_zone(context, zone_id)
 
         # Don't allow updates to zones that are being deleted
-        if zone.action == "DELETE":
+        if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
         if request.content_type == 'application/json-patch+json':
@@ -170,15 +168,11 @@ class ZonesController(rest.RestController):
 
             # Update and persist the resource
 
-            if zone.type == 'SECONDARY' and 'email' in zone.obj_what_changed():
-                msg = "Changed email is not allowed."
-                raise exceptions.InvalidObject(msg)
-
             increment_serial = zone.type == 'PRIMARY'
             zone = self.central_api.update_zone(
                 context, zone, increment_serial=increment_serial)
 
-        LOG.info("Updated %(zone)s", {'zone': zone})
+        LOG.info('Updated %(zone)s', {'zone': zone})
 
         if zone.status == 'PENDING':
             response.status_int = 202
@@ -198,6 +192,6 @@ class ZonesController(rest.RestController):
         zone = self.central_api.delete_zone(context, zone_id)
         response.status_int = 202
 
-        LOG.info("Deleted %(zone)s", {'zone': zone})
+        LOG.info('Deleted %(zone)s', {'zone': zone})
 
         return DesignateAdapter.render('API_v2', zone, request=request)

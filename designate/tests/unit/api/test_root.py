@@ -75,6 +75,27 @@ class RootTest(oslotest.base.BaseTestCase):
         )
 
     @mock.patch('stevedore.named.NamedExtensionManager')
+    def test_v2_root_object_not_found(self, mock_manger):
+        mock_extension = mock.Mock()
+        mock_extension.obj.get_path.return_value = '..test.a'
+        mock_manger.return_value = [mock_extension]
+        CONF.set_override(
+            'enabled_extensions_v2',
+            ['v2'],
+            'service:api'
+        )
+
+        self.assertRaisesRegex(
+            AttributeError,
+            "object has no attribute 'test'",
+            v2_root.RootController
+        )
+
+        mock_manger.assert_called_with(
+            namespace=mock.ANY, names=['v2'], invoke_on_load=True
+        )
+
+    @mock.patch('stevedore.named.NamedExtensionManager')
     def test_v2_root_no_extensions(self, mock_manger):
         mock_manger.return_value = []
         CONF.set_override(
