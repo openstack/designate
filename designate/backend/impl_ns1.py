@@ -33,14 +33,14 @@ class NS1Backend(base.Backend):
     def __init__(self, target):
         super().__init__(target)
 
-        self.api_endpoint = "https://" + self.options.get('api_endpoint')
+        self.api_endpoint = 'https://' + self.options.get('api_endpoint')
         self.api_token = self.options.get('api_token')
         self.tsigkey_name = self.options.get('tsigkey_name', None)
         self.tsigkey_hash = self.options.get('tsigkey_hash', None)
         self.tsigkey_value = self.options.get('tsigkey_value', None)
 
         self.headers = {
-            "X-NSONE-Key": self.api_token
+            'X-NSONE-Key': self.api_token
         }
 
     def _build_url(self, zone):
@@ -56,7 +56,6 @@ class NS1Backend(base.Backend):
             raise exceptions.Backend(e)
 
     def _check_zone_exists(self, zone):
-
         try:
             requests.get(
                 self._build_url(zone),
@@ -75,23 +74,22 @@ class NS1Backend(base.Backend):
         return True
 
     def create_zone(self, context, zone):
-
         master = self._get_master()
         # designate requires "." at end of zone name, NS1 requires omitting
         data = {
-            "zone": zone.name.rstrip('.'),
-            "secondary": {
-                "enabled": True,
-                "primary_ip": master.host,
-                "primary_port": master.port
+            'zone': zone.name.rstrip('.'),
+            'secondary': {
+                'enabled': True,
+                'primary_ip': master.host,
+                'primary_port': master.port
             }
         }
         if self.tsigkey_name:
             tsig = {
-                "enabled": True,
-                "hash": self.tsigkey_hash,
-                "name": self.tsigkey_name,
-                "key": self.tsigkey_value
+                'enabled': True,
+                'hash': self.tsigkey_hash,
+                'name': self.tsigkey_name,
+                'key': self.tsigkey_value
             }
             data['secondary']['tsig'] = tsig
 
@@ -105,17 +103,21 @@ class NS1Backend(base.Backend):
             except requests.HTTPError as e:
                 # check if the zone was actually created
                 if self._check_zone_exists(zone):
-                    LOG.info("%s was created with an error. Deleting zone",
-                             zone.name)
+                    LOG.info(
+                        '%s was created with an error. Deleting zone',
+                        zone.name
+                    )
                     try:
                         self.delete_zone(context, zone)
                     except exceptions.Backend:
-                        LOG.error('Could not delete errored zone %s',
-                                  zone.name)
+                        LOG.error(
+                            'Could not delete errored zone %s', zone.name
+                        )
                 raise exceptions.Backend(e)
         else:
-            LOG.info("Can't create zone %s because it already exists",
-                     zone.name)
+            LOG.info(
+                "Can't create zone %s because it already exists", zone.name
+            )
 
     def delete_zone(self, context, zone, zone_params=None):
         """Delete a DNS zone"""
@@ -130,6 +132,7 @@ class NS1Backend(base.Backend):
             except requests.HTTPError as e:
                 raise exceptions.Backend(e)
         else:
-            LOG.warning("Trying to delete zone %s but that zone is not "
-                        "present in the ns1 backend. Assuming success.",
-                        zone)
+            LOG.warning(
+                'Trying to delete zone %s but that zone is not present in the '
+                'ns1 backend. Assuming success.', zone
+            )

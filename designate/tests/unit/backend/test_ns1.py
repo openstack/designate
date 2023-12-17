@@ -14,9 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 from unittest import mock
 
 import oslotest.base
+import requests
 import requests_mock
 
 from designate.backend import impl_ns1
@@ -141,7 +143,6 @@ class NS1BackendTestCase(oslotest.base.BaseTestCase):
 
     @requests_mock.mock()
     def test_create_zone_already_exists(self, req_mock):
-
         req_mock.get(self.api_address, status_code=200)
         req_mock.put(self.api_address)
 
@@ -176,6 +177,49 @@ class NS1BackendTestCase(oslotest.base.BaseTestCase):
 
         self.assertEqual(
             req_mock.last_request.headers.get('X-NSONE-Key'), 'test_key'
+        )
+
+    @requests_mock.mock()
+    def test_create_zone_fail_http_request(self, req_mock):
+        req_mock.put(
+            self.api_address,
+            status_code=500,
+        )
+        req_mock.get(
+            self.api_address,
+            status_code=404,
+        )
+
+        self.backend._check_zone_exists = mock.Mock()
+        self.backend._check_zone_exists.side_effect = [False, True]
+        self.backend.delete_zone = mock.Mock()
+
+        self.assertRaisesRegex(
+            exceptions.Backend,
+            '500 Server Error',
+            self.backend.create_zone, self.context, self.zone
+        )
+
+    @requests_mock.mock()
+    def test_create_zone_fail_delete_zone(self, req_mock):
+        req_mock.put(
+            self.api_address,
+            status_code=500,
+        )
+        req_mock.get(
+            self.api_address,
+            status_code=404,
+        )
+
+        self.backend._check_zone_exists = mock.Mock()
+        self.backend._check_zone_exists.side_effect = [False, True]
+        self.backend.delete_zone = mock.Mock()
+        self.backend.delete_zone.side_effect = exceptions.Backend()
+
+        self.assertRaisesRegex(
+            exceptions.Backend,
+            '500 Server Error',
+            self.backend.create_zone, self.context, self.zone
         )
 
     @requests_mock.mock()
@@ -223,4 +267,58 @@ class NS1BackendTestCase(oslotest.base.BaseTestCase):
         )
         self.assertEqual(
             req_mock.last_request.headers.get('X-NSONE-Key'), 'test_key'
+        )
+
+    def test_get_master(self):
+        target_master = objects.PoolTargetMaster(host='192.0.2.1', port=53)
+
+        self.backend.options = objects.PoolTargetMasterList(
+            objects=[target_master]
+        )
+
+        self.assertEqual(target_master, self.backend._get_master())
+
+    def test_get_master_no_master(self):
+        backend = impl_ns1.NS1Backend(
+            objects.PoolTarget.from_dict({
+                'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
+                'type': 'ns1',
+                'masters': [],
+                'options': [
+                    {'key': 'api_endpoint', 'value': '192.0.2.3'},
+                    {'key': 'api_token', 'value': 'test_key'},
+                ],
+            })
+        )
+
+        self.assertRaisesRegex(
+            exceptions.Backend,
+            'list index out of range',
+            backend._get_master
+        )
+
+    @requests_mock.mock()
+    def test_check_zone_exists_server_error(self, req_mock):
+        req_mock.get(
+            self.api_address,
+            status_code=500
+        )
+
+        self.assertRaisesRegex(
+            exceptions.Backend,
+            '500 Server Error',
+            self.backend._check_zone_exists, self.zone
+        )
+
+    @requests_mock.mock()
+    def test_check_zone_exists_connection_error(self, req_mock):
+        req_mock.get(
+            self.api_address,
+            exc=requests.ConnectionError('error')
+        )
+
+        self.assertRaisesRegex(
+            exceptions.Backend,
+            'error',
+            self.backend._check_zone_exists, self.zone
         )
