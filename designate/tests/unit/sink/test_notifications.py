@@ -22,14 +22,12 @@ from designate import policy
 from designate import rpc
 from designate.sink import service
 from designate.tests import base_fixtures
-from designate.tests.functional import notification_handler
 
 
 CONF = designate.conf.CONF
 
 
-class TestSinkNotification(oslotest.base.BaseTestCase,
-                           notification_handler.NotificationHandlerMixin):
+class TestSinkNotification(oslotest.base.BaseTestCase):
 
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'get_client')
@@ -64,7 +62,7 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
 
     def test_notification(self):
         event_type = 'compute.instance.create.end'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         self.service.info(self.context, None, event_type,
                           fixture['payload'], None)
@@ -76,7 +74,7 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
 
     def test_notification_with_unknown_event(self):
         event_type = 'compute.instance.create.start'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         self.service.info(self.context, None, event_type,
                           fixture['payload'], None)
@@ -96,7 +94,7 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
         self.service = service.Service()
 
         event_type = 'compute.instance.create.end'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         self.service.info(self.context, None, event_type,
                           fixture['payload'], None)

@@ -18,16 +18,14 @@
 from oslo_log import log as logging
 
 from designate.notification_handler import neutron
+from designate.tests import base_fixtures
 import designate.tests.functional
-from designate.tests.functional import notification_handler
 
 
 LOG = logging.getLogger(__name__)
 
 
-class NeutronFloatingHandlerTest(
-        designate.tests.functional.TestCase,
-        notification_handler.NotificationHandlerMixin):
+class NeutronFloatingHandlerTest(designate.tests.functional.TestCase):
     def setUp(self):
         super().setUp()
 
@@ -42,8 +40,9 @@ class NeutronFloatingHandlerTest(
 
     def test_floatingip_associate(self):
         event_type = 'floatingip.update.end'
-        fixture = self.get_notification_fixture(
-            'neutron', event_type + '_associate')
+        fixture = base_fixtures.get_notification_fixture(
+            'neutron', event_type + '_associate'
+        )
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
@@ -66,15 +65,16 @@ class NeutronFloatingHandlerTest(
 
     def test_floatingip_disassociate(self):
         start_event_type = 'floatingip.update.end'
-        start_fixture = self.get_notification_fixture(
+        start_fixture = base_fixtures.get_notification_fixture(
             'neutron', start_event_type + '_associate')
         self.plugin.process_notification(self.admin_context.to_dict(),
                                          start_event_type,
                                          start_fixture['payload'])
 
         event_type = 'floatingip.update.end'
-        fixture = self.get_notification_fixture(
-            'neutron', event_type + '_disassociate')
+        fixture = base_fixtures.get_notification_fixture(
+            'neutron', event_type + '_disassociate'
+        )
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
@@ -97,15 +97,17 @@ class NeutronFloatingHandlerTest(
 
     def test_floatingip_delete(self):
         start_event_type = 'floatingip.update.end'
-        start_fixture = self.get_notification_fixture(
-            'neutron', start_event_type + '_associate')
+        start_fixture = base_fixtures.get_notification_fixture(
+            'neutron', start_event_type + '_associate'
+        )
         self.plugin.process_notification(self.admin_context.to_dict(),
                                          start_event_type,
                                          start_fixture['payload'])
 
         event_type = 'floatingip.delete.start'
-        fixture = self.get_notification_fixture(
-            'neutron', event_type)
+        fixture = base_fixtures.get_notification_fixture(
+            'neutron', event_type
+        )
 
         self.assertIn(event_type, self.plugin.get_event_types())
 

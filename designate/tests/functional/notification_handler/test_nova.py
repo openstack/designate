@@ -22,16 +22,14 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate.notification_handler import nova
 from designate import objects
+from designate.tests import base_fixtures
 import designate.tests.functional
-from designate.tests.functional import notification_handler
 
 
 LOG = logging.getLogger(__name__)
 
 
-class NovaFixedHandlerTest(
-        designate.tests.functional.TestCase,
-        notification_handler.NotificationHandlerMixin):
+class NovaFixedHandlerTest(designate.tests.functional.TestCase):
     def setUp(self):
         super().setUp()
 
@@ -50,7 +48,7 @@ class NovaFixedHandlerTest(
 
     def test_instance_create_end(self):
         event_type = 'compute.instance.create.end'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
@@ -80,7 +78,7 @@ class NovaFixedHandlerTest(
                     group='handler:nova_fixed')
 
         event_type = 'compute.instance.create.end'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         # Set the instance display_name to a string containing UTF8.
         fixture['payload']['display_name'] = 'Test↟Instance'
@@ -117,7 +115,9 @@ class NovaFixedHandlerTest(
     def test_instance_delete_start(self):
         # Prepare for the test
         start_event_type = 'compute.instance.create.end'
-        start_fixture = self.get_notification_fixture('nova', start_event_type)
+        start_fixture = base_fixtures.get_notification_fixture(
+            'nova', start_event_type
+        )
 
         self.plugin.process_notification(self.admin_context.to_dict(),
                                          start_event_type,
@@ -125,7 +125,7 @@ class NovaFixedHandlerTest(
 
         # Now - Onto the real test
         event_type = 'compute.instance.delete.start'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
@@ -157,14 +157,16 @@ class NovaFixedHandlerTest(
 
     def test_instance_delete_start_record_status_changed(self):
         start_event_type = 'compute.instance.create.end'
-        start_fixture = self.get_notification_fixture('nova', start_event_type)
+        start_fixture = base_fixtures.get_notification_fixture(
+            'nova', start_event_type
+        )
 
         self.plugin.process_notification(self.admin_context.to_dict(),
                                          start_event_type,
                                          start_fixture['payload'])
 
         event_type = 'compute.instance.delete.start'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
@@ -205,7 +207,7 @@ class NovaFixedHandlerTest(
         # Prepare for the test
         for start_event_type in ['compute.instance.create.end',
                                  'compute.instance.create.end-2']:
-            start_fixture = self.get_notification_fixture(
+            start_fixture = base_fixtures.get_notification_fixture(
                 'nova', start_event_type
             )
             self.plugin.process_notification(
@@ -216,7 +218,7 @@ class NovaFixedHandlerTest(
 
         # Now - Onto the real test
         event_type = 'compute.instance.delete.start'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
@@ -248,7 +250,7 @@ class NovaFixedHandlerTest(
 
     def test_instance_delete_with_no_record(self):
         event_type = 'compute.instance.delete.start'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
@@ -277,14 +279,16 @@ class NovaFixedHandlerTest(
 
     def test_instance_delete_with_no_recordset(self):
         start_event_type = 'compute.instance.create.end'
-        start_fixture = self.get_notification_fixture('nova', start_event_type)
+        start_fixture = base_fixtures.get_notification_fixture(
+            'nova', start_event_type
+        )
 
         self.plugin.process_notification(self.admin_context.to_dict(),
                                          start_event_type,
                                          start_fixture['payload'])
 
         event_type = 'compute.instance.delete.start'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         # Make sure we don't fail here, even though there is nothing to
         # do, since the recordset we are trying to delete does not actually
@@ -296,14 +300,16 @@ class NovaFixedHandlerTest(
 
     def test_instance_delete_with_no_records_in_recordset(self):
         start_event_type = 'compute.instance.create.end'
-        start_fixture = self.get_notification_fixture('nova', start_event_type)
+        start_fixture = base_fixtures.get_notification_fixture(
+            'nova', start_event_type
+        )
 
         self.plugin.process_notification(self.admin_context.to_dict(),
                                          start_event_type,
                                          start_fixture['payload'])
 
         event_type = 'compute.instance.delete.start'
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
 
         # Make sure we don't fail here, even though there is nothing to
         # do, since the recordset we are trying to delete contains no records.
@@ -318,7 +324,7 @@ class NovaFixedHandlerTest(
         self.config(formatv4=['%(label)s.example.com.'],
                     formatv6=['%(label)s.example.com.'],
                     group='handler:nova_fixed')
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
         with mock.patch.object(
                 self.central_service.storage, 'find_recordset') as finder:
             with mock.patch.object(self.central_service, 'update_recordset'):
@@ -338,7 +344,7 @@ class NovaFixedHandlerTest(
         event_type = 'compute.instance.create.end'
         self.config(formatv4=['%(label)s-v4.example.com.'],
                     group='handler:nova_fixed')
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
         with mock.patch.object(
                 self.central_service.storage, 'find_recordset') as finder:
             with mock.patch.object(self.central_service, 'update_recordset'):
@@ -360,7 +366,7 @@ class NovaFixedHandlerTest(
             formatv6=['%(label)s-v6.example.com.'],
             group='handler:nova_fixed'
         )
-        fixture = self.get_notification_fixture('nova', event_type)
+        fixture = base_fixtures.get_notification_fixture('nova', event_type)
         with mock.patch.object(
                 self.central_service.storage, 'find_recordset') as finder:
             with mock.patch.object(self.central_service, 'update_recordset'):

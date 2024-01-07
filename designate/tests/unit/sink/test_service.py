@@ -20,7 +20,6 @@ import designate.conf
 import designate.rpc
 from designate.sink import service
 from designate.tests import base_fixtures
-import designate.tests.functional
 
 
 CONF = designate.conf.CONF

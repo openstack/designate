@@ -31,6 +31,7 @@ import tempfile
 
 import fixtures
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_utils import importutils
 import tooz.coordination
 
@@ -41,12 +42,26 @@ from designate.network_api import fake as fake_network_api
 from designate import policy
 from designate import rpc
 import designate.service
+from designate.tests import resources
 import designate.utils
 
 
 _TRUE_VALUES = ('True', 'true', '1', 'yes')
 CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
+
+
+def get_notification_fixture(service, name):
+    sample_fixture_path = os.path.join(resources.path, 'sample_notifications')
+    filename = os.path.join(sample_fixture_path, service, f'{name}.json')
+
+    if not os.path.exists(filename):
+        raise Exception('Invalid notification fixture requested')
+
+    with open(filename) as fp:
+        fixture = fp.read()
+
+    return jsonutils.loads(fixture)
 
 
 class CoordinatorFixture(fixtures.Fixture):

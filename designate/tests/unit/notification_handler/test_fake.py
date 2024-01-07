@@ -15,15 +15,12 @@ import oslotest.base
 
 import designate.conf
 from designate.notification_handler import fake
-from designate.tests.functional import notification_handler
 
 
 CONF = designate.conf.CONF
 
 
-class TestFakeHandler(oslotest.base.BaseTestCase,
-                      notification_handler.NotificationHandlerMixin):
-
+class TestFakeHandler(oslotest.base.BaseTestCase):
     @mock.patch('designate.rpc.get_client')
     def setUp(self, mock_get_instance):
         super().setUp()
