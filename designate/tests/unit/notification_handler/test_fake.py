@@ -9,8 +9,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
+
+
 from unittest import mock
 
+from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 import designate.conf
@@ -21,9 +24,11 @@ CONF = designate.conf.CONF
 
 
 class TestFakeHandler(oslotest.base.BaseTestCase):
-    @mock.patch('designate.rpc.get_client')
-    def setUp(self, mock_get_instance):
+    @mock.patch('designate.rpc.get_client', mock.Mock())
+    def setUp(self):
         super().setUp()
+
+        self.useFixture(cfg_fixture.Config(CONF))
 
         CONF.set_override(
             'enabled_notification_handlers',

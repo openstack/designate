@@ -55,7 +55,7 @@ class NovaFixedHandler(BaseAddressHandler):
             return
 
         if event_type == 'compute.instance.create.end':
-            payload['project'] = context.get("project_name", None)
+            payload['project'] = context.get('project_name', None)
             self._create(addresses=payload['fixed_ips'],
                          extra=payload,
                          zone_id=zone_id,
