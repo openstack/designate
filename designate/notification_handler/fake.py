@@ -31,5 +31,4 @@ class FakeHandler(base.NotificationHandler):
         return CONF[self.name].allowed_event_types
 
     def process_notification(self, context, event_type, payload):
-        LOG.info('%s: received notification - %s',
-                 self.name, event_type)
+        LOG.info('%s: received notification - %s', self.name, event_type)

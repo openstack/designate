@@ -14,6 +14,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
@@ -34,37 +36,38 @@ class Service(service.Service):
         )
 
         # Initialize extensions
-        self._server = None
-        self.handlers = self._init_extensions()
-        self.subscribers = self._get_subscribers()
+        self._notification_listener = None
+        self.handlers = self.init_extensions()
+        self.allowed_event_types = self.get_allowed_event_types(self.handlers)
 
     @property
     def service_name(self):
         return 'sink'
 
     @staticmethod
-    def _init_extensions():
+    def init_extensions():
         """Loads and prepares all enabled extensions"""
-
-        enabled_notification_handlers = (
+        notification_handlers = notification_handler.get_notification_handlers(
             CONF['service:sink'].enabled_notification_handlers
         )
 
-        notification_handlers = notification_handler.get_notification_handlers(
-            enabled_notification_handlers)
-
-        if len(notification_handlers) == 0:
+        if not notification_handlers:
             LOG.warning('No designate-sink handlers enabled or loaded')
 
         return notification_handlers
 
-    def _get_subscribers(self):
-        subscriptions = {}
-        for handler in self.handlers:
-            for et in handler.get_event_types():
-                subscriptions.setdefault(et, [])
-                subscriptions[et].append(handler)
-        return subscriptions
+    @staticmethod
+    def get_allowed_event_types(handlers):
+        """Build a list of all allowed event types."""
+        allowed_event_types = []
+
+        for handler in handlers:
+            for event_type in handler.get_event_types():
+                if event_type in allowed_event_types:
+                    continue
+                allowed_event_types.append(event_type)
+
+        return allowed_event_types
 
     def start(self):
         super().start()
@@ -75,23 +78,15 @@ class Service(service.Service):
         # TODO(ekarlso): Change this is to endpoint objects rather then
         # ourselves?
         if targets:
-            self._server = rpc.get_notification_listener(
+            self._notification_listener = rpc.get_notification_listener(
                 targets, [self],
                 pool=CONF['service:sink'].listener_pool_name
             )
-            self._server.start()
+            self._notification_listener.start()
 
     def stop(self, graceful=True):
-        # Try to shut the connection down, but if we get any sort of
-        # errors, go ahead and ignore them.. as we're shutting down anyway
-        try:
-            if self._server:
-                self._server.stop()
-        except Exception as e:
-            LOG.warning(
-                'Unable to gracefully stop the notification listener: %s', e
-            )
-
+        if self._notification_listener:
+            self._notification_listener.stop()
         super().stop(graceful)
 
     def _get_targets(self):
@@ -108,19 +103,15 @@ class Service(service.Service):
                 targets.append(target)
         return targets
 
-    def _get_handler_event_types(self):
-        """return a dict - keys are the event types we can handle"""
-        return self.subscribers
-
     def info(self, context, publisher_id, event_type, payload, metadata):
         """
         Processes an incoming notification, offering each extension the
         opportunity to handle it.
         """
-        # NOTE(zykes): Only bother to actually do processing if there's any
-        # matching events, skips logging of things like compute.exists etc.
-        if event_type in self._get_handler_event_types():
-            for handler in self.handlers:
-                if event_type in handler.get_event_types():
-                    LOG.debug('Found handler for: %s', event_type)
-                    handler.process_notification(context, event_type, payload)
+        if event_type not in self.allowed_event_types:
+            return
+
+        for handler in self.handlers:
+            if event_type in handler.get_event_types():
+                LOG.debug('Found handler for: %s', event_type)
+                handler.process_notification(context, event_type, payload)
