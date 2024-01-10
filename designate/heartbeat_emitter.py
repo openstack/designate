@@ -67,7 +67,9 @@ class HeartbeatEmitter(plugin.DriverPlugin):
 
     @abc.abstractmethod
     def transmit(self, status):
-        pass
+        """
+        Transmit heartbeat
+        """
 
     def _emit_heartbeat(self):
         """
