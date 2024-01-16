@@ -84,6 +84,41 @@ this information into the database.
 .. literalinclude:: ../../../etc/designate/pools.yaml.sample
        :language: yaml
 
+.. _catalog_zones:
+
+Catalog zones
+-------------
+
+Catalog zones provide easy provisioning capabilities of zones to secondary
+nameservers, transferred via AXFR from a special zone, the *catalog zone*.
+
+In Designate, catalog zones are configured per pool. A catalog zone will
+include all zones from the pool (except the catalog zone itself), called
+*member zones*. That means all zones from that pool are automatically
+synced to secondary name servers upon zone creation, update or deletion.
+For more details about catalog zones, see
+`RFC 9432 <https://datatracker.ietf.org/doc/rfc9432/>`_.
+
+Catalog zones can be configured in ``pools.yaml`` via the *catalog_zone* key
+(see the sample above). This example instructs a PowerDNS server listening at
+``192.0.2.2:53`` to pull zones via AXFR from Designate's ``mini-DNS`` at
+``192.0.2.1:5354``. Note that the secondary nameserver also needs to be
+properly configured to consume the catalog zone. Please refer to the secondary
+nameserver's documentation for details. Once this is set up and applied using
+``designate-manage pool update``, Designate will handle the catalog zone
+creation as well as synchronization of member zones.
+
+As secondary nameservers configure their zones based on zone transfers (AXFR)
+from the catalog zone, it is highly recommended to use transaction signatures
+(TSIG) for secure and authenticated zone transfers. See the above sample for
+details on how to use catalog zones with TSIG.
+
+.. warning::
+
+  | Even though not mandatory, it is highly recommended to secure transfers of
+  | catalog zones with TSIG.
+
+
 Designate Manage Pools Command Reference
 ----------------------------------------
 

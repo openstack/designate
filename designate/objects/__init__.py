@@ -24,6 +24,7 @@ from designate.objects.floating_ip import FloatingIP, FloatingIPList  # noqa
 from designate.objects.pool import Pool, PoolList  # noqa
 from designate.objects.pool_also_notify import PoolAlsoNotify, PoolAlsoNotifyList  # noqa
 from designate.objects.pool_attribute import PoolAttribute, PoolAttributeList  # noqa
+from designate.objects.pool_catalog_zone import PoolCatalogZone  # noqa
 from designate.objects.pool_ns_record import PoolNsRecord, PoolNsRecordList  # noqa
 from designate.objects.pool_nameserver import PoolNameserver, PoolNameserverList  # noqa
 from designate.objects.pool_target import PoolTarget, PoolTargetList  # noqa

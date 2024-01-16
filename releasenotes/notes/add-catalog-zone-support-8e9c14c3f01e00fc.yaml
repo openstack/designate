@@ -1,0 +1,18 @@
+---
+features:
+  - |
+    Add support for providing catalog zones.
+
+    Designate can now optionally provide catalog zones for pools. Defined in
+    `RFC 9432 <https://datatracker.ietf.org/doc/rfc9432/>`_, catalog zones
+    allow for provisioning of DNS zones on secondary nameservers through the
+    sole means of DNS. A special zone, the catalog zone, serves as a list of
+    all zones the secondary nameservers should serve and for which they will
+    set themselves up automatically. The synchronization of zones via a catalog
+    zone happens via known and proven AXFR, just like for a zone's DNS records.
+
+    Provisioning via catalog zones is already supported by popular DNS
+    implementations, such as BIND9, Knot and PowerDNS (and likely others).
+    Apart from being a standardized provisioning model, the main advantage of
+    catalog zones is the scalability and robustness of keeping secondary
+    nameservers in sync.

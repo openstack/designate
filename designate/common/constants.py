@@ -57,7 +57,8 @@ PROJECT = 'project'
 # Zone constants
 ZONE_PRIMARY = 'PRIMARY'
 ZONE_SECONDARY = 'SECONDARY'
-ZONE_TYPES = [ZONE_PRIMARY, ZONE_SECONDARY]
+ZONE_CATALOG = 'CATALOG'
+ZONE_TYPES = [ZONE_PRIMARY, ZONE_SECONDARY, ZONE_CATALOG]
 
 # Record regexes
 RE_HOSTNAME = re.compile(r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+\Z')  # noqa
@@ -79,3 +80,12 @@ RE_FIP = re.compile(r'^(?P<region>[A-Za-z0-9\\.\\-_]{1,100}):(?P<id>[0-9a-fA-F]{
 
 # Error Validation regexes
 RE_REQUIRED = re.compile(r'\'([\w]*)\' is a required property')
+
+TSIG_ALGORITHMS = [
+                'hmac-md5',
+                'hmac-sha1',
+                'hmac-sha224',
+                'hmac-sha256',
+                'hmac-sha384',
+                'hmac-sha512'
+            ]

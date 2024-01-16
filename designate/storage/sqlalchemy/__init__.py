@@ -19,13 +19,18 @@ from oslo_utils import timeutils
 from sqlalchemy import case, select, distinct, func
 from sqlalchemy.sql.expression import or_, literal_column
 
+from designate.common import constants
 from designate import exceptions
 from designate import objects
+from designate.objects.adapters import DesignateAdapter
 from designate.storage import sql
 from designate.storage.sqlalchemy import base
 from designate.storage.sqlalchemy import tables
 
+import designate.conf
 
+
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 MAXIMUM_SUBZONE_DEPTH = 128
@@ -1393,8 +1398,30 @@ class SQLAlchemyStorage(base.SQLAlchemy):
             pool.also_notifies = self._find_pool_also_notifies(
                 context, {'pool_id': pool.id})
 
+            try:
+                catalog_zone = self.get_catalog_zone(context, pool)
+
+                try:
+                    tsigkey = self.find_tsigkey(
+                        context, criterion={'resource_id': catalog_zone.id})
+                except exceptions.TsigKeyNotFound:
+                    tsigkey = None
+
+                secret = tsigkey.secret if tsigkey is not None else None
+                algorithm = tsigkey.algorithm if tsigkey is not None else None
+
+                pool.catalog_zone = objects.PoolCatalogZone(
+                    catalog_zone_fqdn=catalog_zone.name,
+                    catalog_zone_refresh=catalog_zone.refresh,
+                    catalog_zone_tsig_key=secret,
+                    catalog_zone_tsig_algorithm=algorithm,
+                )
+            except exceptions.ZoneNotFound:
+                pool.catalog_zone = None
+
             pool.obj_reset_changes(['attributes', 'ns_records', 'nameservers',
-                                    'targets', 'also_notifies'])
+                                    'targets', 'also_notifies', 'catalog_zone']
+                                   )
 
         if one:
             _load_relations(pools)
@@ -1414,7 +1441,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         pool = self._create(
             tables.pools, pool, exceptions.DuplicatePool,
             ['attributes', 'ns_records', 'nameservers', 'targets',
-             'also_notifies'])
+             'also_notifies', 'catalog_zone'])
 
         if pool.obj_attr_is_set('attributes'):
             for pool_attribute in pool.attributes:
@@ -1448,6 +1475,8 @@ class SQLAlchemyStorage(base.SQLAlchemy):
 
         pool.obj_reset_changes(['attributes', 'ns_records', 'nameservers',
                                 'targets', 'also_notifies'])
+
+        self._ensure_catalog_zone_config(context, pool)
 
         return pool
 
@@ -1496,7 +1525,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         pool = self._update(context, tables.pools, pool,
                             exceptions.DuplicatePool, exceptions.PoolNotFound,
                             ['attributes', 'ns_records', 'nameservers',
-                             'targets', 'also_notifies'])
+                             'targets', 'also_notifies', 'catalog_zone'])
 
         for attribute_name in ('attributes', 'ns_records', 'nameservers',
                                'targets', 'also_notifies'):
@@ -1506,6 +1535,8 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         # Call get_pool to get the ids of all the attributes/ns_records
         # refreshed in the pool object
         updated_pool = self.get_pool(context, pool.id)
+
+        self._ensure_catalog_zone_config(context, pool)
 
         return updated_pool
 
@@ -1517,6 +1548,20 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         :param pool_id: The ID of the pool to be deleted
         """
         pool = self._find_pools(context, {'id': pool_id}, one=True)
+
+        try:
+            catalog_zone = self.get_catalog_zone(context, pool)
+
+            try:
+                catalog_zone_tsig = self.find_tsigkey(
+                    context, criterion={'resource_id': catalog_zone.id})
+                self.delete_tsigkey(context, catalog_zone_tsig.id)
+            except exceptions.TsigKeyNotFound:
+                pass
+
+            self.delete_zone(context, catalog_zone.id)
+        except exceptions.ZoneNotFound:
+            pass
 
         return self._delete(context, tables.pools, pool,
                             exceptions.PoolNotFound)
@@ -2421,3 +2466,229 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         if criterion is not None and criterion.get('name', '').startswith('*'):
             criterion['reverse_name'] = criterion.pop('name')[::-1]
         return criterion
+
+    def _create_catalog_zone(self, pool):
+        catalog_zone = objects.Zone(
+            name=pool.catalog_zone.catalog_zone_fqdn,
+            email=CONF[
+                'service:central'].managed_resource_email,
+            refresh=pool.catalog_zone.catalog_zone_refresh,
+            serial=1,
+            pool_id=pool.id,
+            type=constants.ZONE_CATALOG
+        )
+        return catalog_zone
+
+    def get_catalog_zone(self, context, pool):
+        catalog_zone = self.find_zone(
+            context, criterion={
+                'pool_id': pool.id, 'type': constants.ZONE_CATALOG})
+        return catalog_zone
+
+    def _ensure_catalog_zone_config(self, context, pool):
+        if (
+            not pool.obj_attr_is_set("catalog_zone") or
+            pool.catalog_zone is None
+        ):
+            return
+
+        try:
+            self.get_catalog_zone(context, pool)
+        except exceptions.ZoneNotFound:
+            catalog_zone = self._create_catalog_zone(pool)
+            self.create_zone(context, catalog_zone)
+
+        self._ensure_catalog_zone_consistent(context, pool)
+
+    def _ensure_catalog_zone_consistent(self, context, pool):
+        """
+        Ensure a catalog zone's data as defined in pools.yaml is consistent
+        with its values in the database.
+
+        :param context: RPC Context.
+        :param pool: The pool to ensure catalog zone consistency for.
+        """
+        if not pool.obj_attr_is_set("catalog_zone") or not pool.catalog_zone:
+            return
+
+        catalog_zone = self.get_catalog_zone(context, pool)
+        catalog_zone.attributes = self._find_zone_attributes(
+                context, {'zone_id': catalog_zone.id})
+
+        catalog_zone = self._ensure_catalog_zone_info_consistent(
+            context, catalog_zone, pool.catalog_zone) or catalog_zone
+        self._ensure_catalog_zone_soa_consistent(context, catalog_zone, pool)
+        self._ensure_catalog_zone_tsig_data_consistent(
+            context, catalog_zone, pool.catalog_zone)
+
+    def _ensure_catalog_zone_info_consistent(
+            self, context, catalog_zone, values):
+        """
+        Ensure a catalog zone's FQDN and refresh interval as defined in
+        pools.yaml are consistent with their values in the database.
+
+        :param context: RPC Context.
+        :param catalog_zone: The catalog zone to ensure consistency for.
+        :param values: The catalog zone values as defined in pools.yaml.
+        """
+        if (
+            not catalog_zone.attributes or
+            catalog_zone.attributes.get('catalog_zone_fqdn') !=
+            values.catalog_zone_fqdn or
+            catalog_zone.attributes.get('catalog_zone_refresh') !=
+            values.catalog_zone_refresh
+        ):
+            catalog_zone.attributes = objects.ZoneAttributeList()
+            catalog_zone_fqdn = objects.ZoneAttribute()
+            catalog_zone_fqdn.zone_id = catalog_zone.id
+            catalog_zone_fqdn.key = 'catalog_zone_fqdn'
+            catalog_zone_fqdn.value = values.catalog_zone_fqdn
+
+            catalog_zone_refresh = objects.ZoneAttribute()
+            catalog_zone_refresh.zone_id = catalog_zone.id
+            catalog_zone_refresh.key = 'catalog_zone_refresh'
+            catalog_zone_refresh.value = values.catalog_zone_refresh
+            catalog_zone.attributes.append(catalog_zone_fqdn)
+            catalog_zone.attributes.append(catalog_zone_refresh)
+
+            return self.update_zone(context, catalog_zone)
+
+    def _ensure_catalog_zone_soa_consistent(self, context, catalog_zone, pool):
+        """
+        Ensure a catalog zone's SOA based on the values in pools.yaml is
+        consistent with its values in the database.
+
+        :param context: RPC Context.
+        :param catalog_zone: The catalog zone to ensure consistency for.
+        :param pool: The catalog_zone's pool.
+        """
+        soa_record = objects.RecordList()
+        soa_record.append(
+            objects.Record(
+                    data=f'{pool.ns_records[0]["hostname"]} '
+                    f'{catalog_zone.attributes.get("catalog_zone_fqdn")} '
+                    f'{catalog_zone.serial} '
+                    f'{catalog_zone.attributes.get("catalog_zone_refresh")} '
+                    f'{catalog_zone.retry} '
+                    '2147483646 '
+                    f'{catalog_zone.minimum}'
+            )
+        )
+        soa = objects.RecordSet(
+            name=catalog_zone.name,
+            type='SOA',
+            records=soa_record
+        )
+
+        try:
+            soa_db = self.find_recordset(
+                context, criterion={'zone_id': catalog_zone.id, 'type': 'SOA'})
+            soa_db.name = catalog_zone.name
+            soa_db.records = soa_record
+            self.update_recordset(context, soa_db)
+        except exceptions.RecordSetNotFound:
+            self.create_recordset(context, catalog_zone.id, soa)
+
+    def _ensure_catalog_zone_tsig_data_consistent(
+            self, context, catalog_zone, values):
+        """
+        Ensure a catalog zone's TSIG key and TSIG algorithm as defined in
+        pools.yaml are consistent with their values in the database.
+
+        :param context: RPC Context.
+        :param catalog_zone: The catalog zone to ensure consistency for.
+        :param values: The catalog zone values as defined in pools.yaml.
+        """
+        if (
+            not values.catalog_zone_tsig_key or not
+            values.catalog_zone_tsig_algorithm
+        ):
+            return
+
+        tsig_key = values.catalog_zone_tsig_key
+        tsig_algorithm = values.catalog_zone_tsig_algorithm
+
+        try:
+            tsigkey = self.find_tsigkey(
+                context, criterion={'resource_id': catalog_zone.id})
+
+            if (
+                tsigkey.name !=
+                    catalog_zone.attributes.get('catalog_zone_fqdn') or
+                    tsigkey.secret != tsig_key or
+                    tsigkey.algorithm != tsig_algorithm
+            ):
+                tsigkey.name = catalog_zone.attributes.get('catalog_zone_fqdn')
+                tsigkey.secret = tsig_key
+                tsigkey.algorithm = tsig_algorithm
+                self.update_tsigkey(context, tsigkey)
+        except exceptions.TsigKeyNotFound:
+            tsigkey = objects.TsigKey(
+                name=catalog_zone.attributes.get('catalog_zone_fqdn'),
+                secret=tsig_key,
+                algorithm=tsig_algorithm,
+                scope='ZONE',
+                resource_id=catalog_zone.id,
+            )
+            tsigkey = DesignateAdapter.parse(
+                'API_v2', tsigkey, objects.TsigKey())
+            tsigkey.validate()
+            self.create_tsigkey(context, tsigkey)
+
+    def get_catalog_zone_records(self, context, pool):
+        catalog_zone = self.get_catalog_zone(context, pool)
+        zones = self.find_zones(
+            context, criterion={'pool_id': pool.id, 'type': '!CATALOG'})
+        soa_record = self.find_recordset(
+            context, criterion={'zone_id': catalog_zone.id, 'type': 'SOA'})
+        records = []
+
+        # Catalog zones require one NS record using NSDNAME 'invalid.'
+        # per RFC 9432
+        ns_record = objects.RecordList()
+        ns_record.append(objects.Record(data='invalid.'))
+        records.append(
+            objects.RecordSet(
+                name=pool.catalog_zone.catalog_zone_fqdn,
+                type='NS',
+                records=ns_record
+            )
+        )
+
+        # Catalog zones require a TXT record with the schema version,
+        # currently '2' per RFC 9432
+        txt_record = objects.RecordList()
+        txt_record.append(objects.Record(data='2'))
+        records.append(
+            objects.RecordSet(
+                name=f'version.{pool.catalog_zone.catalog_zone_fqdn}',
+                type='TXT',
+                records=txt_record
+            )
+        )
+
+        for z in zones:
+            # If member zone is scheduled for deletion, do not include it in
+            # catalog. Otherwise, zone poller will wait for zone's deletion on
+            # secondary DNS servers, which will not happen since the zone is
+            # still in catalog (deadlock).
+            if z.action == 'DELETE':
+                continue
+
+            rs = objects.RecordList()
+            rs.append(
+                objects.Record(
+                    data=z.name
+                )
+            )
+            record = objects.RecordSet(
+                name=f'{z.id}.zones.{soa_record.name}',
+                type='PTR',
+                records=rs
+            )
+            records.append(record)
+
+        records.insert(0, soa_record)
+        records.append(soa_record)
+
+        return records

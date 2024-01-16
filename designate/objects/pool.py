@@ -32,6 +32,8 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
         'targets': fields.ObjectFields('PoolTargetList', nullable=True),
         'also_notifies': fields.ObjectFields('PoolAlsoNotifyList',
                                              nullable=True),
+        'catalog_zone': fields.ObjectFields('PoolCatalogZone',
+                                            nullable=True),
     }
 
     STRING_KEYS = [

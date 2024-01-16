@@ -381,6 +381,7 @@ class CentralServiceTestCase(CentralBasic):
         self.service.get_zone_ns_records = mock.Mock(
             return_value=[unit.RoObject(hostname='host_foo')]
         )
+        self.service._ensure_catalog_zone_serial_increment = mock.Mock()
 
         def create_zone(ctx, zone):
             return zone
@@ -757,6 +758,8 @@ class CentralZoneTestCase(CentralBasic):
                 )
             )
         )
+        self.service.storage.get_catalog_zone = mock.Mock(
+            side_effect=exceptions.ZoneNotFound)
 
         out = self.service.create_zone(
             self.context,
@@ -806,7 +809,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertEqual(CentralZoneTestCase.pool_id, pool_id)
 
     def test_find_zones(self):
-        self.context = unit.RoObject(project_id='t')
+        self.context = unit.RoObject(project_id='t', roles=[])
         self.service.storage.find_zones = mock.Mock()
         self.service.find_zones(self.context)
         self.assertTrue(self.service.storage.find_zones.called)
@@ -822,6 +825,7 @@ class CentralZoneTestCase(CentralBasic):
             name='foo',
             tenant_id='2',
             shared=self.zone_shared,
+            type='PRIMARY',
         )
         self.service.storage.count_zones.return_value = 2
 
@@ -838,12 +842,16 @@ class CentralZoneTestCase(CentralBasic):
             }
         )
 
-    def test_delete_zone_abandon(self):
+    @mock.patch.object(designate.central.service.Service,
+                       '_ensure_catalog_zone_serial_increment')
+    def test_delete_zone_abandon(
+            self, mock_ensure_catalog_zone_serial_increment):
         self.service.storage.get_zone.return_value = unit.RoObject(
             name='foo',
             tenant_id='2',
             id=CentralZoneTestCase.zone_id_2,
             shared=self.zone_shared,
+            type='PRIMARY',
         )
         self.context.abandon = True
         self.service.storage.count_zones.return_value = 0
@@ -860,13 +868,17 @@ class CentralZoneTestCase(CentralBasic):
             }
         )
 
-    def test_delete_zone(self):
+    # RoObject not compatible with _ensure_catalog_zone_serial_increment
+    @mock.patch.object(designate.central.service.Service,
+                       '_ensure_catalog_zone_serial_increment')
+    def test_delete_zone(self, mock_ensure_catalog_zone_serial_increment):
         self.context.abandon = False
         self.context.hard_delete = False
         self.service.storage.get_zone.return_value = unit.RoObject(
             name='foo',
             tenant_id='2',
             shared=self.zone_shared,
+            type='PRIMARY',
         )
         self.service._delete_zone_in_storage = mock.Mock(
             return_value=unit.RoObject(
@@ -892,13 +904,18 @@ class CentralZoneTestCase(CentralBasic):
             }
         )
 
-    def test_delete_zone_hard_delete(self):
+    # RoObject not compatible with _ensure_catalog_zone_serial_increment
+    @mock.patch.object(designate.central.service.Service,
+                       '_ensure_catalog_zone_serial_increment')
+    def test_delete_zone_hard_delete(
+            self, mock_ensure_catalog_zone_serial_increment):
         self.context.abandon = False
         self.context.hard_delete = True
         self.service.storage.get_zone.return_value = unit.RoObject(
             name='foo',
             tenant_id='2',
-            shared=False
+            shared=False,
+            type='PRIMARY',
         )
         self.service._delete_zone_in_storage = mock.Mock(
             return_value=unit.RoObject(
@@ -925,6 +942,7 @@ class CentralZoneTestCase(CentralBasic):
         )
 
     def test_delete_zone_in_storage(self):
+        self.service._ensure_catalog_zone_serial_increment = mock.Mock()
         self.service._delete_zone_in_storage(
             self.context,
             unit.RwObject(action='', status=''),
@@ -963,7 +981,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service.storage.get_zone.return_value = unit.RoObject(
             name='example.org.',
             tenant_id='2',
-            type='PRIMARY'
+            type='PRIMARY',
         )
 
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
@@ -1155,7 +1173,7 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_update_recordset_action_delete(self):
         self.service.storage.get_zone.return_value = unit.RoObject(
-            action='DELETE', tenant_id=''
+            action='DELETE', tenant_id='', type='PRIMARY'
         )
         recordset = mock.Mock(spec=objects.RecordSet)
         recordset.obj_get_changes.return_value = ['foo']
@@ -1650,7 +1668,8 @@ class CentralZoneExportTests(CentralBasic):
                 task_type='EXPORT',
                 status='PENDING',
                 message=None,
-                tenant_id='t'
+                tenant_id='t',
+                type='PRIMARY',
             )
         )
 

@@ -132,7 +132,11 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
                     'pool_id': 'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
                     'type': 'pdns4',
                 }
-            ]
+            ],
+            'catalog_zone': {
+                'catalog_zone_fqdn': 'example.com.',
+                'catalog_zone_refresh': 60,
+            }
         }
 
         file = os.path.join(resources.path, 'pools_yaml/sample_output.yaml')

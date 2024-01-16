@@ -4575,3 +4575,91 @@ class CentralServiceTest(designate.tests.functional.TestCase):
             self.assertEqual('ACTIVE', recordset.status)
             for record in recordset.records:
                 self.assertEqual('ACTIVE', record.status)
+
+    def test_create_catalog_member_zone(self):
+        pool = self.create_pool(fixture=2)
+
+        self.storage._ensure_catalog_zone_config(self.admin_context, pool)
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+        self.assertEqual(pool.id, catalog_zone.pool_id)
+        self.assertFalse(catalog_zone.increment_serial)
+
+        # Create a member zone
+        member_zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+        self.assertEqual(pool.id, member_zone.pool_id)
+
+        updated_catalog_zone = self.storage.get_catalog_zone(
+            self.admin_context, pool)
+        self.assertTrue(updated_catalog_zone.increment_serial)
+
+    def test_update_catalog_member_zone(self):
+        pool = self.create_pool(fixture=2)
+
+        self.storage._ensure_catalog_zone_config(self.admin_context, pool)
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+        self.assertEqual(pool.id, catalog_zone.pool_id)
+        self.assertFalse(catalog_zone.increment_serial)
+
+        # Create a member zone
+        member_zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+        self.assertEqual(pool.id, member_zone.pool_id)
+
+        # Reset increment_serial flag
+        catalog_zone.increment_serial = False
+        catalog_zone = self.storage.update_zone(
+            self.admin_context, catalog_zone)
+        self.assertFalse(catalog_zone.increment_serial)
+
+        # Update the member zone object
+        member_zone.email = 'info@example.net'
+        self.central_service.update_zone(self.admin_context, member_zone)
+
+        updated_catalog_zone = self.storage.get_catalog_zone(
+            self.admin_context, pool)
+        self.assertFalse(updated_catalog_zone.increment_serial)
+
+    def test_delete_catalog_member_zone(self):
+        pool = self.create_pool(fixture=2)
+
+        self.storage._ensure_catalog_zone_config(self.admin_context, pool)
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+        self.assertEqual(pool.id, catalog_zone.pool_id)
+        self.assertFalse(catalog_zone.increment_serial)
+
+        # Create a member zone
+        member_zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+        self.assertEqual(pool.id, member_zone.pool_id)
+
+        # Reset increment_serial flag
+        catalog_zone.increment_serial = False
+        catalog_zone = self.storage.update_zone(
+            self.admin_context, catalog_zone)
+        self.assertFalse(catalog_zone.increment_serial)
+
+        # Delete the member zone
+        self.central_service.delete_zone(self.admin_context, member_zone.id)
+
+        updated_catalog_zone = self.storage.get_catalog_zone(
+            self.admin_context, pool)
+        self.assertTrue(updated_catalog_zone.increment_serial)
+
+    def test_enforce_catalog_zone_policy(self):
+        pool = self.create_pool(fixture=2)
+        catalog_zone = self.storage._create_catalog_zone(pool)
+        context = self.admin_context
+        context.request_id = 'designate-manage'
+
+        self.central_service._enforce_catalog_zone_policy(
+            context, catalog_zone)
+
+    def test_enforce_catalog_zone_policy_no_admin(self):
+        pool = self.create_pool(fixture=2)
+        catalog_zone = self.storage._create_catalog_zone(pool)
+
+        self.assertRaises(
+            exceptions.Forbidden,
+            self.central_service._enforce_catalog_zone_policy,
+            self.get_context(), catalog_zone)

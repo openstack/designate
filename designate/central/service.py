@@ -384,7 +384,7 @@ class Service(service.RPCService):
 
     def _update_soa(self, context, zone):
         # NOTE: We should not be updating SOA records when a zone is SECONDARY.
-        if zone.type != 'PRIMARY':
+        if zone.type == constants.ZONE_SECONDARY:
             return
 
         # Get the pool for it's list of ns_records
@@ -753,6 +753,8 @@ class Service(service.RPCService):
 
         policy.check('create_zone', context, target)
 
+        self._enforce_catalog_zone_policy(context, zone)
+
         self._is_valid_project_id(zone.tenant_id)
 
         # Ensure the tenant has enough quota to continue
@@ -817,7 +819,8 @@ class Service(service.RPCService):
 
         zone = self._create_zone_in_storage(context, zone)
 
-        self.worker_api.create_zone(context, zone)
+        if zone.type != constants.ZONE_CATALOG:
+            self.worker_api.create_zone(context, zone)
 
         if zone.type == constants.ZONE_SECONDARY:
             self.worker_api.perform_zone_xfr(context, zone)
@@ -854,6 +857,8 @@ class Service(service.RPCService):
                 self._create_recordset_in_storage(
                     context, zone, rrset, increment_serial=False
                 )
+
+        self._ensure_catalog_zone_serial_increment(context, zone)
 
         return zone
 
@@ -940,6 +945,11 @@ class Service(service.RPCService):
 
         policy.check('find_zones', context, target)
 
+        if 'admin' not in context.roles:
+            if criterion is None:
+                criterion = {}
+            criterion['type'] = '!CATALOG'
+
         return self.storage.find_zones(context, criterion, marker, limit,
                                        sort_key, sort_dir)
 
@@ -967,6 +977,7 @@ class Service(service.RPCService):
             }
 
         policy.check('update_zone', context, target)
+        self._enforce_catalog_zone_policy(context, zone)
 
         changes = zone.obj_get_changes()
 
@@ -1028,6 +1039,8 @@ class Service(service.RPCService):
         poke back to set action to NONE and status to DELETED
         """
         zone = self.storage.get_zone(context, zone_id)
+
+        self._enforce_catalog_zone_policy(context, zone)
 
         if policy.enforce_new_defaults():
             target = {
@@ -1092,6 +1105,8 @@ class Service(service.RPCService):
         zone.status = 'PENDING'
 
         zone = self.storage.update_zone(context, zone)
+
+        self._ensure_catalog_zone_serial_increment(context, zone)
 
         return zone
 
@@ -1206,6 +1221,7 @@ class Service(service.RPCService):
 
         policy.check('share_zone', context, target)
 
+        self._enforce_catalog_zone_policy(context, zone)
         self._is_valid_project_id(context.project_id)
 
         if zone.tenant_id == shared_zone.target_project_id:
@@ -1411,6 +1427,8 @@ class Service(service.RPCService):
                          increment_serial=True):
         zone = self.storage.get_zone(context, zone_id,
                                      apply_tenant_criteria=False)
+
+        self._enforce_catalog_zone_policy(context, zone)
 
         # Note this call must follow the get_zone call to maintain API response
         # code behavior.
@@ -1656,6 +1674,8 @@ class Service(service.RPCService):
         zone = self.storage.get_zone(context, zone_id,
                                      apply_tenant_criteria=False)
 
+        self._enforce_catalog_zone_policy(context, zone)
+
         # Note this call must follow the get_zone call to maintain API response
         # code behavior.
         zone_shared = self._check_zone_share_permission(context, zone)
@@ -1754,6 +1774,8 @@ class Service(service.RPCService):
         )
         zone = self.storage.get_zone(context, zone_id,
                                      apply_tenant_criteria=False)
+
+        self._enforce_catalog_zone_policy(context, zone)
 
         # Don't allow updates to zones that are being deleted
         if zone.action == 'DELETE':
@@ -2582,6 +2604,8 @@ class Service(service.RPCService):
         # get zone
         zone = self.get_zone(context, zone_transfer_request.zone_id)
 
+        self._enforce_catalog_zone_policy(context, zone)
+
         # Don't allow transfers for zones that are being deleted
         if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not transfer a deleting zone')
@@ -3094,3 +3118,29 @@ class Service(service.RPCService):
             )
             return self.storage.create_service_status(
                 context, service_status)
+
+    def _ensure_catalog_zone_serial_increment(self, context, zone):
+        if zone.type == constants.ZONE_CATALOG:
+            return
+
+        pool = self.storage.find_pool(context, criterion={'id': zone.pool_id})
+
+        try:
+            catalog_zone = self.storage.get_catalog_zone(context, pool)
+
+            # Schedule batched serial increment
+            self._update_zone_in_storage(context, catalog_zone)
+        except exceptions.ZoneNotFound:
+            pass
+
+    def _enforce_catalog_zone_policy(self, context, zone):
+        # Forbid for HTTP API, but allow for designate-manage
+        if (
+                zone.type == constants.ZONE_CATALOG and
+                not (
+                    context.is_admin and 'admin' in context.roles and
+                    context.request_id == 'designate-manage'
+                )
+        ):
+            raise exceptions.Forbidden(
+                'This operation is not allowed for catalog zones.')
