@@ -19,7 +19,6 @@ from designate.conf import central
 from designate.conf import coordination
 from designate.conf import dynect
 from designate.conf import heartbeat_emitter
-from designate.conf import infoblox
 from designate.conf import keystone
 from designate.conf import mdns
 from designate.conf import network_api
@@ -37,7 +36,6 @@ central.register_opts(CONF)
 coordination.register_opts(CONF)
 dynect.register_opts(CONF)
 heartbeat_emitter.register_opts(CONF)
-infoblox.register_opts(CONF)
 keystone.register_opts(CONF)
 mdns.register_opts(CONF)
 network_api.register_opts(CONF)

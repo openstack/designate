@@ -1,0 +1,22 @@
+---
+features:
+  - |
+    The existing Infoblox driver has been updated and is now based on the
+    official Infoblox client.
+
+    The following new options were added to the pool config for Infoblox.
+
+    - ``wapi_host``
+    - ``wapi_version``
+    - ``cert``
+    - ``key``
+
+upgrade:
+  - |
+    The deprecated Infoblox configuration options in ``desginate.conf``
+    has now been removed. All Infoblox configuration should now be in the
+    ``pools.yaml`` configuration file.
+
+    In addition, the ``infoblox-client`` library is now a dependency for
+    the Infoblox driver and should be installed additionally if the
+    Infoblox Backend is used.

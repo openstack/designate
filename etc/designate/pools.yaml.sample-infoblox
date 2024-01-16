@@ -36,7 +36,8 @@
         port: 53
         http_pool_maxsize: 100
         http_pool_connections: 100
-        wapi_url: https://192.0.2.2/wapi/v2.1/
+        wapi_host: 192.0.2.2
+        wapi_version: 2.1
         sslverify: false
         password: infoblox
         username: admin
