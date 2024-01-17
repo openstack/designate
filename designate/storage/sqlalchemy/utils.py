@@ -88,7 +88,7 @@ def sort_query(query, table, sort_keys, sort_dir=None, sort_dirs=None):
         # the actual primary key, rather than assuming its id
         LOG.warning('Id not in sort_keys; is sort_keys unique?')
 
-    assert(not (sort_dir and sort_dirs))
+    assert (not (sort_dir and sort_dirs))
 
     # Default the sort direction to ascending
     if sort_dirs is None and sort_dir is None:
@@ -98,7 +98,7 @@ def sort_query(query, table, sort_keys, sort_dir=None, sort_dirs=None):
     if sort_dirs is None:
         sort_dirs = [sort_dir for _sort_key in sort_keys]
 
-    assert(len(sort_dirs) == len(sort_keys))
+    assert (len(sort_dirs) == len(sort_keys))
 
     for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
         try:

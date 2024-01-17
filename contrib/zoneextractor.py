@@ -15,6 +15,7 @@
 # under the License.
 
 import argparse
+import io
 import logging
 import os
 import re
@@ -39,7 +40,7 @@ class Zone:
         self.to_file(sys.stdout)
 
     def to_file(self, f):
-        if type(f) == 'file':
+        if isinstance(f, io.IOBase):
             fd = f
         elif type(f) is str:
             if os.path.isdir(f):
