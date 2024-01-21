@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import shutil
+import tempfile
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
@@ -34,7 +36,10 @@ class TestCoordination(oslotest.base.BaseTestCase):
         self.useFixture(cfg_fixture.Config(CONF))
         self.name = 'coordination'
         self.tg = mock.Mock()
-        CONF.set_override('backend_url', 'zake://', group='coordination')
+        self.tempdir = tempfile.mkdtemp()
+        CONF.set_override('backend_url', "file://%s" % self.tempdir,
+                          group='coordination')
+        self.addCleanup(shutil.rmtree, self.tempdir, ignore_errors=True)
 
     def test_retry_if_tooz_error(self):
         self.assertFalse(coordination._retry_if_tooz_error(Exception()))
@@ -158,10 +163,12 @@ class TestCoordination(oslotest.base.BaseTestCase):
 class TestPartitioner(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
+        self.tempdir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tempdir, ignore_errors=True)
 
     def _get_partitioner(self, partitions, host=b'a'):
         fixture = self.useFixture(base_fixtures.CoordinatorFixture(
-            'zake://', host)
+            "file://%s" % self.tempdir, host)
         )
         group = 'group'
         fixture.coordinator.create_group(group)
