@@ -16,6 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 import math
 
 from oslo_concurrency import lockutils
@@ -25,6 +26,7 @@ import tooz.coordination
 
 import designate.conf
 from designate import utils
+
 
 CONF = designate.conf.CONF
 LOG = log.getLogger(__name__)
@@ -37,10 +39,7 @@ def _retry_if_tooz_error(exception):
 
 class Coordination:
     def __init__(self, name, tg, grouping_enabled=False):
-        # NOTE(eandersson): Workaround until tooz handles the conversion.
-        if not isinstance(name, bytes):
-            name = name.encode('ascii')
-        self.name = name
+        self.name = name.encode('ascii')
         self.tg = tg
         self.coordination_id = None
         self._grouping_enabled = grouping_enabled
@@ -57,14 +56,13 @@ class Coordination:
 
     def get_lock(self, name):
         if self._coordinator:
-            # NOTE(eandersson): Workaround until tooz handles the conversion.
-            if not isinstance(name, bytes):
-                name = name.encode('ascii')
             return self._coordinator.get_lock(name)
         return lockutils.lock(name)
 
     def start(self):
-        self.coordination_id = ":".join([CONF.host, utils.generate_uuid()])
+        self.coordination_id = (
+            ':'.join([CONF.host, utils.generate_uuid()]).encode()
+        )
         self._started = False
 
         backend_url = CONF.coordination.backend_url
@@ -75,7 +73,7 @@ class Coordination:
             return
 
         self._coordinator = tooz.coordination.get_coordinator(
-            backend_url, self.coordination_id.encode()
+            backend_url, self.coordination_id
         )
         while not self._coordinator.is_started:
             self._coordinator.start(start_heart=True)

@@ -46,7 +46,8 @@ class CentralDecoratorTests(oslotest.base.BaseTestCase):
         @lock.synchronized_zone()
         def mock_get_zone(cls, current_index, zone_obj):
             self.assertEqual(
-                {'zone-%s' % zone_obj.id}, cls.zone_lock_local._held
+                {f'zone-{zone_obj.id}'.encode('ascii')},
+                cls.zone_lock_local._held
             )
             if current_index % 3 == 0:
                 raise exceptions.ZoneNotFound()
@@ -62,15 +63,18 @@ class CentralDecoratorTests(oslotest.base.BaseTestCase):
     def test_synchronized_new_zone_with_recursion(self):
         @lock.synchronized_zone(new_zone=True)
         def mock_create_zone(cls, context):
-            self.assertEqual({'create-new-zone'}, cls.zone_lock_local._held)
+            self.assertEqual({b'create-new-zone'}, cls.zone_lock_local._held)
             mock_create_record(
                 cls, context, zone.Zone(id=utils.generate_uuid())
             )
 
         @lock.synchronized_zone()
         def mock_create_record(cls, context, zone_obj):
-            self.assertIn('zone-%s' % zone_obj.id, cls.zone_lock_local._held)
-            self.assertIn('create-new-zone', cls.zone_lock_local._held)
+            self.assertIn(
+                f'zone-{zone_obj.id}'.encode('ascii'),
+                cls.zone_lock_local._held
+            )
+            self.assertIn(b'create-new-zone', cls.zone_lock_local._held)
 
         mock_create_zone(
             self.service, self.context
@@ -80,14 +84,16 @@ class CentralDecoratorTests(oslotest.base.BaseTestCase):
         @lock.synchronized_zone()
         def mock_create_record(cls, context, record_obj):
             self.assertEqual(
-                {'zone-%s' % record_obj.zone_id}, cls.zone_lock_local._held
+                {f'zone-{record_obj.zone_id}'.encode('ascii')},
+                cls.zone_lock_local._held
             )
             mock_get_zone(cls, context, zone.Zone(id=record_obj.zone_id))
 
         @lock.synchronized_zone()
         def mock_get_zone(cls, context, zone_obj):
             self.assertEqual(
-                {'zone-%s' % zone_obj.id}, cls.zone_lock_local._held
+                {f'zone-{zone_obj.id}'.encode('ascii')},
+                cls.zone_lock_local._held
             )
 
         mock_create_record(

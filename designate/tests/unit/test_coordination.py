@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 import shutil
 import tempfile
 from unittest import mock
@@ -34,7 +35,7 @@ class TestCoordination(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
-        self.name = 'coordination'
+        self.service_name = 'service_name'
         self.tg = mock.Mock()
         self.tempdir = tempfile.mkdtemp()
         CONF.set_override('backend_url', "file://%s" % self.tempdir,
@@ -48,33 +49,32 @@ class TestCoordination(oslotest.base.BaseTestCase):
         )
 
     def test_start(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service.start()
         self.assertTrue(service.started)
         service.stop()
 
     def test_start_with_grouping_enabled(self):
         service = coordination.Coordination(
-            self.name, self.tg, grouping_enabled=True
+            self.service_name, self.tg, grouping_enabled=True
         )
         service.start()
         self.assertTrue(service.started)
-        self.assertIn(self.name.encode('utf-8'),
+        self.assertIn(service.name,
                       service.coordinator.get_groups().get())
-        self.assertIn(service.coordination_id.encode('utf-8'),
-                      service.coordinator.get_members(
-                          self.name.encode('utf-8')).get())
+        self.assertIn(service.coordination_id,
+                      service.coordinator.get_members(service.name).get())
         service.stop()
 
     def test_stop(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service.start()
         service.stop()
         self.assertFalse(service.started)
 
     def test_stop_with_grouping_enabled(self):
         service = coordination.Coordination(
-            self.name, self.tg, grouping_enabled=True
+            self.service_name, self.tg, grouping_enabled=True
         )
         service.start()
         service.stop()
@@ -83,27 +83,27 @@ class TestCoordination(oslotest.base.BaseTestCase):
     def test_start_no_coordination(self):
         CONF.set_override('backend_url', None, group='coordination')
         # self.config(backend_url=None, group="coordination")
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service.start()
         self.assertIsNone(service.coordinator)
 
     def test_stop_no_coordination(self):
         CONF.set_override('backend_url', None, group='coordination')
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         self.assertIsNone(service.coordinator)
         service.start()
         service.stop()
 
     def test_get_lock(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service._coordinator = mock.Mock()
 
-        service.get_lock('lock')
+        service.get_lock(b'lock')
 
         service._coordinator.get_lock.assert_called_with(b'lock')
 
     def test_un_watchers(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service._started = True
         service._coordinator = mock.Mock()
 
@@ -112,7 +112,7 @@ class TestCoordination(oslotest.base.BaseTestCase):
         service._coordinator.run_watchers.assert_called_with()
 
     def test_run_watchers_not_started(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service._started = False
         service._coordinator = mock.Mock()
 
@@ -121,15 +121,15 @@ class TestCoordination(oslotest.base.BaseTestCase):
         service._coordinator.run_watchers.assert_not_called()
 
     def test_create_group(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service._coordinator = mock.Mock()
 
         service._create_group()
 
-        service._coordinator.create_group.assert_called_with(b'coordination')
+        service._coordinator.create_group.assert_called_with(b'service_name')
 
     def test_create_group_already_exists(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service._coordinator = mock.Mock()
         service._coordinator.create_group.side_effect = (
             tooz.coordination.GroupAlreadyExist('')
@@ -137,18 +137,18 @@ class TestCoordination(oslotest.base.BaseTestCase):
 
         service._create_group()
 
-        service._coordinator.create_group.assert_called_with(b'coordination')
+        service._coordinator.create_group.assert_called_with(b'service_name')
 
     def test_disable_grouping(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service._coordinator = mock.Mock()
 
         service._disable_grouping()
 
-        service._coordinator.leave_group.assert_called_with(b'coordination')
+        service._coordinator.leave_group.assert_called_with(b'service_name')
 
     def test_disable_grouping_already_exists(self):
-        service = coordination.Coordination(self.name, self.tg)
+        service = coordination.Coordination(self.service_name, self.tg)
         service._coordinator = mock.Mock()
         service._coordinator.leave_group.side_effect = (
             tooz.coordination.GroupNotCreated('')
@@ -156,7 +156,7 @@ class TestCoordination(oslotest.base.BaseTestCase):
 
         service._disable_grouping()
 
-        service._coordinator.leave_group.assert_called_with(b'coordination')
+        service._coordinator.leave_group.assert_called_with(b'service_name')
 
 
 @mock.patch('tenacity.nap.time', mock.Mock())

@@ -82,11 +82,11 @@ def synchronized_zone(new_zone=False):
         @functools.wraps(f)
         def sync_wrapper(cls, *args, **kwargs):
             if new_zone is True:
-                lock_name = 'create-new-zone'
+                lock_name = b'create-new-zone'
             else:
                 zone_id = extract_zone_id(args, kwargs)
                 if zone_id:
-                    lock_name = 'zone-%s' % zone_id
+                    lock_name = f'zone-{zone_id}'.encode('ascii')
                 else:
                     raise Exception('Failed to determine zone id for '
                                     'synchronized operation')
