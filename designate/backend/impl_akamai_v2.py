@@ -17,8 +17,8 @@
 import time
 from urllib import parse as urlparse
 
-from akamai import edgegrid
 from oslo_log import log as logging
+from oslo_utils import importutils
 import requests
 
 from designate.backend import base
@@ -36,6 +36,10 @@ class AkamaiClient:
         self.client_token = client_token
         self.client_secret = client_secret
         self.access_token = access_token
+
+        edgegrid = importutils.try_import('akamai.edgegrid')
+        if not edgegrid:
+            raise exceptions.Backend('The edgegrid library is not available')
 
         session.auth = edgegrid.EdgeGridAuth(
             client_token=self.client_token,

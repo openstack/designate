@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    The ``edgegrid-python`` library is now an optional dependency and should
+    be installed additionally if the Akamai v2 Backend is used. 

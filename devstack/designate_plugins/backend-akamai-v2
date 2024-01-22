@@ -52,7 +52,7 @@ fi
 
 # install_designate_backend - install any external requirements
 function install_designate_backend {
-    :
+    pip_install_gr edgegrid-python
 }
 
 # configure_designate_backend - make configuration changes, including those to other services

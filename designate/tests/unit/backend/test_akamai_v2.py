@@ -67,9 +67,20 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
         response._content = json.dumps(json_data or {}).encode('utf-8')
         return response
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
+    def test_missing_library(self, mock_import):
+        mock_import.return_value = None
+        self.assertRaises(
+            exceptions.Backend,
+            akamai.AkamaiBackend,
+            objects.PoolTarget.from_dict(self.target)
+        )
+
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_create_zone_missed_contract_id(self, mock_post, mock_auth):
+    def test_create_zone_missed_contract_id(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         self.target['options'].remove(
             {'key': 'akamai_contract_id', 'value': 'G-XYW'})
         backend = akamai.AkamaiBackend(
@@ -89,9 +100,11 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
 
         mock_post.assert_not_called()
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_create_zone(self, mock_post, mock_auth):
+    def test_create_zone(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
@@ -118,9 +131,11 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             url='https://host_value/config-dns/v2/zones'
         )
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_create_zone_duplicate_zone(self, mock_post, mock_auth):
+    def test_create_zone_duplicate_zone(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
@@ -149,9 +164,11 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             url='https://host_value/config-dns/v2/zones'
         )
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_create_zone_with_tsig_key(self, mock_post, mock_auth):
+    def test_create_zone_with_tsig_key(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         self.target['options'].extend([
             {'key': 'tsig_key_name', 'value': 'test_key'},
             {'key': 'tsig_key_algorithm', 'value': 'hmac-sha512'},
@@ -189,14 +206,15 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             url='https://host_value/config-dns/v2/zones'
         )
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_create_zone_raise_error(self, mock_post, mock_auth):
+    def test_create_zone_raise_error(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
         mock_auth.EdgeGridAuth.assert_called_once_with(
-
             access_token='access_token',
             client_secret='client_secret',
             client_token='client_token'
@@ -229,14 +247,15 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             url='https://host_value/config-dns/v2/zones'
         )
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_force_delete_zone(self, mock_post, mock_auth):
+    def test_force_delete_zone(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
         mock_auth.EdgeGridAuth.assert_called_once_with(
-
             access_token='access_token',
             client_secret='client_secret',
             client_token='client_token'
@@ -257,14 +276,15 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             url='https://host_value/config-dns/v2/zones/delete-requests'
         )
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_force_delete_zone_raise_error(self, mock_post, mock_auth):
+    def test_force_delete_zone_raise_error(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
         mock_auth.EdgeGridAuth.assert_called_once_with(
-
             access_token='access_token',
             client_secret='client_secret',
             client_token='client_token'
@@ -289,14 +309,15 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             url='https://host_value/config-dns/v2/zones/delete-requests'
         )
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_force_delete_zone_raise_error_404(self, mock_post, mock_auth):
+    def test_force_delete_zone_raise_error_404(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
         mock_auth.EdgeGridAuth.assert_called_once_with(
-
             access_token='access_token',
             client_secret='client_secret',
             client_token='client_token'
@@ -318,15 +339,16 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             url='https://host_value/config-dns/v2/zones/delete-requests'
         )
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
     @mock.patch.object(akamai.requests.Session, 'get')
-    def test_soft_delete_zone(self, mock_get, mock_post, mock_auth):
+    def test_soft_delete_zone(self, mock_get, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
         mock_auth.EdgeGridAuth.assert_called_once_with(
-
             access_token='access_token',
             client_secret='client_secret',
             client_token='client_token'
@@ -369,16 +391,17 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             )
         ])
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
     @mock.patch.object(akamai.requests.Session, 'get')
     def test_soft_delete_zone_failed_after_10_attempts(
-            self, mock_get, mock_post, mock_auth):
+            self, mock_get, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
         mock_auth.EdgeGridAuth.assert_called_once_with(
-
             access_token='access_token',
             client_secret='client_secret',
             client_token='client_token'
@@ -422,9 +445,11 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             )
         ])
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_soft_delete_zone_raise_error(self, mock_post, mock_auth):
+    def test_soft_delete_zone_raise_error(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
@@ -461,9 +486,11 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             )
         ])
 
-    @mock.patch.object(akamai, 'edgegrid')
+    @mock.patch.object(akamai.importutils, 'try_import')
     @mock.patch.object(akamai.requests.Session, 'post')
-    def test_soft_delete_zone_missed_request_id(self, mock_post, mock_auth):
+    def test_soft_delete_zone_missed_request_id(self, mock_post, mock_import):
+        mock_auth = mock.Mock()
+        mock_import.return_value = mock_auth
         backend = akamai.AkamaiBackend(
             objects.PoolTarget.from_dict(self.target)
         )
