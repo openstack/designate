@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function designate_configure_uwsgi {
     write_uwsgi_config "$DESIGNATE_UWSGI_CONF" "$DESIGNATE_UWSGI" "/dns"
 

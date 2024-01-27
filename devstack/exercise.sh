@@ -22,7 +22,7 @@ SCRIPT_DIR=$(cd $(dirname "$0") && pwd)
 
 DEVSTACK_DIR=$(cd $SCRIPT_DIR/../..; pwd)/devstack
 if [ -x "$HOME/devstack/stack.sh" ]; then
-  DEVSTACK_DIR=$HOME/devstack/
+    DEVSTACK_DIR=$HOME/devstack/
 fi
 
 # Import common functions
@@ -109,11 +109,13 @@ function ensure_record_absent {
 # do an AXFR request to MDNS
 # if it does not match the expected value, give an error
 function verify_axfr_in_mdns {
+    local axfr_records
+
     # Display for debugging
     dig $DIG_AXFR_FLAGS "$1"
     if dig $DIG_AXFR_FLAGS "$1"; then
         if [ -n "$2" ] ; then
-            local axfr_records=$(dig $DIG_AXFR_FLAGS "$1" | grep "$1" | wc -l)
+            axfr_records=$(dig $DIG_AXFR_FLAGS "$1" | grep "$1" | wc -l)
             if [ "$axfr_records" = "$2" ] ; then
                 return 0
             else
@@ -131,7 +133,8 @@ function verify_axfr_in_mdns {
 function get_domain_id {
     local domain_name=$1
     local required=$2
-    local domain_id=$(designate domain-list | egrep " $domain_name " | get_field 1)
+    local domain_id
+    domain_id=$(designate domain-list | egrep " $domain_name " | get_field 1)
     if [ "$required" = "1" ] ; then
         die_if_not_set $LINENO domain_id "Failure retrieving DOMAIN_ID"
     fi
@@ -147,7 +150,8 @@ function get_domain_name {
 # if the given domain does not exist, it will be created
 # the domain_id of the domain will be returned
 function get_or_create_domain_id {
-    local domainid=$(get_domain_id "$1")
+    local domainid
+    domainid=$(get_domain_id "$1")
     if [[ -z "$domainid" ]]; then
         designate domain-create --name $1 --email admin@devstack.org --ttl 86400 --description "domain $1" 1>&2
         domainid=$(designate domain-list | grep "$1" | get_field 1)
@@ -162,7 +166,8 @@ function get_record_id {
     local record_name=$2
     local record_type=$3
     local required=$4
-    local record_id=$(designate record-list $domain_id | egrep " $record_name " | egrep " $record_type " | get_field 1)
+    local record_id
+    record_id=$(designate record-list $domain_id | egrep " $record_name " | egrep " $record_type " | get_field 1)
     if [ "$required" = "1" ] ; then
         die_if_not_set $LINENO record_id "Failure retrieving RECORD_ID"
     fi
@@ -179,7 +184,7 @@ designate server-list
 NUMBER_OF_RECORDS=$(designate server-list -f csv | wc -l)
 
 # Add 1 extra to account for the additional SOA at the end of the AXFR
-((NUMBER_OF_RECORDS+=1))
+NUMBER_OF_RECORDS=$((NUMBER_OF_RECORDS+1))
 
 # Testing Domains
 # ===============
@@ -209,7 +214,7 @@ A_RECORD_NAME="$(openssl rand -hex 4).${DOMAIN_NAME}"
 
 # Create an A record
 designate record-create $DOMAIN_ID --name $A_RECORD_NAME --type A --data 127.0.0.1
-((NUMBER_OF_RECORDS++))
+NUMBER_OF_RECORDS=$((NUMBER_OF_RECORDS+1))
 A_RECORD_ID=$(get_record_id $DOMAIN_ID $A_RECORD_NAME A)
 
 # Fetch the record
@@ -225,7 +230,7 @@ AAAA_RECORD_NAME="$(openssl rand -hex 4).${DOMAIN_NAME}"
 
 # Create an AAAA record
 designate record-create $DOMAIN_ID --name $AAAA_RECORD_NAME --type AAAA --data "2607:f0d0:1002:51::4"
-((NUMBER_OF_RECORDS++))
+NUMBER_OF_RECORDS=$((NUMBER_OF_RECORDS+1))
 AAAA_RECORD_ID=$(get_record_id $DOMAIN_ID $AAAA_RECORD_NAME AAAA)
 
 # Fetch the record
@@ -238,7 +243,7 @@ ensure_record_present $AAAA_RECORD_NAME AAAA 2607:f0d0:1002:51::4
 
 # Create a MX record
 designate record-create $DOMAIN_ID --name $DOMAIN_NAME --type MX --priority 5 --data "mail.example.com."
-((NUMBER_OF_RECORDS++))
+NUMBER_OF_RECORDS=$((NUMBER_OF_RECORDS+1))
 MX_RECORD_ID=$(get_record_id $DOMAIN_ID $DOMAIN_NAME MX)
 
 # Fetch the record
@@ -251,7 +256,7 @@ ensure_record_present $DOMAIN_NAME MX "5 mail.example.com."
 
 # Create a SRV record
 designate record-create $DOMAIN_ID --name _sip._tcp.$DOMAIN_NAME --type SRV --priority 10 --data "5 5060 sip.example.com."
-((NUMBER_OF_RECORDS++))
+NUMBER_OF_RECORDS=$((NUMBER_OF_RECORDS+1))
 SRV_RECORD_ID=$(get_record_id $DOMAIN_ID _sip._tcp.$DOMAIN_NAME SRV)
 
 # Fetch the record
@@ -267,7 +272,7 @@ CNAME_RECORD_NAME="$(openssl rand -hex 4).${DOMAIN_NAME}"
 
 # Create a CNAME record
 designate record-create $DOMAIN_ID --name $CNAME_RECORD_NAME --type CNAME --data $DOMAIN_NAME
-((NUMBER_OF_RECORDS++))
+NUMBER_OF_RECORDS=$((NUMBER_OF_RECORDS+1))
 CNAME_RECORD_ID=$(get_record_id $DOMAIN_ID $CNAME_RECORD_NAME CNAME)
 
 # Fetch the record
