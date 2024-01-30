@@ -15,7 +15,6 @@ WebTest>=2.0.27 # MIT
 tempest>=21.0.0 # Apache-2.0
 # Bandit security code scanner
 bandit>=1.1.0 # Apache-2.0
-zake>=0.1.6 # Apache-2.0
 doc8>=0.6.0 # Apache-2.0
 Pygments>=2.2.0 # BSD license
 pymemcache!=1.3.0,>=1.2.9 # Apache 2.0 License
