@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_versionedobjects import base as ovoo_base
+
 
 from designate.objects import base
 from designate.objects import fields
@@ -60,22 +60,8 @@ class ZoneMasterList(base.ListObjectMixin, base.DesignateObject):
 
         return instance
 
-    def to_list(self):
-
-        list_ = []
-
-        for item in self.objects:
-            if isinstance(item, ovoo_base.ObjectListBase):
-                list_.append(item.to_list())
-            elif isinstance(item, base.DesignateObject):
-                list_.append(item.to_dict())
-            else:
-                list_.append(item)
-
-        return list_
-
     def to_data(self):
-        zone_master_list = []
+        zone_masters = []
         for item in self.objects:
-            zone_master_list.append(item.to_data())
-        return zone_master_list
+            zone_masters.append(item.to_data())
+        return zone_masters
