@@ -569,6 +569,133 @@ class MdnsRequestHandlerTest(designate.tests.functional.TestCase):
 
                 self.assertEqual(expected_response, binascii.b2a_hex(response))
 
+    def test_dispatch_opcode_query_AXFR_catalog(self):
+        # Query is for example.com. IN AXFR
+        # id 18883
+        # opcode QUERY
+        # rcode NOERROR
+        # flags AD
+        # edns 0
+        # payload 4096
+        # ;QUESTION
+        # example.com. IN AXFR
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        payload = ("49c300200001000000000001076578616d706c6503636f6d0000fc0001"
+                   "00fc000100000000000000")
+
+        # id 18883
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA
+        # ;QUESTION
+        # example.com. IN AXFR
+        # ;ANSWER
+        # example.com. 3600 IN SOA ns1.example.org. example.example.com.
+        # -> 1427899961 3600 600 86400 3600
+        # mail.example.com. 3600 IN A 192.0.2.1
+        # example.com. 3600 IN NS ns1.example.org.
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = (
+            b"49c384000001000500000000076578616d706c6503636f6d0000fc0001036361"
+            b"74c00c0006000100000e10002707696e76616c696400076578616d706c65c00c"
+            b"00000001000002580001518000000e1000000e10c01d0002000100000e100002"
+            b"c02d0776657273696f6ec01d0010000100000e1000020132053138383833057a"
+            b"6f6e6573c01d000c000100000e1000040161c00cc01d0006000100000e100018"
+            b"c02dc03600000001000002580001518000000e1000000e10"
+        )
+
+        cat_zone = objects.Zone.from_dict({
+            'name': 'cat.example.com.',
+            'ttl': 3600,
+            'serial': 1427899961,
+            'email': 'example@example.com',
+            'type': 'CATALOG'
+        })
+
+        pool = objects.Pool.from_dict({
+            'name': 'POOL',
+
+        })
+
+        def _get_catalog_zone_records(context, pool):
+            records = []
+
+            soa_record = objects.RecordList()
+            soa_record.append(
+                objects.Record(
+                    data='invalid. '
+                         'example.example.com. '
+                         '1 '
+                         '600 '
+                         '86400 '
+                         '3600 '
+                         '3600'
+                )
+            )
+            soa = objects.RecordSet(
+                name='cat.example.com.',
+                type='SOA',
+                records=soa_record
+            )
+            records.append(soa)
+
+            ns_record = objects.RecordList()
+            ns_record.append(objects.Record(data='invalid.'))
+            records.append(
+                objects.RecordSet(
+                    name='cat.example.com.',
+                    type='NS',
+                    records=ns_record
+                )
+            )
+
+            txt_record = objects.RecordList()
+            txt_record.append(objects.Record(data='2'))
+            records.append(
+                objects.RecordSet(
+                    name='version.cat.example.com.',
+                    type='TXT',
+                    records=txt_record
+                )
+            )
+
+            ptr_record = objects.RecordList()
+            ptr_record.append(
+                objects.Record(
+                    data='a.example.com.'
+                )
+            )
+            records.append(
+                objects.RecordSet(
+                    name='18883.zones.cat.example.com.',
+                    type='PTR',
+                    records=ptr_record
+                )
+            )
+
+            records.append(soa)
+
+            return records
+
+        with mock.patch.object(self.storage, 'find_zone',
+                               return_value=cat_zone):
+            with mock.patch.object(self.storage, 'find_pool',
+                                   return_value=pool):
+                with mock.patch.object(
+                        self.storage, 'get_catalog_zone_records',
+                        side_effect=_get_catalog_zone_records):
+                    request = dns.message.from_wire(binascii.a2b_hex(payload))
+                    request.environ = {'addr': self.addr,
+                                       'context': self.context}
+
+                    response = next(self.handler(request)).get_wire()
+
+                    self.assertEqual(
+                        expected_response, binascii.b2a_hex(response))
+
     def test_dispatch_opcode_query_AXFR_multiple_messages(self):
         # Query is for example.com. IN AXFR
         # id 18883

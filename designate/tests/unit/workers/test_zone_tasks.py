@@ -203,6 +203,9 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             self.target,
             self.zone_params
         )
+        self.actor._storage = mock.Mock()
+        self.actor._storage.get_catalog_zone = mock.Mock(
+            side_effect=exceptions.ZoneNotFound)
 
         self.assertTrue(self.actor())
 
@@ -211,6 +214,30 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             '203.0.113.1',
             port=53
         )
+
+    @mock.patch.object(dnsutils, 'notify')
+    def test_call_create_catalog_zone(self, mock_notify):
+        self.zone = objects.Zone(name='example.org.', action='CREATE')
+        self.actor = zone.ZoneActionOnTarget(
+            self.executor,
+            self.context,
+            self.zone,
+            self.target,
+            self.zone_params
+        )
+
+        self.actor._storage = mock.Mock()
+        self.actor._storage.get_catalog_zone = mock.Mock(
+            return_value=objects.Zone(name='cat.example.org.'))
+        self.assertTrue(self.actor())
+
+        call_catalog_zone = mock.call(
+            'cat.example.org.',
+            '203.0.113.1',
+            port=53
+        )
+
+        mock_notify.assert_has_calls([call_catalog_zone])
 
     @mock.patch.object(dnsutils, 'notify')
     def test_call_update(self, mock_notify):
@@ -222,6 +249,9 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             self.target,
             self.zone_params,
         )
+        self.actor._storage = mock.Mock()
+        self.actor._storage.get_catalog_zone = mock.Mock(
+            side_effect=exceptions.ZoneNotFound)
 
         self.assertTrue(self.actor())
 
@@ -241,6 +271,9 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             self.target,
             self.zone_params
         )
+        self.actor._storage = mock.Mock()
+        self.actor._storage.get_catalog_zone = mock.Mock(
+            side_effect=exceptions.ZoneNotFound)
 
         self.assertTrue(self.actor())
 
@@ -258,6 +291,9 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             self.target,
             self.zone_params
         )
+        self.actor.storage.find_pool = mock.Mock()
+        self.actor.storage.get_catalog_zone = mock.Mock(
+            side_effect=exceptions.ZoneNotFound)
 
         self.assertFalse(self.actor())
 

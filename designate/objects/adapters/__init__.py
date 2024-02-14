@@ -39,6 +39,7 @@ from designate.objects.adapters.api_v2.shared_zone import SharedZoneAPIv2Adapter
 from designate.objects.adapters.yaml.pool import PoolYAMLAdapter, PoolListYAMLAdapter  # noqa
 from designate.objects.adapters.yaml.pool_attribute import PoolAttributeYAMLAdapter, PoolAttributeListYAMLAdapter  # noqa
 from designate.objects.adapters.yaml.pool_also_notify import PoolAlsoNotifyYAMLAdapter, PoolAlsoNotifyListYAMLAdapter  # noqa
+from designate.objects.adapters.yaml.pool_catalog_zone import PoolCatalogZoneYAMLAdapter  # noqa
 from designate.objects.adapters.yaml.pool_nameserver import PoolNameserverYAMLAdapter, PoolNameserverListYAMLAdapter  # noqa
 from designate.objects.adapters.yaml.pool_ns_record import PoolNsRecordYAMLAdapter, PoolNsRecordListYAMLAdapter  # noqa
 from designate.objects.adapters.yaml.pool_target import PoolTargetYAMLAdapter, PoolTargetListYAMLAdapter  # noqa

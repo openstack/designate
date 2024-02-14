@@ -221,7 +221,7 @@ class ApiV2ZonesTest(v2.ApiV2TestCase):
 
     def test_create_zone_invalid_name(self):
         # Try to create a zone with an invalid name
-        fixture = self.get_zone_fixture(fixture=-1)
+        fixture = self.get_zone_fixture(fixture=3)
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.post_json,
@@ -356,6 +356,45 @@ class ApiV2ZonesTest(v2.ApiV2TestCase):
 
         self.client.get(url, status=406, headers={'Accept': 'test/goat',
                                                   'X-Test-Role': 'member'})
+
+    def test_get_catalog_zone(self):
+        catalog_zone_fixture = self.get_zone_fixture(fixture=4)
+        catalog_zone = self.storage.create_zone(
+            self.admin_context, objects.Zone.from_dict(catalog_zone_fixture))
+
+        response = self.client.get('/zones/',
+                                   headers={
+                                       'Accept': 'application/json',
+                                       'X-Test-Role': 'admin',
+                                       'X-Auth-All-Projects': 'True',
+                                   })
+        self.assertEqual(catalog_zone.id, response.json['zones'][0]['id'])
+
+        response = self.client.get('/zones/%s' % catalog_zone['id'],
+                                   headers={
+                                       'Accept': 'application/json',
+                                       'X-Test-Role': 'admin',
+                                       'X-Auth-All-Projects': 'True',
+                                   })
+        self.assertEqual(catalog_zone.id, response.json['id'])
+
+    def test_get_catalog_zone_no_admin(self):
+        catalog_zone_fixture = self.get_zone_fixture(fixture=4)
+        zone = self.storage.create_zone(
+            self.admin_context, objects.Zone.from_dict(catalog_zone_fixture))
+
+        response = self.client.get(
+            '/zones/',
+            headers={
+                'Accept': 'application/json',
+            })
+
+        self.assertEqual([], response.json['zones'])
+        self._assert_exception(
+            'zone_not_found', 404, self.client.get, '/zones/%s' % zone['id'],
+            headers={
+                'Accept': 'application/json',
+            })
 
     def test_update_zone(self):
         # Create a zone

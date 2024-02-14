@@ -2357,6 +2357,30 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
             self.storage.delete_pool, self.admin_context, pool['id']
         )
 
+    @mock.patch.object(storage.sqlalchemy.SQLAlchemyStorage, 'delete_tsigkey')
+    def test_delete_pool_catalog_zone_with_tsig(self, mock_delete_tsig):
+        pool = self.create_pool(fixture=3)
+        self.storage.delete_pool(self.admin_context, pool.id)
+
+        mock_delete_tsig.assert_called()
+
+        self.assertRaisesRegex(
+            exceptions.PoolNotFound, 'Could not find Pool',
+            self.storage.delete_pool, self.admin_context, pool.id
+        )
+
+    @mock.patch.object(storage.sqlalchemy.SQLAlchemyStorage, 'delete_tsigkey')
+    def test_delete_pool_catalog_zone_without_tsig(self, mock_delete_tsig):
+        pool = self.create_pool(fixture=2)
+        self.storage.delete_pool(self.admin_context, pool.id)
+
+        mock_delete_tsig.assert_not_called()
+
+        self.assertRaisesRegex(
+            exceptions.PoolNotFound, 'Could not find Pool',
+            self.storage.delete_pool, self.admin_context, pool.id
+        )
+
     def test_delete_pool_missing(self):
         uuid = '203ca44f-c7e7-4337-9a02-0d735833e6aa'
 
@@ -3975,3 +3999,158 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
             }
         }
         self.assertDictEqual(expected, indexes)
+
+    def test_create_catalog_zone(self):
+        pool = self.create_pool(fixture=2)
+
+        catalog_zone = self.storage._create_catalog_zone(pool)
+
+        self.assertEqual("cat.example.org.", catalog_zone.name)
+        self.assertEqual(60, catalog_zone.refresh)
+        self.assertEqual(pool.id, catalog_zone.pool_id)
+        self.assertEqual("CATALOG", catalog_zone.type)
+        self.assertEqual(
+            CONF['service:central'].managed_resource_email,
+            catalog_zone.email)
+
+    def test_get_catalog_zone(self):
+        pool = self.create_pool(fixture=2)
+
+        catalog_zone = self.storage.get_catalog_zone(
+            self.admin_context, pool)
+        self.assertEqual(pool.id, catalog_zone.pool_id)
+        self.assertEqual("CATALOG", catalog_zone.type)
+
+    def test_get_catalog_zone_records(self):
+        pool = self.create_pool(fixture=2)
+        self.storage._ensure_catalog_zone_config(self.admin_context, pool)
+        member_zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+
+        catz_records = self.storage.get_catalog_zone_records(
+            self.admin_context, pool)
+        fqdn = pool.catalog_zone.catalog_zone_fqdn
+
+        self.assertEqual(5, len(catz_records))
+        self.assertEqual("SOA", catz_records[0].type)
+        self.assertEqual(fqdn, catz_records[0].name)
+        self.assertEqual("NS", catz_records[1].type)
+        self.assertEqual(fqdn, catz_records[1].name)
+        self.assertEqual("TXT", catz_records[2].type)
+        self.assertEqual(f"version.{fqdn}", catz_records[2].name)
+        self.assertEqual(
+            f"{member_zone.id}.zones.{fqdn}", catz_records[3].name)
+        self.assertEqual("SOA", catz_records[4].type)
+
+    def test_ensure_catalog_zone_config_no_catalog_zone(self):
+        pool = self.storage.find_pools(self.admin_context)[0]
+        self.assertRaises(
+            exceptions.ZoneNotFound, self.storage.get_catalog_zone,
+            self.admin_context, pool)
+
+        self.storage.get_catalog_zone = mock.Mock()
+        self.storage._ensure_catalog_zone_config(
+            self.admin_context, pool)
+        self.storage.get_catalog_zone.assert_not_called()
+
+    @mock.patch.object(storage.sqlalchemy.SQLAlchemyStorage, 'update_zone')
+    @mock.patch.object(storage.sqlalchemy.SQLAlchemyStorage,
+                       '_ensure_catalog_zone_consistent')
+    def test_ensure_catalog_zone_config(
+            self, mock_update_zone, mock_ensure_catalog_zone_consistent):
+        self.create_pool(fixture=2)
+        mock_update_zone.assert_called()
+
+    @mock.patch.object(
+        storage.sqlalchemy.SQLAlchemyStorage, 'get_catalog_zone')
+    def test_ensure_catalog_zone_consistent_no_catalog_zone(
+            self, mock_get_catalog_zone):
+        pool = self.create_pool()
+        self.storage._ensure_catalog_zone_consistent(self.admin_context, pool)
+        mock_get_catalog_zone.assert_not_called()
+
+    def test_ensure_catalog_zone_consistent(self):
+        pool = self.create_pool(
+            fixture=3)  # Pool with catalog zone and TSIG data
+        self.storage._ensure_catalog_zone_config(self.admin_context, pool)
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+
+        self.assertEqual(catalog_zone.attributes.get('catalog_zone_fqdn'),
+                         pool.catalog_zone.catalog_zone_fqdn)
+
+        self.assertEqual(int(
+            catalog_zone.attributes.get('catalog_zone_refresh')),
+            pool.catalog_zone.catalog_zone_refresh)
+
+        # Check SOA
+        catz_records = self.storage.get_catalog_zone_records(
+            self.admin_context, pool)
+        self.assertEqual(catz_records[-1].type, 'SOA')
+        expected = (
+            f'{pool.ns_records[0]["hostname"]} '
+            f'{catalog_zone.attributes.get("catalog_zone_fqdn")} '
+            f'{catalog_zone.serial} '
+            f'{catalog_zone.attributes.get("catalog_zone_refresh")} '
+            f'{catalog_zone.retry} '
+            '2147483646 '
+            f'{catalog_zone.minimum}'
+        )
+        self.assertEqual(expected, catz_records[-1].records[0].data)
+
+        # Check TSIG
+        tsigkey = self.storage.find_tsigkey(
+            self.admin_context, criterion={'resource_id': catalog_zone.id})
+        self.assertEqual(pool.catalog_zone.catalog_zone_tsig_key,
+                         tsigkey.secret)
+        self.assertEqual(pool.catalog_zone.catalog_zone_tsig_algorithm,
+                         tsigkey.algorithm)
+
+    def test_ensure_catalog_zone_consistent_no_tsig(self):
+        pool = self.create_pool(fixture=2)
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+
+        # Check no TSIG key created
+        self.assertRaises(
+            exceptions.TsigKeyNotFound, self.storage.find_tsigkey,
+            self.admin_context, criterion={'resource_id': catalog_zone.id})
+
+    def test_ensure_catalog_zone_consistent_invalid_tsig(self):
+        # Check invalid TSIG data detected
+        self.assertRaisesRegex(
+            ValueError, 'Field value no-algorithm is invalid',
+            self.create_pool, fixture=4)
+
+    def test_ensure_catalog_zone_consistent_tsig_changed(self):
+        pool = self.create_pool(
+            fixture=3)  # Pool with catalog zone and TSIG data
+
+        pool.catalog_zone.catalog_zone_tsig_key = 'SomeNewSecret'
+        pool.catalog_zone.catalog_zone_tsig_algorithm = 'hmac-sha256'
+
+        self.storage._ensure_catalog_zone_config(self.admin_context, pool)
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+
+        # Check TSIG
+        tsigkey = self.storage.find_tsigkey(
+            self.admin_context, criterion={'resource_id': catalog_zone.id})
+        self.assertEqual(pool.catalog_zone.catalog_zone_tsig_key,
+                         tsigkey.secret)
+        self.assertEqual(pool.catalog_zone.catalog_zone_tsig_algorithm,
+                         tsigkey.algorithm)
+
+    def test_ensure_catalog_zone_consistent_change_pool(self):
+        pool = self.create_pool(fixture=2)  # Catalog zone without TSIG
+
+        # Change pool attributes
+        pool.catalog_zone.catalog_zone_fqdn = 'new.example.com.'
+        pool.catalog_zone.catalog_zone_refresh = 3600
+
+        self.storage._ensure_catalog_zone_consistent(self.admin_context, pool)
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+
+        self.assertEqual(
+            pool.catalog_zone.catalog_zone_fqdn,
+            catalog_zone.attributes.get("catalog_zone_fqdn"))
+        self.assertEqual(
+            pool.catalog_zone.catalog_zone_refresh,
+            int(catalog_zone.attributes.get("catalog_zone_refresh")))

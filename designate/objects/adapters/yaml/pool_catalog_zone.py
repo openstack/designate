@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard Development Company, L.P.
+# Copyright 2023 inovex GmbH
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -11,49 +11,25 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from oslo_log import log as logging
-
 from designate import objects
 from designate.objects.adapters.yaml import base
 
-LOG = logging.getLogger(__name__)
 
-
-class PoolYAMLAdapter(base.YAMLAdapter):
-    ADAPTER_OBJECT = objects.Pool
+class PoolCatalogZoneYAMLAdapter(base.YAMLAdapter):
+    ADAPTER_OBJECT = objects.PoolCatalogZone
     MODIFICATIONS = {
         'fields': {
-            'id': {
+            'catalog_zone_fqdn': {
                 'read_only': False
             },
-            'name': {
+            'catalog_zone_refresh': {
                 'read_only': False
             },
-            'description': {
+            'catalog_zone_tsig_key': {
                 'read_only': False
             },
-            'attributes': {
+            'catalog_zone_tsig_algorithm': {
                 'read_only': False
             },
-            'ns_records': {
-                'read_only': False
-            },
-            'nameservers': {
-                'read_only': False
-            },
-            'targets': {
-                'read_only': False
-            },
-            'also_notifies': {
-                'read_only': False
-            },
-            'catalog_zone': {
-                'read_only': False
-            }
         }
     }
-
-
-class PoolListYAMLAdapter(base.YAMLAdapter):
-    ADAPTER_OBJECT = objects.PoolList
-    MODIFICATIONS = {}

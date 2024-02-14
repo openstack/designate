@@ -31,3 +31,6 @@
    - host: 192.0.2.4
      port: 53
 
+  catalog_zone:
+    catalog_zone_fqdn: example.org.
+    catalog_zone_refresh: '60'

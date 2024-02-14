@@ -65,17 +65,41 @@ class ZoneActionOnTarget(base.Task):
             }
         )
 
+        # Check whether a catalog zone exists for this pool
+        catalog_zone = None
+        pool = self.storage.find_pool(
+            self.context, criterion={'id': self.zone.pool_id})
+        try:
+            catalog_zone = self.storage.get_catalog_zone(
+                self.context, pool)
+        except exceptions.ZoneNotFound:
+            pass
+
         for retry in range(0, self.max_retries):
             try:
-                if self.action == 'CREATE':
-                    self.target.backend.create_zone(self.context, self.zone)
-                    SendNotify(self.executor, self.zone, self.target)()
-                elif self.action == 'DELETE':
-                    self.target.backend.delete_zone(self.context, self.zone,
-                                                    self.zone_params)
+                if catalog_zone is None:
+                    if self.action == 'CREATE':
+                        self.target.backend.create_zone(
+                            self.context, self.zone)
+                        SendNotify(self.executor, self.zone, self.target)()
+                    elif self.action == 'DELETE' and catalog_zone is None:
+                        self.target.backend.delete_zone(
+                            self.context, self.zone, self.zone_params)
+                    else:
+                        self.target.backend.update_zone(
+                            self.context, self.zone)
+                        SendNotify(self.executor, self.zone, self.target)()
                 else:
-                    self.target.backend.update_zone(self.context, self.zone)
-                    SendNotify(self.executor, self.zone, self.target)()
+                    if (
+                        self.action == 'CREATE' or self.action == 'DELETE' or
+                        self.zone.type == constants.ZONE_CATALOG
+                    ):
+                        # Member zone created or deleted, or catalog zone
+                        # itself modified, NOTIFY via catalog
+                        SendNotify(self.executor, catalog_zone, self.target)()
+                    else:
+                        # Member zone updated
+                        SendNotify(self.executor, self.zone, self.target)()
 
                 LOG.debug(
                     'Successfully performed %(action)s for '

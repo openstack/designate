@@ -50,3 +50,12 @@
    - host: 192.0.2.4
      port: 53
 
+  # Optional configuration to provide a catalog zone for the pool's zones.
+  # If configured, catalog_zone_fqdn is required and all other keys are
+  # optional.
+  catalog_zone:
+      catalog_zone_fqdn: cat.example.org.
+      catalog_zone_refresh: 60
+      # TSIG secret and algorithm to use for securing AXFRs for catalog zones.
+      catalog_zone_tsig_key: SomeSecretKey
+      catalog_zone_tsig_algorithm: hmac-sha512

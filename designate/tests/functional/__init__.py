@@ -116,7 +116,7 @@ class TestCase(base.BaseTestCase):
         'resource_id': '7fbb6304-5e74-4691-bd80-cef3cff5fe2f',
     }]
 
-    # The last zone is invalid
+    # The 4th zone is invalid, the last zone is a catalog zone
     zone_fixtures = {
         'PRIMARY': [
             {
@@ -135,6 +135,10 @@ class TestCase(base.BaseTestCase):
                 'name': 'invalid.com.....',
                 'type': 'PRIMARY',
                 'email': 'example@invalid.com',
+            }, {
+                'name': 'example.com.',
+                'type': 'CATALOG',
+                'email': 'example@example.com',
             }
         ],
         'SECONDARY': [
@@ -227,6 +231,28 @@ class TestCase(base.BaseTestCase):
          'description': 'Pool-Two description',
          'attributes': [{'key': 'scope', 'value': 'public'}],
          'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}]},
+        {'name': 'Pool-With-Catalog-Zone',
+         'description': 'Pool with catalog zone description',
+         'attributes': [{'key': 'scope', 'value': 'public'}],
+         'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
+         'catalog_zone': {'catalog_zone_fqdn': 'cat.example.org.',
+                          'catalog_zone_refresh': 60}},
+        {'name': 'Pool-With-Catalog-Zone-And-TSIG',
+         'description': 'Pool with catalog zone description',
+         'attributes': [{'key': 'scope', 'value': 'public'}],
+         'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
+         'catalog_zone': {'catalog_zone_fqdn': 'cat.example.org.',
+                          'catalog_zone_refresh': 60,
+                          'catalog_zone_tsig_key': 'SomeSecretKey',
+                          'catalog_zone_tsig_algorithm': 'hmac-md5'}},
+        {'name': 'Pool-With-Catalog-Zone-And-Invalid-TSIG',
+         'description': 'Pool with catalog zone description',
+         'attributes': [{'key': 'scope', 'value': 'public'}],
+         'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
+         'catalog_zone': {'catalog_zone_fqdn': 'cat.example.org.',
+                          'catalog_zone_refresh': 60,
+                          'catalog_zone_tsig_key': 'AnotherSecretKey',
+                          'catalog_zone_tsig_algorithm': 'no-algorithm'}},
     ]
 
     pool_attribute_fixtures = [

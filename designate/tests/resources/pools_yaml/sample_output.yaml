@@ -2,6 +2,9 @@
   - host: 192.0.2.4
     port: 53
   attributes: {}
+  catalog_zone:
+    catalog_zone_fqdn: example.com.
+    catalog_zone_refresh: 60
   description: Default PowerDNS 4 Pool
   id: cf2e8eab-76cd-4162-bf76-8aeee3556de0
   name: default

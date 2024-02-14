@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from designate.common import constants
 from designate.objects import base
 from designate.objects import fields
 
@@ -26,14 +27,7 @@ class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
         'name': fields.StringFields(nullable=False, maxLength=160),
         'algorithm': fields.EnumField(
             nullable=False,
-            valid_values=[
-                'hmac-md5',
-                'hmac-sha1',
-                'hmac-sha224',
-                'hmac-sha256',
-                'hmac-sha384',
-                'hmac-sha512'
-            ]
+            valid_values=constants.TSIG_ALGORITHMS
         ),
         'secret': fields.StringFields(maxLength=160),
         'scope': fields.EnumField(

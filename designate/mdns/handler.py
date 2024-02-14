@@ -24,6 +24,7 @@ import dns.resolver
 import dns.rrset
 from oslo_log import log as logging
 
+from designate.common import constants
 import designate.conf
 from designate import exceptions
 from designate.worker import rpcapi as worker_api
@@ -218,17 +219,25 @@ class RequestHandler:
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             return
 
-        # The AXFR response needs to have a SOA at the beginning and end.
-        criterion = {'zone_id': zone.id, 'type': 'SOA'}
-        soa_records = self.storage.find_recordsets_axfr(context, criterion)
+        if zone.type != constants.ZONE_CATALOG:
+            # The AXFR response needs to have a SOA at the beginning and end.
+            criterion = {'zone_id': zone.id, 'type': 'SOA'}
+            soa_records = self.storage.find_recordsets_axfr(context, criterion)
 
-        # Get all the records other than SOA
-        criterion = {'zone_id': zone.id, 'type': '!SOA'}
-        records = self.storage.find_recordsets_axfr(context, criterion)
+            # Get all the records other than SOA
+            criterion = {'zone_id': zone.id, 'type': '!SOA'}
+            records = self.storage.find_recordsets_axfr(context, criterion)
 
-        # Place the SOA RRSet at the front and end of the RRSet list
-        records.insert(0, soa_records[0])
-        records.append(soa_records[0])
+            # Place the SOA RRSet at the front and end of the RRSet list
+            records.insert(0, soa_records[0])
+            records.append(soa_records[0])
+        else:
+            catalog_zone_pool = self.storage.find_pool(
+                context, criterion={'id': zone.pool_id}
+            )
+            records = self.storage.get_catalog_zone_records(
+                context, catalog_zone_pool
+            )
 
         # Handle multi message response with tsig
         multi_messages = False
@@ -239,10 +248,16 @@ class RequestHandler:
         while records:
             record = records.pop(0)
 
-            rrname = str(record[3])
-            ttl = int(record[2]) if record[2] is not None else zone.ttl
-            rrtype = str(record[1])
-            rdata = [str(record[4])]
+            if zone.type != constants.ZONE_CATALOG:
+                rrname = str(record[3])
+                ttl = int(record[2]) if record[2] is not None else zone.ttl
+                rrtype = str(record[1])
+                rdata = [str(record[4])]
+            else:
+                rrname = record.name
+                ttl = zone.ttl
+                rrtype = record.type
+                rdata = [record.records[0].data]
 
             rrset = dns.rrset.from_text_list(
                 rrname, ttl, dns.rdataclass.IN, rrtype, rdata,
