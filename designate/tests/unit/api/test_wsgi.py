@@ -49,7 +49,9 @@ class TestApiWsgi(oslotest.base.BaseTestCase):
         mock_cfg.assert_called_with(
             [], project='designate',
             default_config_files=['/etc/designate/api-paste.ini',
-                                  '/etc/designate/designate.conf']
+                                  '/etc/designate/designate.conf',
+                                  '/etc/designate/secrets.conf'
+                                  ]
         )
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
         mock_policy_init.assert_called()
@@ -62,7 +64,8 @@ class TestApiWsgi(oslotest.base.BaseTestCase):
 
     def test_get_config_files(self):
         self.assertEqual(
-            ['/etc/designate/api-paste.ini', '/etc/designate/designate.conf'],
+            ['/etc/designate/api-paste.ini', '/etc/designate/designate.conf',
+             '/etc/designate/secrets.conf'],
             wsgi._get_config_files()
         )
 
@@ -70,6 +73,7 @@ class TestApiWsgi(oslotest.base.BaseTestCase):
         env = {'OS_DESIGNATE_CONFIG_DIR': '/opt/designate'}
 
         self.assertEqual(
-            ['/opt/designate/api-paste.ini', '/opt/designate/designate.conf'],
+            ['/opt/designate/api-paste.ini', '/opt/designate/designate.conf',
+             '/opt/designate/secrets.conf'],
             wsgi._get_config_files(env)
         )
