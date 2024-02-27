@@ -89,6 +89,24 @@ function configure_designate_backend {
     - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
       port: $DESIGNATE_SERVICE_PORT_DNS
 
+EOF
+
+    if [[ "$DESIGNATE_USE_CATALOG_ZONES" == "True" ]]; then
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  targets:
+    - type: fake
+      description: BIND Instance
+
+      masters:
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $HOST_IP
+        port: $DESIGNATE_SERVICE_PORT_DNS
+EOF
+    else
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
   targets:
     - type: bind9
       description: BIND Instance
@@ -106,6 +124,18 @@ function configure_designate_backend {
         rndc_key_file: $BIND_CFG_DIR/rndc.key
         clean_zonefile: true
 EOF
+    fi
+
+    if [[ "$DESIGNATE_USE_CATALOG_ZONES" == "True" ]]; then
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  catalog_zone:
+      catalog_zone_fqdn: default-pool.test.
+      catalog_zone_refresh: 60
+#      # TSIG secret and algorithm to use for securing AXFRs for catalog zones.
+#      catalog_zone_tsig_key: SomeSecretKey
+#      catalog_zone_tsig_algorithm: hmac-sha512
+EOF
+    fi
 
     sudo chown $STACK_USER $BIND_CFG_DIR
 
@@ -118,6 +148,39 @@ EOF
     sudo tee $BIND_CFG_FILE > /dev/null <<EOF
 include "$BIND_CFG_DIR/rndc.key";
 
+controls {
+    inet $(ipv6_unquote $DESIGNATE_SERVICE_HOST) port $DESIGNATE_SERVICE_PORT_RNDC allow { $(ipv6_unquote $DESIGNATE_SERVICE_HOST); } keys { "rndc-key"; };
+};
+EOF
+
+    # TODO (johnsom) Remove once designate can create the catalog zone
+    #                automatically.
+    # Add options based on if catalog zones are being used
+    if [[ "$DESIGNATE_USE_CATALOG_ZONES" == "True" ]]; then
+        sudo tee -a $BIND_CFG_FILE > /dev/null <<EOF
+options {
+    directory "$BIND_VAR_DIR";
+    allow-new-zones yes;
+    dnssec-validation auto;
+    auth-nxdomain no;    # conform to RFC1035
+    listen-on port $DESIGNATE_SERVICE_PORT_DNS { $HOST_IP; };
+    listen-on-v6 port $DESIGNATE_SERVICE_PORT_DNS { $HOST_IPV6; };
+    recursion no;
+    minimal-responses yes;
+    catalog-zones {
+        zone "default-pool.test"
+            default-primaries { $DESIGNATE_SERVICE_HOST port $DESIGNATE_SERVICE_PORT_MDNS;}
+            in-memory no;
+    };
+};
+
+zone "default-pool.test" {
+    type secondary;
+    primaries { $DESIGNATE_SERVICE_HOST port $DESIGNATE_SERVICE_PORT_MDNS;};
+};
+EOF
+    else
+        sudo tee -a $BIND_CFG_FILE > /dev/null <<EOF
 options {
     directory "$BIND_VAR_DIR";
     allow-new-zones yes;
@@ -128,11 +191,8 @@ options {
     recursion no;
     minimal-responses yes;
 };
-
-controls {
-    inet $(ipv6_unquote $DESIGNATE_SERVICE_HOST) port $DESIGNATE_SERVICE_PORT_RNDC allow { $(ipv6_unquote $DESIGNATE_SERVICE_HOST); } keys { "rndc-key"; };
-};
 EOF
+    fi
 
     # Configure RNDC
     sudo tee $BIND_CFG_DIR/rndc.conf > /dev/null << EOF
