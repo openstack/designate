@@ -15,7 +15,6 @@
 import re
 
 from hacking import core
-import pycodestyle
 
 # D701: Default parameter value is a mutable type
 # D702: Log messages require translation
@@ -49,8 +48,8 @@ no_line_continuation_backslash_re = re.compile(r'.*(\\)\n')
 
 
 @core.flake8ext
-def mutable_default_arguments(physical_line, logical_line, filename):
-    if pycodestyle.noqa(physical_line):
+def mutable_default_arguments(logical_line, filename, noqa):
+    if noqa:
         return
 
     if mutable_default_argument_check.match(logical_line):
@@ -69,7 +68,7 @@ def no_translate_debug_logs(logical_line, filename):
     N319
     """
     if logical_line.startswith("LOG.debug(_("):
-        yield(0, "D706: Don't translate debug level logs")
+        yield (0, "D706: Don't translate debug level logs")
 
 
 @core.flake8ext
@@ -90,7 +89,7 @@ def check_explicit_underscore_import(logical_line, filename):
         UNDERSCORE_IMPORT_FILES.append(filename)
     elif (translated_log.match(logical_line) or
           string_translation.match(logical_line)):
-        yield(0, "D703: Found use of _() without explicit import of _!")
+        yield (0, "D703: Found use of _() without explicit import of _!")
 
 
 @core.flake8ext
@@ -109,8 +108,8 @@ def no_import_graduated_oslo_libraries(logical_line, filename):
 
     matches = graduated_oslo_libraries_import_re.match(logical_line)
     if matches:
-        yield(0, "D704: Found import of %s. This oslo library has been "
-                 "graduated!" % matches.group(1))
+        yield (0, "D704: Found import of %s. This oslo library has been "
+                  "graduated!" % matches.group(1))
 
 
 @core.flake8ext
@@ -133,14 +132,14 @@ def check_no_basestring(logical_line):
     if re.search(r"\bbasestring\b", logical_line):
         msg = ("D707: basestring is not Python3-compatible, use "
                "str instead.")
-        yield(0, msg)
+        yield (0, msg)
 
 
 @core.flake8ext
 def check_python3_xrange(logical_line):
     if re.search(r"\bxrange\s*\(", logical_line):
-        yield(0, "D708: Do not use xrange. Use range for "
-                 "large loops.")
+        yield (0, "D708: Do not use xrange. Use range for "
+                  "large loops.")
 
 
 @core.flake8ext
@@ -152,7 +151,7 @@ def check_no_log_audit(logical_line):
     for OpenStack we can enforce not using it.
     """
     if "LOG.audit(" in logical_line:
-        yield(0, "D709: LOG.audit is deprecated, please use LOG.info!")
+        yield (0, "D709: LOG.audit is deprecated, please use LOG.info!")
 
 
 @core.flake8ext
@@ -162,7 +161,7 @@ def check_no_log_warn(logical_line):
     D710
     """
     if logical_line.startswith('LOG.warn('):
-        yield(0, "D710:Use LOG.warning() rather than LOG.warn()")
+        yield (0, "D710:Use LOG.warning() rather than LOG.warn()")
 
 
 @core.flake8ext
