@@ -94,6 +94,20 @@ class TestCoordination(oslotest.base.BaseTestCase):
         service.start()
         service.stop()
 
+    def test_stop_coordination_not_started(self):
+        service = coordination.Coordination(
+            self.service_name, self.tg, grouping_enabled=True
+        )
+        coordinator = mock.Mock()
+        coordinator.is_started = False
+        service._coordinator = coordinator
+
+        service.stop()
+
+        coordinator.leave_group.assert_not_called()
+        coordinator.stop.assert_not_called()
+        self.assertIsNone(service.coordinator)
+
     def test_get_lock(self):
         service = coordination.Coordination(self.service_name, self.tg)
         service._coordinator = mock.Mock()
