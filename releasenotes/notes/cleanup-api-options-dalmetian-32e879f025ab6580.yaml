@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    The following deprecated options have been removed.
+
+    - ``[service:api] max_header_line``
+    - ``[service:api] secure_proxy_ssl_header``
+    - ``[service:api] override_proto``
