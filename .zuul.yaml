@@ -79,6 +79,10 @@
     name: designate-bind9-centos-9-stream
     parent: designate-bind9
     nodeset: devstack-single-node-centos-9-stream
+    vars:
+      devstack_localrc:
+        DESIGNATE_COORDINATION_URL: "etcd3+http://{{ hostvars['controller']['nodepool']['private_ipv4'] }}:2379?api_version=v3"
+
 
 - job:
     name: designate-bind9-sqlalchemy-2x
