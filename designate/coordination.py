@@ -120,9 +120,10 @@ class Coordination:
 
     def _enable_grouping(self):
         self._create_group()
-        self.tg.add_timer(
+        self.tg.add_timer_args(
             CONF.coordination.run_watchers_interval,
-            self._coordinator_run_watchers
+            self._coordinator_run_watchers,
+            stop_on_exception=False,
         )
 
 

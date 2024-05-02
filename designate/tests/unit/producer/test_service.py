@@ -73,8 +73,8 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
         mock_partition.start.assert_called()
 
         # Make sure that tasks were added to the tg timer.
-        self.tg.add_timer.assert_called()
-        self.assertEqual(6, self.tg.add_timer.call_count)
+        self.tg.add_timer_args.assert_called()
+        self.assertEqual(6, self.tg.add_timer_args.call_count)
 
     @mock.patch.object(service.coordination, 'Partitioner')
     @mock.patch.object(designate.service.RPCService, 'start')
