@@ -68,6 +68,21 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
             'Default PowerDNS 4 Pool', ''.join(self.command.output_message)
         )
 
+    def test_show_config_catalog_zone(self):
+        self.command._setup()
+        self.command._create_pool(get_pools('pools-catalog-zone.yaml')[0])
+
+        pool_id = self.central_service.find_pool(
+            self.admin_context, {'name': 'default'}).id
+
+        self.command.show_config(pool_id)
+
+        self.print_result.assert_called_once()
+        self.assertIn('Pool Configuration', self.command.output_message[1])
+        self.assertIn(
+            'Default PowerDNS 4 Pool', ''.join(self.command.output_message)
+        )
+
     @mock.patch.object(service.Service, 'find_pool',
                        side_effect=oslo_messaging.MessagingTimeout())
     def test_show_config_rpc_timeout(self, mock_find_pool):
