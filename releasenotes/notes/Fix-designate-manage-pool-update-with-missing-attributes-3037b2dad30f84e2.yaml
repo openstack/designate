@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    So far, the yaml Adapter made every designate-manage pool command
+    fail if the pools.yaml file was missing any of the pool attributes.
+    This patch makes the adapter to continue without raising any error.

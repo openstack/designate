@@ -49,6 +49,10 @@ class YAMLAdapter(base.DesignateAdapter):
                 # if not, move on
                 new_obj = getattr(obj, key, None)
                 obj_key = key
+
+            if new_obj is None:
+                continue
+
             # Check if this item is a relation (another DesignateObject that
             # will need to be converted itself
             if hasattr(obj.FIELDS.get(obj_key, {}), 'objname'):
