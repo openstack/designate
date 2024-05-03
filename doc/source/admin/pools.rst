@@ -76,8 +76,57 @@ Designate. The required key value pairs in YAML format are documented here:
 
 .. _catalog_zones:
 
+Pools.yaml attributes
+---------------------
+
+NS records
+^^^^^^^^^^
+
+The ns_records section is the list of name servers Designate will advertise in
+the zones as available for query. Nameservers listed in the ns_records section
+are expected to be advertised from external networks.
+
+Nameservers
+^^^^^^^^^^^
+
+The nameservers section is the list of name servers Designate will query to
+confirm an update has completed on all of the Designate managed nameservers.
+Nameservers listed in the nameservers section are not expected to be advertised
+from external networks unless they are also listed in the ns_records section.
+
+NS Records vs. Nameservers: Understanding the Differences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There isn't always a direct relationship between the ns_records and the
+nameservers sections, as they serve different use cases. Here are a few use
+cases:
+
+* ns_records list is equal to the nameservers list:
+    The end user may want to query all of the advertised nameservers to confirm
+    that their updates have successfully propagated.
+* ns_records list is smaller than the nameservers list:
+    The end user may have some private, or stealth, nameservers that they do
+    not want to advertise publicly as ns_records. Because they are private,
+    these stealth nameservers are not expected be necessarily reachable from
+    external networks.
+* ns_records list is larger than the nameservers list:
+    The end user may not want to query all of the nameservers they manage
+    after a zone update as some of those nameservers might be backup, or
+    maybe the list of nameservers is just too big to query all of them.
+
+Targets
+^^^^^^^
+
+The targets section defines how Designate should communicate with the backend
+nameservers and how those backend nameservers should communicate with MiniDNS.
+For the BIND driver, the options section defines the address and port the
+“NOTIFY” messages should go to and the IP:port the driver should use to make
+rndc calls to BIND, as can be seen in
+:ref:`this example. <bind9_target_example>`
+PowerDNS require using the connection keyword, as can be seen above.
+
 Catalog zones
--------------
+^^^^^^^^^^^^^
 
 Catalog zones provide easy provisioning capabilities of zones to secondary
 nameservers, transferred via AXFR from a special zone, the *catalog zone*.

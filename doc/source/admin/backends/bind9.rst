@@ -23,6 +23,8 @@ The backend uses the rndc utility to create and delete zones remotely.
 
 The traffic between rndc and Bind is authenticated with a key.
 
+.. _bind9_target_example:
+
 Designate Configuration
 -----------------------
 
