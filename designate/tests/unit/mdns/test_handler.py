@@ -55,6 +55,9 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         self.assertIsInstance(self.handler.worker_api,
                               worker_rpcapi.WorkerAPI)
 
+    @mock.patch.object(dns.resolver.BaseResolver, "read_registry", mock.Mock())
+    @mock.patch.object(dns.resolver.BaseResolver, "read_resolv_conf",
+                       mock.Mock())
     @mock.patch.object(rpc, 'get_client', mock.Mock())
     @mock.patch.object(dns.resolver.Resolver, 'resolve')
     def test_notify(self, mock_query):
@@ -84,6 +87,9 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
             self.stdlog.logger.output
         )
 
+    @mock.patch.object(dns.resolver.BaseResolver, "read_registry", mock.Mock())
+    @mock.patch.object(dns.resolver.BaseResolver, "read_resolv_conf",
+                       mock.Mock())
     @mock.patch.object(dns.resolver.Resolver, 'resolve')
     def test_notify_same_serial(self, mock_query):
         self.storage.find_zone.return_value = objects.Zone(
