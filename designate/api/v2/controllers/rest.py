@@ -54,7 +54,7 @@ class RestController(pecan.rest.RestController):
     def _apply_filter_params(self, params, accepted_filters, criterion):
         invalid = []
         for k in params:
-            if k in accepted_filters:
+            if k in accepted_filters and isinstance(params.get(k), str):
                 criterion[k] = params[k].replace("*", "%")
             else:
                 invalid.append(k)
