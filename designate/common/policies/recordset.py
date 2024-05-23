@@ -16,8 +16,12 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+import designate.conf
 from designate.common import constants
 from designate.common.policies import base
+
+
+CONF = designate.conf.CONF
 
 DEPRECATED_REASON = """
 The record set API now supports system scope and default roles.
@@ -212,4 +216,77 @@ rules = [
 
 
 def list_rules():
-    return rules
+
+    create_rules = []
+    update_rules = []
+    delete_rules = []
+
+    for rec_type in CONF.supported_record_type:
+        # create rules
+        deprecated_rule = policy.DeprecatedRule(
+            name="create_%s_recordset" % rec_type,
+            check_str=RULE_ZONE_PRIMARY_OR_ADMIN_OR_SHARED,
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY
+        )
+        new_rule = policy.DocumentedRuleDefault(
+            name="create_%s_recordset" % rec_type,
+            check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
+            scope_types=[constants.PROJECT],
+            description="Create %s Recordset" % rec_type,
+            operations=[
+                {
+                    'path': '/v2/zones/{zone_id}/recordsets',
+                    'method': 'POST'
+                }
+            ],
+            deprecated_rule=deprecated_rule
+        )
+        create_rules.append(new_rule)
+
+        # update rules
+        deprecated_rule = policy.DeprecatedRule(
+            name="update_%s_recordset" % rec_type,
+            check_str=RULE_ADMIN_OR_OWNER_PRIMARY,
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY
+        )
+        new_rule = policy.DocumentedRuleDefault(
+            name="update_%s_recordset" % rec_type,
+            check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
+            scope_types=[constants.PROJECT],
+            description="Update recordset",
+            operations=[
+                {
+                    'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
+                    'method': 'PUT'
+                }
+            ],
+            deprecated_rule=deprecated_rule
+        )
+        update_rules.append(new_rule)
+
+        # delete rules
+        deprecated_rule = policy.DeprecatedRule(
+            name="delete_%s_recordset" % rec_type,
+            check_str=RULE_ADMIN_OR_OWNER_PRIMARY,
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY
+        )
+        new_rule = policy.DocumentedRuleDefault(
+            name="delete_%s_recordset" % rec_type,
+            check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
+            scope_types=[constants.PROJECT],
+            description="Delete RecordSet",
+            operations=[
+                {
+                    'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
+                    'method': 'DELETE'
+                }
+            ],
+            deprecated_rule=deprecated_rule
+        )
+        delete_rules.append(new_rule)
+
+    all_rules = rules + create_rules + update_rules + delete_rules
+    return all_rules

@@ -79,10 +79,10 @@ class ZoneImportController(rest.RestController):
 
         # Use given 'pool_id' if it was specified in the headers
         pool_id = request.headers.get('X-Designate-Pool-ID')
-
+        force_import = request.headers.get('X-Designate-Force-Import')
         # Create the zone_import
         zone_import = self.central_api.create_zone_import(
-            context, body, pool_id)
+                context, body, pool_id, force_import)
         response.status_int = 202
 
         LOG.info("Created %(zone_import)s", {'zone_import': zone_import})

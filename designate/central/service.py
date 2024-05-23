@@ -22,6 +22,7 @@ import signal
 import string
 import time
 
+from eventlet import tpool
 from dns import exception as dnsexception
 from dns import zone as dnszone
 from oslo_log import log as logging
@@ -1006,7 +1007,6 @@ class Service(service.RPCService):
         self._enforce_catalog_zone_policy(context, zone)
 
         changes = zone.obj_get_changes()
-
         # Ensure immutable fields are not changed
         if 'tenant_id' in changes:
             # TODO(kiall): Moving between tenants should be allowed, but the
@@ -1899,6 +1899,146 @@ class Service(service.RPCService):
 
         return self.storage.find_records(context, criterion, marker, limit,
                                          sort_key, sort_dir)
+
+    @rpc.expected_exceptions()
+    def find_record(self, context, criterion=None):
+        target = {'tenant_id': context.project_id}
+        policy.check('find_record', context, target)
+
+        return self.storage.find_record(context, criterion)
+
+    @rpc.expected_exceptions()
+    @notification.notify_type('dns.record.update')
+    @lock.synchronized_zone()
+    def update_record(self, context, record, increment_serial=True):
+        zone_id = record.obj_get_original_value('zone_id')
+
+        zone = self.storage.get_zone(context, zone_id)
+
+        # Don't allow updates to zones that are being deleted
+        if zone.action == 'DELETE':
+            raise exceptions.BadRequest('Can not update a deleting zone')
+
+        recordset_id = record.obj_get_original_value('recordset_id')
+        recordset = self.storage.get_recordset(context, recordset_id)
+
+        changes = record.obj_get_changes()
+
+        # Ensure immutable fields are not changed
+        if 'tenant_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between tenants '
+                                        'is not allowed')
+
+        if 'zone_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between zones '
+                                        'is not allowed')
+
+        if 'recordset_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between '
+                                        'recordsets is not allowed')
+
+        target = {
+            'zone_id': record.obj_get_original_value('zone_id'),
+            'zone_name': zone.name,
+            'zone_type': zone.type,
+            'zone_shared': zone.shared,
+            'recordset_id': record.obj_get_original_value('recordset_id'),
+            'recordset_name': recordset.name,
+            'record_id': record.obj_get_original_value('id'),
+            'tenant_id': zone.tenant_id
+        }
+
+        policy.check('update_record', context, target)
+
+        if recordset.managed and not context.edit_managed_records:
+            raise exceptions.BadRequest('Managed records may not be updated')
+
+        record, zone = self._update_record_in_storage(
+            context, zone, record, increment_serial=increment_serial)
+
+        self.zone_api.update_zone(context, zone)
+
+        return record
+
+    @transaction
+    def _update_record_in_storage(self, context, zone, record,
+                                  increment_serial=True):
+
+        if increment_serial:
+            # update the zone's status and increment the serial
+            zone = self._update_zone_in_storage(
+                context, zone, increment_serial)
+
+        record.action = 'UPDATE'
+        record.status = 'PENDING'
+        record.serial = zone.serial
+
+        # Update the record
+        record = self.storage.update_record(context, record)
+
+        return (record, zone)
+
+    @rpc.expected_exceptions()
+    @notification.notify_type('dns.record.delete')
+    @lock.synchronized_zone()
+    def delete_record(self, context, zone_id, recordset_id, record_id,
+                      increment_serial=True):
+        zone = self.storage.get_zone(context, zone_id)
+
+        # Don't allow updates to zones that are being deleted
+        if zone.action == 'DELETE':
+            raise exceptions.BadRequest('Can not update a deleting zone')
+
+        recordset = self.storage.get_recordset(context, recordset_id)
+        record = self.storage.get_record(context, record_id)
+
+        # Ensure the zone_id matches the record's zone_id
+        if zone.id != record.zone_id:
+            raise exceptions.RecordNotFound()
+
+        # Ensure the recordset_id matches the record's recordset_id
+        if recordset.id != record.recordset_id:
+            raise exceptions.RecordNotFound()
+
+        target = {
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'zone_type': zone.type,
+            'zone_shared': zone.shared,
+            'recordset_id': recordset_id,
+            'recordset_name': recordset.name,
+            'record_id': record.id,
+            'tenant_id': zone.tenant_id
+        }
+
+        policy.check('delete_record', context, target)
+
+        if recordset.managed and not context.edit_managed_records:
+            raise exceptions.BadRequest('Managed records may not be deleted')
+
+        record, zone = self._delete_record_in_storage(
+            context, zone, record, increment_serial=increment_serial)
+
+        self.zone_api.update_zone(context, zone)
+
+        return record
+
+    @transaction
+    def _delete_record_in_storage(self, context, zone, record,
+                                  increment_serial=True):
+
+        if increment_serial:
+            # update the zone's status and increment the serial
+            zone = self._update_zone_in_storage(
+                context, zone, increment_serial)
+
+        record.action = 'DELETE'
+        record.status = 'PENDING'
+        record.serial = zone.serial
+
+        record = self.storage.update_record(context, record)
+
+        return (record, zone)
 
     @rpc.expected_exceptions()
     def count_records(self, context, criterion=None):
@@ -2850,15 +2990,19 @@ class Service(service.RPCService):
     # Zone Import Methods
     @rpc.expected_exceptions()
     @notification.notify_type('dns.zone_import.create')
-    def create_zone_import(self, context, request_body, pool_id=''):
+    def create_zone_import(self, context, request_body,
+                           pool_id='', force=False):
         if policy.enforce_new_defaults():
             target = {constants.RBAC_PROJECT_ID: context.project_id}
         else:
             target = {'tenant_id': context.project_id}
-        policy.check('create_zone_import', context, target)
+
+        if force:
+            policy.check('create_force_zone_import', context, target)
+        else:
+            policy.check('create_zone_import', context, target)
 
         self._is_valid_project_id(context.project_id)
-
         values = {
             'status': 'PENDING',
             'message': None,
@@ -2872,73 +3016,184 @@ class Service(service.RPCService):
                                                               zone_import)
 
         self.tg.add_thread(self._import_zone, context, created_zone_import,
-                           request_body, pool_id=pool_id)
+                           request_body, pool_id=pool_id, force=force)
 
         return created_zone_import
 
     @rpc.expected_exceptions()
-    def _import_zone(self, context, zone_import, request_body, pool_id=''):
-        zone = None
-        try:
-            dnspython_zone = dnszone.from_text(
-                request_body,
-                # Don't relativize, or we end up with '@' record names.
-                relativize=False,
-                # Don't check origin, we allow missing NS records
-                # (missing SOA records are taken care of in _create_zone).
-                check_origin=False)
-            zone = dnsutils.from_dnspython_zone(dnspython_zone)
-            zone.type = 'PRIMARY'
+    def _import_zone(self, context, zone_import, request_body, pool_id='',
+                     force=False):
 
-            # Set pool id attribute if it was specified as request header:
-            if pool_id:
-                attr = objects.ZoneAttributeList.from_list([
-                    {"key": "pool_id",
-                     "value": pool_id}])
-                # We can set attributes freely as there are no attributes
-                # in zone import request body since it is text/dns
-                zone.__setattr__('attributes', attr)
+        def _force_import(existing_rrsets, new_rrsets):
+            """
+            if record exist in new and old then update
+            if record exist in new and not in old then create
+            if record not exist in new and exist in old then delete from old
+            """
+            for rrset in existing_rrsets:
+                recordset_id = existing_rrsets[rrset].id
+                if rrset not in new_rrsets:
+                    LOG.debug(f"Deleting recordset {recordset_id}"
+                              f" for zone {zone_object.id}")
+                    self.delete_recordset(context, zone_object.id,
+                                          recordset_id)
+                if rrset in new_rrsets:
+                    new_rrsets[rrset].id = recordset_id
+                    new_rrsets[rrset].zone_id = zone_object.id
+                    new_rrsets[rrset].tenant_id = zone_object.tenant_id
+                    LOG.debug(f"Updating recordset {rrset} for zone {rrset}")
+                    self.storage.update_recordset(context, new_rrsets[rrset])
+                    new_rrsets.pop(rrset)
+            for rrset in new_rrsets:
+                if rrset not in existing_rrsets:
+                    LOG.debug(f"Creating recordset {new_rrsets[rrset]}"
+                              f" for zone {zone_object.id}")
+                    self.create_recordset(context, zone_object.id,
+                                          new_rrsets[rrset])
 
-            for rrset in list(zone.recordsets):
-                if rrset.type == 'SOA':
-                    zone.recordsets.remove(rrset)
-                # subdomain NS records should be kept
-                elif rrset.type == 'NS' and rrset.name == zone.name:
-                    zone.recordsets.remove(rrset)
-        except dnszone.UnknownOrigin:
-            zone_import.message = (
-                'The $ORIGIN statement is required and must be the first '
-                'statement in the zonefile.'
-            )
-            zone_import.status = 'ERROR'
-        except dnsexception.SyntaxError:
-            zone_import.message = 'Malformed zonefile.'
-            zone_import.status = 'ERROR'
-        except exceptions.BadRequest:
-            zone_import.message = 'An SOA record is required.'
-            zone_import.status = 'ERROR'
-        except Exception as e:
-            LOG.exception('An undefined error occurred during zone import')
-            zone_import.message = (
-                'An undefined error occurred. %s' % str(e)[:130]
-            )
-            zone_import.status = 'ERROR'
+        def _import(self, context, zone_import, request_body, pool_id=''):
+            # Dnspython needs a str instead of a unicode object
+            zone = None
+            try:
+                dnspython_zone = dnszone.from_text(
+                    request_body,
+                    # Don't relativize, or we end up with '@' record names.
+                    relativize=False,
+                    # Don't check origin, we allow missing NS records
+                    # (missing SOA records are taken care of in _create_zone).
+                    check_origin=False)
+                zone = dnsutils.from_dnspython_zone(dnspython_zone)
+                zone.type = 'PRIMARY'
+
+                # Set pool id attribute if it was specified as request header:
+                if pool_id:
+                    attr = objects.ZoneAttributeList.from_list([
+                        {"key": "pool_id",
+                         "value": pool_id}])
+
+                    # We can set attributes freely as there are no attributes
+                    # in zone import request body since it is text/dns
+                    zone.__setattr__('attributes', attr)
+
+                if policy.enforce_new_defaults():
+                    target = {constants.RBAC_PROJECT_ID: context.project_id}
+                else:
+                    target = {'tenant_id': context.project_id}
+
+                #checks = {"MX": False, "NS": False}
+                for rrset in list(zone.recordsets):
+                    if rrset.type == 'SOA':
+                        zone.recordsets.remove(rrset)
+                    # subdomain NS records should be kept
+                    elif rrset.type == 'NS' and rrset.name == zone.name:
+                        zone.recordsets.remove(rrset)
+                    #TODO: fix the check for MX and NS record types
+                    #if rrset.type in ["MX", "NS"] and not checks[rrset.type]:
+                    #    LOG.debug(f"Checking {rrset.type} policy during zone import")
+                    #    check = policy.check(f'create_{rrset.type}_recordset',
+                    #                         context, target, do_raise=False)
+                    #    if not check:
+                    #        zone_import.status = 'ERROR'
+                    #        zone_import.message = f'Failed to create Record' \
+                    #                              f' {rrset.name} - Forbidden'
+                    #        break
+                    #    else:
+                    #        checks[rrset.type] = True
+            except dnszone.UnknownOrigin:
+                zone_import.message = ('The $ORIGIN statement is required and'
+                                      ' must be the first statement in the'
+                                      ' zonefile.')
+                zone_import.status = 'ERROR'
+            except dnsexception.SyntaxError:
+                zone_import.message = 'Malformed zonefile.'
+                zone_import.status = 'ERROR'
+            except exceptions.BadRequest:
+                zone_import.message = 'An SOA record is required.'
+                zone_import.status = 'ERROR'
+            except Exception as e:
+                LOG.exception('An undefined error occurred during zone import')
+                msg = 'An undefined error occurred. %s'\
+                      % str(e)[:130]
+                zone_import.message = msg
+                zone_import.status = 'ERROR'
+
+            return zone, zone_import
+
+        # Execute the import in a real Python thread
+        zone, zone_import = tpool.execute(_import, self, context,
+            zone_import, request_body, pool_id=pool_id)
 
         # If the zone import was valid, create the zone
         if zone_import.status != 'ERROR':
+            if policy.enforce_new_defaults():
+                target = {constants.RBAC_PROJECT_ID: context.project_id}
+            else:
+                target = {'tenant_id': context.project_id}
+
             try:
-                zone = self.create_zone(context, zone)
+                if force:
+                    try:
+                        zone_object = self.storage.find_zone(
+                            context,
+                            {'name': zone.name}
+                        )
+                    except exceptions.ZoneNotFound:
+                        if policy.check('create_zone_import', context,
+                                        target, do_raise=False):
+                            zone = self.create_zone(context, zone)
+                        else:
+                            zone_import.status = 'ERROR'
+                            zone_import.message = 'Failed to create zone' \
+                                                  ' - Forbidden'
+                            self.update_zone_import(context.elevated(),
+                                                    zone_import)
+                            raise exceptions.Forbidden
+                    else:
+                        criterion = {'zone_id': zone_object.id}
+                        rrsets = self.storage.find_recordsets(context,
+                                                              criterion)
+                        existing_rrsets = dict()
+                        for rrset in rrsets:
+                            if rrset.type == 'SOA':
+                                continue
+                            if rrset.type == 'NS' and rrset.name == zone.name:
+                                continue
+                            existing_rrsets[
+                                f"{rrset.name}_{rrset.type}"] = rrset
+                        new_rrsets = {
+                            f"{rrset.name}_{rrset.type}": rrset for rrset
+                            in zone.recordsets
+                        }
+                        _force_import(existing_rrsets, new_rrsets)
+                        zone_import.zone_id = zone_object.id
+                else:
+                    if policy.check('create_zone_import', context,
+                                    target, do_raise=False):
+                        zone = self.create_zone(context, zone)
+                    else:
+                        zone_import.status = 'ERROR'
+                        zone_import.message = 'Failed to create zone' \
+                                              ' - Forbidden'
+                        self.update_zone_import(context.elevated(),
+                                                zone_import)
+                        raise exceptions.Forbidden
+
                 zone_import.status = 'COMPLETE'
                 zone_import.zone_id = zone.id
                 zone_import.message = (
                     f'{zone.name} imported'
                 )
+
             except exceptions.DuplicateZone:
                 zone_import.status = 'ERROR'
                 zone_import.message = 'Duplicate zone.'
             except exceptions.InvalidTTL as e:
                 zone_import.status = 'ERROR'
                 zone_import.message = str(e)
+            except exceptions.Forbidden:
+                zone_import.status = 'ERROR'
+                zone_import.message = 'Failed to create zone' \
+                                      ' - Forbidden'
             except exceptions.OverQuota:
                 zone_import.status = 'ERROR'
                 zone_import.message = 'Quota exceeded during zone import.'
@@ -2946,12 +3201,14 @@ class Service(service.RPCService):
                 LOG.exception(
                     'An undefined error occurred during zone import creation'
                 )
-                zone_import.message = (
-                    'An undefined error occurred. %s' % str(e)[:130]
-                )
+                msg = 'An undefined error occurred. %s'\
+                      % str(e)[:130]
+                if isinstance(e.__context__, exceptions.DuplicateZone):
+                    msg = 'Duplicate zone.'
+                zone_import.message = msg
                 zone_import.status = 'ERROR'
 
-        self.update_zone_import(context, zone_import)
+        self.update_zone_import(context.elevated(), zone_import)
 
     @notification.notify_type('dns.zone_import.update')
     def update_zone_import(self, context, zone_import):

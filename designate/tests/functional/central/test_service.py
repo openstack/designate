@@ -3802,7 +3802,9 @@ class CentralServiceTest(designate.tests.functional.TestCase):
             self, mock_update_zone_import, mock_create_zone):
 
         # setup to test the create_zone exceptions from _import_zone method
-        context = self.get_context(project_id=uuidutils.generate_uuid())
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
+                                   roles=['member', 'reader'])
+
         request_body = self.get_zonefile_fixture()
         values = {
             'status': 'PENDING',
