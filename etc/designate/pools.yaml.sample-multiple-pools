@@ -24,7 +24,7 @@
   # List out the targets for this pool. For PowerDNS, this is the database
   # (or databases, if you deploy a separate DB for each PowerDNS server)
   targets:
-    - type: powerdns
+    - type: pdns4
       description: PowerDNS Database Cluster
 
       # List out the designate-mdns servers from which PowerDNS servers should
@@ -110,4 +110,4 @@
   # DNS NOTIFY packets to
   also_notifies:
    - host: 192.0.2.4
-     port:
+     port: 53
