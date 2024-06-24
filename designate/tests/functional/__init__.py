@@ -20,13 +20,13 @@ import functools
 import inspect
 import os
 import time
+import unittest
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
 from oslo_log import log as logging
 from oslo_messaging import conffixture as messaging_fixture
 from oslotest import base
-from testtools import testcase
 
 from designate.common import constants
 import designate.conf
@@ -899,10 +899,10 @@ def _skip_decorator(func):
         try:
             return func(*args, **kwargs)
         except NotImplementedError as e:
-            raise testcase.TestSkipped(str(e))
+            raise unittest.SkipTest(str(e))
         except Exception as e:
             if 'not implemented' in str(e):
-                raise testcase.TestSkipped(str(e))
+                raise unittest.SkipTest(str(e))
             raise
     return skip_if_not_implemented
 
