@@ -15,6 +15,7 @@
 # under the License.
 from oslo_log import log as logging
 import oslo_messaging as messaging
+from oslo_utils import uuidutils
 import stevedore.exception
 import yaml
 
@@ -27,7 +28,6 @@ from designate import objects
 from designate.objects.adapters import DesignateAdapter
 from designate import policy
 from designate import rpc
-from designate import utils
 
 
 CONF = designate.conf.CONF
@@ -74,7 +74,7 @@ class PoolCommands(base.Commands):
         self.output_message.append('-------------------')
 
         try:
-            if not utils.is_uuid_like(pool_id):
+            if not uuidutils.is_uuid_like(pool_id):
                 self.output_message.append('Not a valid uuid: %s' % pool_id)
                 raise SystemExit(1)
 
@@ -164,7 +164,7 @@ class PoolCommands(base.Commands):
     def _get_pool(self, pool_data):
         if 'id' in pool_data:
             pool_id = pool_data['id']
-            if not utils.is_uuid_like(pool_id):
+            if not uuidutils.is_uuid_like(pool_id):
                 self.output_message.append('Not a valid uuid: %s' % pool_id)
                 raise SystemExit(1)
 

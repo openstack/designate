@@ -33,6 +33,37 @@ class TestUtils(oslotest.base.BaseTestCase):
         self.useFixture(cfg_fixture.Config(CONF))
         self.useFixture(self.stdlog)
 
+    def test_validate_uuid(self):
+        @utils.validate_uuid('zone_id')
+        def validate_uuid(cls, zone_id):
+            return True
+        self.assertTrue(
+            validate_uuid(None, '6a8caf9d-679e-4fc1-80e9-13496f6a783f')
+        )
+
+    def test_validate_invalid_uuid(self):
+        @utils.validate_uuid('zone_id')
+        def validate_uuid(cls, zone_id):
+            return True
+
+        self.assertRaisesRegex(
+            exceptions.InvalidUUID,
+            'Invalid UUID zone_id: 62f89e5f088c7',
+            validate_uuid, None, '62f89e5f088c7'
+        )
+
+    def test_validate_uuid_no_arguments(self):
+        @utils.validate_uuid('zone_id')
+        def validate_uuid(cls):
+            return
+        self.assertRaises(exceptions.NotFound, validate_uuid)
+
+    def test_invalid_uuid_no_argument_provided(self):
+        @utils.validate_uuid('zone_id')
+        def validate_uuid(cls):
+            return
+        self.assertRaises(exceptions.NotFound, validate_uuid, None)
+
     @mock.patch('os.path.exists')
     @mock.patch('os.path.abspath')
     def test_find_config(self, mock_abspath, mock_path_exists):
@@ -212,14 +243,6 @@ class TestUtils(oslotest.base.BaseTestCase):
         result = utils.render_template(template, name='World')
 
         self.assertEqual('Hello World', result)
-
-    def test_is_uuid_like(self):
-        self.assertTrue(
-            utils.is_uuid_like('ce9fcd6b-d546-4397-8a49-8ceaec37cb64')
-        )
-
-    def test_is_not_uuid_like(self):
-        self.assertFalse(utils.is_uuid_like('678'))
 
     def test_split_host_port(self):
         host, port = utils.split_host_port('abc:25')

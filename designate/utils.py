@@ -139,16 +139,6 @@ def generate_uuid():
     return uuidutils.generate_uuid(dashed=True)
 
 
-def is_uuid_like(val):
-    """Returns validation of a value as a UUID.
-
-    For our purposes, a UUID is a canonical form string:
-    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
-
-    """
-    return uuidutils.is_uuid_like(val)
-
-
 def validate_uuid(*check):
     """
     A wrapper to ensure that API controller methods arguments are valid UUID's.
@@ -167,7 +157,7 @@ def validate_uuid(*check):
             # /v2/zones/<UUID - valid or invalid>/invalid
             # get, patch and delete return a 404, but Pecan returns a 405
             # for a POST at the same URL
-            if (len(arg_spec) != len(args)):
+            if len(arg_spec) != len(args):
                 raise exceptions.NotFound()
 
             # Ensure that we have non-empty parameters in the cases where we
@@ -175,14 +165,15 @@ def validate_uuid(*check):
             # This is for URLs like /v2/zones/nameservers
             # Ideally Pecan should be handling these cases, but until then
             # we handle those cases here.
-            if (len(args) <= len(check)):
+            if len(args) <= len(check):
                 raise exceptions.NotFound()
 
             for name in check:
                 pos = arg_spec.index(name)
-                if not is_uuid_like(args[pos]):
-                    msg = f'Invalid UUID {name}: {args[pos]}'
-                    raise exceptions.InvalidUUID(msg)
+                if not uuidutils.is_uuid_like(args[pos]):
+                    raise exceptions.InvalidUUID(
+                        f'Invalid UUID {name}: {args[pos]}'
+                    )
             return f(*args, **kwargs)
         return functools.wraps(f)(wrapper)
     return inner
