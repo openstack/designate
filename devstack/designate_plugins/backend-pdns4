@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Configure the powerdns backend
 
 # Enable with:

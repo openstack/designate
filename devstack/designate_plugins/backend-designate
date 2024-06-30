@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Configure the designate backend
 
 # Requirements:
@@ -65,7 +66,8 @@ function configure_designate_backend {
     IFS=',' read -a nameservers <<< "$DESIGNATE_D2D_NAMESERVERS"
 
     for nameserver in "${nameservers[@]}"; do
-        local nameserver_id=`uuidgen`
+        local nameserver_id
+        nameserver_id=`uuidgen`
         iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $(dig +short A $nameserver | head -n 1)
         iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port 53
 

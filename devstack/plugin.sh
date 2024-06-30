@@ -29,6 +29,9 @@ function cleanup_designate {
 
 # configure_designate - Set config files, create data dirs, etc
 function configure_designate {
+    local rootwrap_sudoer_cmd
+    local tempfile
+
     [ ! -d $DESIGNATE_CONF_DIR ] && sudo mkdir -m 755 -p $DESIGNATE_CONF_DIR
     sudo chown $STACK_USER $DESIGNATE_CONF_DIR
 
@@ -96,8 +99,8 @@ function configure_designate {
     iniset $DESIGNATE_CONF oslo_concurrency lock_path "$DESIGNATE_STATE_PATH"
 
     # Set up the rootwrap sudoers for designate
-    local rootwrap_sudoer_cmd="$DESIGNATE_BIN_DIR/designate-rootwrap $DESIGNATE_ROOTWRAP_CONF *"
-    local tempfile=`mktemp`
+    rootwrap_sudoer_cmd="$DESIGNATE_BIN_DIR/designate-rootwrap $DESIGNATE_ROOTWRAP_CONF *"
+    tempfile=`mktemp`
     echo "$STACK_USER ALL=(root) NOPASSWD: $rootwrap_sudoer_cmd" >$tempfile
     chmod 0440 $tempfile
     sudo chown root:root $tempfile
@@ -136,7 +139,7 @@ function configure_designatedashboard {
 }
 
 # Configure the needed tempest options
-function configure_designate_tempest() {
+function configure_designate_tempest {
     if is_service_enabled tempest; then
         # Tell tempest we're available
         iniset $TEMPEST_CONFIG service_available designate True
@@ -179,10 +182,12 @@ function configure_designate_tempest() {
 # ------------------------------------------------------------------
 # service              designate  admin        # if enabled
 function create_designate_accounts {
+    local designate_api_url
+
     if is_service_enabled designate-api; then
         create_service_user "designate"
 
-        local designate_api_url="$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST/dns"
+        designate_api_url="$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST/dns"
 
         get_or_create_service "designate" "dns" "Designate DNS Service"
         get_or_create_endpoint \
@@ -257,8 +262,8 @@ function install_designatedashboard {
     setup_dev_lib "designate-dashboard"
 
     for panel in _1710_project_dns_panel_group.py \
-                 _1721_dns_zones_panel.py \
-                 _1722_dns_reversedns_panel.py; do
+            _1721_dns_zones_panel.py \
+            _1722_dns_reversedns_panel.py; do
         ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/$panel $HORIZON_DIR/openstack_dashboard/local/enabled/$panel
     done
 }
