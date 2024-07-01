@@ -16,18 +16,18 @@
 import unittest
 
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 import oslotest.base
 
 from designate import exceptions
 from designate import objects
-from designate import utils
 
 LOG = logging.getLogger(__name__)
 
 
 def create_test_zone():
     return objects.Zone(
-        id=utils.generate_uuid(),
+        id=uuidutils.generate_uuid(),
         name='www.example.org.',
         email='foo@example.com',
     )

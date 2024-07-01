@@ -25,6 +25,7 @@ from unittest import mock
 from oslo_config import fixture as cfg_fixture
 from oslo_log import log as logging
 from oslo_messaging import conffixture as messaging_fixture
+from oslo_utils import uuidutils
 from oslotest import base
 from testtools import testcase
 
@@ -37,7 +38,6 @@ from designate import policy
 from designate import storage
 from designate.tests import base_fixtures
 from designate.tests import resources
-from designate import utils
 
 
 CONF = designate.conf.CONF
@@ -472,8 +472,8 @@ class TestCase(base.BaseTestCase):
 
     def get_admin_context(self, **kwargs):
         return DesignateContext.get_admin_context(
-            project_id=utils.generate_uuid(),
-            user_id=utils.generate_uuid(),
+            project_id=uuidutils.generate_uuid(),
+            user_id=uuidutils.generate_uuid(),
             **kwargs)
 
     # Fixture methods

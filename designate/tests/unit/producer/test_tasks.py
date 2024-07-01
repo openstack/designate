@@ -23,6 +23,7 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log import log as logging
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import oslotest.base
 
 from designate.central import rpcapi as central_api
@@ -33,7 +34,6 @@ from designate import rpc
 from designate.tests import base_fixtures
 from designate.tests.unit import RoObject
 from designate.tests.unit import RwObject
-from designate.utils import generate_uuid
 from designate.worker import rpcapi as worker_api
 
 
@@ -87,7 +87,7 @@ class PeriodicTest(oslotest.base.BaseTestCase):
         ctxt = mock.Mock()
         iterer = self.task._iter_zones(ctxt)
 
-        items = [RoObject(id=generate_uuid()) for i in range(0, 5)]
+        items = [RoObject(id=uuidutils.generate_uuid()) for i in range(0, 5)]
         central.find_zones.return_value = items
 
         # Iterate through the items causing the "paging" to be done.
@@ -150,7 +150,7 @@ class PeriodicExistsTest(oslotest.base.BaseTestCase):
         ))
 
     def test_emit_exists(self):
-        zone = RoObject(id=generate_uuid())
+        zone = RoObject(id=uuidutils.generate_uuid())
 
         with mock.patch.object(self.task, '_iter_zones') as iter_:
             iter_.return_value = [zone]
@@ -224,7 +224,7 @@ class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
 
     def test_transferred_at_is_none(self):
         zone = RoObject(
-            id=generate_uuid(),
+            id=uuidutils.generate_uuid(),
             transferred_at=None,
             refresh=3600
         )
@@ -238,7 +238,7 @@ class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
     def test_refresh_zone(self):
         transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=62)
         zone = RoObject(
-            id=generate_uuid(),
+            id=uuidutils.generate_uuid(),
             transferred_at=datetime.datetime.isoformat(transferred),
             refresh=3600
         )
@@ -253,7 +253,7 @@ class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
         # Dummy zone object
         transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=50)
         zone = RoObject(
-            id=generate_uuid(),
+            id=uuidutils.generate_uuid(),
             transferred_at=datetime.datetime.isoformat(transferred),
             refresh=3600
         )
@@ -285,7 +285,7 @@ class PeriodicIncrementSerialTest(oslotest.base.BaseTestCase):
 
     def test_increment_zone(self):
         zone = RoObject(
-            id=generate_uuid(),
+            id=uuidutils.generate_uuid(),
             action='CREATE',
             increment_serial=True,
             delayed_notify=False,
@@ -299,7 +299,7 @@ class PeriodicIncrementSerialTest(oslotest.base.BaseTestCase):
 
     def test_increment_zone_with_action_none(self):
         zone = RwObject(
-            id=generate_uuid(),
+            id=uuidutils.generate_uuid(),
             action='NONE',
             status='ACTIVE',
             increment_serial=True,
@@ -317,7 +317,7 @@ class PeriodicIncrementSerialTest(oslotest.base.BaseTestCase):
 
     def test_increment_zone_with_delayed_notify(self):
         zone = RoObject(
-            id=generate_uuid(),
+            id=uuidutils.generate_uuid(),
             action='CREATE',
             increment_serial=True,
             delayed_notify=True,
@@ -331,7 +331,7 @@ class PeriodicIncrementSerialTest(oslotest.base.BaseTestCase):
 
     def test_increment_zone_skip_deleted(self):
         zone = RoObject(
-            id=generate_uuid(),
+            id=uuidutils.generate_uuid(),
             action='DELETE',
             increment_serial=True,
             delayed_notify=False,

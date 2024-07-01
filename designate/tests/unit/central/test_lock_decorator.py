@@ -14,13 +14,13 @@ from unittest import mock
 
 from oslo_concurrency import lockutils
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 import oslotest.base
 
 from designate.common.decorators import lock
 from designate import exceptions
 from designate.objects import record
 from designate.objects import zone
-from designate import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -55,7 +55,8 @@ class CentralDecoratorTests(oslotest.base.BaseTestCase):
         for index in range(9):
             try:
                 mock_get_zone(
-                    self.service, index, zone.Zone(id=utils.generate_uuid())
+                    self.service, index,
+                    zone.Zone(id=uuidutils.generate_uuid())
                 )
             except exceptions.ZoneNotFound:
                 pass
@@ -65,7 +66,7 @@ class CentralDecoratorTests(oslotest.base.BaseTestCase):
         def mock_create_zone(cls, context):
             self.assertEqual({b'create-new-zone'}, cls.zone_lock_local._held)
             mock_create_record(
-                cls, context, zone.Zone(id=utils.generate_uuid())
+                cls, context, zone.Zone(id=uuidutils.generate_uuid())
             )
 
         @lock.synchronized_zone()
@@ -98,11 +99,11 @@ class CentralDecoratorTests(oslotest.base.BaseTestCase):
 
         mock_create_record(
             self.service, self.context,
-            record_obj=record.Record(zone_id=utils.generate_uuid())
+            record_obj=record.Record(zone_id=uuidutils.generate_uuid())
         )
         mock_get_zone(
             self.service, self.context,
-            zone_obj=zone.Zone(id=utils.generate_uuid())
+            zone_obj=zone.Zone(id=uuidutils.generate_uuid())
         )
 
     def test_synchronized_zone_raises_exception_when_no_zone_provided(self):

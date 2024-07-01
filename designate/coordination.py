@@ -21,11 +21,11 @@ import math
 
 from oslo_concurrency import lockutils
 from oslo_log import log
+from oslo_utils import uuidutils
 import tenacity
 import tooz.coordination
 
 import designate.conf
-from designate import utils
 
 
 CONF = designate.conf.CONF
@@ -61,7 +61,7 @@ class Coordination:
 
     def start(self):
         self.coordination_id = (
-            ':'.join([CONF.host, utils.generate_uuid()]).encode()
+            ':'.join([CONF.host, uuidutils.generate_uuid()]).encode()
         )
         self._started = False
 

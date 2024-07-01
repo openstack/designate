@@ -135,10 +135,6 @@ def deep_dict_merge(a, b):
     return result
 
 
-def generate_uuid():
-    return uuidutils.generate_uuid(dashed=True)
-
-
 def validate_uuid(*check):
     """
     A wrapper to ensure that API controller methods arguments are valid UUID's.

@@ -21,11 +21,11 @@ Create Date: 2022-08-01 16:41:55.139558
 
 """
 from alembic import op
+from oslo_utils import uuidutils
 import sqlalchemy as sa
 
 from designate.storage.sqlalchemy.alembic import legacy_utils
 from designate.storage.sqlalchemy.types import UUID
-from designate import utils
 
 # revision identifiers, used by Alembic.
 revision = '304d41c3847a'
@@ -47,7 +47,8 @@ def upgrade() -> None:
 
     op.create_table(
         'service_statuses', metadata,
-        sa.Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+        sa.Column('id', UUID,
+                  default=uuidutils.generate_uuid, primary_key=True),
         sa.Column('created_at', sa.DateTime),
         sa.Column('updated_at', sa.DateTime),
         sa.Column('service_name', sa.String(40), nullable=False),

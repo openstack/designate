@@ -18,10 +18,10 @@ Create Date: 2022-09-22 20:50:03.056609
 
 """
 from alembic import op
+from oslo_utils import uuidutils
 import sqlalchemy as sa
 
 from designate.storage.sqlalchemy.types import UUID
-from designate import utils
 
 # revision identifiers, used by Alembic.
 revision = 'b20189fd288e'
@@ -35,7 +35,8 @@ def upgrade() -> None:
 
     op.create_table(
         'shared_zones', meta,
-        sa.Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+        sa.Column('id', UUID,
+                  default=uuidutils.generate_uuid, primary_key=True),
         sa.Column('created_at', sa.DateTime),
         sa.Column('updated_at', sa.DateTime),
         sa.Column('zone_id', UUID, nullable=False),
