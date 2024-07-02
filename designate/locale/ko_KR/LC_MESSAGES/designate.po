@@ -1,16 +1,15 @@
-# Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
-# Jongwon Lee <tothebinaryworld@gmail.com>, 2020. #zanata
+# Lee Jongwon <tothebinaryworld@gmail.com>, 2020. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: designate VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-10-05 16:59+0000\n"
+"POT-Creation-Date: 2024-06-30 17:43+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2020-10-05 02:12+0000\n"
-"Last-Translator: Jongwon Lee <tothebinaryworld@gmail.com>\n"
+"PO-Revision-Date: 2020-10-05 02:04+0000\n"
+"Last-Translator: Lee Jongwon <tothebinaryworld@gmail.com>\n"
 "Language-Team: Korean (South Korea)\n"
 "Language: ko_KR\n"
 "X-Generator: Zanata 4.3.3\n"
@@ -20,52 +19,14 @@ msgstr ""
 msgid "%s is not a valid project ID."
 msgstr "%s는 유효한 프로젝트 ID가 아닙니다."
 
-msgid "An unknown exception occurred."
-msgstr "알 수 없는 예외가 발생했습니다. "
-
-#, python-format
-msgid "Cannot create '%(objtype)s' object(s): %(content)s [code %(code)s]"
-msgstr "'%(objtype)s' object(s)를 생성할 수 없음: %(content)s [code %(code)s]"
-
-#, python-format
-msgid "Cannot delete object with ref %(ref)s: %(content)s [code %(code)s]"
-msgstr "ref %(ref)s 오브젝트를 삭제할 수 없음: %(content)s [code %(code)s]"
-
-#, python-format
-msgid "Cannot search '%(objtype)s' object(s): %(content)s [code %(code)s]"
-msgstr "'%(objtype)s' object(s)를 찾을 수 없음 : %(content)s [code %(code)s]"
-
-#, python-format
-msgid "Cannot update object with ref %(ref)s: %(content)s [code %(code)s]"
-msgstr ""
-"ref %(ref)s 오브젝트를 업데이트 할 수 없음: %(content)s [code %(code)s]"
-
 msgid "Duplicate service status"
 msgstr "중복된 서비스 상태"
 
 msgid "Duplicated services found in service_statuses table."
 msgstr "service_status 테이블에 중복된 서비스가 발견 됨"
 
-#, python-format
-msgid ""
-"Error occurred during function's '%(func_name)s' call: ref %(ref)s: "
-"%(content)s [code %(code)s]"
-msgstr ""
-"'%(func_name)s' 함수 호출 시 에러 발생 : ref %(ref)s: %(content)s [code "
-"%(code)s]"
-
-#, python-format
-msgid "Infoblox backend is misconfigured: '%(option)s' must be defined."
-msgstr "Infoblox 백엔드가 잘못 구성됨: '%(option)s'를 정의해야 함"
-
 msgid "KeystoneV3 endpoint not found"
 msgstr "KeystoneV3 엔드포인트를 찾을 수 없음"
-
-msgid "No Infoblox Member is available."
-msgstr "이용 가능한 인포블록스 멤버가 없습니다."
-
-msgid "The service is unavailable"
-msgstr "서비스를 사용할 수 없음"
 
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "알 수 없는 정렬 방향입니다. 'desc' 또는 'asc'여야 함"

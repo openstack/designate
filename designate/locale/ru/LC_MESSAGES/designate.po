@@ -1,11 +1,10 @@
-# Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 # Roman Gorshunov <roman.gorshunov@att.com>, 2021. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: designate VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2022-08-18 22:28+0000\n"
+"POT-Creation-Date: 2024-06-30 17:43+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,78 +20,17 @@ msgstr ""
 msgid "%s is not a valid project ID."
 msgstr "%s не является допустимым ID проекта."
 
-msgid "An unknown exception occurred."
-msgstr "Обнаружено неизвестное исключение."
-
-#, python-format
-msgid "Cannot create '%(objtype)s' object(s): %(content)s [code %(code)s]"
-msgstr ""
-"Невозможно создать объект(-ы) '%(objtype)s': %(content)s [код %(code)s]"
-
-#, python-format
-msgid "Cannot delete object with ref %(ref)s: %(content)s [code %(code)s]"
-msgstr ""
-"Невозможно удалить объект с ссылкой %(ref)s: %(content)s [код %(code)s]"
-
-#, python-format
-msgid "Cannot search '%(objtype)s' object(s): %(content)s [code %(code)s]"
-msgstr "Невозможно найти объект(-ы) '%(objtype)s': %(content)s [код %(code)s]"
-
-#, python-format
-msgid "Cannot update object with ref %(ref)s: %(content)s [code %(code)s]"
-msgstr ""
-"Невозможно обновить объект с ссылкой %(ref)s: %(content)s [код %(code)s]"
-
 msgid "Duplicate service status"
 msgstr "Статус дублированного сервиса"
 
 msgid "Duplicated services found in service_statuses table."
 msgstr "В таблице service_statuses найдены дубликаты сервисов."
 
-#, python-format
-msgid ""
-"Error occurred during function's '%(func_name)s' call: ref %(ref)s: "
-"%(content)s [code %(code)s]"
-msgstr ""
-"Произошла ошибка при вызове функции '%(func_name)s': ссылка %(ref)s: "
-"%(content)s [код %(code)s]"
-
-#, python-format
-msgid ""
-"Infoblox %(obj_type)s will not be deleted because it cannot be found: "
-"%(payload)s"
-msgstr ""
-"Infoblox %(obj_type)s не будут удалены, так как они не были найдены: "
-"%(payload)s"
-
-#, python-format
-msgid ""
-"Infoblox %(obj_type)s will not be updated because it cannot be found: "
-"%(payload)s"
-msgstr ""
-"Infoblox %(obj_type)s не будут обновлены, так как они не были найдены: "
-"%(payload)s"
-
-#, python-format
-msgid "Infoblox backend is misconfigured: '%(option)s' must be defined."
-msgstr ""
-"Бэкенд Infoblox настроен некорректно: должны быть определены '%(option)s'."
-
-#, python-format
-msgid "Infoblox object cannot be parsed from dict: %(data)s"
-msgstr "Не удалось разобрать объект Infoblox из словаря: %(data)s"
-
 msgid "KeystoneV3 endpoint not found"
 msgstr "Не найдена конечная точка KeystoneV3"
 
-msgid "No Infoblox Member is available."
-msgstr "Нет доступных членов кластера Infoblox."
-
 msgid "Policy File JSON to YAML Migration"
 msgstr "Миграция файла политики JSON в YAML"
-
-msgid "The service is unavailable"
-msgstr "Служба недоступна"
 
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "Неизвестное направление сортировки, должно быть 'desc' или 'asc'"

@@ -1,5 +1,4 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
-# Andi Chandler <andi@gowling.com>, 2017. #zanata
 # Andi Chandler <andi@gowling.com>, 2018. #zanata
 # Andi Chandler <andi@gowling.com>, 2019. #zanata
 # Andi Chandler <andi@gowling.com>, 2021. #zanata
@@ -7,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: designate VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2022-08-18 22:28+0000\n"
+"POT-Creation-Date: 2024-06-30 17:43+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,74 +21,17 @@ msgstr ""
 msgid "%s is not a valid project ID."
 msgstr "%s is not a valid project ID."
 
-msgid "An unknown exception occurred."
-msgstr "An unknown exception occurred."
-
-#, python-format
-msgid "Cannot create '%(objtype)s' object(s): %(content)s [code %(code)s]"
-msgstr "Cannot create '%(objtype)s' object(s): %(content)s [code %(code)s]"
-
-#, python-format
-msgid "Cannot delete object with ref %(ref)s: %(content)s [code %(code)s]"
-msgstr "Cannot delete object with ref %(ref)s: %(content)s [code %(code)s]"
-
-#, python-format
-msgid "Cannot search '%(objtype)s' object(s): %(content)s [code %(code)s]"
-msgstr "Cannot search '%(objtype)s' object(s): %(content)s [code %(code)s]"
-
-#, python-format
-msgid "Cannot update object with ref %(ref)s: %(content)s [code %(code)s]"
-msgstr "Cannot update object with ref %(ref)s: %(content)s [code %(code)s]"
-
 msgid "Duplicate service status"
 msgstr "Duplicate service status"
 
 msgid "Duplicated services found in service_statuses table."
 msgstr "Duplicated services found in service_statuses table."
 
-#, python-format
-msgid ""
-"Error occurred during function's '%(func_name)s' call: ref %(ref)s: "
-"%(content)s [code %(code)s]"
-msgstr ""
-"Error occurred during function's '%(func_name)s' call: ref %(ref)s: "
-"%(content)s [code %(code)s]"
-
-#, python-format
-msgid ""
-"Infoblox %(obj_type)s will not be deleted because it cannot be found: "
-"%(payload)s"
-msgstr ""
-"Infoblox %(obj_type)s will not be deleted because it cannot be found: "
-"%(payload)s"
-
-#, python-format
-msgid ""
-"Infoblox %(obj_type)s will not be updated because it cannot be found: "
-"%(payload)s"
-msgstr ""
-"Infoblox %(obj_type)s will not be updated because it cannot be found: "
-"%(payload)s"
-
-#, python-format
-msgid "Infoblox backend is misconfigured: '%(option)s' must be defined."
-msgstr "Infoblox backend is misconfigured: '%(option)s' must be defined."
-
-#, python-format
-msgid "Infoblox object cannot be parsed from dict: %(data)s"
-msgstr "Infoblox object cannot be parsed from dict: %(data)s"
-
 msgid "KeystoneV3 endpoint not found"
 msgstr "KeystoneV3 endpoint not found"
 
-msgid "No Infoblox Member is available."
-msgstr "No Infoblox Member is available."
-
 msgid "Policy File JSON to YAML Migration"
 msgstr "Policy File JSON to YAML Migration"
-
-msgid "The service is unavailable"
-msgstr "The service is unavailable"
 
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "Unknown sort direction, must be 'desc' or 'asc'"

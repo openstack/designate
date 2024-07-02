@@ -10,11 +10,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-12 19:02+0000\n"
+"POT-Creation-Date: 2024-06-30 17:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2024-04-14 06:56+0000\n"
+"PO-Revision-Date: 2024-07-01 11:17+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -90,6 +90,12 @@ msgstr "16.0.1"
 msgid "17.0.0"
 msgstr "17.0.0"
 
+msgid "18.0.0"
+msgstr "18.0.0"
+
+msgid "18.0.0-18"
+msgstr "18.0.0-18"
+
 msgid "2.0.0"
 msgstr "2.0.0"
 
@@ -98,6 +104,12 @@ msgstr "2.1.0"
 
 msgid "2023.1 Series Release Notes"
 msgstr "2023.1 Series Release Notes"
+
+msgid "2023.2 Series Release Notes"
+msgstr "2023.2 Series Release Notes"
+
+msgid "2024.1 Series Release Notes"
+msgstr "2024.1 Series Release Notes"
 
 msgid "3.0.0"
 msgstr "3.0.0"
@@ -177,6 +189,9 @@ msgstr "ASync Import"
 
 msgid "Active / passive failover for designate-pool-manager periodic tasks"
 msgstr "Active / passive failover for designate-pool-manager periodic tasks"
+
+msgid "Add support for providing catalog zones."
+msgstr "Add support for providing catalogue zones."
 
 msgid "Added Designate Backend"
 msgstr "Added Designate Backend"
@@ -480,6 +495,9 @@ msgstr ""
 "org/oslo.messaging/latest/reference/notification_listener.html>`_ is an "
 "alternative to specifying several topics for notification consumers in "
 "configuration of service that emits notifications."
+
+msgid "Designate-agent removal is complete in this version of designate."
+msgstr "Designate-agent removal is complete in this version of designate."
 
 msgid ""
 "Fix an issue where on upgrade, the alembic migration will fail when using "
@@ -1070,6 +1088,13 @@ msgstr ""
 "convert a JSON to YAML formatted policy file in backward compatible way."
 
 msgid ""
+"The existing Infoblox driver has been updated and is now based on the "
+"official Infoblox client."
+msgstr ""
+"The existing Infoblox driver has been updated and is now based on the "
+"official Infoblox client."
+
+msgid ""
 "The fix for minidns's issues TCP can cause minidns to fail to send some "
 "messages. This manifests itself with eventlet not being able to send all the "
 "data before socket is closed."
@@ -1077,6 +1102,12 @@ msgstr ""
 "The fix for MiniDNS's issues TCP can cause MiniDNS to fail to send some "
 "messages. This manifests itself with eventlet not being able to send all the "
 "data before socket is closed."
+
+msgid "The following deprecated options have been removed."
+msgstr "The following deprecated options have been removed."
+
+msgid "The following new options were added to the pool config for Infoblox."
+msgstr "The following new options were added to the pool config for Infoblox."
 
 msgid ""
 "The following parameters have been deprecated. These parameters have had no "
@@ -1277,11 +1308,20 @@ msgstr "`LP#1971856 <https://bugs.launchpad.net/designate/+bug/1971856>`__"
 msgid "`LP#2002950 <https://launchpad.net/bugs/2002950>`__"
 msgstr "`LP#2002950 <https://launchpad.net/bugs/2002950>`__"
 
+msgid "``[service:api] max_header_line``"
+msgstr "``[service:api] max_header_line``"
+
 msgid "``[service:api] override_proto``"
 msgstr "``[service:api] override_proto``"
 
 msgid "``[service:api] secure_proxy_ssl_header``"
 msgstr "``[service:api] secure_proxy_ssl_header``"
+
+msgid "``all_tcp``"
+msgstr "``all_tcp``"
+
+msgid "``cert``"
+msgstr "``cert``"
 
 msgid "``count_records``"
 msgstr "``count_records``"
@@ -1310,6 +1350,12 @@ msgstr "``find_blacklist``"
 msgid "``find_record``"
 msgstr "``find_record``"
 
+msgid "``find_records``"
+msgstr "``find_records``"
+
+msgid "``find_recordset``"
+msgstr "``find_recordset``"
+
 msgid "``find_zone_transfer_accept``"
 msgstr "``find_zone_transfer_accept``"
 
@@ -1325,6 +1371,9 @@ msgstr "``get_quota``"
 msgid "``get_record``"
 msgstr "``get_record``"
 
+msgid "``key``"
+msgstr "``key``"
+
 msgid "``sync_record``"
 msgstr "``sync_record``"
 
@@ -1334,14 +1383,29 @@ msgstr "``sync_zone``"
 msgid "``sync_zones``"
 msgstr "``sync_zones``"
 
+msgid "``topic``"
+msgstr "``topic``"
+
 msgid "``touch_zone``"
 msgstr "``touch_zone``"
 
 msgid "``update_record``"
 msgstr "``update_record``"
 
+msgid "``update_zone_import``"
+msgstr "``update_zone_import``"
+
 msgid "``update_zone_transfer_accept``"
 msgstr "``update_zone_transfer_accept``"
+
+msgid "``wapi_host``"
+msgstr "``wapi_host``"
+
+msgid "``wapi_version``"
+msgstr "``wapi_version``"
+
+msgid "``xfr_timeout``"
+msgstr "``xfr_timeout``"
 
 msgid "default-soa-refresh configuration option"
 msgstr "default-soa-refresh configuration option"
