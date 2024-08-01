@@ -31,6 +31,7 @@ from oslo_log import log as logging
 from oslo_messaging.notify import notifier
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 from oslo_versionedobjects import exception as ovo_exc
 import testtools
 
@@ -42,7 +43,6 @@ from designate.storage import sql
 from designate.storage.sqlalchemy import tables
 from designate.tests import base_fixtures
 import designate.tests.functional
-from designate import utils
 from designate.worker import rpcapi as worker_api
 
 
@@ -3620,7 +3620,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
     # Zone Import Tests
     def test_create_zone_import(self):
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid(),
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
                                    roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(context,
@@ -3635,7 +3635,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.wait_for_import(zone_import.id)
 
     def test_create_zone_import_duplicate_threading(self):
-        context = self.get_context(project_id=utils.generate_uuid(),
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
                                    roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(context,
@@ -3643,7 +3643,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.wait_for_import(zone_import.id)
 
         def create_zone_import():
-            context = self.get_context(project_id=utils.generate_uuid(),
+            context = self.get_context(project_id=uuidutils.generate_uuid(),
                                        roles=['member', 'reader'])
             request_body = self.get_zonefile_fixture()
             zone_import = self.central_service.create_zone_import(context,
@@ -3664,7 +3664,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
             self, mock_update_zone_import, mock_dnszone_from_text):
 
         # the second set of exceptions for the create_zone
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=uuidutils.generate_uuid())
         request_body = self.get_zonefile_fixture()
         values = {
             'status': 'PENDING',
@@ -3699,7 +3699,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
             self, mock_update_zone_import, mock_create_zone):
 
         # setup to test the create_zone exceptions from _import_zone method
-        context = self.get_context(project_id=utils.generate_uuid())
+        context = self.get_context(project_id=uuidutils.generate_uuid())
         request_body = self.get_zonefile_fixture()
         values = {
             'status': 'PENDING',
@@ -3754,7 +3754,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         )
 
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid(),
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
                                    roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(context,
@@ -3773,7 +3773,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual('ERROR', zone_import.status)
 
     def test_find_zone_imports(self):
-        context = self.get_context(project_id=utils.generate_uuid(),
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
                                    roles=['member', 'reader'])
 
         # Ensure we have no zone_imports to start with.
@@ -3811,7 +3811,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_get_zone_import(self):
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid(),
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
                                    roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(
@@ -3830,7 +3830,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_update_zone_import(self):
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid(),
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
                                    roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(
@@ -3854,7 +3854,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_delete_zone_import(self):
         # Create a Zone Import
-        context = self.get_context(project_id=utils.generate_uuid(),
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
                                    roles=['member', 'reader'])
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(

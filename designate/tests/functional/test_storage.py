@@ -19,6 +19,7 @@ from unittest import mock
 
 from oslo_log import log as logging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
+from oslo_utils import uuidutils
 
 import designate.conf
 from designate.conf.mdns import DEFAULT_MDNS_PORT
@@ -27,7 +28,6 @@ from designate import objects
 from designate import storage
 from designate.storage import sql
 import designate.tests.functional
-from designate.utils import generate_uuid
 
 
 CONF = designate.conf.CONF
@@ -164,7 +164,7 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
             exceptions.MarkerNotFound,
             'Marker None could not be found',
             self.storage.find_pool_attributes, self.admin_context,
-            marker=generate_uuid(), limit=5
+            marker=uuidutils.generate_uuid(), limit=5
         )
 
     def test_paging_marker_invalid(self):

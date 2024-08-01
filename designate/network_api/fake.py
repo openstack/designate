@@ -16,13 +16,13 @@
 
 
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 
 from designate.network_api import base
-from designate.utils import generate_uuid
 
 
 LOG = logging.getLogger(__name__)
-POOL = {generate_uuid(): '192.0.2.%s' % i for i in range(1, 254)}
+POOL = {uuidutils.generate_uuid(): '192.0.2.%s' % i for i in range(1, 254)}
 ALLOCATIONS = {}
 
 

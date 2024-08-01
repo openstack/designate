@@ -22,6 +22,7 @@ Create Date: 2022-07-29 21:36:15.117658
 """
 from alembic import op
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import sqlalchemy as sa
 
 from designate.storage.sqlalchemy.alembic import legacy_utils
@@ -50,7 +51,8 @@ def upgrade() -> None:
 
     zone_masters_table = op.create_table(
         'zone_masters', metadata,
-        sa.Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+        sa.Column('id', UUID,
+                  default=uuidutils.generate_uuid, primary_key=True),
         sa.Column('version', sa.Integer, default=1, nullable=False),
         sa.Column('created_at', sa.DateTime,
                   default=lambda: timeutils.utcnow()),

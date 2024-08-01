@@ -19,10 +19,10 @@ from sqlalchemy import (Table, MetaData, Column, String, Text, Integer,
 
 from oslo_db.sqlalchemy import types
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 
 import designate.conf
 from designate.storage.sqlalchemy.types import UUID
-from designate import utils
 
 
 CONF = designate.conf.CONF
@@ -57,7 +57,7 @@ def default_shard(context, id_col):
 
 
 service_status = Table("service_statuses", metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
 
@@ -78,7 +78,7 @@ service_status = Table("service_statuses", metadata,
 
 
 quotas = Table('quotas', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -92,7 +92,7 @@ quotas = Table('quotas', metadata,
 )
 
 tlds = Table('tlds', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -105,7 +105,7 @@ tlds = Table('tlds', metadata,
 )
 
 zones = Table('zones', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -153,7 +153,7 @@ zones = Table('zones', metadata,
 )
 
 zone_attributes = Table('zone_attributes', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -170,7 +170,7 @@ zone_attributes = Table('zone_attributes', metadata,
 )
 
 zone_masters = Table('zone_masters', metadata,
-    Column('id', UUID(), default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID(), default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer(), default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -188,7 +188,7 @@ zone_masters = Table('zone_masters', metadata,
 
 shared_zones = Table(
     'shared_zones', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
     Column('zone_id', UUID, nullable=False),
@@ -204,7 +204,7 @@ shared_zones = Table(
 )
 
 recordsets = Table('recordsets', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -227,7 +227,7 @@ recordsets = Table('recordsets', metadata,
 )
 
 records = Table('records', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -266,7 +266,7 @@ records = Table('records', metadata,
 )
 
 tsigkeys = Table('tsigkeys', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -283,7 +283,7 @@ tsigkeys = Table('tsigkeys', metadata,
 )
 
 blacklists = Table('blacklists', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -296,7 +296,7 @@ blacklists = Table('blacklists', metadata,
 )
 
 pools = Table('pools', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
     Column('version', Integer, default=1, nullable=False),
@@ -314,7 +314,7 @@ pools = Table('pools', metadata,
 )
 
 pool_attributes = Table('pool_attributes', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
     Column('version', Integer, default=1, nullable=False),
@@ -330,7 +330,7 @@ pool_attributes = Table('pool_attributes', metadata,
 )
 
 pool_ns_records = Table('pool_ns_records', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
     Column('version', Integer, default=1, nullable=False),
@@ -346,7 +346,7 @@ pool_ns_records = Table('pool_ns_records', metadata,
     mysql_charset='utf8')
 
 pool_nameservers = Table('pool_nameservers', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer(), default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -363,7 +363,7 @@ pool_nameservers = Table('pool_nameservers', metadata,
 )
 
 pool_targets = Table('pool_targets', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer(), default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -380,7 +380,7 @@ pool_targets = Table('pool_targets', metadata,
 )
 
 pool_target_masters = Table('pool_target_masters', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer(), default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -399,7 +399,7 @@ pool_target_masters = Table('pool_target_masters', metadata,
 )
 
 pool_target_options = Table('pool_target_options', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer(), default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -417,7 +417,7 @@ pool_target_options = Table('pool_target_options', metadata,
 )
 
 pool_also_notifies = Table('pool_also_notifies', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer(), default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -434,7 +434,7 @@ pool_also_notifies = Table('pool_also_notifies', metadata,
 )
 
 zone_transfer_requests = Table('zone_transfer_requests', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -456,7 +456,7 @@ zone_transfer_requests = Table('zone_transfer_requests', metadata,
 )
 
 zone_transfer_accepts = Table('zone_transfer_accepts', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
@@ -480,7 +480,7 @@ zone_transfer_accepts = Table('zone_transfer_accepts', metadata,
 )
 
 zone_tasks = Table('zone_tasks', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('id', UUID, default=uuidutils.generate_uuid, primary_key=True),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
     Column('version', Integer, default=1, nullable=False),

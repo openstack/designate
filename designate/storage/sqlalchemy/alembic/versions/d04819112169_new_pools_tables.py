@@ -22,11 +22,11 @@ Create Date: 2022-08-01 16:20:17.440784
 """
 from alembic import op
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import sqlalchemy as sa
 
 from designate.storage.sqlalchemy.alembic import legacy_utils
 from designate.storage.sqlalchemy.types import UUID
-from designate import utils
 
 # revision identifiers, used by Alembic.
 revision = 'd04819112169'
@@ -46,7 +46,8 @@ def upgrade() -> None:
 
     op.create_table(
         'pool_nameservers', metadata,
-        sa.Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+        sa.Column('id', UUID,
+                  default=uuidutils.generate_uuid, primary_key=True),
         sa.Column('version', sa.Integer, default=1, nullable=False),
         sa.Column('created_at', sa.DateTime,
                   default=lambda: timeutils.utcnow()),
@@ -64,7 +65,8 @@ def upgrade() -> None:
 
     op.create_table(
         'pool_targets', metadata,
-        sa.Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+        sa.Column('id', UUID,
+                  default=uuidutils.generate_uuid, primary_key=True),
         sa.Column('version', sa.Integer, default=1, nullable=False),
         sa.Column('created_at', sa.DateTime,
                   default=lambda: timeutils.utcnow()),
@@ -81,7 +83,8 @@ def upgrade() -> None:
 
     op.create_table(
         'pool_target_masters', metadata,
-        sa.Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+        sa.Column('id', UUID,
+                  default=uuidutils.generate_uuid, primary_key=True),
         sa.Column('version', sa.Integer, default=1, nullable=False),
         sa.Column('created_at', sa.DateTime,
                   default=lambda: timeutils.utcnow()),
@@ -100,7 +103,8 @@ def upgrade() -> None:
 
     op.create_table(
         'pool_target_options', metadata,
-        sa.Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+        sa.Column('id', UUID,
+                  default=uuidutils.generate_uuid, primary_key=True),
         sa.Column('version', sa.Integer, default=1, nullable=False),
         sa.Column('created_at', sa.DateTime,
                   default=lambda: timeutils.utcnow()),
@@ -119,7 +123,8 @@ def upgrade() -> None:
 
     op.create_table(
         'pool_also_notifies', metadata,
-        sa.Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+        sa.Column('id', UUID,
+                  default=uuidutils.generate_uuid, primary_key=True),
         sa.Column('version', sa.Integer, default=1, nullable=False),
         sa.Column('created_at', sa.DateTime,
                   default=lambda: timeutils.utcnow()),
