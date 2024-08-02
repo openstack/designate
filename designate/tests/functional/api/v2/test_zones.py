@@ -387,6 +387,7 @@ class ApiV2ZonesTest(v2.ApiV2TestCase):
             '/zones/',
             headers={
                 'Accept': 'application/json',
+                'X-Test-Role': 'member',
             })
 
         self.assertEqual([], response.json['zones'])

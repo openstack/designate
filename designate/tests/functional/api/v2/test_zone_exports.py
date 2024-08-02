@@ -38,20 +38,6 @@ class ZoneExportsTest(v2.ApiV2TestCase):
         )
 
     def test_export(self):
-        self.config(enforce_new_defaults=False, group='oslo_policy')
-
-        zone_export = self.create_zone_export()
-        response = self.client.get(
-            '/zones/tasks/exports/%s/export' % zone_export['id'],
-            headers={'X-Test-Role': 'member'}
-        )
-
-        self.assertEqual(200, response.status_int)
-        self.assertEqual('text/dns', response.content_type)
-
-    def test_export_enforce_new_defaults(self):
-        self.config(enforce_new_defaults=True, group='oslo_policy')
-
         zone_export = self.create_zone_export()
         response = self.client.get(
             '/zones/tasks/exports/%s/export' % zone_export['id'],
@@ -66,5 +52,6 @@ class ZoneExportsTest(v2.ApiV2TestCase):
 
         self._assert_exception(
             'bad_request', 400, self.client.get,
-            '/zones/tasks/exports/%s/export' % zone_export['id']
+            '/zones/tasks/exports/%s/export' % zone_export['id'],
+            headers={'X-Test-Role': 'member'}
         )

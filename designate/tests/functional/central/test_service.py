@@ -4085,7 +4085,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_share_zone_with_zone_owner(self):
         # Create a Shared Zone
-        context = self.get_context(project_id='1')
+        context = self.get_context(project_id='1', roles=['member', 'reader'])
         zone = self.create_zone(context=context)
         exc = self.assertRaises(
             rpc_dispatcher.ExpectedException, self.share_zone,

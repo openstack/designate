@@ -112,8 +112,6 @@ class DesignateContext(context.RequestContext):
 
         # NOTE(kiall): Ugly - required to match http://tinyurl.com/o3y8qmw
         context.roles.append('admin')
-        if policy.enforce_new_defaults():
-            context.system_scope = 'all'
 
         if show_deleted is not None:
             context.show_deleted = show_deleted
