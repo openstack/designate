@@ -43,8 +43,7 @@ handled by Designate. Those two settings are `enforce_scope
 When you enable `Keystone Default Roles`_ and `Keystone Scoped Tokens`_ the
 Designate policy honors the following roles:
 
-* System scoped - Admin
-* System scoped - Reader
+* Admin
 * Project scoped - Reader
 * Project scoped - Member
 
@@ -63,9 +62,8 @@ configuration file::
     [oslo_policy]
     enforce_scope = True
 
-The primary effect of this setting is to allow a system scoped admin token when
-performing administrative API calls to the Designate API. The Designate API
-already enforces the project scoping in Keystone tokens.
+The primary effect of this setting is to allow only project scoped calls
+to the Designate API. The system scope token will return 403.
 
 [oslo_policy] enforce_new_defaults
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,18 +79,6 @@ policies by adding the following setting to your Designate configuration file::
 
     [oslo_policy]
     enforce_new_defaults = True
-
-Example OpenStack Client Command
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-After you have enabled enforce_new_defaults and enforce_scope, administrative
-commands require a system scoped admin token. An example `OpenStack Client <https://docs.openstack.org/python-designateclient/latest/cli/index.html>`_ command
-to create a `Top Level Domain (TLD) <https://docs.openstack.org/designate/latest/admin/tlds.html>`_ would look like:
-
-.. code-block:: bash
-
-    openstack --os-system-scope all --os-auth-url <identity endpoint URL> --os-password <admin password> --os-username admin --os-user-domain-name default create tld --name example.org
-
 
 Oslo Tools For Policy Management
 --------------------------------

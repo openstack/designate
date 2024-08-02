@@ -31,10 +31,8 @@ class ZoneExportController(rest.RestController):
     @utils.validate_uuid('export_id')
     def get_all(self, export_id):
         context = pecan.request.environ['context']
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
 
         policy.check('zone_export', context, target)
 
