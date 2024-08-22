@@ -33,35 +33,6 @@ NETWORK_API_NEUTRON_OPTS = [
     cfg.StrOpt('client_certificate_file',
                help='Location of client certificate file to use for '
                     'neutron client requests.'),
-
-
-    cfg.StrOpt('admin_username',
-               help='username for connecting to neutron in admin context',
-               deprecated_for_removal=True,
-               deprecated_reason='This parameter is no longer used.',
-               deprecated_since='2023.2'),
-    cfg.StrOpt('admin_password',
-               help='password for connecting to neutron in admin context',
-               secret=True, deprecated_for_removal=True,
-               deprecated_reason='This parameter is no longer used.',
-               deprecated_since='2023.2'),
-    cfg.StrOpt('admin_tenant_name',
-               help='tenant name for connecting to neutron in admin context',
-               deprecated_for_removal=True,
-               deprecated_reason='This parameter is no longer used.',
-               deprecated_since='2023.2'),
-    cfg.StrOpt('auth_url',
-               help='auth url for connecting to neutron in admin context',
-               deprecated_for_removal=True,
-               deprecated_reason='This parameter is no longer used.',
-               deprecated_since='2023.2'),
-    cfg.StrOpt('auth_strategy',
-               default='keystone',
-               help='auth strategy for connecting to '
-                    'neutron in admin context',
-               deprecated_for_removal=True,
-               deprecated_reason='This parameter is no longer used.',
-               deprecated_since='2023.2'),
 ]
 
 
