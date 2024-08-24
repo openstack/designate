@@ -42,8 +42,6 @@ class Bind9Backend(base.Backend):
     def __init__(self, target):
         super().__init__(target)
 
-        self._host = self.options.get('host', '127.0.0.1')
-        self._port = int(self.options.get('port', 53))
         self._view = self.options.get('view')
 
         # Removes zone files when a zone is deleted.
