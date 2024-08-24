@@ -52,6 +52,8 @@ class DesignateBackendTestCase(oslotest.base.BaseTestCase):
             'type': 'designate',
             'masters': [
                 {'host': '192.0.2.1', 'port': 53},
+                {'host': '::1', 'port': 53},
+                {'host': 'mdns.designate.example.com.', 'port': 53},
             ],
             'options': [
                 {'key': 'auth_url', 'value': 'auth_url'},
@@ -92,7 +94,8 @@ class DesignateBackendTestCase(oslotest.base.BaseTestCase):
         self.assertIsInstance(self.backend.client, client.Client)
 
     def test_create_zone(self):
-        masters = ["%(host)s:%(port)s" % self.target['masters'][0]]
+        masters = ["192.0.2.1:53", "[::1]:53",
+                   "mdns.designate.example.com.:53"]
         self.backend.create_zone(self.admin_context, self.zone)
         self.client.zones.create.assert_called_once_with(
             self.zone.name, 'SECONDARY', masters=masters)

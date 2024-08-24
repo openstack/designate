@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import ipaddress
+
 from designateclient import exceptions
 from designateclient.v2 import client
 from keystoneauth1.identity import v3 as v3_auth
@@ -76,7 +78,16 @@ class DesignateBackend(base.Backend):
         LOG.info('Creating zone %(d_id)s / %(d_name)s',
                  {'d_id': zone['id'], 'd_name': zone['name']})
 
-        masters = [f'{i.host}:{i.port}' for i in self.masters]
+        masters = []
+        for master in self.masters:
+            host = master.host
+            try:
+                if ipaddress.ip_address(host).version == 6:
+                    host = '[%s]' % host
+            except ValueError:
+                pass
+            masters.append('%s:%d' % (host, master.port))
+
         self.client.zones.create(
             zone.name, 'SECONDARY', masters=masters)
 
