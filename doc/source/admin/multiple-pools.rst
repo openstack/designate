@@ -97,7 +97,7 @@ master target we write to.
          description: bind9 golden master
 
          masters:
-           - host: mdns.designate.example.com
+           - host: mdns.designate.example.com.
              port: 5354
 
          options:
@@ -133,7 +133,7 @@ master target we write to.
          description: bind9 golden master
 
          masters:
-           - host: mdns.designate.example.com
+           - host: mdns.designate.example.com.
              port: 5354
 
          options:
