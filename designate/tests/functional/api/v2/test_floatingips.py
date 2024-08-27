@@ -19,28 +19,6 @@ from designate.tests.functional.api import v2
 
 
 class ApiV2ReverseFloatingIPTest(v2.ApiV2TestCase):
-    def test_get_floatingip_no_record(self):
-        context = self.get_context(project_id='a')
-
-        fip = self.network_api.fake.allocate_floatingip(context.project_id)
-
-        response = self.client.get(
-            '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            headers={'X-Test-Tenant-Id': context.project_id})
-
-        self.assertEqual(200, response.status_int)
-        self.assertEqual('application/json', response.content_type)
-
-        # TODO(ekarlso): Remove the floatingip key - bug in v2 api
-        fip_record = response.json
-        self.assertEqual(":".join([fip['region'],
-                         fip['id']]), fip_record['id'])
-        self.assertEqual(fip['address'], fip_record['address'])
-        self.assertIsNone(fip_record['description'])
-        self.assertIsNone(fip_record['ptrdname'])
-        self.assertEqual('NONE', fip_record['action'])
-        self.assertEqual('INACTIVE', fip_record['status'])
-
     def test_get_floatingip_with_record(self):
         fixture = self.get_ptr_fixture()
 
@@ -54,7 +32,8 @@ class ApiV2ReverseFloatingIPTest(v2.ApiV2TestCase):
 
         response = self.client.get(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            headers={'X-Test-Tenant-Id': context.project_id})
+            headers={'X-Test-Tenant-Id': context.project_id,
+                     'X-Test-Role': 'member'})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -111,7 +90,8 @@ class ApiV2ReverseFloatingIPTest(v2.ApiV2TestCase):
 
         response = self.client.get(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            headers={'X-Test-Tenant-Id': context.project_id})
+            headers={'X-Test-Tenant-Id': context.project_id,
+                     'X-Test-Role': 'member'})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -128,7 +108,8 @@ class ApiV2ReverseFloatingIPTest(v2.ApiV2TestCase):
     def test_get_floatingip_not_allocated(self):
         url = '/reverse/floatingips/foo:04580c52-b253-4eb7-8791-fbb9de9f856f'
 
-        self._assert_exception('not_found', 404, self.client.get, url)
+        self._assert_exception('not_found', 404, self.client.get, url,
+                               headers={'X-Test-Role': 'member'})
 
     def test_get_floatingip_invalid_key(self):
         url = '/reverse/floatingips/foo:bar'
@@ -136,33 +117,12 @@ class ApiV2ReverseFloatingIPTest(v2.ApiV2TestCase):
         self._assert_exception('bad_request', 400, self.client.get, url)
 
     def test_list_floatingip_no_allocations(self):
-        response = self.client.get('/reverse/floatingips')
+        response = self.client.get(
+            '/reverse/floatingips', headers={'X-Test-Role': 'member'})
 
         self.assertIn('floatingips', response.json)
         self.assertIn('links', response.json)
         self.assertEqual(0, len(response.json['floatingips']))
-
-    def test_list_floatingip_no_record(self):
-        context = self.get_context(project_id='a')
-
-        fip = self.network_api.fake.allocate_floatingip(context.project_id)
-
-        response = self.client.get(
-            '/reverse/floatingips',
-            headers={'X-Test-Tenant-Id': context.project_id})
-
-        self.assertIn('floatingips', response.json)
-        self.assertIn('links', response.json)
-        self.assertEqual(1, len(response.json['floatingips']))
-
-        fip_record = response.json['floatingips'][0]
-        self.assertIsNone(fip_record['ptrdname'])
-        self.assertEqual(":".join([fip['region'], fip['id']]),
-                         fip_record['id'])
-        self.assertEqual(fip['address'], fip_record['address'])
-        self.assertIsNone(fip_record['description'])
-        self.assertEqual('NONE', fip_record['action'])
-        self.assertEqual('INACTIVE', fip_record['status'])
 
     def test_list_floatingip_with_record(self):
         fixture = self.get_ptr_fixture()
@@ -176,7 +136,8 @@ class ApiV2ReverseFloatingIPTest(v2.ApiV2TestCase):
 
         response = self.client.get(
             '/reverse/floatingips',
-            headers={'X-Test-Tenant-Id': context.project_id})
+            headers={'X-Test-Tenant-Id': context.project_id,
+                     'X-Test-Role': 'member'})
 
         self.assertIn('floatingips', response.json)
         self.assertIn('links', response.json)
@@ -270,7 +231,7 @@ class ApiV2ReverseFloatingIPTest(v2.ApiV2TestCase):
 
     def test_unset_floatingip(self):
         fixture = self.get_ptr_fixture()
-        context = self.get_context(project_id='a', roles=['member'])
+        context = self.get_context(project_id='a', roles=['member', 'reader'])
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
 

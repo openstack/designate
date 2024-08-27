@@ -1,0 +1,15 @@
+---
+upgrade:
+  - |
+    The floating IP PTR record APIs now read directly from the Designate
+    database instead of querying Neutron on every request. As a result,
+    ``GET /v2/reverse/floatingips/{region}:{floatingip_id}`` for a
+    floating IP with no PTR record configured now returns 404 instead of
+    200 with an empty entry, and ``GET /v2/reverse/floatingips`` only
+    lists floating IPs that have a PTR record configured, rather than
+    every floating IP in the project.
+fixes:
+  - |
+    Fixed the floating IP PTR record APIs returning incorrect (often
+    empty) results when called with the ``X-Auth-All-Projects`` header,
+    since they no longer depend on a per-request Neutron lookup.

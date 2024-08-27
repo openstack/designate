@@ -2611,34 +2611,16 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     def test_get_floatingip_no_record(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['reader'])
 
         fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
-        fip_ptr = self.central_service.get_floatingip(
-            context, fip['region'], fip['id'])
-
-        self.assertEqual(fip['region'], fip_ptr['region'])
-        self.assertEqual(fip['id'], fip_ptr['id'])
-        self.assertEqual(fip['address'], fip_ptr['address'])
-        self.assertIsNone(fip_ptr['ptrdname'])
-
-    def test_get_floatingip_dual_no_record(self):
-        context = self.get_context(project_id='a')
-
-        self.network_api.fake.allocate_floatingip(context.project_id)
-        fip = self.network_api.fake.allocate_floatingip(context.project_id)
-
-        fip_ptr = self.central_service.get_floatingip(
-            context, fip['region'], fip['id'])
-
-        self.assertEqual(fip['region'], fip_ptr['region'])
-        self.assertEqual(fip['id'], fip_ptr['id'])
-        self.assertEqual(fip['address'], fip_ptr['address'])
-        self.assertIsNone(fip_ptr['ptrdname'])
+        self.assertRaises(rpc_dispatcher.ExpectedException,
+                          self.central_service.get_floatingip,
+                          context, fip['region'], fip['id'])
 
     def test_get_floatingip_with_record(self):
-        context = self.get_context(project_id='a', roles=['member'])
+        context = self.get_context(project_id='a', roles=['member', 'reader'])
 
         fixture = self.get_ptr_fixture()
 
@@ -2655,8 +2637,26 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(expected.ttl, actual.ttl)
         self.assertEqual(expected, actual)
 
+    def test_get_floatingip_region_mismatch(self):
+        context = self.get_context(project_id='a', roles=['member', 'reader'])
+
+        fixture = self.get_ptr_fixture()
+
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
+
+        self.central_service.update_floatingip(
+            context, fip['region'], fip['id'], fixture)
+
+        # The PTR record was created for fip['region']. Requesting the same
+        # floatingip_id under a different region must not match it.
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_floatingip,
+                                context, 'RegionMismatch', fip['id'])
+
+        self.assertEqual(exceptions.NotFound, exc.exc_info[0])
+
     def test_get_floatingip_not_allocated(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['reader'])
 
         fip = self.network_api.fake.allocate_floatingip(context.project_id)
         self.network_api.fake.deallocate_floatingip(fip['id'])
@@ -2690,23 +2690,12 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.get_floatingip,
-                                context_a, fip['region'], fip['id'])
-
-        self.assertEqual(exceptions.NotFound, exc.exc_info[0])
-
         # Ensure that the record is still in DB (No invalidation)
         self.central_service.find_records(elevated_a, criterion)
 
         # Now give the fip id to tenant 'b' and see that it gets deleted
         self.network_api.fake.allocate_floatingip(
             context_b.project_id, fip['id'])
-
-        # There should be a fip returned with ptrdname of None
-        fip_ptr = self.central_service.get_floatingip(
-            context_b, fip['region'], fip['id'])
-        self.assertIsNone(fip_ptr['ptrdname'])
 
         # Simulate the invalidation on the backend
         zone = self.central_service.get_zone(
@@ -2716,33 +2705,39 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.central_service.update_status(
             elevated_a, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
 
+        # Ensure that the record still doesn't have any action and is active
         record = self.central_service.find_records(elevated_a, criterion)[0]
         self.assertEqual('NONE', record.action)
-        self.assertEqual('DELETED', record.status)
+        self.assertEqual('ACTIVE', record.status)
+
+    def test_get_floatingip_does_not_leak_other_tenants_record(self):
+        context_a = self.get_context(project_id='a', roles=['member'])
+        context_b = self.get_context(project_id='b', roles=['reader'])
+
+        fixture = self.get_ptr_fixture()
+
+        fip = self.network_api.fake.allocate_floatingip(context_a.project_id)
+
+        self.central_service.update_floatingip(
+            context_a, fip['region'], fip['id'], fixture)
+
+        # Tenant b must never be able to read tenant a's PTR record, even
+        # though it knows the exact region/floatingip_id.
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_floatingip,
+                                context_b, fip['region'], fip['id'])
+
+        self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
     def test_list_floatingips_no_allocations(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['reader'])
 
         fips = self.central_service.list_floatingips(context)
 
         self.assertEqual(0, len(fips))
 
-    def test_list_floatingips_no_record(self):
-        context = self.get_context(project_id='a')
-
-        fip = self.network_api.fake.allocate_floatingip(context.project_id)
-
-        fips = self.central_service.list_floatingips(context)
-
-        self.assertEqual(1, len(fips))
-        self.assertIsNone(fips[0]['ptrdname'])
-        self.assertEqual(fip['id'], fips[0]['id'])
-        self.assertEqual(fip['region'], fips[0]['region'])
-        self.assertEqual(fip['address'], fips[0]['address'])
-        self.assertIsNone(fips[0]['description'])
-
     def test_list_floatingips_with_record(self):
-        context = self.get_context(project_id='a', roles=['member'])
+        context = self.get_context(project_id='a', roles=['member', 'reader'])
 
         fixture = self.get_ptr_fixture()
 
@@ -2760,55 +2755,21 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(fip_ptr['address'], fips[0]['address'])
         self.assertEqual(fip_ptr['description'], fips[0]['description'])
 
-    def test_list_floatingips_deallocated_and_invalidate(self):
+    def test_list_floatingips_does_not_leak_other_tenants_record(self):
         context_a = self.get_context(project_id='a', roles=['member'])
-        elevated_a = context_a.elevated()
-        elevated_a.all_tenants = True
-
-        context_b = self.get_context(project_id='b')
+        context_b = self.get_context(project_id='b', roles=['reader'])
 
         fixture = self.get_ptr_fixture()
 
-        # First allocate and create a FIP as tenant a
         fip = self.network_api.fake.allocate_floatingip(context_a.project_id)
 
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
 
-        criterion = {
-            'managed_resource_id': fip['id'],
-            'managed_tenant_id': context_a.project_id}
-        zone_id = self.central_service.find_records(
-            elevated_a, criterion)[0].zone_id
-
-        # Simulate the update on the backend
-        self.central_service.update_status(
-            elevated_a, zone_id, 'SUCCESS', timeutils.utcnow_ts(), 'UPDATE')
-
-        self.network_api.fake.deallocate_floatingip(fip['id'])
-
-        fips = self.central_service.list_floatingips(context_a)
-        self.assertEqual(len(fips), 0)
-
-        # Ensure that the record is still in DB (No invalidation)
-        self.central_service.find_records(elevated_a, criterion)
-
-        # Now give the fip id to tenant 'b' and see that it gets deleted
-        self.network_api.fake.allocate_floatingip(
-            context_b.project_id, fip['id'])
-
-        # There should be a fip returned with ptrdname of None
+        # Tenant b must not see tenant a's PTR record in its own listing.
         fips = self.central_service.list_floatingips(context_b)
-        self.assertEqual(1, len(fips))
-        self.assertIsNone(fips[0]['ptrdname'])
 
-        # Simulate the invalidation on the backend
-        self.central_service.update_status(
-            elevated_a, zone_id, 'SUCCESS', timeutils.utcnow_ts(), 'UPDATE')
-
-        record = self.central_service.find_records(elevated_a, criterion)[0]
-        self.assertEqual('NONE', record.action)
-        self.assertEqual('DELETED', record.status)
+        self.assertEqual(0, len(fips))
 
     def test_set_floatingip(self):
         context = self.get_context(project_id='a', roles=['member'])
@@ -2826,7 +2787,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertIsNotNone(fip_ptr['ttl'])
 
     def test_set_floatingip_multiple_requests(self):
-        context = self.get_context(roles=['member'])
+        context = self.get_context(roles=['member', 'reader'])
 
         def update_floatingip(fixture):
             fip = self.network_api.fake.allocate_floatingip(context.project_id)
@@ -2996,7 +2957,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
     def test_unset_floatingip(self):
-        context = self.get_context(project_id='a', roles=['member'])
+        context = self.get_context(project_id='a', roles=['member', 'reader'])
 
         fixture = self.get_ptr_fixture()
 

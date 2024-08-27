@@ -1493,37 +1493,6 @@ class CentralZoneTestCase(CentralBasic):
             'count_records', mock.ANY, {'project_id': None, 'tenant_id': None}
         )
 
-    def test_determine_floatingips(self):
-        self.context = mock.Mock()
-        self.context.project_id = 'tnt'
-        self.service.find_records = mock.Mock(return_value=[
-            unit.RoObject(managed_extra='')
-        ])
-
-        fips = {}
-        data, invalid = self.service._determine_floatingips(
-            self.context, fips)
-        self.assertEqual({}, data)
-        self.assertEqual([], invalid)
-
-    def test_determine_floatingips_with_data(self):
-        self.context = mock.Mock()
-        self.context.project_id = 2
-        self.service.find_records = mock.Mock(return_value=[
-            unit.RoObject(managed_extra=1, managed_tenant_id=1),
-            unit.RoObject(managed_extra=2, managed_tenant_id=2),
-        ])
-
-        fips = {
-            'k': {'address': 1},
-            'k2': {'address': 2},
-        }
-        data, invalid = self.service._determine_floatingips(
-            self.context, fips)
-        self.assertEqual(1, len(invalid))
-        self.assertEqual(1, invalid[0].managed_tenant_id)
-        self.assertEqual(data['k'], ({'address': 1}, None))
-
     def test_generate_soa_refresh_interval(self):
         central_service = self.central_service
         with random_seed(42):

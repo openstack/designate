@@ -1923,69 +1923,6 @@ class Service(service.RPCService):
         policy.check('count_records', context, target)
         return self.storage.count_records(context, criterion)
 
-    def _determine_floatingips(self, context, fips, project_id=None):
-        """
-        Given the context or project, and fips it returns the valid
-        floating ips either with an associated record or not. Deletes invalid
-        records also.
-
-        Returns a list of tuples with FloatingIPs and its Record.
-        """
-        project_id = project_id or context.project_id
-
-        elevated_context = context.elevated(all_tenants=True,
-                                            edit_managed_records=True)
-        criterion = {
-            'managed': True,
-            'managed_resource_type': 'ptr:floatingip',
-        }
-
-        records = self.find_records(elevated_context, criterion)
-        records = {r['managed_extra']: r for r in records}
-
-        invalid = []
-        data = {}
-        # First populate the list of FIPS.
-        for fip_key, fip_values in fips.items():
-            # Check if the FIP has a record
-            record = records.get(fip_values['address'])
-
-            # NOTE: Now check if it's owned by the project that actually has
-            # the FIP in the external service and if not invalidate it
-            # (delete it) thus not returning it with in the tuple with the FIP,
-            # but None.
-
-            if record:
-                record_project = record['managed_tenant_id']
-
-                if record_project != project_id:
-                    LOG.debug(
-                        'Invalid FloatingIP %s belongs to %s but record '
-                        'project %s', fip_key, project_id, record_project
-                    )
-                    invalid.append(record)
-                    record = None
-            data[fip_key] = (fip_values, record)
-
-        return data, invalid
-
-    def _invalidate_floatingips(self, context, records):
-        """
-        Utility method to delete a list of records.
-        """
-        if not records:
-            return
-
-        elevated_context = context.elevated(all_tenants=True,
-                                            edit_managed_records=True)
-        for record in records:
-            LOG.debug('Deleting record %s for FIP %s',
-                      record['id'], record['managed_resource_id'])
-            self._delete_or_update_managed_recordset(
-                elevated_context, record.zone_id, record.recordset_id,
-                record['id']
-            )
-
     def _list_floatingips(self, context, region=None):
         data = self.network_api.list_floatingips(context, region=region)
         return self._list_to_dict(data, keys=['region', 'id'])
@@ -2019,39 +1956,49 @@ class Service(service.RPCService):
                token pr Neutron in the SC
         B) We lookup FIPs using the configured values for this deployment.
         """
-        elevated_context = context.elevated(all_tenants=True,
-                                            edit_managed_records=True)
+        ptr_records = self._get_existing_ptr_records(context=context)
 
-        project_floatingips = self._list_floatingips(context)
-
-        valid, invalid = self._determine_floatingips(
-            elevated_context, project_floatingips
-        )
-
-        self._invalidate_floatingips(context, invalid)
-
-        return self._create_floating_ip_list(context, valid)
+        return self._create_floating_ip_list(context, ptr_records)
 
     @rpc.expected_exceptions()
     def get_floatingip(self, context, region, floatingip_id):
         """
         Get Floating IP PTR
         """
-        elevated_context = context.elevated(all_tenants=True)
+        criterion = {
+            'managed': True,
+            'managed_resource_type': 'ptr:floatingip',
+            'managed_resource_id': floatingip_id,
+        }
+        records = self.find_records(context, criterion)
 
-        tenant_fips = self._list_floatingips(context, region=region)
+        for record in records:
+            if record.managed_resource_region == region:
+                return self._create_floating_ip(
+                    context, self._ptr_record_to_fip(record), record
+                )
 
-        fip = self._get_floatingip(context, region, floatingip_id, tenant_fips)
-
-        result = self._list_to_dict([fip], keys=['region', 'id'])
-
-        valid, invalid = self._determine_floatingips(
-            elevated_context, result
+        raise exceptions.NotFound(
+            f'FloatingIP {floatingip_id} in {region} is not associated for'
+            f' project "{context.project_id}"'
         )
 
-        self._invalidate_floatingips(context, invalid)
+    def _get_existing_ptr_records(self, context):
+        criterion = {
+            'managed': True,
+            'managed_resource_type': 'ptr:floatingip',
+        }
 
-        return self._create_floating_ip_list(context, valid)[0]
+        ptr_records = self.find_records(context, criterion)
+        return {r['managed_extra']: r for r in ptr_records}
+
+    @staticmethod
+    def _ptr_record_to_fip(record):
+        return {
+            'address': record.managed_extra,
+            'id': record.managed_resource_id,
+            'region': record.managed_resource_region,
+        }
 
     def _set_floatingip_reverse(self, context, region, floatingip_id, values):
         """
@@ -2251,9 +2198,10 @@ class Service(service.RPCService):
         Creates a FloatingIPList based on floating ips and records data.
         """
         fips = objects.FloatingIPList()
-        for key, value in data.items():
-            fip, record = value
-            fip_ptr = self._create_floating_ip(context, fip, record)
+        for value in data.values():
+            fip_ptr = self._create_floating_ip(
+                context, self._ptr_record_to_fip(value), value
+            )
             fips.append(fip_ptr)
         return fips
 
