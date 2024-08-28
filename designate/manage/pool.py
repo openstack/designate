@@ -67,22 +67,29 @@ class PoolCommands(base.Commands):
 
     @base.args('--pool_id', help='ID of the pool to be examined',
                default=CONF['service:central'].default_pool_id)
-    def show_config(self, pool_id):
+    @base.args('--all_pools', help='show the config of all the pools',
+               default=False, required=False, action='store_true')
+    def show_config(self, pool_id, all_pools):
         self._setup()
 
         self.output_message.append('Pool Configuration:')
         self.output_message.append('-------------------')
 
         try:
-            if not uuidutils.is_uuid_like(pool_id):
-                self.output_message.append('Not a valid uuid: %s' % pool_id)
-                raise SystemExit(1)
-
-            pool = self.central_api.find_pool(self.context, {'id': pool_id})
+            pools = objects.PoolList()
+            if all_pools:
+                pools.extend(self.central_api.find_pools(self.context))
+            else:
+                if not uuidutils.is_uuid_like(pool_id):
+                    self.output_message.append(
+                        'Not a valid uuid: %s' % pool_id)
+                    raise SystemExit(1)
+                pools.append(
+                    self.central_api.find_pool(self.context, {'id': pool_id}))
 
             self.output_message.append(
                 yaml.dump(
-                    DesignateAdapter.render('YAML', pool),
+                    DesignateAdapter.render('YAML', pools),
                     default_flow_style=False
                 )
             )
@@ -131,7 +138,13 @@ class PoolCommands(base.Commands):
                 self.output_message.append('*********************************')
 
             for pool_data in pools_data:
-                self._create_or_update_pool(pool_data)
+                try:
+                    self._create_or_update_pool(pool_data)
+                except exceptions.DuplicatePool:
+                    raise exceptions.DuplicatePool(
+                        f'Pool {pool_data["name"]} already exist with id '
+                        f'{pool_data["id"]}. You cannot change id to an '
+                        'existing pool.')
 
             if delete:
                 pools = self.central_api.find_pools(self.context)

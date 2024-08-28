@@ -1,0 +1,387 @@
+#!/usr/bin/env bash
+# Configure the bind9 pool backend for a multi-pool implementation
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=multipool-bind9
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_BIND9_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+BIND2_DNS_PORT=${DESIGNATE_SERVICE_PORT2_DNS:-1053}
+BIND_SERVICE_NAME=bind9
+BIND2_SERVICE_NAME=bind9-2
+BIND2_DEFAULT_FILE=/etc/default/named-2
+BIND2_SERVICE_FILE=/etc/systemd/system/$BIND2_SERVICE_NAME.service
+BIND_CFG_DIR=/etc/bind
+BIND2_CFG_DIR=/etc/bind-2
+BIND2_TSIGKEY_FILE=$BIND2_CFG_DIR/named.conf.tsigkeys
+BIND_VAR_DIR=/var/cache/bind
+BIND2_VAR_DIR=/var/cache/bind-2
+BIND_RUN_DIR=/run/named
+BIND2_RUN_DIR=/run/named-2
+BIND_CFG_FILE=$BIND_CFG_DIR/named.conf.options
+BIND2_CFG_FILE=$BIND2_CFG_DIR/named.conf.options
+BIND_USER=bind
+BIND_GROUP=bind
+DESIGNATE_SERVICE_PORT_RNDC=${DESIGNATE_SERVICE_PORT_RNDC:-953}
+DESIGNATE_SERVICE_PORT2_RNDC=${DESIGNATE_SERVICE_PORT2_RNDC:-1953}
+
+if is_fedora; then
+    BIND_SERVICE_NAME=named
+    BIND2_SERVICE_NAME=named-2
+    BIND2_SERVICE_FILE=/etc/systemd/system/$BIND2_SERVICE_NAME.service
+    BIND_CFG_DIR=/etc/$BIND_SERVICE_NAME
+    BIND2_CFG_DIR=/etc/$BIND2_SERVICE_NAME
+    BIND_CFG_FILE=/etc/$BIND_SERVICE_NAME.conf
+    BIND2_CFG_FILE=/etc/$BIND2_SERVICE_NAME.conf
+    BIND_VAR_DIR=/var/$BIND_SERVICE_NAME
+    BIND2_VAR_DIR=/var/$BIND2_SERVICE_NAME
+    BIND_USER=named
+    BIND_GROUP=named
+    BIND2_UNIT_CFG_FILE=/etc/sysconfig/$BIND2_SERVICE_NAME
+    BIND2_TSIGKEY_FILE=$BIND2_CFG_DIR/named.conf.tsigkeys
+fi
+
+# Entry Points
+# ------------
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    # The user that designate runs as needs to be member of **$BIND_GROUP** group.
+    # The designate bind9 backend needs read/write access to $BIND_VAR_DIR
+    sudo groupadd -f $BIND_GROUP
+    add_user_to_group $STACK_USER $BIND_GROUP
+    sudo mkdir -p $BIND2_CFG_DIR
+    sudo chown -R $STACK_USER:$BIND_GROUP $BIND2_CFG_DIR
+    sudo mkdir -p $BIND2_RUN_DIR
+    sudo chgrp $BIND_GROUP $BIND2_RUN_DIR
+
+    if is_ubuntu; then
+        install_package bind9
+        # generate a defaults/named2 file
+        sudo tee $BIND2_DEFAULT_FILE >/dev/null <<EOF
+
+# startup options for the server
+OPTIONS="-u bind -c $BIND2_CFG_DIR/named.conf -p $BIND2_DNS_PORT -D named-2"
+EOF
+        # copy the default bind to the bind-2 & make sure the dirs are pointint to bind-2
+        sudo cp -a $BIND_CFG_DIR/named.conf $BIND2_CFG_DIR/named.conf
+        sudo sed -i 's/bind/bind-2/g' $BIND2_CFG_DIR/named.conf
+
+        # Copy the necessary configuration file and set the bind-2 directories
+        sudo cp -a $BIND_CFG_DIR/zones.rfc1918 $BIND2_CFG_DIR
+        sudo cp -a $BIND_CFG_DIR/named.conf.local $BIND2_CFG_DIR
+        sudo cp -a $BIND_CFG_DIR/named.conf.default-zones $BIND2_CFG_DIR
+        sudo sed -i 's/bind/bind-2/g' $BIND2_CFG_DIR/named.conf.local
+        sudo sed -i 's/bind/bind-2/g' $BIND2_CFG_DIR/named.conf.default-zones
+
+        # copy db files
+        for db_file in db.local db.127 db.0 db.255; do
+            cp -a $BIND_CFG_DIR/${db_file} $BIND2_CFG_DIR
+        done
+
+        # create a second service file
+        sudo cp -a /lib/systemd/system/named.service $BIND2_SERVICE_FILE
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "EnvironmentFile" "$BIND2_DEFAULT_FILE"
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "PIDFile" "$BIND2_RUN_DIR/named.pid"
+        iniset -sudo $BIND2_SERVICE_FILE "Install" "Alias" "$BIND2_SERVICE_NAME.service"
+        sudo chmod g+s $BIND2_CFG_DIR
+
+    elif is_fedora; then
+        install_package bind
+        set -o xtrace
+
+        # Copy the necessary configuration files and set the named-2 directories
+        for d in $(ls /etc/named.*); do
+            cpfile=$(echo $d | sed 's/named/named-2/')
+            sudo cp $d $cpfile
+            sudo chown -R $BIND_USER:$BIND_GROUP $cpfile
+            if [[ "$d" == *"named.conf"* ]]; then
+                sudo sed -i 's/port 53/port '$BIND2_DNS_PORT'/g' $cpfile
+                sudo sed -i 's/named/named-2/g' $cpfile
+            fi
+            sudo sed -i 's/bind/bind-2/g' $cpfile
+        done
+
+        # create a second service file & and set options into the units params file.
+        sudo cp /etc/sysconfig/named $BIND2_UNIT_CFG_FILE
+        sudo chown $STACK_USER:$BIND_GROUP $BIND2_UNIT_CFG_FILE
+        sudo chmod 644 $BIND2_UNIT_CFG_FILE
+
+        OPTIONS='OPTIONS="-p '$BIND2_DNS_PORT' -D '$BIND2_SERVICE_NAME'"'
+        NAMEDCONF="NAMEDCONF='$BIND2_CFG_FILE'"
+        sudo echo "$OPTIONS" >>$BIND2_UNIT_CFG_FILE
+        sudo echo "$NAMEDCONF" >>$BIND2_UNIT_CFG_FILE
+
+        sudo cp -a /lib/systemd/system/named.service $BIND2_SERVICE_FILE
+
+        # set the various declarations
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "Environment=NAMEDCONF" "$BIND2_CFG_FILE"
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "EnvironmentFile" "$BIND2_UNIT_CFG_FILE"
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "Environment=KRB5_KTNAME" "$BIND2_CFG_DIR.keytab"
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "PIDFile" "$BIND2_RUN_DIR/named.pid"
+
+        sudo chmod 750 $BIND2_CFG_DIR
+    fi
+
+    sudo chown -R $BIND_USER:$BIND_GROUP $BIND2_RUN_DIR
+    sudo chown -R $BIND_USER:$BIND_GROUP $BIND_RUN_DIR
+
+    # copy the /var/named default data
+    sudo cp -arf $BIND_VAR_DIR $BIND2_VAR_DIR
+
+    for cfg_dir in "$BIND_CFG_DIR" "$BIND2_CFG_DIR"; do
+        sudo chmod -R g+r $cfg_dir
+    done
+
+    for var_dir in "$BIND_VAR_DIR" "$BIND2_VAR_DIR"; do
+        sudo chmod -R g+rw $var_dir
+    done
+
+    # Customize Bind9 apparmor profile if installed, include the necessary bits
+    # for the second named instance, bind-2 and named-2
+    if [[ -d /etc/apparmor.d ]]; then
+        sudo tee /etc/apparmor.d/local/usr.sbin.named >/dev/null <<EOF
+$DESIGNATE_STATE_PATH/bind9/** rw,
+/etc/bind-2/** r,
+/var/cache/bind-2/** lrw,
+/var/cache/bind-2/_default.nzd-lock rwk,
+/{,var/}run/named-2/named.pid w,
+/{,var/}run/named-2/session.key w,
+/var/log/named-2/** rw,
+/var/log/named-2/ rw,
+EOF
+
+        restart_service apparmor || :
+    fi
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml >/dev/null <<EOF
+---
+- name: default
+  description: DevStack BIND Pool
+  attributes: {
+    "pool_level": "default"
+  }
+
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS_RECORD
+      priority: 1
+
+  nameservers:
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+      port: $DESIGNATE_SERVICE_PORT_DNS
+
+  targets:
+    - type: bind9
+      description: BIND Instance
+
+      masters:
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        port: $DESIGNATE_SERVICE_PORT_DNS
+        rndc_host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        rndc_port: $DESIGNATE_SERVICE_PORT_RNDC
+        rndc_config_file: $BIND_CFG_DIR/rndc.conf
+
+
+- name: secondary_pool
+  description: DevStack BIND Pool 2
+  attributes: {
+    "pool_level": "secondary"
+  }
+
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS2_RECORD
+      priority: 1
+
+  nameservers:
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST2)
+      port: $DESIGNATE_SERVICE_PORT2_DNS
+
+  targets:
+    - type: bind9
+      description: BIND Instance 2nd pool
+
+      masters:
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST2)
+          port: $DESIGNATE_SERVICE_PORT2_MDNS
+
+      options:
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST2)
+        port: $DESIGNATE_SERVICE_PORT2_DNS
+        rndc_host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST2)
+        rndc_port: $DESIGNATE_SERVICE_PORT2_RNDC
+        rndc_config_file: $BIND2_CFG_DIR/rndc.conf
+        rndc_key_file: $BIND2_CFG_DIR/rndc.key
+        clean_zonefile: true
+
+EOF
+
+    # Configure Bind #1 instance
+    sudo chown $STACK_USER $BIND_CFG_DIR
+
+    # create rndc key and config
+    sudo rndc-confgen -a -c $BIND_CFG_DIR/rndc.key
+    sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_DIR/rndc.key
+    sudo chmod g+r $BIND_CFG_DIR/rndc.key
+    sudo tee $BIND_CFG_FILE >/dev/null <<EOF
+
+include "$BIND_CFG_DIR/rndc.key";
+
+options {
+    directory "$BIND_VAR_DIR";
+    allow-new-zones yes;
+    dnssec-validation auto;
+    auth-nxdomain no;    # conform to RFC1035
+    listen-on port $DESIGNATE_SERVICE_PORT_DNS { $HOST_IP; };
+    listen-on-v6 port $DESIGNATE_SERVICE_PORT_DNS { $HOST_IPV6; };
+    recursion no;
+    pid-file "$BIND_RUN_DIR/named.pid";
+    session-keyfile "$BIND_RUN_DIR/session.key";
+    minimal-responses yes;
+};
+
+controls {
+    inet $(ipv6_unquote $DESIGNATE_SERVICE_HOST) port $DESIGNATE_SERVICE_PORT_RNDC allow { $(ipv6_unquote $DESIGNATE_SERVICE_HOST); } keys { "rndc-key"; };
+};
+EOF
+    # Configure Bind #2 instance
+    sudo chown $STACK_USER $BIND2_CFG_DIR
+
+    # Create the tsigkeys for the secondary pool & add it to the bind-2
+    # named.conf file.
+    sudo rm -rf $BIND2_TSIGKEY_FILE
+    sudo tsig-keygen -a hmac-sha256 poolsecondarykey >$BIND2_TSIGKEY_FILE
+    NAME=$(cat $BIND2_TSIGKEY_FILE | grep 'key' |
+        awk '{split($0, a, " "); print a[2];}' |
+        sed -e 's/^"//' -e 's/"$//' |
+        awk '{split($0, a, "{"); print a[1];}')
+    sudo echo -e "server $HOST_IP {\n  keys { $NAME };\n};" >>$BIND2_TSIGKEY_FILE
+
+    # create rndc key and config
+    sudo rndc-confgen -a -p $DESIGNATE_SERVICE_PORT2_RNDC -c $BIND2_CFG_DIR/rndc.key
+    sudo chown $BIND_USER:$BIND_GROUP $BIND2_CFG_DIR/rndc.key
+    sudo chmod g+r $BIND2_CFG_DIR/rndc.key
+    sudo tee $BIND2_CFG_FILE >/dev/null <<EOF
+
+include "$BIND2_CFG_DIR/rndc.key";
+
+options {
+    directory "$BIND2_VAR_DIR";
+    allow-new-zones yes;
+    dnssec-validation auto;
+    auth-nxdomain no;    # conform to RFC1035
+    listen-on port $DESIGNATE_SERVICE_PORT2_DNS { $HOST_IP; };
+    listen-on-v6 port $DESIGNATE_SERVICE_PORT2_DNS { $HOST_IPV6; };
+    recursion no;
+    pid-file "$BIND2_RUN_DIR/named.pid";
+    session-keyfile "$BIND2_RUN_DIR/session.key";
+    minimal-responses yes;
+};
+
+controls {
+    inet $(ipv6_unquote $DESIGNATE_SERVICE_HOST2) port $DESIGNATE_SERVICE_PORT2_RNDC allow { $(ipv6_unquote $DESIGNATE_SERVICE_HOST2); } keys { "rndc-key"; };
+};
+
+include "$BIND2_TSIGKEY_FILE";
+EOF
+
+    # Configure RNDC #1
+    sudo tee $BIND_CFG_DIR/rndc.conf >/dev/null <<EOF
+include "$BIND_CFG_DIR/rndc.key";
+
+options {
+    default-key "rndc-key";
+    default-server $(ipv6_unquote $DESIGNATE_SERVICE_HOST);
+    default-port $DESIGNATE_SERVICE_PORT_RNDC;
+};
+EOF
+
+    # Configure RNDC #r2
+    sudo tee $BIND2_CFG_DIR/rndc.conf >/dev/null <<EOF
+include "$BIND2_CFG_DIR/rndc.key";
+
+options {
+    default-key "rndc-key";
+    default-server $(ipv6_unquote $DESIGNATE_SERVICE_HOST);
+    default-port $DESIGNATE_SERVICE_PORT2_RNDC;
+};
+EOF
+
+    sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_FILE $BIND_CFG_DIR/rndc.conf
+    sudo chmod g+r $BIND_CFG_FILE $BIND_CFG_DIR/rndc.conf
+    sudo chown $BIND_USER:$BIND_GROUP $BIND2_CFG_FILE $BIND_CFG_DIR/rndc.conf
+    sudo chmod g+r $BIND_CFG_FILE $BIND2_CFG_DIR/rndc.conf
+
+    start_service $BIND2_SERVICE_NAME
+    restart_service $BIND_SERVICE_NAME
+    restart_service $BIND2_SERVICE_NAME
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    start_service $BIND_SERVICE_NAME
+    start_service $BIND2_SERVICE_NAME
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    stop_service $BIND_SERVICE_NAME
+    stop_service $BIND2_SERVICE_NAME
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    sudo sh -c "rm -rf $BIND_VAR_DIR/*.nzf"
+    sudo sh -c "rm -rf $BIND_VAR_DIR/slave.*"
+    sudo rm -f $BIND_CFG_DIR/rndc.key
+    sudo rm -f $BIND2_TSIGKEY_FILE
+
+    if [ -d $BIND2_CFG_DIR ]; then
+        sudo sh -c "rm -rf $BIND2_VAR_DIR/*.nzf"
+        sudo sh -c "rm -rf $BIND2_VAR_DIR/slave.*"
+        sudo rm -f $BIND2_CFG_DIR/rndc.key
+        # remove the tsigkey from named conf file.
+        sudo sed -i 'tsigkeys/d' $BIND2_CFG_DIR/named.conf
+        RM_CMD="sudo rm -rf"
+        RM_LIST="$BIND2_CFG_DIR* $BIND2_VAR_DIR $BIND2_RUN_DIR $BIND2_SERVICE_FILE"
+
+        for rc in $RM_LIST; do
+            echo "$RM_CMD $rc"
+            $RM_CMD $rc
+        done
+        if is_fedora; then
+            sudo rm -f $BIND2_UNIT_CFG_FILE
+        fi
+    fi
+    sudo systemctl reset-failed
+}
+
+# Restore xtrace
+$DP_BIND9_XTRACE

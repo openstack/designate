@@ -420,6 +420,23 @@ class RequestHandler:
             # Make the space we reserved for TSIG available for use
             renderer.max_size += TSIG_RRSIZE
 
+            # The following are a series of check for the DNS server
+            # requests oddities.
+            # If the message fudge value is not present set it to default,
+            # see RFC2845: Record Format Section rrdata.Fudge & Section 6.4
+            # defines the recommended value of 300 seconds (5 mins).
+            if not hasattr(request, 'fudge'):
+                request.fudge = int(300)
+
+            # If the original_id is not preset use the request.id, see
+            # https://github.com/rthalley/dnspython/blob/2.2/dns/message.py#L125
+            if not hasattr(request, 'original_id'):
+                request.original_id = request.id
+
+            # If the other_data is not preset then set to nothing.
+            if not hasattr(request, 'other_data'):
+                request.other_data = b""
+
             if multi_messages:
                 # The first message context will be None then the
                 # context for the prev message is used for the next
