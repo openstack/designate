@@ -10,6 +10,7 @@
         API_WORKERS: 2
       devstack_plugins:
         designate: https://opendev.org/openstack/designate
+        designate-tempest-plugin: https://opendev.org/openstack/designate-tempest-plugin.git
       devstack_services:
         designate: true
         s-account: false
