@@ -13,8 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from designate.common import constants
+import designate.conf
+from designate import exceptions
 from designate.objects import base
 from designate.objects import fields
+from designate.objects.validation_error import ValidationError
+from designate.objects.validation_error import ValidationErrorList
+
+
+CONF = designate.conf.CONF
 
 
 @base.DesignateRegistry.register
@@ -39,6 +46,25 @@ class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
     STRING_KEYS = [
         'id', 'name', 'algorithm', 'scope', 'resource_id'
     ]
+
+    def _raise(self, errors):
+        if len(errors) != 0:
+            raise exceptions.InvalidObject(
+                "Provided object does not match "
+                "schema", errors=errors, object=self)
+
+    def validate(self):
+        errors = ValidationErrorList()
+        if not self.secret and not (
+                CONF['service:api'].allow_empty_secrets_for_tsig):
+            e = ValidationError()
+            e.path = ['type']
+            e.validator = 'value'
+            e.validator_value = ['secret']
+            e.message = "'secret' should not be empty"
+            errors.append(e)
+        self._raise(errors)
+        super().validate()
 
 
 @base.DesignateRegistry.register

@@ -18,8 +18,12 @@ from unittest.mock import patch
 import oslo_messaging as messaging
 
 from designate.central import service as central_service
+import designate.conf
 from designate import exceptions
 from designate.tests.functional.api import v2
+
+
+CONF = designate.conf.CONF
 
 
 class ApiV2TsigKeysTest(v2.ApiV2TestCase):
@@ -97,6 +101,18 @@ class ApiV2TsigKeysTest(v2.ApiV2TestCase):
     def test_create_tsigkey_secret_missing(self):
         fixture = self.get_tsigkey_fixture(0)
         del fixture['secret']
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_empty_secret(self):
+        CONF.set_override(
+            'allow_empty_secrets_for_tsig',
+            False,
+            'service:api'
+        )
+        fixture = self.get_tsigkey_fixture(0)
+        fixture['secret'] = ''
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/tsigkeys', body)

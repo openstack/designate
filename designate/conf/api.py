@@ -60,6 +60,10 @@ APT_V2_OPTS = [
     cfg.BoolOpt('quotas_verify_project_id', default=False,
                 help='Verify that the requested Project ID for quota target '
                      'is a valid project in Keystone.'),
+    cfg.BoolOpt('allow_empty_secrets_for_tsig', default=True,
+                help='Allow tsig creation with empty secrets. While in theory '
+                     'an empty string is valid for tsig secrets, it is highly '
+                     'not recommended'),
 ]
 
 API_ADMIN_OPTS = [
