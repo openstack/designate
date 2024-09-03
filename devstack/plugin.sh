@@ -188,7 +188,7 @@ function create_designate_accounts {
     local designate_api_url
 
     if is_service_enabled designate-api; then
-        create_service_user "designate"
+        create_service_user "designate" "admin"
 
         designate_api_url="$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST/dns"
 
