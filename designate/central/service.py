@@ -355,9 +355,14 @@ class Service(service.RPCService):
     # SOA Recordset Methods
     @staticmethod
     def _build_soa_record(zone, ns_records):
+        address = zone['email']
+        atsign = address.index('@')
+        soa_address = (address[0:atsign].replace('.', '\\.') + '.' +
+            address[atsign + 1:])
+
         return '%s %s. %d %d %d %d %d' % (
             ns_records[0]['hostname'],
-            zone['email'].replace('@', '.'),
+            soa_address,
             zone['serial'],
             zone['refresh'],
             zone['retry'],

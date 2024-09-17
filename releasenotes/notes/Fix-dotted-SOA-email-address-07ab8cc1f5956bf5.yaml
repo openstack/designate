@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    A fix was added to handle SOA email addresses that include dots correctly.

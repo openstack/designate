@@ -2869,6 +2869,25 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(zone['expire'], int(soa_record_values[5]))
         self.assertEqual(zone['minimum'], int(soa_record_values[6]))
 
+    def test_create_SOA_with_dotted_local_part(self):
+        # Test if dots in the local part of the email address are escaped.
+        # Create a zone
+        zone = self.create_zone(email="ex.ample@example.org")
+
+        # Retrieve SOA
+        criterion = {'zone_id': zone['id'], 'type': 'SOA'}
+
+        soa = self.central_service.find_recordset(self.admin_context,
+                                                  criterion)
+
+        # Split out the various soa values
+        soa_record_values = soa.records[0].data.split()
+
+        zone_email = "ex\\.ample.example.org."
+
+        # Ensure the email address has been converted correctly
+        self.assertEqual(zone_email, soa_record_values[1])
+
     def test_update_soa(self):
         # Anytime the zone's serial number is incremented
         # the SOA recordset should automatically be updated

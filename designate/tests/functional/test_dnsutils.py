@@ -192,3 +192,21 @@ class TestUtils(designate.tests.functional.TestCase):
 
         self.assertEqual(len(SAMPLES), len(zone.recordsets))
         self.assertEqual('example.com.', zone.name)
+
+    def test_from_dnspython_zone_escaped_soa(self):
+        zone_file = self.get_zonefile_fixture(variant='escaped')
+
+        dnspython_zone = dns.zone.from_text(
+            zone_file,
+            relativize=False,
+            check_origin=False
+        )
+
+        zone = dnsutils.from_dnspython_zone(dnspython_zone)
+
+        self.assertIsInstance(zone, objects.zone.Zone)
+
+        zone_email = "ns.admin@example.com"
+
+        # Ensure the email address has been converted correctly
+        self.assertEqual(zone_email, zone.email)
