@@ -99,7 +99,7 @@ SYSTEM_ADMIN_AND_SECONDARY_ZONE = (
     '(' + base.SYSTEM_ADMIN + ') and (\'SECONDARY\':%(zone_type)s)'
 )
 SHARED_AND_PRIMARY_ZONE = (
-    '("True":%(zone_shared)s) and (\'PRIMARY\':%(zone_type)s)'
+    '(\'True\':%(zone_shared)s) and (\'PRIMARY\':%(zone_type)s)'
 )
 RECORDSET_MEMBER_AND_PRIMARY_ZONE = (
     'role:member and (project_id:%(recordset_project_id)s) and '
