@@ -359,11 +359,6 @@ GMR Example
       verbose = True
 
     network_api:neutron:
-      admin_password = ***
-      admin_tenant_name = None
-      admin_username = None
-      auth_strategy = keystone
-      auth_url = None
       ca_certificates_file = None
       endpoint_type = publicURL
       endpoints = None

@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    The following deprecated options in the ``network_api:neutron`` section
+    have been removed.
+
+    - ``admin_username``
+    - ``admin_password``
+    - ``admin_tenant_name``
+    - ``auth_url``
+    - ``auth_strategy``
