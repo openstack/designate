@@ -14,11 +14,5 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import eventlet
-from eventlet.green import ssl
-import socket
 
 eventlet.monkey_patch(os=False)
-
-# Work around the eventlet issue that impacts redis using TLS.
-# https://github.com/eventlet/eventlet/issues/692
-ssl.timeout_exc = socket.timeout
