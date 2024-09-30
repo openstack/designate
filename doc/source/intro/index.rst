@@ -169,7 +169,7 @@ tool with commands for interacting with OpenStack services. The documentation
 for the OpenStack client is available at
 https://docs.openstack.org/python-openstackclient/.
 The
-`designate plugin https://docs.openstack.org/python-designateclient/latest/`
+`designate plugin <https://docs.openstack.org/python-designateclient/latest/>`_
 for the OpenStack client needs to be installed as well:
 
 .. code-block:: console
@@ -179,10 +179,10 @@ for the OpenStack client needs to be installed as well:
 
 Another popular way to use Designate is via the OpenStack Dashboard, Horizon.
 Administrators will need to add the
-`Designate Horizon plugin https://opendev.org/openstack/designate-dashboard`
+`Designate Horizon plugin <https://opendev.org/openstack/designate-dashboard>`_
 to the dashboard in order to enable Designate features.
 
 Finally, for python developers the aforementioned Designate plugin for
 the OpenStack client which can be used as a python library. Other languages
 may have bindings available from one of the third party
-`SDKs https://wiki.openstack.org/wiki/SDKs` for OpenStack.
+`SDKs <https://wiki.openstack.org/wiki/SDKs>`_ for OpenStack.
