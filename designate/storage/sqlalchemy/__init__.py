@@ -13,8 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import hashlib
+
 from oslo_log import log as logging
-from oslo_utils.secretutils import md5
 from oslo_utils import timeutils
 from sqlalchemy import case, select, distinct, func
 from sqlalchemy.sql.expression import or_, literal_column
@@ -1178,7 +1179,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         """
         Calculates the hash of the record, used to ensure record uniqueness.
         """
-        md5sum = md5(usedforsecurity=False)
+        md5sum = hashlib.md5(usedforsecurity=False)
         md5sum.update(('{}:{}'.format(record.recordset_id,
                                       record.data)).encode('utf-8'))
 
