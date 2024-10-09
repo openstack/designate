@@ -10,11 +10,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-07 14:55+0000\n"
+"POT-Creation-Date: 2024-10-08 17:22+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2024-09-11 10:29+0000\n"
+"PO-Revision-Date: 2024-09-24 09:54+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -93,9 +93,6 @@ msgstr "17.0.0"
 msgid "18.0.0"
 msgstr "18.0.0"
 
-msgid "18.0.0-33"
-msgstr "18.0.0-33"
-
 msgid "2.0.0"
 msgstr "2.0.0"
 
@@ -110,6 +107,9 @@ msgstr "2023.2 Series Release Notes"
 
 msgid "2024.1 Series Release Notes"
 msgstr "2024.1 Series Release Notes"
+
+msgid "2024.2 Series Release Notes"
+msgstr "2024.2 Series Release Notes"
 
 msgid "3.0.0"
 msgstr "3.0.0"
@@ -1237,6 +1237,13 @@ msgstr ""
 msgid "The following deprecated options have been removed."
 msgstr "The following deprecated options have been removed."
 
+msgid ""
+"The following deprecated options in the ``network_api:neutron`` section have "
+"been removed."
+msgstr ""
+"The following deprecated options in the ``network_api:neutron`` section have "
+"been removed."
+
 msgid "The following new options were added to the pool config for Infoblox."
 msgstr "The following new options were added to the pool config for Infoblox."
 
@@ -1448,8 +1455,23 @@ msgstr "``[service:api] override_proto``"
 msgid "``[service:api] secure_proxy_ssl_header``"
 msgstr "``[service:api] secure_proxy_ssl_header``"
 
+msgid "``admin_password``"
+msgstr "``admin_password``"
+
+msgid "``admin_tenant_name``"
+msgstr "``admin_tenant_name``"
+
+msgid "``admin_username``"
+msgstr "``admin_username``"
+
 msgid "``all_tcp``"
 msgstr "``all_tcp``"
+
+msgid "``auth_strategy``"
+msgstr "``auth_strategy``"
+
+msgid "``auth_url``"
+msgstr "``auth_url``"
 
 msgid "``cert``"
 msgstr "``cert``"
