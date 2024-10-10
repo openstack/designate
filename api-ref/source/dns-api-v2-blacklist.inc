@@ -77,7 +77,7 @@ Response Example
 
 
 List Blacklists
----------------
+===============
 
 .. rest_method::  GET /v2/blacklists
 
