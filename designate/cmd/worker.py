@@ -17,6 +17,7 @@ import sys
 
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
+from oslo_reports import opts as gmr_opts
 
 import designate.conf
 from designate import heartbeat_emitter
@@ -33,7 +34,8 @@ LOG = logging.getLogger(__name__)
 def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
-    gmr.TextGuruMeditation.setup_autorun(version)
+    gmr_opts.set_defaults(CONF)
+    gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
 
     server = worker_service.Service()
     heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name)
