@@ -137,7 +137,7 @@ function configure_designate {
 function configure_designatedashboard {
     # Compile message catalogs
     if [ -d ${DESIGNATEDASHBOARD_DIR}/designatedashboard/locale ]; then
-        (cd ${DESIGNATEDASHBOARD_DIR}/designatedashboard; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
+        (cd ${DESIGNATEDASHBOARD_DIR}/designatedashboard; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings $PYTHON ../manage.py compilemessages)
     fi
 }
 
