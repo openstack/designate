@@ -151,6 +151,11 @@
         c-bak: false
       grenade_localrc:
         BASE_RUN_SMOKE: False
+      # TODO(tkajinam): We should remove this once we fix failing manage.py
+      #                 command
+      grenade_devstack_localrc:
+        shared:
+          GLOBAL_VENV: false
       tox_envlist: all
       tempest_plugins:
         - designate-tempest-plugin
