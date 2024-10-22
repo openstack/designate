@@ -223,14 +223,14 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - neutron-tempest-plugin-designate-scenario
+        - neutron-tempest-plugin-designate-scenario-2024-2
         - designate-tox-dnspython-latest:
             voting: false
         - designate-bind9-catalog-zones:
             voting: false
     gate:
       jobs:
-        - neutron-tempest-plugin-designate-scenario
+        - neutron-tempest-plugin-designate-scenario-2024-2
     experimental:
       jobs:
         - designate-pdns4-postgres
