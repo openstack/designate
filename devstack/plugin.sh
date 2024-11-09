@@ -95,7 +95,7 @@ function configure_designate {
     iniset $DESIGNATE_CONF oslo_messaging_notifications topics "$DESIGNATE_NOTIFICATION_TOPICS"
 
     # Root Wrap
-    sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf.sample $DESIGNATE_ROOTWRAP_CONF
+    sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_ROOTWRAP_CONF DEFAULT filters_path $DESIGNATE_DIR/etc/designate/rootwrap.d root-helper
 
     # Oslo Concurrency
