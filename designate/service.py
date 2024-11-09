@@ -116,6 +116,7 @@ class WSGIService(Service):
                 host=host,
                 port=port,
                 pool_size=CONF['service:api'].threads,
+                backlog=CONF.backlog,
                 use_ssl=sslutils.is_enabled(CONF),
                 max_url_len=max_url_len
             )

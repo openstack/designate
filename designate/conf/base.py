@@ -60,10 +60,6 @@ DESIGNATE_OPTS = [
     cfg.IntOpt('backlog',
                default=4096,
                help="Number of backlog requests to configure the socket with"),
-    cfg.IntOpt('tcp_keepidle',
-               default=600,
-               help="Sets the value of TCP_KEEPIDLE in seconds for each "
-                    "server socket. Not supported on OS X."),
 
     # Root Helper
     cfg.StrOpt('root_helper',
