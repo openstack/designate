@@ -141,11 +141,13 @@ class WSGIService(Service):
 class DNSService:
     _TCP_RECV_MAX_SIZE = 65535
 
-    def __init__(self, app, tg, listen, tcp_backlog, tcp_recv_timeout):
+    def __init__(self, app, tg, listen, tcp_backlog, tcp_keepidle,
+                 tcp_recv_timeout):
         self._running = threading.Event()
         self.app = app
         self.tg = tg
         self.tcp_backlog = tcp_backlog
+        self.tcp_keepidle = tcp_keepidle
         self.tcp_recv_timeout = tcp_recv_timeout
         self.listen = listen
 
@@ -169,7 +171,7 @@ class DNSService:
 
     def _start(self, host, port):
         sock_tcp = utils.bind_tcp(
-            host, port, self.tcp_backlog
+            host, port, self.tcp_backlog, self.tcp_keepidle
         )
         sock_udp = utils.bind_udp(
             host, port
