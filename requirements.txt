@@ -37,6 +37,6 @@ dnspython>=2.2.1  # http://www.dnspython.org/LICENSE
 oslo.db>=8.3.0 # Apache-2.0
 oslo.i18n>=3.20.0 # Apache-2.0
 oslo.context>=4.0.0 # Apache-2.0
-oslo.policy>=3.7.0 # Apache-2.0
+oslo.policy>=4.5.0 # Apache-2.0
 tooz>=1.58.0 # Apache-2.0
 futurist>=1.2.0 # Apache-2.0
