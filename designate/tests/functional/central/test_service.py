@@ -3873,6 +3873,36 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         self.assertEqual(exceptions.ZoneImportNotFound, exc.exc_info[0])
 
+    def test_zone_import_no_min_ttl(self):
+        # Create a Zone Import
+        CONF.set_override(
+            'min_ttl',
+            None,
+            'service:central'
+        )
+        context = self.get_context(project_id=uuidutils.generate_uuid(),
+                                   roles=['member', 'reader'])
+        request_body = self.get_zonefile_fixture(variant='zerosoa')
+        zone_import = self.central_service.create_zone_import(
+            context, request_body)
+
+        self.assertRaisesRegex(
+            AssertionError,
+            'ERROR',
+            self.wait_for_import,
+            zone_import.id,
+            max_wait=1)
+
+        CONF.set_override(
+            'min_ttl',
+            0,
+            'service:central'
+        )
+
+        zone_import = self.central_service.create_zone_import(
+            context, request_body)
+        self.wait_for_import(zone_import.id)
+
     def test_update_zone_export(self):
         self.central_service.tg = mock.Mock()
 
