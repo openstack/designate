@@ -178,6 +178,25 @@
     voting: false
 
 - job:
+    name: designate-grenade-pdns4-skip-level
+    parent: designate-grenade-common
+    post-run: playbooks/designate-pdns4/post.yaml
+    vars:
+      grenade_devstack_localrc:
+        shared:
+          DESIGNATE_BACKEND_DRIVER: pdns4
+          DESIGNATE_SERVICE_PORT_DNS: 5322
+      grenade_from_branch: stable/2024.1
+
+- job:
+    name: designate-grenade-bind9-skip-level
+    parent: designate-grenade-common
+    post-run: playbooks/designate-bind9/post.yaml
+    voting: false
+    vars:
+      grenade_from_branch: stable/2024.1
+
+- job:
     name: designate-tox-dnspython-latest
     parent: openstack-tox
     description: |
@@ -200,6 +219,8 @@
         - designate-pdns4
         - designate-grenade-bind9
         - designate-grenade-pdns4
+        - designate-grenade-bind9-skip-level
+        - designate-grenade-pdns4-skip-level
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
     gate:
@@ -209,6 +230,7 @@
         - designate-bind9-keystone-default-roles
         - designate-pdns4
         - designate-grenade-pdns4
+        - designate-grenade-pdns4-skip-level
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
 
