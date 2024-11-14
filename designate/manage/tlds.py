@@ -104,13 +104,12 @@ class TLDCommands(base.Commands):
 
     @base.name('import')
     @base.args('--input_file', help='Input file path containing TLDs',
-               default=None, required=True, type=str)
+               required=True, type=str)
     @base.args('--delimiter',
                help='delimiter between fields in the input file',
                default=',', type=str)
     def from_file(self, input_file=None, delimiter=None):
         self._startup()
-        input_file = str(input_file) if input_file is not None else None
 
         if not os.path.exists(input_file):
             raise Exception('TLD Input file Not Found')
@@ -121,7 +120,7 @@ class TLDCommands(base.Commands):
         tlds_added = 0
 
         with open(input_file) as inf:
-            csv.register_dialect('import-tlds', delimiter=str(delimiter))
+            csv.register_dialect('import-tlds', delimiter=delimiter)
             reader = csv.DictReader(inf,
                                     fieldnames=['name', 'description'],
                                     restkey='extra_fields',
