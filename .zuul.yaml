@@ -1,7 +1,7 @@
 - job:
     name: designate-base
     parent: devstack-tempest
-    nodeset: openstack-single-node-jammy
+    nodeset: openstack-single-node-noble
     vars: &base_vars
       devstack_localrc:
         DESIGNATE_SERVICE_PORT_DNS: 5322
@@ -39,7 +39,7 @@
 - job:
     name: designate-base-ipv6-only
     parent: devstack-tempest-ipv6
-    nodeset: openstack-single-node-jammy
+    nodeset: openstack-single-node-noble
     description: |
       Designate devstack-tempest base job for IPv6-only deployment
     irrelevant-files: *base_irrelevant_files
@@ -65,6 +65,10 @@
     name: designate-bind9-keystone-default-roles
     post-run: playbooks/designate-bind9/post.yaml
     parent: designate-base
+    # TODO(gmann): As per the 2025.1 testing runtime, we
+    # need to run at least one job on jammy. This job can
+    # be moved to Ubuntu Noble in the next cycle(2025.2)
+    nodeset: openstack-single-node-jammy
     vars:
       devstack_local_conf:
         post-config:
