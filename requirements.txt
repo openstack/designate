@@ -2,7 +2,7 @@
 # date but we do not test them so no guarantee of having them all correct. If
 # you find any incorrect lower bounds, let us know or propose a fix.
 alembic>=1.8.0 # MIT
-eventlet>=0.27.0 # MIT
+eventlet>=0.36.0 # MIT
 Flask!=0.11,>=0.10 # BSD
 greenlet>=0.4.15 # MIT
 Jinja2>=2.10 # BSD License (3 clause)
