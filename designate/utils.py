@@ -15,6 +15,7 @@
 # under the License.
 import copy
 import functools
+import importlib.resources
 import inspect
 import os
 import socket
@@ -27,7 +28,6 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils.netutils import is_valid_ipv6
 from oslo_utils import uuidutils
-import pkg_resources
 
 from designate.common import config
 import designate.conf
@@ -82,13 +82,14 @@ def resource_string(*args):
     if len(args) == 0:
         raise ValueError()
 
-    resource_path = os.path.join('resources', *args)
+    resource_path = importlib.resources.files(
+        'designate').joinpath('resources', *args)
 
-    if not pkg_resources.resource_exists('designate', resource_path):
+    if not resource_path.exists():
         raise exceptions.ResourceNotFound('Could not find the requested '
                                           'resource: %s' % resource_path)
 
-    return pkg_resources.resource_string('designate', resource_path)
+    return resource_path.read_bytes()
 
 
 def load_schema(version, name):
