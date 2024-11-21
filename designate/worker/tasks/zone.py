@@ -147,8 +147,8 @@ class SendNotify(base.Task):
         self.target = target
 
     def __call__(self):
-        host = self.target.options.get('host')
-        port = int(self.target.options.get('port'))
+        host = self.target.options.get('host', '127.0.0.1')
+        port = int(self.target.options.get('port', '53'))
 
         try:
             dnsutils.notify(self.zone.name, host, port=port)

@@ -39,8 +39,6 @@ class Backend(DriverPlugin):
         self.target = target
         self.options = target.options
         self.masters = target.masters
-        self.host = self.options.get('host', '127.0.0.1')
-        self.port = int(self.options.get('port', 53))
 
         # TODO(kiall): Context's should never be shared across requests.
         self.admin_context = DesignateContext.get_admin_context()
