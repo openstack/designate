@@ -792,7 +792,10 @@ class Service(service.RPCService):
             LOG.debug("Zone '%s' is a superzone.", zone.name)
             for subzone in subzones:
                 if subzone.tenant_id != zone.tenant_id:
-                    raise exceptions.IllegalParentZone(msg)
+                    # raise unless explicitly allowed by the policy:
+                    if not policy.check('create_super_zone', context,
+                                        do_raise=False):
+                        raise exceptions.IllegalParentZone(msg)
 
         # If this succeeds, subzone parent IDs will be updated
         # after zone is created

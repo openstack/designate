@@ -669,7 +669,8 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         # Create sub zone
         self.create_zone(**subzone_values)
 
-        context = self.get_admin_context()
+        # Admins can create superzones, try as regular user
+        context = self.get_context()
 
         # Explicitly use a different tenant_id
         context.project_id = '2'
@@ -679,7 +680,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
                                 self.central_service.create_zone,
                                 context, objects.Zone.from_dict(zone_values))
 
-        self.assertEqual(exceptions.IllegalParentZone, exc.exc_info[0])
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     def test_create_blacklisted_zone_success(self):
         # Create blacklisted zone using default values
