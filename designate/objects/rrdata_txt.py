@@ -31,7 +31,18 @@ class TXT(Record):
     def _to_string(self):
         return self.txt_data
 
+    @staticmethod
+    def _is_missing_double_quote(value):
+        return ((value.startswith('"') and not value.endswith('"')) or
+                (not value.startswith('"') and value.endswith('"')))
+
     def from_string(self, value):
+        if self._is_missing_double_quote(value):
+            raise ValueError(
+                'TXT record is missing a double quote either at beginning '
+                'or at end.'
+            )
+
         if (not value.startswith('"') and not value.endswith('"')):
             # value with spaces should be quoted as per RFC1035 5.1
             for element in value:
