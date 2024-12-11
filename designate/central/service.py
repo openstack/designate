@@ -2618,7 +2618,15 @@ class Service(service.RPCService):
         else:
             target = {'tenant_id': zone.tenant_id}
 
-        policy.check('create_zone_transfer_request', context, target)
+        # Handle sub-zones appropriately
+        parent_zone = self._is_subzone(context, zone.name, zone.pool_id)
+
+        if parent_zone:
+            # Do subzone policy check instead of regular zone_transfer
+            policy.check('create_sub_zone_transfer_request', context, target)
+        else:
+            # If not subzone, regular policy check applies
+            policy.check('create_zone_transfer_request', context, target)
 
         zone_transfer_request.key = self._transfer_key_generator()
 
