@@ -15,7 +15,6 @@
 # under the License.
 from oslo_log import log as logging
 from oslo_utils.secretutils import md5
-from oslo_utils import timeutils
 from sqlalchemy import case, select, distinct, func
 from sqlalchemy.sql.expression import or_, literal_column
 
@@ -621,10 +620,9 @@ class SQLAlchemyStorage(base.SQLAlchemy):
 
         return updated_zone
 
-    def increment_serial(self, context, zone_id):
+    def increment_serial(self, context, zone_id, new_serial):
         """Increment the zone's serial number.
         """
-        new_serial = timeutils.utcnow_ts()
         query = tables.zones.update().where(
             tables.zones.c.id == zone_id).values(
             {'serial': new_serial, 'increment_serial': False}

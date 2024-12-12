@@ -521,6 +521,12 @@ class Service(service.RPCService):
         self.quota.limit_check(context, zone.tenant_id,
                                recordset_records=len(recordset.records))
 
+    def _generate_record_serial(self, zone, increment_serial):
+        if not increment_serial:
+            return zone.serial
+        else:
+            return zone.serial + 1
+
     # Misc Methods
     @rpc.expected_exceptions()
     def get_absolute_limits(self, context):
@@ -731,7 +737,15 @@ class Service(service.RPCService):
     @transaction
     @lock.synchronized_zone()
     def increment_zone_serial(self, context, zone):
-        zone.serial = self.storage.increment_serial(context, zone.id)
+        created_ts = zone.created_at.timestamp()
+        now_ts = zone.created_at.now().timestamp()
+        if created_ts < zone.serial < now_ts:
+            zone.serial = self.storage.increment_serial(
+                context, zone.id, int(now_ts))
+        else:
+            zone.serial = self.storage.increment_serial(
+                context, zone.id, zone.serial + 1
+            )
         self._update_soa(context, zone)
         return zone.serial
 
@@ -1003,6 +1017,9 @@ class Service(service.RPCService):
 
         if 'name' in changes:
             raise exceptions.BadRequest('Renaming a zone is not allowed')
+
+        if "serial" in changes:
+            self._update_soa(context, zone)
 
         # Ensure TTL is above the minimum
         ttl = changes.get('ttl')
@@ -1524,10 +1541,9 @@ class Service(service.RPCService):
             for record in recordset.records:
                 record.action = 'CREATE'
                 record.status = 'PENDING'
-                if not increment_serial:
-                    record.serial = zone.serial
-                else:
-                    record.serial = timeutils.utcnow_ts()
+                record.serial = self._generate_record_serial(
+                    zone, increment_serial
+                )
 
         new_recordset = self.storage.create_recordset(context, zone.id,
                                                       recordset)
@@ -1751,10 +1767,9 @@ class Service(service.RPCService):
                     continue
                 record.action = 'UPDATE'
                 record.status = 'PENDING'
-                if not increment_serial:
-                    record.serial = zone.serial
-                else:
-                    record.serial = timeutils.utcnow_ts()
+                record.serial = self._generate_record_serial(
+                    zone, increment_serial
+                )
 
             # Ensure the tenant has enough zone record quotas to
             # create new records

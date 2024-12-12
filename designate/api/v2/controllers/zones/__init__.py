@@ -168,7 +168,8 @@ class ZonesController(rest.RestController):
 
             # Update and persist the resource
 
-            increment_serial = zone.type == 'PRIMARY'
+            increment_serial = (zone.type == 'PRIMARY' and
+                                'serial' not in zone.obj_get_changes())
 
             zone = self.central_api.update_zone(
                 context, zone, increment_serial=increment_serial)
