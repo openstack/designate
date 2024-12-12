@@ -88,12 +88,7 @@ class TaskConfig:
     def max_prop_time(self):
         # Compute a time (seconds) by which things should have propagated
         if self._max_prop_time is None:
-            self._max_prop_time = utils.max_prop_time(
-                self.timeout,
-                self.max_retries,
-                self.retry_interval,
-                self.delay
-            )
+            self._max_prop_time = self.config.poll_max_prop_time
         return self._max_prop_time
 
 

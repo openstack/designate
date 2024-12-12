@@ -49,6 +49,7 @@ class Backend(DriverPlugin):
         # Options for sending NOTIFYs
         self.timeout = CONF['service:worker'].poll_timeout
         self.retry_interval = CONF['service:worker'].poll_retry_interval
+        self.max_prop_time = CONF['service:worker'].poll_max_prop_time
         self.max_retries = CONF['service:worker'].poll_max_retries
         self.delay = CONF['service:worker'].poll_delay
 

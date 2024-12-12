@@ -40,6 +40,15 @@ WORKER_OPTS = [
     cfg.IntOpt('poll_delay', default=5,
                help='The time to wait before sending the first request '
                     'to a server'),
+    cfg.IntOpt('poll_max_prop_time', default=300,
+               help='The time to wait before considering PENDING zone '
+                    'stuck'),
+    cfg.BoolOpt('notify', default=True,
+                deprecated_for_removal=True,
+                deprecated_reason='This option is being removed to reduce '
+                                  'complexity',
+                help='Whether to allow worker to send NOTIFYs, this will '
+                     'noop NOTIFYs in mdns if true'),
     cfg.BoolOpt('export_synchronous', default=True,
                 help='Whether to allow synchronous zone exports'),
     cfg.StrOpt('topic', default='worker',

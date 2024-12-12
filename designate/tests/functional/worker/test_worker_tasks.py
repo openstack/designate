@@ -12,6 +12,7 @@
 
 
 from unittest import mock
+from datetime import timedelta
 
 from oslo_log import log as logging
 from oslo_utils import timeutils
@@ -101,6 +102,11 @@ class RecoverShardTest(designate.tests.functional.TestCase):
         new_zone.serial = timeutils.utcnow_ts() - 1000
         new_zone.action = 'DELETE'
         new_zone.status = 'PENDING'
+
+        # We rely on update time to detect stale zones:
+        long_time = timedelta(seconds=1000)
+        new_zone.updated_at = timeutils.utcnow() - long_time
+
         self.storage.update_zone(self.admin_context, new_zone)
         self.create_zone(fixture=1, shard=5)
 

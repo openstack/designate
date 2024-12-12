@@ -13,9 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from collections import namedtuple
 import errno
 import time
+from collections import namedtuple
+from datetime import timedelta
 
 import dns
 from oslo_log import log as logging
@@ -820,21 +821,29 @@ class RecoverShard(base.Task):
         }
         error_zones = self.storage.find_zones(self.context, criterion)
 
-        # Include things that have been hanging out in PENDING
-        # status for longer than they should
-        # Generate the current serial, will provide a UTC Unix TS.
+        delta = timedelta(seconds=self.max_prop_time)
+        stale_dt = timeutils.utcnow() - delta
+
+        # serial can only be used in case of unix timestamp format.
+        # because serial can be in any format - we use last update time
+        # to find stale zones.
         stale_criterion = {
             'shard': f'BETWEEN {self.begin_shard},{self.end_shard}',
             'status': 'PENDING',
-            'serial': '<%s' % (timeutils.utcnow_ts() - self.max_prop_time)
+            'updated_at': '<%s' % stale_dt
         }
 
         stale_zones = self.storage.find_zones(self.context, stale_criterion)
         if stale_zones:
+            stale_zone_names = []
+            for zone in stale_zones.objects:
+                stale_zone_names.append(zone.name)
+
             LOG.warning('Found %(len)d zones PENDING for more than %(sec)d '
-                        'seconds', {
+                        'seconds: %(zones)s', {
                             'len': len(stale_zones),
-                            'sec': self.max_prop_time
+                            'sec': self.max_prop_time,
+                            'zones': stale_zone_names
                         })
             error_zones.extend(stale_zones)
 

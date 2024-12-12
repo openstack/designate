@@ -60,10 +60,7 @@ class TestTaskConfig(oslotest.base.BaseTestCase):
 
     def test_max_prop_time(self):
         CONF.set_override('threshold_percentage', 100, 'service:worker')
-        CONF.set_override('poll_timeout', 10, 'service:worker')
-        CONF.set_override('poll_retry_interval', 10, 'service:worker')
-        CONF.set_override('poll_max_retries', 10, 'service:worker')
-        CONF.set_override('poll_delay', 3, 'service:worker')
+        CONF.set_override('poll_max_prop_time', 203, 'service:worker')
 
         self.assertIsNone(self.task_config._max_prop_time)
         self.assertEqual(203, self.task_config.max_prop_time)
