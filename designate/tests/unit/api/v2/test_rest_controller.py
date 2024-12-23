@@ -10,13 +10,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
 from unittest import mock
 
 import oslotest.base
 from webob import exc
 
 from designate.api.v2.controllers import rest
+from designate import exceptions
 
 
 class TestRestController(oslotest.base.BaseTestCase):
@@ -143,4 +143,34 @@ class TestRestController(oslotest.base.BaseTestCase):
             'The server could not comply with the request since it is either '
             'malformed or otherwise incorrect.',
             self.controller._handle_delete, mock.Mock(), ['fake']
+        )
+
+
+class TestFilterParams(oslotest.base.BaseTestCase):
+
+    def test_invalid_filter_parameters(self):
+        exc = self.assertRaises(
+            exceptions.BadRequest,
+            rest.RestController._apply_filter_params,
+            {'alpha': 'foo', 'beta': 'bar'},
+            ['alpha'],
+            {},
+        )
+        self.assertIn('Invalid filters', str(exc))
+
+    def test_duplicate_filter_parameters(self):
+        exc = self.assertRaises(
+            exceptions.BadRequest,
+            rest.RestController._apply_filter_params,
+            {'alpha': ['foo', 'baz'], 'beta': 'bar'},
+            ['alpha', 'beta'],
+            {},
+        )
+        self.assertIn('Duplicate filters', str(exc))
+
+    def test_valid_filter_parameters(self):
+        rest.RestController._apply_filter_params(
+            {'alpha': 'foo', 'beta': 'bar'},
+            ['alpha', 'beta'],
+            {},
         )

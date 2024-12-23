@@ -51,18 +51,30 @@ class RestController(pecan.rest.RestController):
     def central_api(self):
         return central_rpcapi.CentralAPI.get_instance()
 
-    def _apply_filter_params(self, params, accepted_filters, criterion):
+    @classmethod
+    def _apply_filter_params(cls, params, accepted_filters, criterion):
+        duplicate = []
         invalid = []
+
         for k in params:
+            if isinstance(params[k], list):
+                duplicate.append(k)
+                continue
+
             if k in accepted_filters:
                 criterion[k] = params[k].replace("*", "%")
             else:
                 invalid.append(k)
+
+        if duplicate:
+            raise exceptions.BadRequest(
+                'Duplicate filters %s' % ', '.join(duplicate))
+
         if invalid:
             raise exceptions.BadRequest(
                 'Invalid filters %s' % ', '.join(invalid))
-        else:
-            return criterion
+
+        return criterion
 
     def _handle_post(self, method, remainder, request=None):
         """
