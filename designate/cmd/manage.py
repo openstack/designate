@@ -23,6 +23,7 @@ import eventlet
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
+from oslo_reports import opts as gmr_opts
 from stevedore.extension import ExtensionManager
 
 import designate.conf
@@ -114,7 +115,8 @@ def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
 
-    gmr.TextGuruMeditation.setup_autorun(version)
+    gmr_opts.set_defaults(CONF)
+    gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
 
     try:
         fn = CONF.category.action_fn
