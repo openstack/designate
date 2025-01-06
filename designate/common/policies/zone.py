@@ -29,6 +29,12 @@ deprecated_create_zone = policy.DeprecatedRule(
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
+deprecated_create_super_zone = policy.DeprecatedRule(
+    name="create_super_zone",
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
 deprecated_get_zones = policy.DeprecatedRule(
     name="get_zones",
     check_str=base.RULE_ADMIN_OR_OWNER,
@@ -122,6 +128,19 @@ rules = [
             }
         ],
         deprecated_rule=deprecated_create_zone
+    ),
+    policy.DocumentedRuleDefault(
+        name="create_super_zone",
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=[constants.PROJECT],
+        description="Create Super Zone",
+        operations=[
+            {
+                'path': '/v2/zones',
+                'method': 'POST'
+            }
+        ],
+        deprecated_rule=deprecated_create_super_zone
     ),
     policy.RuleDefault(
         name="get_zones",
