@@ -84,8 +84,11 @@ class PDNS4Backend(base.Backend):
         masters = []
         for master in self.masters:
             host = master.host
-            if ipaddress.ip_address(host).version == 6:
-                host = '[%s]' % host
+            try:
+                if ipaddress.ip_address(host).version == 6:
+                    host = '[%s]' % host
+            except ValueError:
+                pass
             masters.append('%s:%d' % (host, master.port))
 
         data = {

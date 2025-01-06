@@ -116,6 +116,39 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
         )
 
     @requests_mock.mock()
+    def test_create_zone_hostname(self, req_mock):
+        self.target['masters'] = [
+            {'host': 'mdns.designate.example.com.', 'port': 53},
+        ]
+
+        self.backend = impl_pdns4.PDNS4Backend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+
+        req_mock.post(
+            '%s/localhost/zones' % self.base_address,
+        )
+        req_mock.get(
+            f'{self.base_address}/localhost/zones/{self.zone.name}',
+            status_code=404,
+        )
+
+        self.backend.create_zone(self.context, self.zone)
+
+        self.assertEqual(
+            req_mock.last_request.json(),
+            {
+                'kind': 'slave',
+                'masters': ['mdns.designate.example.com.:53'],
+                'name': 'example.com.',
+            }
+        )
+
+        self.assertEqual(
+            req_mock.last_request.headers.get('X-API-Key'), 'api_key'
+        )
+
+    @requests_mock.mock()
     def test_create_zone_already_exists(self, req_mock):
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
