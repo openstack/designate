@@ -23,7 +23,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # yum install openstack-designate\*
+      # dnf install openstack-designate\*
 
 #. Create a ``designate`` database that is accessible by the ``designate``
    user. Replace ``DESIGNATE_DBPASS`` with a suitable password:
@@ -41,7 +41,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # yum install bind bind-utils
+      # dnf install bind bind-utils
 
 #. Create an RNDC Key:
 
