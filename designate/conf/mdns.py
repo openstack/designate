@@ -23,16 +23,18 @@ MDNS_GROUP = cfg.OptGroup(
 
 MDNS_OPTS = [
     cfg.IntOpt('workers',
-               help='Number of mdns worker processes to spawn'),
+               help='Number of mDNS worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
-               help='Number of mdns greenthreads to spawn'),
+               help='Number of mDNS greenthreads to spawn'),
     cfg.ListOpt('listen',
                 default=['0.0.0.0:%d' % DEFAULT_MDNS_PORT],
                 help='mDNS host:port pairs to listen on'),
     cfg.IntOpt('tcp_backlog', default=100,
                help='mDNS TCP Backlog'),
+    cfg.IntOpt('tcp_keepidle',
+               help='mDNS TCP Keepidle in seconds'),
     cfg.FloatOpt('tcp_recv_timeout', default=0.5,
-                 help='mDNS TCP Receive Timeout'),
+                 help='mDNS TCP Receive Timeout in seconds'),
     cfg.BoolOpt('query_enforce_tsig', default=False,
                 help='Enforce all incoming queries (including AXFR) are TSIG '
                      'signed'),

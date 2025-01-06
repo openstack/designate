@@ -42,6 +42,7 @@ class Service(service.Service):
             self.dns_application, self.tg,
             CONF['service:mdns'].listen,
             CONF['service:mdns'].tcp_backlog,
+            CONF['service:mdns'].tcp_keepidle,
             CONF['service:mdns'].tcp_recv_timeout,
         )
 

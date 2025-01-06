@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The new ``[service:mdns] tcp_keepidle`` option has been added. This option
+    allows customizing TCP keepidle set for socket used by designate-mdns.

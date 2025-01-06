@@ -270,6 +270,7 @@ class TestDNSService(oslotest.base.BaseTestCase):
             self.application, self.tg,
             CONF['service:mdns'].listen,
             CONF['service:mdns'].tcp_backlog,
+            CONF['service:mdns'].tcp_keepidle,
             CONF['service:mdns'].tcp_recv_timeout,
         )
         self.service._running = mock.Mock()
@@ -278,6 +279,9 @@ class TestDNSService(oslotest.base.BaseTestCase):
         self.assertEqual(CONF['service:mdns'].listen, self.service.listen)
         self.assertEqual(
             CONF['service:mdns'].tcp_backlog, self.service.tcp_backlog
+        )
+        self.assertEqual(
+            CONF['service:mdns'].tcp_keepidle, self.service.tcp_keepidle
         )
         self.assertEqual(
             CONF['service:mdns'].tcp_recv_timeout,
@@ -291,7 +295,8 @@ class TestDNSService(oslotest.base.BaseTestCase):
 
         mock_bind_udp.assert_called_with('0.0.0.0', 5354)
         mock_bind_tcp.assert_called_with(
-            '0.0.0.0', 5354, CONF['service:mdns'].tcp_backlog
+            '0.0.0.0', 5354, CONF['service:mdns'].tcp_backlog,
+            CONF['service:mdns'].tcp_keepidle,
         )
 
     def test_service_stop(self):
@@ -353,6 +358,7 @@ class TestDNSService(oslotest.base.BaseTestCase):
             self.application, self.tg,
             CONF['service:mdns'].listen,
             CONF['service:mdns'].tcp_backlog,
+            CONF['service:mdns'].tcp_keepidle,
             CONF['service:mdns'].tcp_recv_timeout,
         )
         self.service._running = mock.Mock()
