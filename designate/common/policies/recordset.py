@@ -255,7 +255,7 @@ def list_rules():
             name="update_%s_recordset" % rec_type,
             check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
             scope_types=[constants.PROJECT],
-            description="Update recordset",
+            description="Update %s Recordset" % rec_type,
             operations=[
                 {
                     'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
@@ -277,7 +277,7 @@ def list_rules():
             name="delete_%s_recordset" % rec_type,
             check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
             scope_types=[constants.PROJECT],
-            description="Delete RecordSet",
+            description="Delete %s Recordset" % rec_type,
             operations=[
                 {
                     'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',

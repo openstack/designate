@@ -1230,7 +1230,8 @@ class CentralZoneTestCase(CentralBasic):
             self.service._update_recordset_in_storage.called)
 
         self.mock_policy_check.assert_called_with(
-            'update_recordset', mock.ANY, {
+            'update_%s_recordset' % recordset.obj_get_original_value('type'),
+            mock.ANY, {
                 'recordset_id': '9c85d9b0-1e9d-4e99-aede-a06664f1af2e',
                 'recordset_project_id': '9c85d9b0-1e9d-4e99-aede-a06664f1af2e',
                 'zone_id': '9c85d9b0-1e9d-4e99-aede-a06664f1af2e',
@@ -1383,6 +1384,7 @@ class CentralZoneTestCase(CentralBasic):
             zone_id=CentralZoneTestCase.zone_id_2,
             id=CentralZoneTestCase.recordset_id,
             managed=True,
+            type='A',
             tenant_id='2',
         )
         self.context = mock.Mock()
