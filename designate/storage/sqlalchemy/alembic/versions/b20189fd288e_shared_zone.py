@@ -22,6 +22,7 @@ from oslo_utils import uuidutils
 import sqlalchemy as sa
 
 from designate.storage.sqlalchemy.types import UUID
+from designate.storage.sqlalchemy.alembic import legacy_utils
 
 # revision identifiers, used by Alembic.
 revision = 'b20189fd288e'
@@ -31,6 +32,12 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Check if the equivalent legacy migration has already run
+    # CCloud only, Shared Zones were used since years, therefore
+    # we need to make old implementation compatible with Dalmatian release
+    if not legacy_utils.is_migration_needed(104):
+        return
+
     meta = sa.MetaData()
 
     op.create_table(
@@ -40,10 +47,10 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime),
         sa.Column('updated_at', sa.DateTime),
         sa.Column('zone_id', UUID, nullable=False),
-        sa.Column('project_id', sa.String(36), nullable=False),
-        sa.Column('target_project_id', sa.String(36), nullable=False),
+        sa.Column('tenant_id', sa.String(36), nullable=False),
+        sa.Column('target_tenant_id', sa.String(36), nullable=False),
 
-        sa.UniqueConstraint('zone_id', 'project_id', 'target_project_id',
+        sa.UniqueConstraint('zone_id', 'tenant_id', 'target_tenant_id',
                             name='unique_shared_zone'),
         sa.ForeignKeyConstraint(['zone_id'], ['zones.id'], ondelete='CASCADE'),
         mysql_engine='InnoDB',

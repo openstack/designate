@@ -121,6 +121,9 @@ class DesignateMigrationsWalk(
     def _check_9099de8ae11c(self, connection):
         pass
 
+    def _check_018194635d9e(self, connection):
+        pass
+
     def test_single_base_revision(self):
         script = alembic_script.ScriptDirectory.from_config(self.config)
         self.assertEqual(1, len(script.get_bases()))
@@ -168,6 +171,10 @@ class DesignateMigrationsWalk(
                                    'is_migration_needed',
                                    return_value=False):
                 for revision in revisions:
+                    # CCloud only, Dalmatian upgrade:
+                    if revision == '018194635d9e':
+                        # skip because it is temporary
+                        continue
                     LOG.info('Testing revision %s', revision)
                     self._migrate_up(connection, revision)
 
