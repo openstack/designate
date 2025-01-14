@@ -35,10 +35,12 @@ def upgrade() -> None:
 
     with op.batch_alter_table('shared_zones') as batch_op:
         batch_op.alter_column('tenant_id',
-                              nullable=False,
+                              existing_type=sa.String(36),
+                              existing_nullable=False,
                               new_column_name='project_id')
         batch_op.alter_column('target_tenant_id',
-                              nullable=False,
+                              existing_type=sa.String(36),
+                              existing_nullable=False,
                               new_column_name='target_project_id')
 
     #op.create_unique_constraint('unique_shared_zone',
