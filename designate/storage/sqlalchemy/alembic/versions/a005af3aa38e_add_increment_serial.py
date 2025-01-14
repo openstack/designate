@@ -20,6 +20,7 @@ Create Date: 2023-01-21 17:39:00.822775
 from alembic import op
 import sqlalchemy as sa
 
+from designate.storage.sqlalchemy.alembic import legacy_utils
 
 # revision identifiers, used by Alembic.
 revision = 'a005af3aa38e'
@@ -29,6 +30,10 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # CCloud only: Check if the equivalent legacy migration has already run
+    if not legacy_utils.is_migration_needed(105):
+        return
+
     op.add_column(
         'zones',
         sa.Column('increment_serial', sa.Boolean, default=False)
