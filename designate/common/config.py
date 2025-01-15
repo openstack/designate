@@ -29,7 +29,9 @@ def set_defaults():
                        'X-Designate-Pool-ID',
                        'X-Designate-Edit-Managed-Records',
                        'X-Designate-Hard-Delete',
-                       'OpenStack-DNS-Hide-Counts'],
+                       'OpenStack-DNS-Hide-Counts',
+                       'X-Designate-Force-Import'
+                       ],
         expose_headers=['X-OpenStack-Request-ID',
                         'Host'],
         allow_methods=['GET',

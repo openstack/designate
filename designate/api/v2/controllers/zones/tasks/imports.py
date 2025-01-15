@@ -13,13 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_log import log as logging
 import pecan
+from oslo_log import log as logging
+from oslo_utils import strutils
+
+from designate import exceptions
+from designate import utils
 
 from designate.api.v2.controllers import rest
-from designate import exceptions
 from designate.objects.adapters import DesignateAdapter
-from designate import utils
+
 
 LOG = logging.getLogger(__name__)
 
@@ -79,7 +82,9 @@ class ZoneImportController(rest.RestController):
 
         # Use given 'pool_id' if it was specified in the headers
         pool_id = request.headers.get('X-Designate-Pool-ID')
-        force_import = request.headers.get('X-Designate-Force-Import')
+        force_import = strutils.bool_from_string(
+            request.headers.get('X-Designate-Force-Import')
+        )
         # Create the zone_import
         zone_import = self.central_api.create_zone_import(
                 context, body, pool_id, force_import)
