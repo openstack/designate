@@ -367,11 +367,11 @@ class PeriodicCheckServiceStatusTask(PeriodicTask):
         for service_status in self._iter_service_statuses(ctxt, criterion):
             if not service_status.heartbeated_at:
                 continue
-            now = timeutils.utcnow(True)
-            heartbeated = timeutils.parse_isotime(
-                service_status.heartbeated_at)
+            now = timeutils.utcnow()
+            heartbeated = service_status.heartbeated_at
+            heartbeated = heartbeated.replace(tzinfo=None)  # remove TZ
             seconds = timeutils.delta_seconds(heartbeated, now)
-            if seconds > int(CONF[self.name].time_threshold):
+            if seconds > int(CONF[self.name].service_time_threshold):
                 LOG.debug("Service status %(id)s has %(seconds)d seconds "
                           "since last heartbeat, marking 'DOWN'",
                           {"id": service_status.id, "seconds": seconds})
@@ -402,7 +402,7 @@ class PeriodicCleanupStoppedServiceStatusTask(PeriodicTask):
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True
 
-        # Delete "STOPPED" services
-        criterion = {"status": constants.SERVICE_STOPPED}
+        # Delete "DOWN" services
+        criterion = {"status": constants.SERVICE_DOWN}
         for service_status in self._iter_service_statuses(ctxt, criterion):
             self.central_api.delete_service_status(ctxt, service_status)

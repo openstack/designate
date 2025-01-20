@@ -131,7 +131,7 @@ PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_OPTS = [
                help='Run interval in seconds'),
     cfg.IntOpt('per_page', default=100,
                help='Default amount of results returned per page'),
-    cfg.IntOpt('time_threshold', default=1800,
+    cfg.IntOpt('service_time_threshold', default=1800,
                help='How old UP services should be (heartbeated_at) '
                     'moved to DOWN, in seconds'),
 ]
