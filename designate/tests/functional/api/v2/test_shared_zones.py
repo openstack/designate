@@ -102,7 +102,7 @@ class ApiV2SharedZonesTest(v2.ApiV2TestCase):
         self.assertIn('updated_at', response.json)
 
     def test_list_zone_shares(self):
-        response = self.client.get(self.endpoint_url.format(self.zone.id),
+        response = self.client.get(self.endpoint_url.format(""),
                                    headers={'X-Test-Role': 'member'})
 
         # Check the headers are what we expect
@@ -119,7 +119,7 @@ class ApiV2SharedZonesTest(v2.ApiV2TestCase):
 
         self._create_valid_shared_zone()
 
-        data = self.client.get(self.endpoint_url.format(self.zone.id),
+        data = self.client.get(self.endpoint_url.format(""),
                                headers={'X-Test-Role': 'member'})
 
         self.assertEqual(1, len(data.json['shared_zones']))
