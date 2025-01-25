@@ -1,15 +1,16 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 # Roman Gorshunov <roman.gorshunov@att.com>, 2021. #zanata
+# Ivan Anfimov <lazekteam@gmail.com>, 2025. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: designate VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2024-06-30 17:43+0000\n"
+"POT-Creation-Date: 2025-01-13 23:58+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2021-09-06 04:05+0000\n"
-"Last-Translator: Roman Gorshunov <roman.gorshunov@att.com>\n"
+"PO-Revision-Date: 2025-01-24 11:33+0000\n"
+"Last-Translator: Ivan Anfimov <lazekteam@gmail.com>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
 "X-Generator: Zanata 4.3.3\n"
@@ -21,10 +22,10 @@ msgid "%s is not a valid project ID."
 msgstr "%s не является допустимым ID проекта."
 
 msgid "Duplicate service status"
-msgstr "Статус дублированного сервиса"
+msgstr "Статус повторного сервиса"
 
 msgid "Duplicated services found in service_statuses table."
-msgstr "В таблице service_statuses найдены дубликаты сервисов."
+msgstr "В таблице service_statuses найдены повторы сервисов."
 
 msgid "KeystoneV3 endpoint not found"
 msgstr "Не найдена конечная точка KeystoneV3"
