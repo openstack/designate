@@ -13,54 +13,26 @@
     License for the specific language governing permissions and limitations
     under the License.
 
-.. _pool_scheduler:
+.. _poolsched:
 
-==============
-Pool Scheduler
-==============
+======================
+Pool Scheduler Filters
+======================
 
-In designate we have a pluggable scheduler filter interface.
+About Filters
+=============
 
-You can set an ordered list of filters to run on each zone create api request.
-
-We provide a few basic filters below, and creating custom filters follows a
-similar pattern to schedulers.
-
-You can create your own by extending
-:class:`designate.scheduler.filters.base.Filter`
-and registering a new entry point in the ``designate.scheduler.filters``
-namespace like so in your ``setup.cfg`` file:
-
-.. code-block:: ini
-
-   [entry_points]
-   designate.scheduler.filters =
-   my_custom_filter = my_extension.filters.my_custom_filter:MyCustomFilter
-
-The new filter can be added to the
-``scheduler_filters`` list in the ``[service:central]`` section like so:
-
-.. code-block:: ini
-
-    [service:central]
-
-    scheduler_filters = attribute, pool_id_attribute, fallback, random, my_custom_filter
-
-The filters list is ran from left to right, so if the list is set to:
-
-.. code-block:: ini
-
-    [service:central]
-
-    scheduler_filters = attribute, random
-
-There will be two filters ran,
-the :class:`designate.scheduler.filters.attribute_filter.AttributeFilter`
-followed by :class:`designate.scheduler.filters.random_filter.RandomFilter`
+When a user creates a zone, the pool scheduler uses filters to assign the zone
+to a particular DNS server pool. As the administrator, you choose an ordered
+list of filters that runs on each ``zone create`` API request. You configure
+the scheduler to use filters that are provided with Designate or create
+your own.
 
 
-Default Provided Filters
-========================
+Filters Provided with Designate
+===============================
+
+Designate provides several filters that represent common use cases.
 
 Base Class - Filter
 -------------------
@@ -111,3 +83,37 @@ In Doubt Default Pool Filter
 .. autoclass:: designate.scheduler.filters.in_doubt_default_pool_filter.InDoubtDefaultPoolFilter
     :members: name
     :show-inheritance:
+
+
+Creating Custom Filters
+=======================
+
+You can create your own filters by extending
+:class:`designate.scheduler.filters.base.Filter`
+and registering a new entry point in the ``designate.scheduler.filters``
+namespace in ``designate.conf``:
+
+.. code-block:: ini
+
+   [entry_points]
+   designate.scheduler.filters =
+   my_custom_filter = my_extension.filters.my_custom_filter:MyCustomFilter
+
+
+Configuring Filters in the Scheduler
+====================================
+
+After you have decided whether to use the filters provided with Designate or
+create custom filters you must configure the filters in the pool scheduler.
+
+Inside the ``designate.conf`` file under the ``[service:central]`` section,
+add the filters that you want the scheduler to use to the
+``scheduler_filters`` parameter:
+
+.. code-block:: ini
+
+    [service:central]
+    scheduler_filters = attribute, pool_id_attribute, fallback, random, my_custom_filter
+
+.. important::
+  The scheduler runs the filters list from left to right.

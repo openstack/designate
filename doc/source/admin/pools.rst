@@ -19,70 +19,60 @@
 DNS Server Pools
 ================
 
-Overview
-========
+About Pools
+===========
 
-In designate we support the concept of multiple "pools" of DNS Servers.
+Administrators can group DNS namespace servers into multiple pools to help
+them manage their DNS environments. You can provide users with tiers of
+service, by configuring pools to offer more capacity and better geographical
+proximity. Administrators of private clouds can leverage multiple pools to
+separate internal and external facing zones.
 
-This allows operators to scale out their DNS Service by adding more pools,
-avoiding the scaling problems that some DNS servers have for number of zones,
-and the total number of records hosted by a single server.
+By default, Designate contains only one DNS server pool called ``default``.
+When users create a zone in a multi-pool environment, the pool scheduler must
+select a pool to host the new zone. Administrators control pool selection
+through the use of filters, that the scheduler uses to select a pool for the
+new zone.
 
-This also allows providers to have tiers of service (i.e. the difference
-between GOLD vs SILVER tiers may be the number of DNS Servers, and how they
-are distributed around the world.)
+The filter interface consists of pool attributes that are key-value pairs that
+the scheduler attaches to the zone during creation.
+Administrators can update pool attributes later, but none of the updates will
+trigger zones to move to another pool.
+Zones can be moved manually to a different pool, as mentioned in the
+`API Reference <https://docs.openstack.org/api-ref/dns/dns-api-v2-index.html#pool-move-zone>`_.
 
-In a private cloud situation, it allows operators to separate internal and
-external facing zones.
+Designate provides a set of filters that reflect some common use cases and
+also a simple interface that administrators can use to create custom filters.
 
-To help users create zones on the  correct pool we have a "scheduler" that is
-responsible for examining the zone being created and the pools that are
-available for use, and matching the zone to a pool.
 
-The filters are pluggable (i.e. operator replaceable) and all follow a simple
-interface.
+Process Overview for Configuring Multiple Pools
+===============================================
 
-The zones are matched using "zone attributes" and "pool attributes". These are
-key: value pairs that are attached to the zone when it is being created, and
-the pool. The pool attributes can be updated by the operator in the future,
-but it will **not** trigger zones to be moved from one pool to another.
+The process of configuring multiple DNS server pools in Designate, consists
+of the following steps:
 
-.. note::
+#. Define the new pool in the pool definition file.
 
-    Currently the only zone attribute that is accepted is the `pool_id` attribute.
-    As more filters are merged there will be support for dynamic filters.
+#. Load the new pool definition into the Designate database by running the
+   ``designate-manage`` command.
 
-Target vs. Nameserver
-=====================
+#. Configure the pool scheduler to use one or more filters to match any
+   new zones that users create with the appropriate pool. You can choose
+   filters that are provided with Designate, or create new filters.
 
-One thing that can be confusing about pools is the differentiation
-between a target and a nameserver. The target is where Designate will
-try to write the change, while a namserver is where Designate checks
-that the change exists.
+#. Supply the required pool information to users to specify when they create
+   zones.
 
-A great example of this is `bind's stealth master system
-<http://www.zytrax.com/books/dns/ch4/#stealth>`_. In this
-configuration, there could be a stealth master that you configure as
-your target and a set of slaves pointed to that master as your
-nameservers. Designate will write to the master and then look for the
-changes on the slaves before considering the change active.
 
-Another example would be where Designate uses an API backend such as
-DynDNS or even another Designate instance. In this situation, you will
-typically have a single target with a set of nameservers to test that
-meet your requirements.
+Pool Definition File
+====================
 
-Managing Pools
-==============
-
-In mitaka we moved the method of updating pools to a CLI in `designate-manage`
-
-There is a YAML file that defines the pool, and is used to load
-this information into the database.
-
+A pool definition file is required when you create a DNS server pool in
+Designate. The required key value pairs in YAML format are documented here:
 
 .. literalinclude:: ../../../etc/designate/pools.yaml.sample
        :language: yaml
+
 
 .. _catalog_zones:
 
@@ -119,53 +109,69 @@ details on how to use catalog zones with TSIG.
   | catalog zones with TSIG.
 
 
-Designate Manage Pools Command Reference
-----------------------------------------
+designate-manage pool Command Reference
+=======================================
 
-Update Pools Information
-^^^^^^^^^^^^^^^^^^^^^^^^
+You manage pools in Designate with the ``designate-manage pool`` commands.
+
+.. note::
+
+   Control plane does not need to be restarted after designate-manage pool command changes.
+
+Pool update
+-----------
+You manage can modify the current deployed pools with the
+``designate-manage pool update`` command.
 
 .. code-block:: console
 
-  designate-manage pool update [options]
+   designate-manage pool update [options]
 
-Options:
-""""""""
+Pool update options
+^^^^^^^^^^^^^^^^^^^
+``--file <file>``
+  Input file. When a file is not specified, ``/etc/designate/pools.yaml`` is
+  used by default.
 
-  --file        Input file (Default: ``/etc/designate/pools.yaml``)
-  --dry-run     This will simulate what will happen when you run this command
-  --delete      Any Pools not listed in the config file will be deleted
+``--dry-run``
+  Simulates what happens when you run this command.
+
+``--delete``
+  Removes all pools not listed in the config file.
+
 
 .. warning::
 
-  | Running with ``--delete`` can be **extremely** dangerous.
-  | It will delete any pools that are not in the supplied YAML file, and any
-  | zones that are in that Pool.
-  | Before running with ``--delete`` we recommend operators run with
-  | ``--delete --dry-run`` to view the outcome.
+  Using ``--delete`` can be **extremely** dangerous, because ``designate-manage`` removes any pools that are not in the supplied YAML file, **including the default one** and any zones that are in those pools. Before using ``--delete``, use ``--delete --dry-run`` to view the outcome.
 
-
-
-Generate YAML File
-^^^^^^^^^^^^^^^^^^
+Generating a Copy of the Pool Configuration
+-------------------------------------------
 
 .. code-block:: console
 
-    designate-manage pool generate_file [options]
+   designate-manage pool generate_file [options]
 
-Options:
-""""""""
 
-  --file        YAML file output too (Default: ``/etc/designate/pools.yaml``)
+Options
+^^^^^^^
 
-Generate YAML File from Liberty Config
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``--file <file>``
+  The YAML file where ``designate-manage`` writes its output. When a file is
+  not specified, ``designate-manage`` writes to ``/etc/designate/pools.yaml``.
+
+Showing the current Pools Configuration
+---------------------------------------
 
 .. code-block:: console
 
-    designate-manage pool export_from_config [options]
+   designate-manage pool show_config [options]
 
-Options:
-""""""""
 
-  --file        YAML file output too (Default: ``/etc/designate/pools.yaml``)
+Options
+^^^^^^^
+
+``--pool_id <pool_id>``
+  ID of the pool to be examined.
+
+``--all_pools``
+  Show the config of all the pools.

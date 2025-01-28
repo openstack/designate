@@ -15,7 +15,7 @@
 
 
 ================
- Managing Zones
+Managing Zones
 ================
 
 In the Domain Name System, `zones` are used to break up the namespace into more
@@ -169,50 +169,6 @@ managed by designate as part of the default pool.
 In the ``AUTHORITY`` section, the numeric value between the name and `IN` is
 the TTL, which has updated to the new value of 3000.
 
-Multiple Pools Zone Creation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-When Multipools is configured, if you want to create a zone and attach it to a
-different pool than the default one, you must indicate to which pool your zone
-will be attached to. This is done via the attributes options during the zone
-creation.
-
-See the following example:
-
-  .. code-block:: console
-
-    $ openstack zone create --email dnsmaster@example.com example.com. --attributes pool_level:secondary
-
-    +----------------+--------------------------------------+
-    | Field          | Value                                |
-    +----------------+--------------------------------------+
-    | action         | CREATE                               |
-    | attributes     | pool_level:secondary                 |
-    |                |                                      |
-    | created_at     | 2023-01-24T18:30:45.000000           |
-    | description    | None                                 |
-    | email          | dnsmaster@example.com                |
-    | id             | d106e7b0-9973-41a1-b3db-0fb34b6d952c |
-    | masters        |                                      |
-    | name           | example.com.                         |
-    | pool_id        | 10cec123-43f0-4b60-98a8-1204dd826c67 |
-    | project_id     | 5160768b59524fd283a4fa82d7327644     |
-    | serial         | 1674585045                           |
-    | status         | PENDING                              |
-    | transferred_at | None                                 |
-    | ttl            | 3600                                 |
-    | type           | PRIMARY                              |
-    | updated_at     | None                                 |
-    | version        | 1                                    |
-    +----------------+--------------------------------------+
-
-    $ openstack zone list
-    +--------------------------------------+---------------+---------+------------+--------+--------+
-    | id                                   | name          | type    |     serial | status | action |
-    +--------------------------------------+---------------+---------+------------+--------+--------+
-    | d106e7b0-9973-41a1-b3db-0fb34b6d952c | example.com.  | PRIMARY | 1674585045 | ACTIVE | NONE   |
-    +--------------------------------------+---------------+---------+------------+--------+--------+
-
-
 Deleting a zone
 ---------------
 
@@ -249,3 +205,95 @@ Any records present in the zone are also deleted and will no longer resolve.
 
    Zones that have shares cannot be deleted without removing the shares or
    using the `delete-shares` modifier.
+
+Associating a Zone with a Pool
+------------------------------
+When your administrator has configured designate to use multiple DNS server
+pools, it might be necessary for you to indicate a specific pool attribute or
+ID when you create a zone. Your administrator will provide you with the
+necessary pool information to create a zone.
+
+In this example, the pool attribute that indicates one of several service
+tiers, must be specified when creating a zone:
+
+.. code-block:: console
+
+   $ openstack zone create --email dnsmaster@example.com example.com. --attributes service_tier:silver
+    +----------------+--------------------------------------+
+    | Field          | Value                                |
+    +----------------+--------------------------------------+
+    | action         | CREATE                               |
+    | attributes     | service_tier:silver                  |
+    |                |                                      |
+    | created_at     | 2023-04-04T18:30:45.000000           |
+    | description    | None                                 |
+    | email          | dnsmaster@example.com                |
+    | id             | d106e7b0-9973-41a1-b3db-0fb34b6d952c |
+    | masters        |                                      |
+    | name           | example.com.                         |
+    | pool_id        | 10cec123-43f0-4b60-98a8-1204dd826c67 |
+    | project_id     | 5160768b59524fd283a4fa82d7327644     |
+    | serial         | 1674585045                           |
+    | status         | PENDING                              |
+    | transferred_at | None                                 |
+    | ttl            | 3600                                 |
+    | type           | PRIMARY                              |
+    | updated_at     | None                                 |
+    | version        | 1                                    |
+    +----------------+--------------------------------------+
+
+.. note::
+   Remember that
+
+   [service:central]
+   scheduler_filters = attribute
+
+   configuration setting is required to associate a newly created zone with an existing pool.
+
+In this example, a specific pool ID, ``7a2cde6b-d321-fa11-f99e-ccc378fe3dd1``,
+must be specified when creating a zone:
+
+.. code-block:: console
+
+   $ openstack zone create --email dnsmaster@example.com example.com. --attributes pool_id:7a2cde6b-d321-fa11-f99e-ccc378fe3dd1
+    +----------------+----------------------------------------------+
+    | Field          | Value                                        |
+    +----------------+----------------------------------------------+
+    | action         | CREATE                                       |
+    | attributes     | pool_id:7a2cde6b-d321-fa11-f99e-ccc378fe3dd1 |
+    |                |                                              |
+    | created_at     | 2023-04-04T18:39:12.000000                   |
+    | description    | None                                         |
+    | email          | dnsmaster@example.com                        |
+    | id             | 54f2bcaa-65ef-8274-5fde-987234508afe         |
+    | masters        |                                              |
+    | name           | example.com.                                 |
+    | pool_id        | 7a2cde6b-d321-fa11-f99e-ccc378fe3dd1         |
+    | project_id     | 5160768b59524fd283a4fa82d7327644             |
+    | serial         | 2385822109                                   |
+    | status         | PENDING                                      |
+    | transferred_at | None                                         |
+    | ttl            | 3600                                         |
+    | type           | PRIMARY                                      |
+    | updated_at     | None                                         |
+    | version        | 1                                            |
+    +----------------+----------------------------------------------+
+
+.. note::
+   Remember that
+
+   [service:central]
+   scheduler_filters = pool_id_attribute
+
+   configuration setting is required to associate a newly created zone with an existing pool.
+
+Verify that the zone has been created:
+
+.. code-block:: console
+
+    $ openstack zone list
+    +--------------------------------------+---------------+---------+------------+--------+--------+
+    | id                                   | name          | type    |     serial | status | action |
+    +--------------------------------------+---------------+---------+------------+--------+--------+
+    | 54f2bcaa-65ef-8274-5fde-987234508afe | example.com.  | PRIMARY | 2385822109 | ACTIVE | NONE   |
+    +--------------------------------------+---------------+---------+------------+--------+--------+
