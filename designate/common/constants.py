@@ -81,7 +81,7 @@ RE_CERT_TYPE = re.compile(r'(^[A-Z]+$)|(^[0-9]+$)')
 RE_CERT_ALGO = re.compile(r'(^[A-Z]+[A-Z0-9\-]+[A-Z0-9]$)|(^[0-9]+$)')
 
 # Floating IP regexes
-RE_FIP = re.compile(r'^(?P<region>[A-Za-z0-9\\.\\-_]{1,100}):(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$')  # noqa
+RE_FIP = re.compile(r'^(?P<region>[A-Za-z0-9\.\-_]{1,100}):(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$')  # noqa
 
 # Error Validation regexes
 RE_REQUIRED = re.compile(r'\'([\w]*)\' is a required property')

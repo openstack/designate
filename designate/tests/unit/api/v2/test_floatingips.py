@@ -34,6 +34,18 @@ class FloatingIPTest(oslotest.base.BaseTestCase):
                 'RegionTwo:2fc6745d-1631-4f34-b13d-90f9014236c0'
             )
         )
+        self.assertEqual(
+            ('region-1', '2fc6745d-1631-4f34-b13d-90f9014236c0'),
+            floatingips.fip_key_to_data(
+                'region-1:2fc6745d-1631-4f34-b13d-90f9014236c0'
+            )
+        )
+        self.assertEqual(
+            ('region-1-test', '2fc6745d-1631-4f34-b13d-90f9014236c0'),
+            floatingips.fip_key_to_data(
+                'region-1-test:2fc6745d-1631-4f34-b13d-90f9014236c0'
+            )
+        )
 
     def test_fip_key_to_data_bad_request(self):
         self.assertRaisesRegex(
