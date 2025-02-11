@@ -64,10 +64,8 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
             obj, *args, **kwargs
         )
         try:
-            if policy.enforce_new_defaults():
-                target = {constants.RBAC_PROJECT_ID: obj.tenant_id}
-            else:
-                target = {'tenant_id': obj.tenant_id}
+            target = {constants.RBAC_PROJECT_ID: obj.tenant_id,
+                      'tenant_id': obj.tenant_id}
             policy.check(
                 'get_zone_transfer_request_detailed', kwargs['context'], target
             )

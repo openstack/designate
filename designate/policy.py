@@ -66,10 +66,7 @@ def init(default_rule=None, policy_file=None):
 
 
 def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
-    if enforce_new_defaults():
-        creds = ctxt.to_policy_values()
-    else:
-        creds = ctxt.to_dict()
+    creds = ctxt.to_policy_values()
     target = target or {}
     try:
         result = _ENFORCER.enforce(rule, target, creds, do_raise, exc)
@@ -93,12 +90,6 @@ def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
             LOG.info("Policy check failed for rule '%(rule)s' "
                      "on target %(target)s",
                      {'rule': rule, 'target': repr(target)}, extra=extra)
-
-
-def enforce_new_defaults():
-    if CONF.get('oslo_policy'):
-        return CONF['oslo_policy'].get('enforce_new_defaults', False)
-    return False
 
 
 def get_enforcer():

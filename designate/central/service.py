@@ -524,11 +524,9 @@ class Service(service.RPCService):
     # Quota Methods
     @rpc.expected_exceptions()
     def get_quotas(self, context, tenant_id):
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: tenant_id,
-                      'all_tenants': context.all_tenants}
-        else:
-            target = {'tenant_id': tenant_id}
+        target = {constants.RBAC_PROJECT_ID: tenant_id,
+                  'tenant_id': tenant_id,
+                  'all_tenants': context.all_tenants}
         policy.check('get_quotas', context, target)
         # NOTE(tkajinam): get_quotas now requires project scope so we assume
         #                 the context should contain project_id
@@ -540,18 +538,12 @@ class Service(service.RPCService):
     @rpc.expected_exceptions()
     @transaction
     def set_quota(self, context, tenant_id, resource, hard_limit):
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: tenant_id,
-                'resource': resource,
-                'hard_limit': hard_limit,
-            }
-        else:
-            target = {
-                'tenant_id': tenant_id,
-                'resource': resource,
-                'hard_limit': hard_limit,
-            }
+        target = {
+            constants.RBAC_PROJECT_ID: tenant_id,
+            'tenant_id': tenant_id,
+            'resource': resource,
+            'hard_limit': hard_limit,
+        }
 
         policy.check('set_quota', context, target)
         # NOTE(tkajinam): set_quota now requires project scope so we assume
@@ -563,10 +555,8 @@ class Service(service.RPCService):
 
     @transaction
     def reset_quotas(self, context, tenant_id):
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: tenant_id}
-        else:
-            target = {'tenant_id': tenant_id}
+        target = {constants.RBAC_PROJECT_ID: tenant_id,
+                  'tenant_id': tenant_id}
         policy.check('reset_quotas', context, target)
 
         self.quota.reset_quotas(context, tenant_id)
@@ -682,10 +672,8 @@ class Service(service.RPCService):
 
     @rpc.expected_exceptions()
     def get_tenant(self, context, tenant_id):
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: tenant_id}
-        else:
-            target = {'tenant_id': tenant_id}
+        target = {constants.RBAC_PROJECT_ID: tenant_id,
+                  'tenant_id': tenant_id}
 
         policy.check('get_tenant', context, target)
 
@@ -740,16 +728,11 @@ class Service(service.RPCService):
         # Default to creating in the current users tenant
         zone.tenant_id = zone.tenant_id or context.project_id
 
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: zone.tenant_id,
-                'zone_name': zone.name
-            }
-        else:
-            target = {
-                'tenant_id': zone.tenant_id,
-                'zone_name': zone.name
-            }
+        target = {
+            constants.RBAC_PROJECT_ID: zone.tenant_id,
+            'tenant_id': zone.tenant_id,
+            'zone_name': zone.name
+        }
 
         policy.check('create_zone', context, target)
 
@@ -882,21 +865,13 @@ class Service(service.RPCService):
 
         # TODO(johnsom) This should account for all-projects context
         # it passes today due to ADMIN
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'zone_shared': zone_shared,
-                constants.RBAC_PROJECT_ID: zone.tenant_id
-            }
-        else:
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'zone_shared': zone_shared,
-                'tenant_id': zone.tenant_id
-            }
-
+        target = {
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'zone_shared': zone_shared,
+            constants.RBAC_PROJECT_ID: zone.tenant_id,
+            'tenant_id': zone.tenant_id
+        }
         policy.check('get_zone', context, target)
 
         return zone
@@ -909,18 +884,12 @@ class Service(service.RPCService):
         else:
             zone = self.storage.get_zone(context, zone_id)
 
-            if policy.enforce_new_defaults():
-                target = {
-                    'zone_id': zone_id,
-                    'zone_name': zone.name,
-                    constants.RBAC_PROJECT_ID: zone.tenant_id
-                }
-            else:
-                target = {
-                    'zone_id': zone_id,
-                    'zone_name': zone.name,
-                    'tenant_id': zone.tenant_id
-                }
+            target = {
+                'zone_id': zone_id,
+                'zone_name': zone.name,
+                constants.RBAC_PROJECT_ID: zone.tenant_id,
+                'tenant_id': zone.tenant_id
+            }
             pool_id = zone.pool_id
 
             policy.check('get_zone_ns_records', context, target)
@@ -938,10 +907,8 @@ class Service(service.RPCService):
                    sort_key=None, sort_dir=None):
         """List existing zones including the ones flagged for deletion.
         """
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
 
         policy.check('find_zones', context, target)
 
@@ -962,19 +929,13 @@ class Service(service.RPCService):
 
         :returns: updated zone
         """
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone.obj_get_original_value('id'),
-                'zone_name': zone.obj_get_original_value('name'),
-                constants.RBAC_PROJECT_ID: (
-                    zone.obj_get_original_value('tenant_id')),
-            }
-        else:
-            target = {
-                'zone_id': zone.obj_get_original_value('id'),
-                'zone_name': zone.obj_get_original_value('name'),
-                'tenant_id': zone.obj_get_original_value('tenant_id'),
-            }
+        target = {
+            'zone_id': zone.obj_get_original_value('id'),
+            'zone_name': zone.obj_get_original_value('name'),
+            constants.RBAC_PROJECT_ID: (
+                zone.obj_get_original_value('tenant_id')),
+            'tenant_id': zone.obj_get_original_value('tenant_id')
+        }
 
         policy.check('update_zone', context, target)
         self._enforce_catalog_zone_policy(context, zone)
@@ -1042,18 +1003,12 @@ class Service(service.RPCService):
 
         self._enforce_catalog_zone_policy(context, zone)
 
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                constants.RBAC_PROJECT_ID: zone.tenant_id
-            }
-        else:
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'tenant_id': zone.tenant_id
-            }
+        target = {
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            constants.RBAC_PROJECT_ID: zone.tenant_id,
+            'tenant_id': zone.tenant_id
+        }
 
         if hasattr(context, 'abandon') and context.abandon:
             policy.check('abandon_zone', context, target)
@@ -1127,18 +1082,12 @@ class Service(service.RPCService):
     def xfr_zone(self, context, zone_id):
         zone = self.storage.get_zone(context, zone_id)
 
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                constants.RBAC_PROJECT_ID: zone.tenant_id
-            }
-        else:
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'tenant_id': zone.tenant_id
-            }
+        target = {
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            constants.RBAC_PROJECT_ID: zone.tenant_id,
+            'tenant_id': zone.tenant_id
+        }
 
         policy.check('xfr_zone', context, target)
 
@@ -1163,14 +1112,10 @@ class Service(service.RPCService):
         if criterion is None:
             criterion = {}
 
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: criterion.get('tenant_id', None)
-            }
-        else:
-            target = {
-                'tenant_id': criterion.get('tenant_id', None)
-            }
+        target = {
+            constants.RBAC_PROJECT_ID: criterion.get('tenant_id', None),
+            'tenant_id': criterion.get('tenant_id', None)
+        }
 
         policy.check('count_zones', context, target)
 
@@ -1214,10 +1159,8 @@ class Service(service.RPCService):
         # Ensure that zone exists and get the zone owner
         zone = self.storage.get_zone(context, zone_id)
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: zone.tenant_id}
-        else:
-            target = {'tenant_id': zone.tenant_id}
+        target = {constants.RBAC_PROJECT_ID: zone.tenant_id,
+                  'tenant_id': zone.tenant_id}
 
         policy.check('share_zone', context, target)
 
@@ -1242,10 +1185,8 @@ class Service(service.RPCService):
         # Ensure the share exists and get the share owner
         shared_zone = self.get_shared_zone(context, zone_id, zone_share_id)
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: shared_zone.project_id}
-        else:
-            target = {'tenant_id': shared_zone.project_id}
+        target = {constants.RBAC_PROJECT_ID: shared_zone.project_id,
+                  'tenant_id': shared_zone.project_id}
 
         policy.check('unshare_zone', context, target)
 
@@ -1293,12 +1234,10 @@ class Service(service.RPCService):
 
         if not context.all_tenants and criterion:
             # Check that they are asking for another projects shares
-            if policy.enforce_new_defaults():
-                target = {constants.RBAC_PROJECT_ID: criterion.get(
-                    'target_project_id', context.project_id)}
-            else:
-                target = {'tenant_id': criterion.get('target_project_id',
-                                                     context.project_id)}
+            target = {constants.RBAC_PROJECT_ID: criterion.get(
+                          'target_project_id', context.project_id),
+                      'tenant_id': criterion.get(
+                          'target_project_id', context.project_id)}
 
             policy.check('find_project_zone_share', context, target)
 
@@ -1314,10 +1253,8 @@ class Service(service.RPCService):
         zone_share = self.storage.get_shared_zone(
             context, zone_id, zone_share_id)
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: zone_share.project_id}
-        else:
-            target = {'tenant_id': zone_share.project_id}
+        target = {constants.RBAC_PROJECT_ID: zone_share.project_id,
+                  'tenant_id': zone_share.project_id}
 
         policy.check('get_zone_share', context, target)
 
@@ -1353,16 +1290,11 @@ class Service(service.RPCService):
 
         :returns: moved zone
         """
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone_id,
-                constants.RBAC_PROJECT_ID: context.project_id,
-            }
-        else:
-            target = {
-                'zone_id': zone_id,
-                'tenant_id': context.project_id,
-            }
+        target = {
+            'zone_id': zone_id,
+            constants.RBAC_PROJECT_ID: context.project_id,
+            'tenant_id': context.project_id,
+        }
 
         policy.check('pool_move_zone', context, target)
 
@@ -1438,24 +1370,15 @@ class Service(service.RPCService):
         if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'zone_type': zone.type,
-                'zone_shared': zone_shared,
-                'recordset_name': recordset.name,
-                constants.RBAC_PROJECT_ID: zone.tenant_id,
-            }
-        else:
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'zone_type': zone.type,
-                'zone_shared': zone_shared,
-                'recordset_name': recordset.name,
-                'tenant_id': zone.tenant_id,
-            }
+        target = {
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'zone_type': zone.type,
+            'zone_shared': zone_shared,
+            'recordset_name': recordset.name,
+            constants.RBAC_PROJECT_ID: zone.tenant_id,
+            'tenant_id': zone.tenant_id
+        }
 
         policy.check('create_recordset', context, target)
 
@@ -1554,22 +1477,14 @@ class Service(service.RPCService):
         zone_shared = self._check_zone_share_permission(context, zone)
 
         # TODO(johnsom) This should account for all_projects
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone.id,
-                'zone_name': zone.name,
-                'zone_shared': zone_shared,
-                'recordset_id': recordset.id,
-                constants.RBAC_PROJECT_ID: zone.tenant_id,
-            }
-        else:
-            target = {
-                'zone_id': zone.id,
-                'zone_name': zone.name,
-                'zone_shared': zone_shared,
-                'recordset_id': recordset.id,
-                'tenant_id': zone.tenant_id,
-            }
+        target = {
+            'zone_id': zone.id,
+            'zone_name': zone.name,
+            'zone_shared': zone_shared,
+            'recordset_id': recordset.id,
+            constants.RBAC_PROJECT_ID: zone.tenant_id,
+            'tenant_id': zone.tenant_id
+        }
 
         policy.check('get_recordset', context, target)
 
@@ -1595,10 +1510,8 @@ class Service(service.RPCService):
             zone_shared = self._check_zone_share_permission(context, zone)
 
         # TODO(johnsom) Fix this to be useful
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
 
         policy.check('find_recordsets', context, target)
 
@@ -1616,10 +1529,8 @@ class Service(service.RPCService):
 
     def find_recordset(self, context, criterion=None):
         # TODO(johnsom) Fix this to be useful
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
         policy.check('find_recordset', context, target)
 
         recordset = self.storage.find_recordset(context, criterion)
@@ -1686,28 +1597,17 @@ class Service(service.RPCService):
 
         # TODO(johnsom) This should account for all-projects context
         # it passes today due to ADMIN
-        if policy.enforce_new_defaults():
-            target = {
-                'recordset_id': recordset.obj_get_original_value('id'),
-                'recordset_project_id': recordset.obj_get_original_value(
-                    'tenant_id'),
-                'zone_id': recordset.obj_get_original_value('zone_id'),
-                'zone_name': zone.name,
-                'zone_shared': zone_shared,
-                'zone_type': zone.type,
-                constants.RBAC_PROJECT_ID: zone.tenant_id
-            }
-        else:
-            target = {
-                'recordset_id': recordset.obj_get_original_value('id'),
-                'recordset_project_id': recordset.obj_get_original_value(
-                    'tenant_id'),
-                'zone_id': recordset.obj_get_original_value('zone_id'),
-                'zone_name': zone.name,
-                'zone_shared': zone_shared,
-                'zone_type': zone.type,
-                'tenant_id': zone.tenant_id
-            }
+        target = {
+            'recordset_id': recordset.obj_get_original_value('id'),
+            'recordset_project_id': recordset.obj_get_original_value(
+                'tenant_id'),
+            'zone_id': recordset.obj_get_original_value('zone_id'),
+            'zone_name': zone.name,
+            'zone_shared': zone_shared,
+            'zone_type': zone.type,
+            constants.RBAC_PROJECT_ID: zone.tenant_id,
+            'tenant_id': zone.tenant_id
+        }
 
         policy.check('update_recordset', context, target)
 
@@ -1782,24 +1682,15 @@ class Service(service.RPCService):
             raise exceptions.BadRequest('Can not update a deleting zone')
 
         # TODO(johnsom) should handle all_projects
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'zone_type': zone.type,
-                'recordset_id': recordset.id,
-                'recordset_project_id': recordset.tenant_id,
-                constants.RBAC_PROJECT_ID: zone.tenant_id
-            }
-        else:
-            target = {
-                'zone_id': zone_id,
-                'zone_name': zone.name,
-                'zone_type': zone.type,
-                'recordset_id': recordset.id,
-                'recordset_project_id': recordset.tenant_id,
-                'tenant_id': zone.tenant_id
-            }
+        target = {
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'zone_type': zone.type,
+            'recordset_id': recordset.id,
+            'recordset_project_id': recordset.tenant_id,
+            constants.RBAC_PROJECT_ID: zone.tenant_id,
+            'tenant_id': zone.tenant_id
+        }
 
         policy.check('delete_recordset', context, target)
 
@@ -1849,12 +1740,10 @@ class Service(service.RPCService):
         if criterion is None:
             criterion = {}
 
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: criterion.get('tenant_id', None)
-            }
-        else:
-            target = {'tenant_id': criterion.get('tenant_id', None)}
+        target = {
+            constants.RBAC_PROJECT_ID: criterion.get('tenant_id', None),
+            'tenant_id': criterion.get('tenant_id', None)
+        }
 
         policy.check('count_recordsets', context, target)
 
@@ -1864,10 +1753,8 @@ class Service(service.RPCService):
     def find_records(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
         policy.check('find_records', context, target)
 
         return self.storage.find_records(context, criterion, marker, limit,
@@ -1878,12 +1765,10 @@ class Service(service.RPCService):
         if criterion is None:
             criterion = {}
 
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: criterion.get('tenant_id', None)
-            }
-        else:
-            target = {'tenant_id': criterion.get('tenant_id', None)}
+        target = {
+            constants.RBAC_PROJECT_ID: criterion.get('tenant_id', None),
+            'tenant_id': criterion.get('tenant_id', None)
+        }
 
         policy.check('count_records', context, target)
         return self.storage.count_records(context, criterion)
@@ -2610,10 +2495,8 @@ class Service(service.RPCService):
         if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not transfer a deleting zone')
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: zone.tenant_id}
-        else:
-            target = {'tenant_id': zone.tenant_id}
+        target = {constants.RBAC_PROJECT_ID: zone.tenant_id,
+                  'tenant_id': zone.tenant_id}
 
         policy.check('create_zone_transfer_request', context, target)
 
@@ -2640,17 +2523,13 @@ class Service(service.RPCService):
             elevated_context, zone_transfer_request_id)
 
         LOG.info('Target Tenant ID found - using scoped policy')
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_TARGET_PROJECT_ID: (zone_transfer_request.
-                                                   target_tenant_id),
-                constants.RBAC_PROJECT_ID: zone_transfer_request.tenant_id,
-            }
-        else:
-            target = {
-                'target_tenant_id': zone_transfer_request.target_tenant_id,
-                'tenant_id': zone_transfer_request.tenant_id,
-            }
+        target = {
+            constants.RBAC_TARGET_PROJECT_ID: (zone_transfer_request.
+                                               target_tenant_id),
+            constants.RBAC_PROJECT_ID: zone_transfer_request.tenant_id,
+            'target_tenant_id': zone_transfer_request.target_tenant_id,
+            'tenant_id': zone_transfer_request.tenant_id,
+        }
 
         policy.check('get_zone_transfer_request', context, target)
 
@@ -2677,14 +2556,10 @@ class Service(service.RPCService):
         if 'zone_id' in zone_transfer_request.obj_what_changed():
             raise exceptions.InvalidOperation('Zone cannot be changed')
 
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: zone_transfer_request.tenant_id,
-            }
-        else:
-            target = {
-                'tenant_id': zone_transfer_request.tenant_id,
-            }
+        target = {
+            constants.RBAC_PROJECT_ID: zone_transfer_request.tenant_id,
+            'tenant_id': zone_transfer_request.tenant_id,
+        }
         policy.check('update_zone_transfer_request', context, target)
         request = self.storage.update_zone_transfer_request(
             context, zone_transfer_request)
@@ -2699,12 +2574,9 @@ class Service(service.RPCService):
         zone_transfer_request = self.storage.get_zone_transfer_request(
             context, zone_transfer_request_id)
 
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: zone_transfer_request.tenant_id
-            }
-        else:
-            target = {'tenant_id': zone_transfer_request.tenant_id}
+        target = {
+            constants.RBAC_PROJECT_ID: zone_transfer_request.tenant_id,
+            'tenant_id': zone_transfer_request.tenant_id}
 
         policy.check('delete_zone_transfer_request', context, target)
         return self.storage.delete_zone_transfer_request(
@@ -2732,15 +2604,11 @@ class Service(service.RPCService):
             raise exceptions.IncorrectZoneTransferKey(
                 'Key does not match stored key for request')
 
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_TARGET_PROJECT_ID: (zone_transfer_request.
-                                                   target_tenant_id)
-            }
-        else:
-            target = {
-                'target_tenant_id': zone_transfer_request.target_tenant_id
-            }
+        target = {
+            constants.RBAC_TARGET_PROJECT_ID: (
+                zone_transfer_request.target_tenant_id),
+            'target_tenant_id': zone_transfer_request.target_tenant_id
+        }
 
         policy.check('create_zone_transfer_accept', context, target)
 
@@ -2791,14 +2659,10 @@ class Service(service.RPCService):
         zone_transfer_accept = self.storage.get_zone_transfer_accept(
             context, zone_transfer_accept_id)
 
-        if policy.enforce_new_defaults():
-            target = {
-                constants.RBAC_PROJECT_ID: zone_transfer_accept.tenant_id
-            }
-        else:
-            target = {
-                'tenant_id': zone_transfer_accept.tenant_id
-            }
+        target = {
+            constants.RBAC_PROJECT_ID: zone_transfer_accept.tenant_id,
+            'tenant_id': zone_transfer_accept.tenant_id
+        }
 
         policy.check('get_zone_transfer_accept', context, target)
 
@@ -2816,10 +2680,8 @@ class Service(service.RPCService):
     @rpc.expected_exceptions()
     @notification.notify_type('dns.zone_import.create')
     def create_zone_import(self, context, request_body):
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
 
         policy.check('create_zone_import', context, target)
 
@@ -2911,10 +2773,8 @@ class Service(service.RPCService):
 
     @notification.notify_type('dns.zone_import.update')
     def update_zone_import(self, context, zone_import):
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: zone_import.tenant_id}
-        else:
-            target = {'tenant_id': zone_import.tenant_id}
+        target = {constants.RBAC_PROJECT_ID: zone_import.tenant_id,
+                  'tenant_id': zone_import.tenant_id}
         policy.check('update_zone_import', context, target)
 
         return self.storage.update_zone_import(context, zone_import)
@@ -2923,10 +2783,8 @@ class Service(service.RPCService):
     def find_zone_imports(self, context, criterion=None, marker=None,
                           limit=None, sort_key=None, sort_dir=None):
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
 
         policy.check('find_zone_imports', context, target)
 
@@ -2943,10 +2801,8 @@ class Service(service.RPCService):
     @rpc.expected_exceptions()
     def get_zone_import(self, context, zone_import_id):
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
 
         policy.check('get_zone_import', context, target)
         return self.storage.get_zone_import(context, zone_import_id)
@@ -2956,16 +2812,11 @@ class Service(service.RPCService):
     @transaction
     def delete_zone_import(self, context, zone_import_id):
 
-        if policy.enforce_new_defaults():
-            target = {
+        target = {
                 'zone_import_id': zone_import_id,
-                constants.RBAC_PROJECT_ID: context.project_id
-            }
-        else:
-            target = {
-                'zone_import_id': zone_import_id,
+                constants.RBAC_PROJECT_ID: context.project_id,
                 'tenant_id': context.project_id
-            }
+        }
 
         policy.check('delete_zone_import', context, target)
 
@@ -2980,10 +2831,8 @@ class Service(service.RPCService):
         # Try getting the zone to ensure it exists
         zone = self.storage.get_zone(context, zone_id)
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: zone.tenant_id}
-        else:
-            target = {'tenant_id': zone.tenant_id}
+        target = {constants.RBAC_PROJECT_ID: zone.tenant_id,
+                  'tenant_id': zone.tenant_id}
 
         policy.check('create_zone_export', context, target)
 
@@ -3010,10 +2859,8 @@ class Service(service.RPCService):
     def find_zone_exports(self, context, criterion=None, marker=None,
                           limit=None, sort_key=None, sort_dir=None):
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
         policy.check('find_zone_exports', context, target)
 
         if not criterion:
@@ -3029,10 +2876,8 @@ class Service(service.RPCService):
     @rpc.expected_exceptions()
     def get_zone_export(self, context, zone_export_id):
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: context.project_id}
-        else:
-            target = {'tenant_id': context.project_id}
+        target = {constants.RBAC_PROJECT_ID: context.project_id,
+                  'tenant_id': context.project_id}
 
         policy.check('get_zone_export', context, target)
 
@@ -3042,10 +2887,8 @@ class Service(service.RPCService):
     @notification.notify_type('dns.zone_export.update')
     def update_zone_export(self, context, zone_export):
 
-        if policy.enforce_new_defaults():
-            target = {constants.RBAC_PROJECT_ID: zone_export.tenant_id}
-        else:
-            target = {'tenant_id': zone_export.tenant_id}
+        target = {constants.RBAC_PROJECT_ID: zone_export.tenant_id,
+                  'tenant_id': zone_export.tenant_id}
 
         policy.check('update_zone_export', context, target)
 
@@ -3056,16 +2899,11 @@ class Service(service.RPCService):
     @transaction
     def delete_zone_export(self, context, zone_export_id):
 
-        if policy.enforce_new_defaults():
-            target = {
-                'zone_export_id': zone_export_id,
-                constants.RBAC_PROJECT_ID: context.project_id
-            }
-        else:
-            target = {
-                'zone_export_id': zone_export_id,
-                'tenant_id': context.project_id
-            }
+        target = {
+            'zone_export_id': zone_export_id,
+            constants.RBAC_PROJECT_ID: context.project_id,
+            'tenant_id': context.project_id
+        }
 
         policy.check('delete_zone_export', context, target)
 

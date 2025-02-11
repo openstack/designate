@@ -62,7 +62,7 @@
       nslookup_target: 'opendev.org'
 
 - job:
-    name: designate-bind9-keystone-default-roles
+    name: designate-bind9-keystone-old-default-roles
     post-run: playbooks/designate-bind9/post.yaml
     parent: designate-base
     # TODO(gmann): As per the 2025.1 testing runtime, we
@@ -74,11 +74,14 @@
         post-config:
           $DESIGNATE_CONF:
             oslo_policy:
-              enforce_new_defaults: True
+              enforce_new_defaults: False
+              enforce_scope: False
         test-config:
           "$TEMPEST_CONFIG":
             dns_feature_enabled:
-              enforce_new_defaults: True
+              enforce_new_defaults: False
+            enforce_scope:
+              designate: False
 
 - job:
     name: designate-bind9-centos-9-stream
@@ -219,7 +222,7 @@
             voting: false
         - designate-bind9-centos-9-stream:
             voting: false
-        - designate-bind9-keystone-default-roles
+        - designate-bind9-keystone-old-default-roles
         - designate-pdns4
         - designate-grenade-bind9
         - designate-grenade-pdns4
@@ -231,7 +234,7 @@
       fail-fast: true
       jobs:
         - designate-bind9
-        - designate-bind9-keystone-default-roles
+        - designate-bind9-keystone-old-default-roles
         - designate-pdns4
         - designate-grenade-pdns4
         - designate-grenade-pdns4-skip-level

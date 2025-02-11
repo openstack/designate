@@ -149,8 +149,6 @@ class CentralBasic(designate.tests.functional.TestCase):
             policy, 'set_rules', return_value=mock.Mock()).start()
         mock.patch.object(
             policy, 'init', return_value=mock.Mock()).start()
-        mock.patch.object(
-            policy, 'enforce_new_defaults', return_value=mock.Mock()).start()
         self.mock_policy_check = mock.patch.object(
             policy, 'check', return_value=mock.Mock()).start()
         self.mock_get_quota = mock.patch.object(
@@ -789,7 +787,8 @@ class CentralZoneTestCase(CentralBasic):
                 'zone_id': CentralZoneTestCase.zone_id,
                 'zone_name': 'foo',
                 'zone_shared': False,
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -815,7 +814,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertTrue(self.service.storage.find_zones.called)
 
         self.mock_policy_check.assert_called_with(
-            'find_zones', mock.ANY, {'project_id': 't'}
+            'find_zones', mock.ANY, {'project_id': 't', 'tenant_id': 't'}
         )
 
     def test_delete_zone_has_subzone(self):
@@ -838,7 +837,8 @@ class CentralZoneTestCase(CentralBasic):
             'delete_zone', mock.ANY, {
                 'zone_id': CentralZoneTestCase.zone_id,
                 'zone_name': 'foo',
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -864,7 +864,8 @@ class CentralZoneTestCase(CentralBasic):
             'abandon_zone', mock.ANY, {
                 'zone_id': CentralZoneTestCase.zone_id,
                 'zone_name': 'foo',
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -900,7 +901,8 @@ class CentralZoneTestCase(CentralBasic):
             'delete_zone', mock.ANY, {
                 'zone_id': CentralZoneTestCase.zone_id,
                 'zone_name': 'foo',
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -937,7 +939,8 @@ class CentralZoneTestCase(CentralBasic):
             'delete_zone', mock.ANY, {
                 'zone_id': CentralZoneTestCase.zone_id,
                 'zone_name': 'foo',
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -973,7 +976,8 @@ class CentralZoneTestCase(CentralBasic):
             'xfr_zone', mock.ANY, {
                 'zone_id': CentralZoneTestCase.zone_id,
                 'zone_name': 'example.org.',
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -1086,7 +1090,8 @@ class CentralZoneTestCase(CentralBasic):
                 'zone_name': 'example.org.',
                 'zone_shared': False,
                 'recordset_id': CentralZoneTestCase.recordset_id,
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -1118,7 +1123,8 @@ class CentralZoneTestCase(CentralBasic):
                 'zone_name': 'example.org.',
                 'zone_shared': False,
                 'recordset_id': CentralZoneTestCase.recordset_id,
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -1129,7 +1135,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertTrue(self.service.storage.find_recordsets.called)
 
         self.mock_policy_check.assert_called_with(
-            'find_recordsets', mock.ANY, {'project_id': 't'}
+            'find_recordsets', mock.ANY, {'project_id': 't', 'tenant_id': 't'}
         )
 
     def test_find_recordset(self):
@@ -1139,7 +1145,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service.find_recordset(self.context)
         self.assertTrue(self.service.storage.find_recordset.called)
         self.mock_policy_check.assert_called_with(
-            'find_recordset', mock.ANY, {'project_id': 't'}
+            'find_recordset', mock.ANY, {'project_id': 't', 'tenant_id': 't'}
         )
 
     def test_update_recordset_fail_on_changes(self):
@@ -1237,7 +1243,8 @@ class CentralZoneTestCase(CentralBasic):
                 'zone_name': 'example.org.',
                 'zone_shared': self.zone_shared,
                 'zone_type': 'foo',
-                'project_id': '2'
+                'project_id': '2',
+                'tenant_id': '2'
             }
         )
 
@@ -1474,13 +1481,14 @@ class CentralZoneTestCase(CentralBasic):
     def test_count_recordset(self):
         self.service.count_recordsets(self.context)
         self.mock_policy_check.assert_called_with(
-            'count_recordsets', mock.ANY, {'project_id': None}
+            'count_recordsets', mock.ANY, {
+                'project_id': None, 'tenant_id': None}
         )
 
     def test_count_records(self):
         self.service.count_records(self.context)
         self.mock_policy_check.assert_called_with(
-            'count_records', mock.ANY, {'project_id': None}
+            'count_records', mock.ANY, {'project_id': None, 'tenant_id': None}
         )
 
     def test_determine_floatingips(self):
@@ -1620,7 +1628,7 @@ class CentralZoneExportTests(CentralBasic):
             CentralZoneTestCase.zone_export_id)
 
         self.mock_policy_check.assert_called_with(
-            'get_zone_export', mock.ANY, {'project_id': 't'}
+            'get_zone_export', mock.ANY, {'project_id': 't', 'tenant_id': 't'}
         )
 
         # Check output
@@ -1640,7 +1648,8 @@ class CentralZoneExportTests(CentralBasic):
         self.assertTrue(self.service.storage.find_zone_exports.called)
 
         self.mock_policy_check.assert_called_with(
-            'find_zone_exports', mock.ANY, {'project_id': 't'}
+            'find_zone_exports', mock.ANY, {
+                'project_id': 't', 'tenant_id': 't'}
         )
 
     def test_find_zone_exports_with_custom_criterion(self):
@@ -1655,7 +1664,8 @@ class CentralZoneExportTests(CentralBasic):
         self.assertTrue(self.service.storage.find_zone_exports.called)
 
         self.mock_policy_check.assert_called_with(
-            'find_zone_exports', mock.ANY, {'project_id': 't'}
+            'find_zone_exports', mock.ANY, {
+                'project_id': 't', 'tenant_id': 't'}
         )
 
     def test_delete_zone_export(self):
@@ -1688,7 +1698,7 @@ class CentralZoneExportTests(CentralBasic):
         self.mock_policy_check.assert_called_with(
             'delete_zone_export', mock.ANY, {
                 'zone_export_id': 'e887597f-9697-47dd-a202-7a2711f8669c',
-                'project_id': 't'
+                'project_id': 't', 'tenant_id': 't'
             }
         )
 
