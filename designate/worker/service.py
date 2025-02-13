@@ -142,20 +142,20 @@ class Service(service.RPCService):
 
     def _do_zone_action(self, context, zone, zone_params=None):
         pool = self.get_pool(zone.pool_id)
-        all_tasks = [
-            zonetasks.ZoneAction(self.executor, context, pool, zone,
-                                 zone.action, zone_params)
-        ]
-
+        zone_action = zonetasks.ZoneAction(
+            self.executor, context, pool, zone, zone.action, zone_params)
+        all_tasks_result = self.executor.run(zone_action)
         # Send a NOTIFY to each also-notifies
+        also_notifies_tasks = list()
         for also_notify in pool.also_notifies:
             notify_target = AlsoNotifyTask()
             notify_target.options = {'host': also_notify.host,
                                      'port': also_notify.port}
-            all_tasks.append(zonetasks.SendNotify(self.executor,
+            also_notifies_tasks.append(zonetasks.SendNotify(self.executor,
                                                   zone,
                                                   notify_target))
-        return self.executor.run(all_tasks)
+        all_tasks_result.extend(self.executor.run(also_notifies_tasks))
+        return all_tasks_result
 
     @rpc.expected_exceptions()
     def create_zone(self, context, zone):
