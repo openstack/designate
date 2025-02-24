@@ -4322,6 +4322,33 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(zone.id, moved_zone.id)
         self.assertEqual(moved_zone.pool_id, second_pool['id'])
 
+    def test_pool_move_zone_from_non_default_to_default_pool(self):
+        # create 2 pools
+        pool = self.create_pool(fixture=0)
+        second_pool = self.create_pool(fixture=1)
+
+        self.config(scheduler_filters=['pool_id_attribute'],
+                    group='service:central')
+
+        zone = self.create_zone(context=self.admin_context,
+                                pool_id=second_pool.id)
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool['id'],
+            objects.PoolNsRecord(priority=1, hostname='ns-old.example.org.')
+        )
+
+        self.storage.create_pool_ns_record(
+            self.admin_context, second_pool['id'],
+            objects.PoolNsRecord(priority=1, hostname='ns-new.example.org.')
+        )
+
+        self.central_service.pool_move_zone(self.admin_context,
+            zone.id, pool['id'])
+        moved_zone = self.central_service.get_zone(
+            self.admin_context, zone.id
+        )
+        self.assertEqual(moved_zone.pool_id, pool['id'])
+
     def test_pool_move_zone_no_valid_pool_selected(self):
         pool_id = '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         zone = self.create_zone(fixture=0, pool_id=pool_id)
