@@ -1339,16 +1339,16 @@ class Service(service.RPCService):
         for ns_record in delete_ns:
             self._delete_ns(elevated_context, zone, ns_record)
 
-        zone = self._update_zone_in_storage(
-                context, zone, increment_serial=False)
-
         LOG.info("Moving zone '%(zone)s' to pool '%(pool)s'",
                  {'zone': zone.name, 'pool': target_pool_id})
         zone.pool_id = target_pool_id
+        zone = self._update_zone_in_storage(
+                context, zone, increment_serial=False)
+
         zone.refresh = self._generate_soa_refresh_interval()
-        zone.action = 'CREATE'
-        zone.status = 'PENDING'
-        self.worker_api.create_zone(context, zone)
+        zone.action = constants.UPDATE
+        zone.status = constants.PENDING
+        self.worker_api.update_zone(context, zone)
 
         return zone
 

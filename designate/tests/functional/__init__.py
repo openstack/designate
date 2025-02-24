@@ -699,12 +699,17 @@ class TestCase(base.BaseTestCase):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
         zone_type = kwargs.pop('type', None)
+        pool_id = kwargs.get('pool_id')
 
         values = self.get_zone_fixture(zone_type=zone_type,
                                        fixture=fixture, values=kwargs)
 
         if 'tenant_id' not in values:
             values['tenant_id'] = context.project_id
+
+        if pool_id:
+            values['attributes'] = values.get('attributes', {})
+            values['attributes']['pool_id'] = pool_id
 
         return self.central_service.create_zone(
             context, objects.Zone.from_dict(values))
