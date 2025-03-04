@@ -20,6 +20,7 @@ from unittest import mock
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
+from designate.central.rpcapi import CentralAPI
 from designate.producer import tasks
 from designate.storage import sql
 from designate.storage.sqlalchemy import tables
@@ -194,3 +195,38 @@ class PeriodicIncrementSerialTaskTest(designate.tests.functional.TestCase):
 
         self.worker_api.update_zone.assert_called()
         self.assertEqual(5, self.worker_api.update_zone.call_count)
+
+
+class PeriodicSecondaryRefreshTaskTest(designate.tests.functional.TestCase):
+
+    def setUp(self):
+        super().setUp()
+        task_class = tasks.PeriodicSecondaryRefreshTask
+        fixture = base_fixtures.ZoneManagerTaskFixture(task_class)
+        self.periodic_secondary_refresh_task_fixture = self.useFixture(fixture)
+
+    def _create_zones(self):
+        refresh = 3600
+        need_refresh = datetime.timedelta(seconds=refresh)
+        do_not_need_refresh = need_refresh / 2
+        now = timeutils.utcnow(True)
+        all_transferred_at = (
+            None,
+            now - need_refresh,
+            now - do_not_need_refresh
+        )
+        email = 'service_central_managed_resource_email@example.org'
+        for name_index, transferred_at in enumerate(all_transferred_at):
+            self.create_zone(
+                name='example_%d.org.' % name_index,
+                email=email,
+                type='SECONDARY',
+                refresh=refresh,
+                transferred_at=transferred_at
+            )
+
+    @mock.patch.object(CentralAPI, 'xfr_zone')
+    def test_refresh_secondary_zone(self, mock_xfr_zone):
+        self._create_zones()
+        self.periodic_secondary_refresh_task_fixture.task()
+        mock_xfr_zone.assert_called_once()

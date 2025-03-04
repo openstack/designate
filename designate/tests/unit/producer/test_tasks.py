@@ -239,7 +239,7 @@ class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
         transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=62)
         zone = RoObject(
             id=uuidutils.generate_uuid(),
-            transferred_at=datetime.datetime.isoformat(transferred),
+            transferred_at=transferred,
             refresh=3600
         )
 
@@ -254,7 +254,7 @@ class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
         transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=50)
         zone = RoObject(
             id=uuidutils.generate_uuid(),
-            transferred_at=datetime.datetime.isoformat(transferred),
+            transferred_at=transferred,
             refresh=3600
         )
 

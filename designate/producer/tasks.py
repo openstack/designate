@@ -203,7 +203,7 @@ class PeriodicSecondaryRefreshTask(PeriodicTask):
 
             now = timeutils.utcnow(True)
 
-            transferred = timeutils.parse_isotime(zone.transferred_at)
+            transferred = timeutils.parse_isotime(str(zone.transferred_at))
             seconds = timeutils.delta_seconds(transferred, now)
             if seconds > zone.refresh:
                 LOG.debug(

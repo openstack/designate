@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Refresh secondary zone task was broken. It failed all the time.
+    If MDNS didn't get NOTIFY from master server, the secondary zone didn't get
+    updates. Now it's fixed.
