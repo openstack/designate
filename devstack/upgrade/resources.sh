@@ -73,7 +73,7 @@ function create {
     # BUG(sdague): this really shouldn't be required, in Keystone v2 a
     # user created in a project was assigned to that project, in v3 it
     # is not - https://bugs.launchpad.net/keystone/+bug/1662911
-    openstack role add Member --user $id --project $project_id
+    openstack role add member --user $id --project $project_id
 
     _set_designate_user
 
