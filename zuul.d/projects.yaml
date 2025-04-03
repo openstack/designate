@@ -1,0 +1,48 @@
+- project-template:
+    name: designate-devstack-jobs
+    queue: designate
+    check:
+      jobs:
+        - designate-bind9
+        - designate-bind9-keystone-old-default-roles
+        - designate-pdns4
+        - designate-grenade-bind9
+        - designate-grenade-pdns4
+        - designate-grenade-bind9-skip-level
+        - designate-grenade-pdns4-skip-level
+        - designate-ipv6-only-pdns4
+        - designate-ipv6-only-bind9
+    gate:
+      fail-fast: true
+      jobs:
+        - designate-bind9
+        - designate-bind9-keystone-old-default-roles
+        - designate-pdns4
+        - designate-grenade-pdns4
+        - designate-grenade-bind9
+        - designate-grenade-pdns4-skip-level
+        - designate-grenade-bind9-skip-level
+        - designate-ipv6-only-pdns4
+        - designate-ipv6-only-bind9
+
+- project:
+    templates:
+      - designate-devstack-jobs
+      - openstack-cover-jobs
+      - openstack-python3-jobs
+      - publish-openstack-docs-pti
+      - periodic-stable-jobs
+      - check-requirements
+      - release-notes-jobs-python3
+    check:
+      jobs:
+        - neutron-tempest-plugin-designate-scenario
+        - designate-tox-dnspython-latest
+        - designate-bind9-catalog-zones:
+            voting: false
+    gate:
+      jobs:
+        - neutron-tempest-plugin-designate-scenario
+    experimental:
+      jobs:
+        - designate-pdns4-postgres
