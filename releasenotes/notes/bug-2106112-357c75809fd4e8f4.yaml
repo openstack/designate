@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Fixed collection links for floating IP API endpoint returning a ``next``
+    key pointing to itself when the exact amount of floating IPs in a project
+    was the same as config ``default_limit_v2`` that would cause some clients
+    to enter an endless loop.
+
+    See `bug #2106112 <https://bugs.launchpad.net/designate/+bug/2106112>`_.

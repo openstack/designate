@@ -414,3 +414,27 @@ class ZoneTransferRequestAPIv2AdapterTest(oslotest.base.BaseTestCase):
         )
 
         self.assertNotIn('target_project_id', render_object)
+
+
+class FloatingIPListAPIv2AdapterTest(oslotest.base.BaseTestCase):
+    def test_floatingip_no_next_collection_link(self):
+        """Test that we dont provide a next collection link."""
+        mock_request = mock.Mock()
+        mock_request.GET = {'limit': 20}
+        mock_request.host_url = 'http://192.0.2.1'
+        mock_request.path = '/v2/reverse/floatingips'
+
+        obj = {'ptrdname': None, 'ttl': None, 'description': None}
+        items = [
+            adapters.FloatingIPListAPIv2Adapter.parse(
+                obj, objects.FloatingIP()) for _ in range(0, 20)]
+        res = adapters.FloatingIPListAPIv2Adapter.render_list(
+            items, request=mock_request)
+        expected_links = {
+            'self': 'http://192.0.2.1/v2/reverse/floatingips?limit=20'
+        }
+
+        # Test that we return all floating ips and that we dont
+        # return any next key in our collection links.
+        self.assertEqual(20, len(res['floatingips']))
+        self.assertEqual(expected_links, res['links'])
