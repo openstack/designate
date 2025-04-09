@@ -416,3 +416,152 @@ class PeriodicCleanupStoppedServiceStatusTask(PeriodicTask):
             pass
 
         self._delete_stale_down_services(ctxt)
+
+
+class PeriodicStalePtrRecordsRemovalTask(PeriodicTask):
+    """Remove PTR records that point to non-existing floating IPs.
+    """
+    __plugin_name__ = 'stale_ptr_removal'
+
+    def _get_existing_floating_ip_ids(self, ctxt):
+        """Fetch existing floating IP IDs from neutron.
+
+        Returns:
+            set: Set of existing floating IP IDs, or None if fetch failed
+        """
+        try:
+            fips = self.central_api.get_floating_ips(
+                ctxt, region=CONF.neutron.region_name)
+            return {fip['id'] for fip in fips}
+        except Exception as e:
+            LOG.warning("Failed to get floating IPs from neutron: %s", e)
+            return None
+
+    def _identify_stale_ptr_records(self, ptr_records, existing_fip_ids):
+        """Identify PTR records that point to non-existing floating IPs.
+
+        Args:
+            ptr_records: List of PTR records to check
+            existing_fip_ids: Set of existing floating IP IDs
+
+        Returns:
+            list: List of stale PTR records
+        """
+        stale_ptr_records = []
+        for ptr_record in ptr_records:
+            if ptr_record.managed_resource_region != CONF.neutron.region_name:
+                continue
+
+            fip_id = ptr_record.managed_resource_id
+
+            if fip_id not in existing_fip_ids:
+                LOG.debug("PTR record %s is stale - FIP %s no longer "
+                         "exists in neutron",
+                         ptr_record.id, fip_id)
+                stale_ptr_records.append(ptr_record)
+
+        return stale_ptr_records
+
+    def _delete_ptr_record(self, context_elevated, ptr_record):
+        """Delete a single PTR record.
+
+        Args:
+            context_elevated: Elevated designate context
+            ptr_record: PTR record to delete
+
+        Returns:
+            bool: True if deletion succeeded, False otherwise
+        """
+        try:
+            LOG.info('Deleting stale PTR record %s for FIP %s',
+                    ptr_record.id, ptr_record.managed_resource_id)
+
+            self.central_api.delete_managed_records(
+                context_elevated, zone_id=ptr_record.zone_id,
+                criterion={'id': ptr_record.id})
+
+            LOG.info('Successfully deleted PTR record %s',
+                    ptr_record.id)
+            return True
+
+        except Exception as e:
+            LOG.error("Failed to delete PTR record %s: %s",
+                     ptr_record.id, e)
+            return False
+
+    def _process_stale_records(self, ctxt, stale_ptr_records):
+        """Process and delete stale PTR records.
+
+        Args:
+            ctxt: Designate context
+            stale_ptr_records: List of stale PTR records to delete
+
+        Returns:
+            int: Number of successfully deleted records
+        """
+        context_elevated = ctxt.elevated(
+            all_tenants=True, edit_managed_records=True)
+        deleted_count = 0
+
+        for ptr_record in stale_ptr_records:
+            if self._delete_ptr_record(context_elevated, ptr_record):
+                deleted_count += 1
+
+        LOG.info('Successfully cleaned up %d out of %d stale '
+                 'PTR records',
+                 deleted_count, len(stale_ptr_records))
+        return deleted_count
+
+    def _iter_ptr_records(self, ctxt):
+        criterion = self._filter_between('zone_shard')
+        criterion['managed_resource_region'] = CONF.neutron.region_name
+        return self._iter(self.central_api.get_ptr_records, ctxt, criterion)
+
+    def __call__(self):
+        if not CONF.neutron.region_name:
+            LOG.warning('Neutron region_name is not configured; skipping '
+                        'stale PTR record cleanup')
+            return
+
+        pstart, pend = self._my_range()
+        LOG.info(
+            "Fetching and removing stale PTR records for shards "
+            "%(start)s to %(end)s",
+            {
+                "start": pstart,
+                "end": pend
+            })
+
+        try:
+            ctxt = context.DesignateContext.get_admin_context()
+            ptr_records = list(self._iter_ptr_records(ctxt))
+
+            # Early return if no PTR records to process
+            if not ptr_records:
+                return
+
+            # Get existing floating IP IDs from neutron
+            existing_fip_ids = self._get_existing_floating_ip_ids(ctxt)
+
+            # Treat a fetch failure the same as an empty result: neither
+            # tells us floating IPs genuinely don't exist, and proceeding
+            # would mark every PTR record in the shard as stale.
+            if not existing_fip_ids:
+                LOG.warning(
+                    "No existing floating IPs were returned from "
+                    "neutron; skipping stale PTR record cleanup for "
+                    "shards %(start)s to %(end)s this cycle as a "
+                    "safety measure against mass deletion.",
+                    {"start": pstart, "end": pend})
+                return
+
+            # Identify stale PTR records
+            stale_ptr_records = self._identify_stale_ptr_records(
+                ptr_records, existing_fip_ids)
+
+            # Process deletions if there are stale records
+            if stale_ptr_records:
+                self._process_stale_records(ctxt, stale_ptr_records)
+
+        except Exception as e:
+            LOG.error("Error during stale PTR record processing: %s", e)

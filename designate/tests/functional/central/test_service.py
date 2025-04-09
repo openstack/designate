@@ -2999,6 +2999,82 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(['fake-fip'], result)
         mock_get_floating_ips.assert_called_once_with({'project_id': 'a'})
 
+    @mock.patch.object(clients.NeutronClient, 'get_floating_ips')
+    def test_get_floating_ips_matching_region(self, mock_get_floating_ips):
+        CONF.set_override('region_name', 'RegionOne', 'neutron')
+        mock_get_floating_ips.return_value = [{'id': 'live-fip'}]
+
+        result = self.central_service.get_floating_ips(
+            self.get_admin_context(), region='RegionOne')
+
+        self.assertEqual([{'id': 'live-fip'}], result)
+        mock_get_floating_ips.assert_called_once_with(None)
+
+    @mock.patch.object(clients.NeutronClient, 'get_floating_ips')
+    def test_get_floating_ips_region_mismatch(self, mock_get_floating_ips):
+        CONF.set_override('region_name', 'RegionTwo', 'neutron')
+
+        self.assertRaises(
+            exceptions.ConfigurationError,
+            self.central_service.get_floating_ips,
+            self.get_admin_context(), region='RegionOne')
+
+        mock_get_floating_ips.assert_not_called()
+
+    @mock.patch.object(clients.NeutronClient, 'get_floating_ips')
+    def test_get_floating_ips_region_unconfigured(self, mock_get_floating_ips):
+        CONF.set_override('region_name', None, 'neutron')
+
+        self.assertRaises(
+            exceptions.ConfigurationError,
+            self.central_service.get_floating_ips,
+            self.get_admin_context(), region='RegionOne')
+
+        mock_get_floating_ips.assert_not_called()
+
+    def test_get_ptr_records_policy_check(self):
+        context = self.get_context(project_id='a', roles=['reader'])
+
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_ptr_records,
+                                context)
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
+
+    def test_get_ptr_records(self):
+        context_a = self.get_context(project_id='a', roles=['member'])
+
+        fixture = self.get_ptr_fixture()
+        fip = self.network_api.fake.allocate_floatingip(context_a.project_id)
+        self.central_service.update_floatingip(
+            context_a, fip['region'], fip['id'], fixture)
+
+        admin_context = self.get_admin_context()
+        records = self.central_service.get_ptr_records(admin_context)
+
+        self.assertEqual(1, len(records))
+        self.assertEqual(fip['address'], records[0].managed_extra)
+
+    def test_get_ptr_records_filters_cannot_override_managed_restriction(
+            self):
+        context_a = self.get_context(project_id='a', roles=['member'])
+
+        fixture = self.get_ptr_fixture()
+        fip = self.network_api.fake.allocate_floatingip(context_a.project_id)
+        self.central_service.update_floatingip(
+            context_a, fip['region'], fip['id'], fixture)
+
+        admin_context = self.get_admin_context()
+
+        # A caller-supplied 'managed' or 'managed_resource_type' filter must
+        # not be able to widen the query beyond managed PTR records.
+        records = self.central_service.get_ptr_records(
+            admin_context,
+            filters={'managed': False, 'managed_resource_type': 'other'})
+
+        self.assertEqual(1, len(records))
+        self.assertEqual(fip['address'], records[0].managed_extra)
+
     # Blacklist Tests
     def test_create_blacklist(self):
         values = self.get_blacklist_fixture(fixture=0)

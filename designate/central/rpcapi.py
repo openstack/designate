@@ -75,8 +75,9 @@ class CentralAPI:
         6.10 - Add Zone Pool Move method
         6.11 - Add zone attributes to zone import
         6.12 - Add delete service status method
+        6.13 - Add get_ptr_records and get_floating_ips
     """
-    RPC_API_VERSION = '6.12'
+    RPC_API_VERSION = '6.13'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -89,7 +90,7 @@ class CentralAPI:
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.12')
+        self.client = rpc.get_client(target, version_cap='6.13')
 
     @classmethod
     def get_instance(cls):
@@ -279,6 +280,16 @@ class CentralAPI:
     def update_floatingip(self, context, region, floatingip_id, values):
         return self.client.call(context, 'update_floatingip', region=region,
                                 floatingip_id=floatingip_id, values=values)
+
+    def get_ptr_records(self, context, filters=None, marker=None,
+                        limit=None, sort_key=None, sort_dir=None):
+        return self.client.call(context, 'get_ptr_records',
+                                filters=filters, marker=marker, limit=limit,
+                                sort_key=sort_key, sort_dir=sort_dir)
+
+    def get_floating_ips(self, context, filters=None, region=None):
+        return self.client.call(context, 'get_floating_ips',
+                                filters=filters, region=region)
 
     # Blacklisted Zone Methods
     def create_blacklist(self, context, blacklist):
