@@ -1,0 +1,7 @@
+---
+other:
+  - |
+    Neutron APIs can now be called via a new dedicated Neutron client
+    that authenticates as the Designate service account, for use by
+    services (such as Producer) that do not have a user context to
+    leverage.

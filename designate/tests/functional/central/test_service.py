@@ -34,6 +34,7 @@ from oslo_utils import uuidutils
 from oslo_versionedobjects import exception as ovo_exc
 import testtools
 
+from designate.common import clients
 from designate.common import constants
 import designate.conf
 from designate import exceptions
@@ -2977,6 +2978,26 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         self.central_service.get_floatingip(
             context, fip['region'], fip['id'])
+
+    def test_get_floating_ips_policy_check(self):
+        context = self.get_context(project_id='a', roles=['reader'])
+
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_floating_ips,
+                                context)
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
+
+    @mock.patch.object(clients.NeutronClient, 'get_floating_ips')
+    def test_get_floating_ips(self, mock_get_floating_ips):
+        mock_get_floating_ips.return_value = ['fake-fip']
+        context = self.get_admin_context()
+
+        result = self.central_service.get_floating_ips(
+            context, filters={'project_id': 'a'})
+
+        self.assertEqual(['fake-fip'], result)
+        mock_get_floating_ips.assert_called_once_with({'project_id': 'a'})
 
     # Blacklist Tests
     def test_create_blacklist(self):

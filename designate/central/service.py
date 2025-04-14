@@ -28,6 +28,7 @@ from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_utils import timeutils
 
+from designate.common import clients
 from designate.common import constants
 from designate.common.decorators import lock
 from designate.common.decorators import notification
@@ -2275,6 +2276,19 @@ class Service(service.RPCService):
                 context, zone_id, recordset
             )
         return recordset
+
+    @rpc.expected_exceptions()
+    def get_floating_ips(self, context, filters=None):
+        """
+        Get floating IPs from Neutron using the service credentials.
+        """
+        # This returns floating IPs cloud-wide, not scoped to the caller's
+        # project, so it requires the same rule used elsewhere for
+        # genuinely cross-tenant reads (not find_records, which is
+        # project-scoped).
+        policy.check('all_tenants', context)
+
+        return clients.NeutronClient.get_floating_ips(filters)
 
     @rpc.expected_exceptions()
     def update_floatingip(self, context, region, floatingip_id, values):
