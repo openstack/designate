@@ -213,14 +213,14 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - neutron-tempest-plugin-designate-scenario
+        - neutron-tempest-plugin-designate-scenario-2023-2
         - designate-tox-py310-with-sqlalchemy-2x
         - designate-bind9-sqlalchemy-2x
         - designate-tox-dnspython-latest:
             voting: false
     gate:
       jobs:
-        - neutron-tempest-plugin-designate-scenario
+        - neutron-tempest-plugin-designate-scenario-2023-2
         - designate-tox-py310-with-sqlalchemy-2x
         - designate-bind9-sqlalchemy-2x
     experimental:
