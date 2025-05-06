@@ -1,7 +1,7 @@
 export DEBIAN_FRONTEND=noninteractive && \
 export UPPER_CONSTRAINTS_FILE=https://raw.githubusercontent.com/sapcc/requirements/stable/2024.2-m3/upper-constraints.txt && \
 apt-get update && \
-apt-get install -y build-essential python3-pip python3-dev git libpcre++-dev gettext && \
+apt-get install -y build-essential python3.10 python3.10-venv python3.10-dev python3-pip git libpcre++-dev gettext && \
 pip install -U pip && \
 pip install tox && \
 git clone -b stable/2024.2-m3 --single-branch https://github.com/sapcc/designate.git --depth=1 && \
