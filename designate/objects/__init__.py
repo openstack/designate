@@ -52,6 +52,7 @@ from designate.objects.rrdata_aaaa import AAAA, AAAAList  # noqa
 from designate.objects.rrdata_caa import CAA, CAAList  # noqa
 from designate.objects.rrdata_cert import CERT, CERTList  # noqa
 from designate.objects.rrdata_cname import CNAME, CNAMEList  # noqa
+from designate.objects.rrdata_https import HTTPS, HTTPSList  # noqa
 from designate.objects.rrdata_mx import MX, MXList  # noqa
 from designate.objects.rrdata_naptr import NAPTR, NAPTRList  # noqa
 from designate.objects.rrdata_ns import NS, NSList  # noqa
@@ -60,4 +61,5 @@ from designate.objects.rrdata_soa import SOA, SOAList  # noqa
 from designate.objects.rrdata_spf import SPF, SPFList  # noqa
 from designate.objects.rrdata_srv import SRV, SRVList  # noqa
 from designate.objects.rrdata_sshfp import SSHFP, SSHFPList  # noqa
+from designate.objects.rrdata_svcb import SVCB, SVCBList  # noqa
 from designate.objects.rrdata_txt import TXT, TXTList  # noqa
