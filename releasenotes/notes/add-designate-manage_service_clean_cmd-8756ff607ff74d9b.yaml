@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    New cmd `designate-manage service clean`.
+    Previously Designate service always stuck in `UP` even we
+    stop provide any heartbeat for long while.
+    And no method to clean services status.
+    For services that run on containers (like in K8s),
+    The list of `UP` services statuses just piling up.
+    Add new cmd `designate-manage service clean` to delect and
+    clean any service that fail to provide heartbeat within
+    double heartbeat interval time.
+    `CONF.heartbeat_emitter.heartbeat_interval` default to 10 seconds.
