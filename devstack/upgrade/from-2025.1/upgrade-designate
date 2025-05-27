@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Openstack moved from using wsgi scripts to directly calling the wsgi module
+# due to changes in setuptools that stops the pbr wsgi_scripts from working.
+# This script will reconfigure uwsgi on upgrade to point to the module instead
+# of the wsgi script that is no longer present in designate.
+
+function configure_designate_upgrade {
+    source $GRENADE_DIR/functions
+    source ${TARGET_DEVSTACK_DIR}/lib/apache
+
+    write_uwsgi_config "$DESIGNATE_UWSGI_CONF" "$DESIGNATE_UWSGI" "/dns" "" "designate-api-wsgi"
+    # Note: We must use HTTP transport here due to bug:
+    # https://github.com/unbit/uwsgi/issues/2368
+    wsgi_conf=$(apache_site_config_for designate-api-wsgi)
+    echo 'ProxyPass "/dns" "http://127.0.0.1:60053" retry=0' | sudo tee $wsgi_conf
+    iniset $DESIGNATE_UWSGI_CONF uwsgi http-socket 127.0.0.1:60053
+
+}
