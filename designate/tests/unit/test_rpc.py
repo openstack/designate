@@ -177,7 +177,7 @@ class RPCTest(oslotest.base.BaseTestCase):
 
         mock_get_rpc_server.assert_called_with(
             True, None, None,
-            executor='eventlet', serializer=mock.ANY,
+            serializer=mock.ANY,
             access_policy=mock.ANY,
         )
 
@@ -213,19 +213,19 @@ class RPCTest(oslotest.base.BaseTestCase):
         rpc.get_notification_listener('target', 'endpoint', serializer=None)
 
         mock_get_notification_listener.assert_called_with(
-            True, 'target', 'endpoint', executor='eventlet', pool=None,
-            serializer=mock.ANY
+            True, 'target', 'endpoint', pool=None, serializer=mock.ANY
         )
 
     @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', True)
     @mock.patch.object(messaging, 'get_notification_listener')
     def test_get_notification_listener_serializer_set(self,
                                              mock_get_notification_listener):
-        rpc.get_notification_listener('target', 'endpoint', serializer=True)
+        serializer = mock.Mock()
+        rpc.get_notification_listener('target', 'endpoint',
+                                      serializer=serializer)
 
         mock_get_notification_listener.assert_called_with(
-            True, 'target', 'endpoint', executor='eventlet', pool=None,
-            serializer=True
+            True, 'target', 'endpoint', pool=None, serializer=serializer
         )
 
     @mock.patch.object(designate.rpc, 'NOTIFICATION_TRANSPORT', None)
