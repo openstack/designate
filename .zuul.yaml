@@ -137,8 +137,19 @@
         s-object: false
         s-proxy: false
         c-bak: false
+        neutron-dns: true
+        q-svc: false
+        neutron-api: true
+        neutron-ovn-maintenance-worker: true
+        neutron-rpc-server: false
+        neutron-periodic-workers: true
       grenade_localrc:
         BASE_RUN_SMOKE: False
+      grenade_devstack_localrc:
+        shared:
+          Q_AGENT: ovn
+          Q_ML2_PLUGIN_MECHANISM_DRIVERS: ovn
+          NEUTRON_DEPLOY_MOD_WSGI: True
       tox_envlist: all
       tempest_plugins:
         - designate-tempest-plugin
@@ -170,19 +181,28 @@
     parent: designate-grenade-common
     post-run: playbooks/designate-pdns4/post.yaml
     vars:
+      # Move this forward when master changes to a new skip-level-allowed
+      # target release. Right now, this is Dalmatian (2024.2) because master is
+      # Flamingo (2025.2).
+      # When master is G (2026.1), this should become Epoxy (2025.1),
+      # and so forth.
+      grenade_from_branch: stable/2024.2
       grenade_devstack_localrc:
         shared:
           DESIGNATE_BACKEND_DRIVER: pdns4
           DESIGNATE_SERVICE_PORT_DNS: 5322
-      grenade_from_branch: stable/2024.1
 
 - job:
     name: designate-grenade-bind9-skip-level
     parent: designate-grenade-common
     post-run: playbooks/designate-bind9/post.yaml
-    voting: false
     vars:
-      grenade_from_branch: stable/2024.1
+      # Move this forward when master changes to a new skip-level-allowed
+      # target release. Right now, this is Dalmatian (2024.2) because master is
+      # Flamingo (2025.2).
+      # When master is G (2026.1), this should become Epoxy (2025.1),
+      # and so forth.
+      grenade_from_branch: stable/2024.2
 
 - job:
     name: designate-tox-dnspython-latest

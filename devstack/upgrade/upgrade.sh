@@ -76,6 +76,10 @@ if is_service_enabled q-svc; then
     restart_service devstack@q-svc.service
 fi
 
+if is_service_enabled neutron-api; then
+    restart_service devstack@neutron-api.service
+fi
+
 # calls upgrade-designate for specific release
 upgrade_project designate $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
