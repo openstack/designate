@@ -17,6 +17,13 @@ This chapter assumes a working setup of OpenStack following the
    create-zone
    next-steps
 
+Deploying with OpenStack-Ansible
+--------------------------------
+
+You can also deploy and set up Designate using `OpenStack-Ansible <https://docs.openstack.org/openstack-ansible/latest/>`_ by following
+the `Designate role for OpenStack-Ansible <https://docs.openstack.org/openstack-ansible-os_designate/latest/>`_
+which installs and configures Designate as part of your OpenStack deployment.
+
 Quickstart with Kolla
 ---------------------
 
