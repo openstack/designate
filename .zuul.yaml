@@ -174,19 +174,23 @@
     name: designate-grenade-bind9
     parent: designate-grenade-common
     post-run: playbooks/designate-bind9/post.yaml
-    voting: false
+
+- job:
+    name: designate-grenade-skip-level-common
+    parent: designate-grenade-common
+    vars:
+        # Move this forward when master changes to a new skip-level-allowed
+        # target release. Right now, this is Dalmatian (2024.2) because master is
+        # Flamingo (2025.2).
+        # When master is G (2026.1), this should become Epoxy (2025.1),
+        # and so forth.
+        grenade_from_branch: stable/2024.2
 
 - job:
     name: designate-grenade-pdns4-skip-level
-    parent: designate-grenade-common
+    parent: designate-grenade-skip-level-common
     post-run: playbooks/designate-pdns4/post.yaml
     vars:
-      # Move this forward when master changes to a new skip-level-allowed
-      # target release. Right now, this is Dalmatian (2024.2) because master is
-      # Flamingo (2025.2).
-      # When master is G (2026.1), this should become Epoxy (2025.1),
-      # and so forth.
-      grenade_from_branch: stable/2024.2
       grenade_devstack_localrc:
         shared:
           DESIGNATE_BACKEND_DRIVER: pdns4
@@ -194,15 +198,8 @@
 
 - job:
     name: designate-grenade-bind9-skip-level
-    parent: designate-grenade-common
+    parent: designate-grenade-skip-level-common
     post-run: playbooks/designate-bind9/post.yaml
-    vars:
-      # Move this forward when master changes to a new skip-level-allowed
-      # target release. Right now, this is Dalmatian (2024.2) because master is
-      # Flamingo (2025.2).
-      # When master is G (2026.1), this should become Epoxy (2025.1),
-      # and so forth.
-      grenade_from_branch: stable/2024.2
 
 - job:
     name: designate-tox-dnspython-latest
@@ -222,8 +219,7 @@
         - designate-bind9-keystone-old-default-roles
         - designate-pdns4
         - designate-grenade-bind9
-        - designate-grenade-pdns4:
-            voting: false
+        - designate-grenade-pdns4
         - designate-grenade-bind9-skip-level
         - designate-grenade-pdns4-skip-level
         - designate-ipv6-only-pdns4
@@ -250,8 +246,7 @@
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario
-        - designate-tox-dnspython-latest:
-            voting: false
+        - designate-tox-dnspython-latest
         - designate-bind9-catalog-zones:
             voting: false
     gate:
