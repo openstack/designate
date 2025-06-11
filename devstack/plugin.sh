@@ -127,11 +127,7 @@ function configure_designate {
     # Backend Plugin Configuation
     configure_designate_backend
 
-    if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
-        designate_configure_uwsgi
-    else
-        designate_configure_mod_wsgi
-    fi
+    designate_configure_uwsgi
 }
 
 function configure_designatedashboard {
@@ -248,11 +244,7 @@ function init_designate {
 
 # install_designate - Collect source and prepare
 function install_designate {
-    if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
-        install_apache_uwsgi
-    else
-        install_apache_wsgi
-    fi
+    install_apache_uwsgi
 
     if is_fedora; then
         # bind-utils package provides `dig`
@@ -309,16 +301,9 @@ function start_designate {
     run_process designate-worker "$DESIGNATE_BIN_DIR/designate-worker --config-file $DESIGNATE_CONF"
     run_process designate-producer "$DESIGNATE_BIN_DIR/designate-producer --config-file $DESIGNATE_CONF"
 
-
-
-    if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
-        run_process "designate-api" "$(which uwsgi) --procname-prefix designate-api --ini $DESIGNATE_UWSGI_CONF"
-        enable_apache_site designate-api-wsgi
-        restart_apache_server
-    else
-        enable_apache_site designate-api
-        restart_apache_server
-    fi
+    run_process "designate-api" "$(which uwsgi) --procname-prefix designate-api --ini $DESIGNATE_UWSGI_CONF"
+    enable_apache_site designate-api-wsgi
+    restart_apache_server
 
     echo "Waiting for designate-api to start..."
     if ! wait_for_service $SERVICE_TIMEOUT $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST/dns; then
@@ -328,14 +313,9 @@ function start_designate {
 
 # stop_designate - Stop running processes
 function stop_designate {
-    if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
-        stop_process "designate-api"
-        disable_apache_site designate-api-wsgi
-        restart_apache_server
-    else
-        disable_apache_site designate-api
-        restart_apache_server
-    fi
+    stop_process "designate-api"
+    disable_apache_site designate-api-wsgi
+    restart_apache_server
 
     stop_process designate-central
     stop_process designate-mdns
