@@ -23,8 +23,8 @@ API_GROUP = cfg.OptGroup(
 API_OPTS = [
     cfg.IntOpt('workers',
                help='Number of api worker processes to spawn'),
-    cfg.IntOpt('threads', default=1000,
-               help='Number of api greenthreads to spawn'),
+    cfg.IntOpt('threads', default=100,
+               help='Number of api threads to spawn'),
     cfg.BoolOpt('enable_host_header', default=True,
                 help='Enable host request headers'),
     cfg.StrOpt('api_base_uri', default='http://127.0.0.1:9001/',
