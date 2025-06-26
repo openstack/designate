@@ -6,7 +6,6 @@
       devstack_localrc:
         DESIGNATE_SERVICE_PORT_DNS: 5322
         TEMPEST_PLUGINS: /opt/stack/designate-tempest-plugin
-        USE_PYTHON3: true
         API_WORKERS: 2
       devstack_plugins:
         designate: https://opendev.org/openstack/designate
