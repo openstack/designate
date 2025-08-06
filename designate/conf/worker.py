@@ -24,8 +24,6 @@ WORKER_OPTS = [
                help='Number of Worker worker processes to spawn'),
     cfg.IntOpt('threads', default=200,
                help='Number of Worker threads to spawn per process'),
-    # cfg.ListOpt('enabled_tasks',
-    #             help='Enabled tasks to run'),
     cfg.IntOpt('threshold-percentage', default=100,
                help='The percentage of servers requiring a successful update '
                     'for a domain change to be considered active'),
