@@ -59,6 +59,29 @@ class TsigKeyring(dict):
             return default
 
 
+def _soa_to_normal(soa):
+    mbox = ""
+    domain = ""
+    parts = soa.split(".")
+
+    for i, part in enumerate(parts):
+        if part.endswith("\\"):
+            mbox += part[:-1] + "."
+        else:
+            mbox += part
+            domain_parts = parts[i + 1:]
+            domain = ".".join(domain_parts)
+            break
+
+    if domain != "":
+        result = mbox + "@" + domain
+    else:
+        # this is technically probably invalid
+        result = mbox
+
+    return result
+
+
 def from_dnspython_zone(dnspython_zone):
     # dnspython never builds a zone with more than one SOA, even if we give
     # it a zonefile that contains more than one
@@ -68,7 +91,7 @@ def from_dnspython_zone(dnspython_zone):
     if soa.ttl == 0:
         soa.ttl = CONF['service:central'].min_ttl
     email = soa[0].rname.to_text(omit_final_dot=True)
-    email = email.replace('.', '@', 1)
+    email = _soa_to_normal(email)
 
     name = dnspython_zone.origin.to_text()
     values = {

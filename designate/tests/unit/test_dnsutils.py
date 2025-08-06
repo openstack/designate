@@ -95,6 +95,23 @@ class TestDNSUtils(oslotest.base.BaseTestCase):
         CONF.set_override('xfr_timeout', 40, 'service:worker')
         self.assertEqual(40, dnsutils.xfr_timeout())
 
+    def test__soa_to_normal(self):
+        # Normal cases.
+        self.assertEqual("a@b.c.d", dnsutils._soa_to_normal("a.b.c.d"))
+        self.assertEqual("a.b@c.d", dnsutils._soa_to_normal("a\\.b.c.d"))
+        self.assertEqual("a.b.c@d", dnsutils._soa_to_normal("a\\.b\\.c.d"))
+        self.assertEqual("a.b.c@d.e", dnsutils._soa_to_normal("a\\.b\\.c.d.e"))
+
+        # Unspecified cases; test mainly that it doesn't raise exceptions.
+        self.assertEqual("a@b\\.c.d", dnsutils._soa_to_normal("a.b\\.c.d"))
+        self.assertEqual("a@b.c\\.d", dnsutils._soa_to_normal("a.b.c\\.d"))
+        self.assertEqual("a@b\\.c\\.d", dnsutils._soa_to_normal("a.b\\.c\\.d"))
+        self.assertEqual("\\a.b@c.d", dnsutils._soa_to_normal("\\a\\.b.c.d"))
+        self.assertEqual("\\a@b\\.\\c.d",
+                         dnsutils._soa_to_normal("\\a.b\\.\\c.d"))
+        self.assertEqual("abcd", dnsutils._soa_to_normal("abcd"))
+        self.assertEqual("a\\.b@c.d", dnsutils._soa_to_normal("a\\\\.b.c.d"))
+
 
 class TestDoAfxr(oslotest.base.BaseTestCase):
     def setUp(self):
