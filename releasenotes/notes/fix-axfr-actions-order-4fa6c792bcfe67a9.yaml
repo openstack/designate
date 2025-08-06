@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    If primary zone is updated, Designate does two actions simultaneously:
+    1) sends NOTIFY to secondary DNS server
+    2) updates its backend
+    Notification is significantly faster then backend update. So secondary DNS
+    server gets previous zone version (SOA).
+    Now it's fixed. Designate sends NOTIFY after successful backend update.

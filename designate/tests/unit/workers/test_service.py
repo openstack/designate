@@ -251,7 +251,7 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
             self.zone_params
         )
 
-        self.service._executor.run.assert_called_with([mock_zone_action()])
+        self.service._executor.run.assert_has_calls(mock_zone_action(), list())
 
     @mock.patch.object(service.zonetasks, 'ZoneAction')
     @mock.patch.object(service.zonetasks, 'SendNotify')
@@ -280,8 +280,8 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
             self.zone_params
         )
 
-        self.service._executor.run.assert_called_with(
-            [mock_zone_action(), mock_send_notify()]
+        self.service._executor.run.assert_has_calls(
+            mock_zone_action(), [mock_send_notify()]
         )
 
     def test_get_pool(self):
