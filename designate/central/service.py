@@ -515,12 +515,14 @@ class Service(service.RPCService):
         adjusted_zone_records = (
             zone_records - recordset_records + len(recordset.records))
 
-        self.quota.limit_check(context, zone.tenant_id,
-                               zone_records=adjusted_zone_records)
+        if zone.type != constants.ZONE_CATALOG:
+            # Only enforce quota for non-catalog zones:
+            self.quota.limit_check(context, zone.tenant_id,
+                                   zone_records=adjusted_zone_records)
 
-        # Ensure the records per recordset quota is OK
-        self.quota.limit_check(context, zone.tenant_id,
-                               recordset_records=len(recordset.records))
+            # Ensure the records per recordset quota is OK
+            self.quota.limit_check(context, zone.tenant_id,
+                                   recordset_records=len(recordset.records))
 
     def _generate_record_serial(self, zone, increment_serial):
         if not increment_serial:
