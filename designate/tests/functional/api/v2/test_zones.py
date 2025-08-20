@@ -357,26 +357,45 @@ class ApiV2ZonesTest(v2.ApiV2TestCase):
         self.client.get(url, status=406, headers={'Accept': 'test/goat',
                                                   'X-Test-Role': 'member'})
 
-    def test_get_catalog_zone(self):
+#NOTE: in ccloud we don't allow to list CATALOG zones at all:
+#    def test_get_catalog_zone(self):
+#        catalog_zone_fixture = self.get_zone_fixture(fixture=4)
+#        catalog_zone = self.storage.create_zone(
+#            self.admin_context, objects.Zone.from_dict(catalog_zone_fixture))
+#
+#        response = self.client.get('/zones/',
+#                                   headers={
+#                                       'Accept': 'application/json',
+#                                       'X-Test-Role': 'admin',
+#                                       'X-Auth-All-Projects': 'True',
+#                                   })
+#        self.assertEqual(catalog_zone.id, response.json['zones'][0]['id'])
+#
+#        response = self.client.get('/zones/%s' % catalog_zone['id'],
+#                                   headers={
+#                                       'Accept': 'application/json',
+#                                       'X-Test-Role': 'admin',
+#                                       'X-Auth-All-Projects': 'True',
+#                                   })
+#        self.assertEqual(catalog_zone.id, response.json['id'])
+
+    def test_get_catalog_zone_admin_forbidden(self):
         catalog_zone_fixture = self.get_zone_fixture(fixture=4)
         catalog_zone = self.storage.create_zone(
             self.admin_context, objects.Zone.from_dict(catalog_zone_fixture))
 
-        response = self.client.get('/zones/',
-                                   headers={
-                                       'Accept': 'application/json',
-                                       'X-Test-Role': 'admin',
-                                       'X-Auth-All-Projects': 'True',
-                                   })
-        self.assertEqual(catalog_zone.id, response.json['zones'][0]['id'])
+        self._assert_exception('forbidden', 403, self.client.get,
+                               '/zones?type=CATALOG',
+                               headers={'X-Test-Role': 'cloud_dns_admin'})
 
-        response = self.client.get('/zones/%s' % catalog_zone['id'],
-                                   headers={
-                                       'Accept': 'application/json',
-                                       'X-Test-Role': 'admin',
-                                       'X-Auth-All-Projects': 'True',
-                                   })
-        self.assertEqual(catalog_zone.id, response.json['id'])
+    def test_get_catalog_zone_member_forbidden(self):
+        catalog_zone_fixture = self.get_zone_fixture(fixture=4)
+        catalog_zone = self.storage.create_zone(
+            self.admin_context, objects.Zone.from_dict(catalog_zone_fixture))
+
+        self._assert_exception('forbidden', 403, self.client.get,
+                               '/zones?type=CATALOG',
+                               headers={'X-Test-Role': 'member'})
 
     def test_get_catalog_zone_no_admin(self):
         catalog_zone_fixture = self.get_zone_fixture(fixture=4)

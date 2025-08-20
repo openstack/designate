@@ -984,10 +984,14 @@ class Service(service.RPCService):
 
         policy.check('find_zones', context, target)
 
-        if 'admin' not in context.roles:
-            if criterion is None:
-                criterion = {}
+        if criterion is None:
+            criterion = {}
+
+        # we completely forbid to look for catalog zones
+        if 'type' not in criterion.keys():
             criterion['type'] = '!CATALOG'
+        elif criterion.get('type') == 'CATALOG':
+            raise exceptions.Forbidden
 
         return self.storage.find_zones(context, criterion, marker, limit,
                                        sort_key, sort_dir)
