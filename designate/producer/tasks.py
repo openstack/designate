@@ -279,22 +279,7 @@ class PeriodicIncrementSerialTask(PeriodicTask):
     def __init__(self):
         super().__init__()
 
-    def __call__(self):
-        ctxt = context.DesignateContext.get_admin_context()
-        ctxt.all_tenants = True
-
-        # Select zones where "increment_serial" is set and starting from the
-        # oldest "updated_at".
-        # There's an index on increment_serial.
-        criterion = self._filter_between('shard')
-        criterion['increment_serial'] = True
-        zones = self.central_api.find_zones(
-            ctxt,
-            criterion,
-            limit=CONF[self.name].batch_size,
-            sort_key='updated_at',
-            sort_dir='asc',
-        )
+    def _run_serial_increment_task(self, ctxt, zones):
         for zone in zones:
             if zone.action == 'DELETE':
                 LOG.debug(
@@ -319,6 +304,38 @@ class PeriodicIncrementSerialTask(PeriodicTask):
                     zone.action = 'UPDATE'
                     zone.status = 'PENDING'
                 self.worker_api.update_zone(ctxt, zone)
+
+
+    def __call__(self):
+        ctxt = context.DesignateContext.get_admin_context()
+        ctxt.all_tenants = True
+
+        # Select zones where "increment_serial" is set and starting from the
+        # oldest "updated_at".
+        # There's an index on increment_serial.
+        criterion = self._filter_between('shard')
+        criterion['increment_serial'] = True
+        non_catalog_zones = self.central_api.find_zones(
+            ctxt,
+            criterion,
+            limit=CONF[self.name].batch_size,
+            sort_key='updated_at',
+            sort_dir='asc',
+        )
+
+        # we need to look for CATALOG zones separately since they are
+        # excluded by default from the search by type:
+        criterion['type'] = 'CATALOG'
+        catalog_zones = self.central_api.find_zones(
+            ctxt,
+            criterion,
+            limit=CONF[self.name].batch_size,
+            sort_key='updated_at',
+            sort_dir='asc',
+        )
+
+        self._run_serial_increment_task(ctxt, non_catalog_zones)
+        self._run_serial_increment_task(ctxt, catalog_zones)
 
 
 class WorkerPeriodicRecovery(PeriodicTask):
