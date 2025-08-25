@@ -2483,8 +2483,11 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         return catalog_zone
 
     def get_catalog_zone(self, context, pool):
+        # we need elevated privileges here because only
+        # is_admin:true users are allowed to look up catalog zones:
         catalog_zone = self.find_zone(
-            context, criterion={
+            context.elevated(all_tenants=True),
+            criterion={
                 'pool_id': pool.id, 'type': constants.ZONE_CATALOG})
         return catalog_zone
 

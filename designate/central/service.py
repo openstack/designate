@@ -515,8 +515,8 @@ class Service(service.RPCService):
         adjusted_zone_records = (
             zone_records - recordset_records + len(recordset.records))
 
+        # Only enforce quota for non-catalog zones:
         if zone.type != constants.ZONE_CATALOG:
-            # Only enforce quota for non-catalog zones:
             self.quota.limit_check(context, zone.tenant_id,
                                    zone_records=adjusted_zone_records)
 
@@ -987,11 +987,13 @@ class Service(service.RPCService):
         if criterion is None:
             criterion = {}
 
-        # we completely forbid to look for catalog zones
+        # we forbid to look for catalog zones and hide those by default
         if 'type' not in criterion.keys():
             criterion['type'] = '!CATALOG'
         elif criterion.get('type') == 'CATALOG':
-            raise exceptions.Forbidden
+            if not context.is_admin:
+                msg = 'This operation is not allowed for non-admins.'
+                raise exceptions.Forbidden(msg)
 
         return self.storage.find_zones(context, criterion, marker, limit,
                                        sort_key, sort_dir)
