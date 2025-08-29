@@ -17,9 +17,7 @@ import re
 from hacking import core
 
 # D701: Default parameter value is a mutable type
-# D702: Log messages require translation
 # D703: Found use of _() without explicit import of _!
-# D704: Found import of %s. This oslo library has been graduated!
 # D705: timeutils.utcnow() must be used instead of datetime.%s()
 # D706: Don't translate debug level logs
 # D707: basestring is not Python3-compatible, use str instead.
@@ -40,10 +38,6 @@ translated_log = re.compile(
 underscore_import_check = re.compile(r"(.)*import _(.)*")
 # We need this for cases where they have created their own _ function.
 custom_underscore_check = re.compile(r"(.)*_\s*=\s*(.)*")
-graduated_oslo_libraries_import_re = re.compile(
-    r"^\s*(?:import|from) designate\.openstack\.common\.?.*?"
-    r"(gettextutils|rpc)"
-    r".*?")
 no_line_continuation_backslash_re = re.compile(r'.*(\\)\n')
 
 
@@ -90,26 +84,6 @@ def check_explicit_underscore_import(logical_line, filename):
     elif (translated_log.match(logical_line) or
           string_translation.match(logical_line)):
         yield (0, "D703: Found use of _() without explicit import of _!")
-
-
-@core.flake8ext
-def no_import_graduated_oslo_libraries(logical_line, filename):
-    """Check that we don't continue to use o.c. oslo libraries after graduation
-
-    After a library graduates from oslo-incubator, as we make the switch, we
-    should ensure we don't continue to use the oslo-incubator versions.
-
-    In many cases, it's not possible to immediately remove the code from the
-    openstack/common folder due to dependency issues.
-    """
-    # We can't modify oslo-incubator code, so ignore it here.
-    if "designate/openstack/common" in filename:
-        return
-
-    matches = graduated_oslo_libraries_import_re.match(logical_line)
-    if matches:
-        yield (0, "D704: Found import of %s. This oslo library has been "
-                  "graduated!" % matches.group(1))
 
 
 @core.flake8ext
