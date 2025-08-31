@@ -54,10 +54,7 @@
     name: designate-bind9-keystone-old-default-roles
     post-run: playbooks/designate-bind9/post.yaml
     parent: designate-base
-    # TODO(gmann): As per the 2025.1 testing runtime, we
-    # need to run at least one job on jammy. This job can
-    # be moved to Ubuntu Noble in the next cycle(2025.2)
-    nodeset: openstack-single-node-jammy
+    nodeset: openstack-single-node-noble
     vars:
       devstack_local_conf:
         post-config:
