@@ -184,6 +184,8 @@
         # When master is G (2026.1), this should become Epoxy (2025.1),
         # and so forth.
         grenade_from_branch: stable/2024.2
+        grenade_localrc:
+          NOVA_ENABLE_UPGRADE_WORKAROUND: True
 
 - job:
     name: designate-grenade-pdns4-skip-level
