@@ -52,8 +52,12 @@ def factory(global_config, **local_conf):
         _add_a_version(versions, 'v2.0', api_url, constants.SUPPORTED,
                        '2022-06-29T00:00:00Z')
         # 2.1 Shared Zones
-        _add_a_version(versions, 'v2.1', api_url, constants.CURRENT,
+        _add_a_version(versions, 'v2.1', api_url, constants.SUPPORTED,
                        '2023-01-25T00:00:00Z')
+
+        # 2.2 SVCB and HTTPS record types
+        _add_a_version(versions, 'v2.2', api_url, constants.CURRENT,
+                       '2025-08-25T00:00:00Z')
 
         return flask.jsonify({'versions': versions})
 

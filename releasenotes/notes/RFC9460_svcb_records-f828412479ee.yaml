@@ -1,0 +1,15 @@
+---
+features:
+  - |
+    SVCB and HTTPS recordset type have been added. All users should be able to
+    use this type from the API and openstack client. This can be disabled
+    (like other record types) by setting the `[DEFAULT].supported-record-type`
+    config variable in all designate services.
+issues:
+  - |
+    This doesn't support the arbitrary keys "keyNNNNN" format.
+other:
+  - |
+    BIND9 older than 9.21.8 does not use named Service Parameter Keys
+    (SvcParamKeys) by default. BIND9 9.21.8 or newer must be used to support
+    the SVCB and HTTPS recordset types.

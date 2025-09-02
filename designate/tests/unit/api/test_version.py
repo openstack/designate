@@ -56,7 +56,7 @@ class TestApiVersion(oslotest.base.BaseTestCase):
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
-        self.assertEqual(3, len(response.json['versions']))
+        self.assertEqual(4, len(response.json['versions']))
         self.assertEqual(
             'http://203.0.113.1:9001/v2',
             response.json['versions'][0]['links'][0]['href']
@@ -72,7 +72,7 @@ class TestApiVersion(oslotest.base.BaseTestCase):
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
-        self.assertEqual(3, len(response.json['versions']))
+        self.assertEqual(4, len(response.json['versions']))
         self.assertEqual(
             'http://localhost/v2',
             response.json['versions'][0]['links'][0]['href']
