@@ -127,12 +127,11 @@ existing backends.
 
 Message Queue
 -------------
-Designate uses oslo.rpc for messaging between components, therefore it
-inherits a requirement for a supported messaging bus
-(such as RabbitMQ, Qpid or ZeroMQ).  Typically this means a RabbitMQ
-setup is dedicated to Designate, but as only a single virtualhost
-is required for a normal installation, you're free to use other
-RabbitMQ instances as you see fit.
+Designate uses oslo.messaging for messaging between components, therefore it
+inherits a requirement for a supported messaging bus (such as RabbitMQ).
+Typically this means a RabbitMQ setup is dedicated to Designate, but as only
+a single virtualhost is required for a normal installation, you're free to use
+other RabbitMQ instances as you see fit.
 
 .. _database:
 
