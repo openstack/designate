@@ -37,7 +37,8 @@ class APIv2Adapter(base.DesignateAdapter):
         if (cls.MODIFICATIONS['options'].get('links', True) and
                 'request' in kwargs):
             r_list['links'] = cls._get_collection_links(
-                list_objects, kwargs['request']
+                list_objects, kwargs['request'],
+                next=cls.MODIFICATIONS['options'].get('next', True)
             )
         # Check if we should include metadata
         if isinstance(list_objects, ovoobj_base.PagedListObjectMixin):
@@ -96,11 +97,14 @@ class APIv2Adapter(base.DesignateAdapter):
                 item_path += '/' + part
 
     @classmethod
-    def _get_collection_links(cls, item_list, request):
-
+    def _get_collection_links(cls, item_list, request, next=True):
         links = {
             'self': cls._get_collection_href(request)
         }
+
+        if not next:
+            return links
+
         params = request.GET
 
         # defined in etc/designate/designate.conf.sample

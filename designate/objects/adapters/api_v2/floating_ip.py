@@ -62,6 +62,9 @@ class FloatingIPListAPIv2Adapter(base.APIv2Adapter):
     MODIFICATIONS = {
         'options': {
             'links': True,
+            # Floating IP does not support pagination so
+            # dont generate any next url in collection links.
+            'next': False,
             'resource_name': 'floatingip',
             'collection_name': 'floatingips',
         }
