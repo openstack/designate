@@ -29,7 +29,7 @@ CONF = designate.conf.CONF
 
 RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR']
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
-                'SSHFP', 'SOA', 'NAPTR', 'CAA', 'CERT']
+                'SSHFP', 'SOA', 'NAPTR', 'CAA', 'CERT', 'HTTPS', 'SVCB']
 
 TASK_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR', 'COMPLETE']
 TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',

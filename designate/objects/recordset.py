@@ -151,6 +151,18 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
             record_obj = record_cls()
             try:
                 record_obj.from_string(record.data)
+
+                # Special validation for SVCB records as we need to know the
+                # name of the recordset, which the records do not have access
+                # to from inside the record.
+                if self.type == 'SVCB' and "_dns" in self.name:
+                    alpns = record_obj.alpn.split('alpn=', 1)[1].split(',')
+                    for alpn in alpns:
+                        if alpn in ('h2', 'h3') and record_obj.dohpath is None:
+                            raise ValueError('DOH should be presented for '
+                                             'ALPN values h3 or h2 in dns '
+                                             'records.')
+
             # The from_string() method will throw a ValueError if there is not
             # enough data blobs
             except ValueError as e:
