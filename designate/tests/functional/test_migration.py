@@ -127,6 +127,9 @@ class DesignateMigrationsWalk(
     def _check_f828412479ee(self, connection):
         pass
 
+    def _check_f49c4409c8ba(self, connection):
+        pass
+
     def test_single_base_revision(self):
         script = alembic_script.ScriptDirectory.from_config(self.config)
         self.assertEqual(1, len(script.get_bases()))
