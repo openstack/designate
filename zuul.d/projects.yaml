@@ -3,27 +3,31 @@
     queue: designate
     check:
       jobs:
-        - designate-bind9
-        - designate-bind9-keystone-old-default-roles
-        - designate-pdns4
+        - designate-bind9-core
+        - designate-bind9-with-keystone-default-roles
+        - designate-pdns4-core
+        - designate-bind9-multipool
         - designate-grenade-bind9
         - designate-grenade-pdns4
         - designate-grenade-bind9-skip-level
         - designate-grenade-pdns4-skip-level
-        - designate-ipv6-only-pdns4
-        - designate-ipv6-only-bind9
+        - designate-bind9-core-catalog-zones:
+            voting: false
+        - designate-only-ipv6-pdns4
+        - designate-only-ipv6-bind9
     gate:
       fail-fast: true
       jobs:
-        - designate-bind9
-        - designate-bind9-keystone-old-default-roles
-        - designate-pdns4
+        - designate-bind9-core
+        - designate-bind9-with-keystone-default-roles
+        - designate-pdns4-core
+        - designate-bind9-multipool
         - designate-grenade-pdns4
         - designate-grenade-bind9
         - designate-grenade-pdns4-skip-level
         - designate-grenade-bind9-skip-level
-        - designate-ipv6-only-pdns4
-        - designate-ipv6-only-bind9
+        - designate-only-ipv6-pdns4
+        - designate-only-ipv6-bind9
 
 - project:
     templates:
@@ -38,11 +42,9 @@
       jobs:
         - neutron-tempest-plugin-designate-scenario
         - designate-tox-dnspython-latest
-        - designate-bind9-catalog-zones:
-            voting: false
     gate:
       jobs:
         - neutron-tempest-plugin-designate-scenario
     experimental:
       jobs:
-        - designate-pdns4-postgres
+        - designate-pdns4-postgres-core
