@@ -17,6 +17,7 @@ import random
 import socket
 
 import dns.exception
+import dns.flags
 import dns.message
 import dns.name
 import dns.opcode
@@ -277,6 +278,14 @@ def get_serial(zone_name, host, port=53, tsig_key=None):
     """
     resp = soa_query(zone_name, host, port=port, tsig_key=tsig_key)
     if not resp.answer:
+        return 0
+
+    is_authoritative = bool(resp.flags & dns.flags.AA)
+    recursion_available = bool(resp.flags & dns.flags.RA)
+    if not is_authoritative and recursion_available:
+        # Non-authoritative response from a server that supports recursion
+        # This means the zone doesn't exist locally but was resolved via
+        # recursion
         return 0
     rdataset = resp.answer[0].to_rdataset()
     if not rdataset:
