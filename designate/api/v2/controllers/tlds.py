@@ -51,7 +51,7 @@ class TldsController(rest.RestController):
                 context, params, self.SORT_KEYS)
 
         # Extract any filter params.
-        accepted_filters = ('name', )
+        accepted_filters = ('name', 'description')
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 

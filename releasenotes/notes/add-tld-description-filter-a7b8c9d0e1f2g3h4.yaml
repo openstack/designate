@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Added support for filtering TLDs by description in the API.
+    The TLD list endpoint now accepts a ``description`` query parameter
+    to filter results, matching the pattern used by other resources like
+    zones and recordsets. Wildcard filtering is supported using ``*``.

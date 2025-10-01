@@ -280,6 +280,14 @@ target_project_id_filter:
   type: string
   min_version: 2.1
 
+tld_description_filter:
+  description: |
+    Filter results to only show tlds that have a description matching the
+    filter. Use ``*`` as a wildcard.
+  in: query
+  required: false
+  type: string
+
 tld_name_filter:
   description: |
     Filter results to only show tlds that have a name matching the filter
