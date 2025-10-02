@@ -167,6 +167,7 @@
       - ^api-ref/.*$
       - ^doc/.*$
       - ^releasenotes/.*$
+    voting: false
 
 - job:
     name: designate-grenade-pdns4
