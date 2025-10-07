@@ -190,16 +190,18 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
 
         self.assertEqual(len(pools), 0)
 
-    def test_get_pool_failure(self):
+    def test_get_pool_not_found(self):
         mock_storage = mock.Mock()
-        mock_storage.get_pool.side_effect = Exception()
+        mock_storage.get_pool.side_effect = exceptions.PoolNotFound()
 
         test_filter = self.FILTER(storage=mock_storage)
 
         pools = objects.PoolList()
-        pools = test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual(len(pools), 0)
+        self.assertRaises(
+            exceptions.PoolNotFound,
+            test_filter.filter, self.context, pools, self.zone
+        )
 
     def test_policy_failure(self):
         pools = objects.PoolList.from_list(

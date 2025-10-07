@@ -193,7 +193,7 @@ class APIV2ZoneImportExportTest(v2.ApiV2TestCase):
         }
 
         self._assert_exception(
-            'no_valid_pool_found', 404, self.client.post_json,
+            'pool_not_found', 404, self.client.post_json,
             '/zones/tasks/imports', body,
             headers={'Content-type': 'application/json',
                      'X-Test-Role': 'member'}

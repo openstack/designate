@@ -715,6 +715,24 @@ class ApiV2ZonesTest(v2.ApiV2TestCase):
                                '/zones/', fixture,
                                headers={'X-Test-Role': 'member'})
 
+    def test_create_secondary_with_nonexistent_pool_id(self):
+        self.config(
+            scheduler_filters=['pool_id_attribute', 'fallback'],
+            group='service:central'
+        )
+        existing_zone = self.create_zone(fixture=0)
+
+        fixture = self.get_zone_fixture('SECONDARY', 0)
+        fixture['name'] = existing_zone.name
+        fixture['masters'] = ['192.0.2.1']
+        fixture['attributes'] = {
+            'pool_id': '13317987-4d7f-48c3-9d9d-3552f97d8346'
+        }
+
+        self._assert_exception('pool_not_found', 404, self.client.post_json,
+                               '/zones/', fixture,
+                               headers={'X-Test-Role': 'admin'})
+
     def test_update_secondary(self):
         # Create a zone
         zone = objects.Zone(
