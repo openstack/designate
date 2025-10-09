@@ -89,9 +89,11 @@ class DesignateBackendTestCase(oslotest.base.BaseTestCase):
         self.assertEqual('RegionOne', self.backend.region_name)
 
     def test_get_client(self):
-        self.backend._client = None
-
-        self.assertIsInstance(self.backend.client, client.Client)
+        backend = impl_designate.DesignateBackend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+        self.assertIsNone(backend._client)
+        self.assertIsInstance(backend.client, client.Client)
 
     def test_create_zone(self):
         masters = ["192.0.2.1:53", "[::1]:53",
