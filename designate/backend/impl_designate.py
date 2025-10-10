@@ -48,6 +48,7 @@ class DesignateBackend(base.Backend):
         self.user_domain_name = self.options.get('user_domain_name', 'default')
         self.service_type = self.options.get('service_type', 'dns')
         self.region_name = self.options.get('region_name')
+        self._client = None
 
     @property
     def client(self):
