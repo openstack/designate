@@ -19,7 +19,6 @@
 import sys
 import traceback
 
-import eventlet
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
@@ -29,8 +28,6 @@ from stevedore.extension import ExtensionManager
 import designate.conf
 from designate import utils
 from designate import version
-
-eventlet.monkey_patch(os=False)
 
 CONF = designate.conf.CONF
 
