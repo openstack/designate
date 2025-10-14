@@ -13,6 +13,13 @@
 
 import os
 
+# NOTE(oschwart): remove once the default backend is ``BackendType.THREADING``
+import oslo_service.backend as service
+try:
+    service.init_backend(service.BackendType.THREADING)
+except service.exceptions.BackendAlreadySelected:
+    pass
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from paste import deploy
@@ -23,7 +30,6 @@ import designate.conf
 from designate import heartbeat_emitter
 from designate import policy
 from designate import rpc
-
 
 CONF = designate.conf.CONF
 

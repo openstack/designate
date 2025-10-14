@@ -14,12 +14,12 @@ from unittest import mock
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
-from designate.cmd import api
-from designate.cmd import central
-from designate.cmd import mdns
-from designate.cmd import producer
-from designate.cmd import sink
-from designate.cmd import worker
+from designate.cmd.eventlet import api
+from designate.cmd.eventlet import central
+from designate.cmd.eventlet import mdns
+from designate.cmd.eventlet import producer
+from designate.cmd.eventlet import sink
+from designate.cmd.eventlet import worker
 import designate.conf
 
 

@@ -14,11 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-import os
-os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
-
-import eventlet # noqa
-
-
-eventlet.monkey_patch(os=False) # noqa
+# NOTE(oschwart): remove once the default backend is ``BackendType.THREADING``
+import oslo_service.backend as service
+try:
+    service.init_backend(service.BackendType.THREADING)
+except service.exceptions.BackendAlreadySelected:
+    pass
