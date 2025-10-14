@@ -16,7 +16,6 @@ import oslotest.base
 
 from designate.cmd.eventlet import central
 from designate.cmd.eventlet import mdns
-from designate.cmd.eventlet import producer
 from designate.cmd.eventlet import worker
 import designate.conf
 
@@ -26,6 +25,7 @@ CONF = designate.conf.CONF
 
 with mock.patch('oslo_service.backend.init_backend'):
     from designate.cmd.threading import api
+    from designate.cmd.threading import producer
     from designate.cmd.threading import sink
 
 

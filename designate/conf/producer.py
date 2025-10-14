@@ -53,8 +53,8 @@ PRODUCER_TASK_ZONE_PURGE_GROUP = cfg.OptGroup(
 PRODUCER_OPTS = [
     cfg.IntOpt('workers',
                help='Number of Producer worker processes to spawn'),
-    cfg.IntOpt('threads', default=1000,
-               help='Number of Producer greenthreads to spawn'),
+    cfg.IntOpt('threads', default=20,
+               help='Number of Producer threads to spawn'),
     cfg.ListOpt('enabled_tasks',
                 help='Enabled tasks to run'),
     cfg.BoolOpt('export_synchronous', default=True,
