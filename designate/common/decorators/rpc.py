@@ -38,6 +38,9 @@ def expected_exceptions():
     def outer(f):
         @functools.wraps(f)
         def exception_wrapper(cls, *args, **kwargs):
+            if cls.exception_thread_local is None:
+                cls.exception_thread_local = ExceptionThreadLocal()
+
             cls.exception_thread_local.depth += 1
 
             # We only want to wrap the first function wrapped.

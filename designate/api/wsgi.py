@@ -20,16 +20,21 @@ try:
 except service.exceptions.BackendAlreadySelected:
     pass
 
-from oslo_config import cfg
-from oslo_log import log as logging
-from paste import deploy
+import oslo_messaging as messaging  # noqa: E402
 
-from designate.common import config
-from designate.common import profiler
-import designate.conf
-from designate import heartbeat_emitter
-from designate import policy
-from designate import rpc
+# Set some Oslo RPC defaults
+messaging.set_transport_defaults('designate')
+
+from oslo_config import cfg  # noqa: E402
+from oslo_log import log as logging  # noqa: E402
+from paste import deploy  # noqa: E402
+
+from designate.common import config  # noqa: E402
+from designate.common import profiler  # noqa: E402
+import designate.conf  # noqa: E402
+from designate import heartbeat_emitter  # noqa: E402
+from designate import policy  # noqa: E402
+from designate import rpc  # noqa: E402
 
 CONF = designate.conf.CONF
 

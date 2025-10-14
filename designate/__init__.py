@@ -21,7 +21,6 @@ os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
 
 from oslo_concurrency import lockutils  # noqa
 from oslo_log import log  # noqa
-import oslo_messaging as messaging  # noqa
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
 
@@ -34,9 +33,6 @@ _EXTRA_DEFAULT_LOG_LEVELS = [
 # Set some Oslo Log defaults
 log.set_defaults(default_log_levels=log.get_default_log_levels() +
                  _EXTRA_DEFAULT_LOG_LEVELS)
-
-# Set some Oslo RPC defaults
-messaging.set_transport_defaults('designate')
 
 # Set some Oslo Concurrency defaults
 lockutils.set_defaults(lock_path='$state_path')
