@@ -15,7 +15,6 @@
 #
 # Copied partially from nova
 import concurrent.futures
-import futurist
 from keystoneauth1 import session
 from keystoneauth1 import token_endpoint
 import openstack
@@ -71,7 +70,7 @@ class NeutronNetworkAPI(base.NetworkAPI):
         )
 
         floating_ips = []
-        with futurist.GreenThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             executors = [
                 executor.submit(
                     self._get_floating_ips,
@@ -83,7 +82,7 @@ class NeutronNetworkAPI(base.NetworkAPI):
             ]
             for future in concurrent.futures.as_completed(executors):
                 try:
-                    floating_ips.extend(future.result())
+                    floating_ips.extend(list(future.result()))
                 except Exception as e:
                     raise exceptions.NeutronCommunicationFailure(e)
 

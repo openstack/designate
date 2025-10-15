@@ -20,7 +20,6 @@ from concurrent import futures
 import copy
 import datetime
 
-import futurist
 import random
 import unittest
 from unittest import mock
@@ -163,23 +162,34 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         self.assertTrue(result)
 
-    def test_is_blacklisted_zone_name_evil(self):
-        evil_regex = "(([a-z])+.)+[A-Z]([a-z])+$"
-        evil_zone_name = ("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                          "aaaaaaaa.com.")
+    def test_is_blacklisted_zone_name_timeout(self):
+        timeout_regex = "I-am-a-timeout-pattern"
+        timeout_zone_name = "test.com."
 
         blacklists = objects.BlacklistList(
-            objects=[objects.Blacklist(pattern=evil_regex)])
+            objects=[objects.Blacklist(pattern=timeout_regex)])
 
         context = self.get_context()
 
-        with mock.patch.object(self.central_service.storage,
-                               'find_blacklists',
-                               return_value=blacklists):
+        mock_future = mock.Mock()
+        mock_future.result.side_effect = futures.TimeoutError()
 
+        mock_find = mock.patch.object(
+            self.central_service.storage, 'find_blacklists',
+            return_value=blacklists)
+        mock_submit = mock.patch.object(
+            self.central_service._blacklist_executor, 'submit',
+            return_value=mock_future)
+
+        with mock_find, mock_submit:
+            # The method should return True when timeout occurs
+            # and log a critical message
             result = self.central_service._is_blacklisted_zone_name(
-                context, evil_zone_name)
+                context, timeout_zone_name)
             self.assertTrue(result)
+            self.assertIn(
+                f'Blacklist regex ({timeout_regex}) took too long',
+                self.stdlog.logger.output)
 
     def test_is_subzone(self):
         context = self.get_context()
@@ -2622,7 +2632,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
                 context, fip['region'], fip['id'], fixture
             )
 
-        with futurist.GreenThreadPoolExecutor() as executor:
+        with futures.ThreadPoolExecutor() as executor:
             results = []
             for fixture in [0, 2, 3, 4, 5]:
                 results.append(executor.submit(
@@ -3669,7 +3679,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
                                                                   request_body)
             return self.wait_for_import(zone_import.id, error_is_ok=True)
 
-        with futurist.GreenThreadPoolExecutor() as executor:
+        with futures.ThreadPoolExecutor() as executor:
             results = []
             for fixture in [0, 2, 3, 4, 5]:
                 results.append(executor.submit(create_zone_import,))
@@ -3925,9 +3935,9 @@ class CentralServiceTest(designate.tests.functional.TestCase):
     def test_update_zone_export(self):
         self.central_service.tg = mock.Mock()
 
-        new_zone_export = self.central_service.create_zone_import(
-            self.admin_context, objects.ZoneExport()
-        )
+        zone = self.create_zone()
+        new_zone_export = self.create_zone_export(zone_id=zone.id)
+
         self.assertIsNone(new_zone_export.message)
 
         new_zone_export.message = 'foo'
