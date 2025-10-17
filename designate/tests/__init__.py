@@ -14,11 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
 import os
+
+# Disable eventlet's greendns monkey patching to prevent dnspython
+# compatibility issues. Without this, dnspython's zone parsing fails with
+# errors like "TypeError: add(): expected an Rdata" due to conflicts between
+# eventlet's patched DNS resolver and dnspython's native implementation.
 os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
 
-import eventlet # noqa
-
-
-eventlet.monkey_patch(os=False) # noqa
+from oslo_service import backend as oslo_service_backend # noqa
+try:
+    oslo_service_backend.init_backend(
+        oslo_service_backend.BackendType.THREADING)
+except oslo_service_backend.exceptions.BackendAlreadySelected:
+    # Backend already initialized, this is fine
+    pass

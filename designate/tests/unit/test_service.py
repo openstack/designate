@@ -176,6 +176,21 @@ class TestRpcService(oslotest.base.BaseTestCase):
     def test_rpc_service_wait(self):
         self.assertIsNone(self.service.wait())
 
+    @mock.patch.object(rpc, 'get_server')
+    @mock.patch.object(rpc, 'get_notifier')
+    def test_rpc_service_init_host_called_twice(
+            self, mock_rpc_get_notifier, mock_rpc_get_server):
+        # First call should initialize RPC
+        self.service.init_host()
+        mock_rpc_get_server.assert_called_once()
+        mock_rpc_get_notifier.assert_called_once()
+
+        # Second call should return early without re-initializing
+        self.service.init_host()
+        # Assert still only called once (not called again)
+        mock_rpc_get_server.assert_called_once()
+        mock_rpc_get_notifier.assert_called_once()
+
 
 @mock.patch.object(policy, 'init', mock.Mock())
 @mock.patch.object(rpc, 'init', mock.Mock())

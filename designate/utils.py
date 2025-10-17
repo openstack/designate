@@ -304,7 +304,6 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
     except Exception:
         LOG.info('SO_REUSEPORT not available, ignoring.')
 
-    # This option isn't available in the OS X version of eventlet
     if tcp_keepidle and hasattr(socket, 'TCP_KEEPIDLE'):
         sock_tcp.setsockopt(socket.IPPROTO_TCP,
                             socket.TCP_KEEPIDLE,

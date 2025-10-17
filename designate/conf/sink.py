@@ -39,7 +39,7 @@ SINK_OPTS = [
     cfg.IntOpt('workers',
                help='Number of sink worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
-               help='Number of sink greenthreads to spawn'),
+               help='Number of sink threads to spawn'),
     cfg.ListOpt('enabled_notification_handlers', default=[],
                 help='Enabled Notification Handlers'),
     cfg.StrOpt('listener_pool_name',

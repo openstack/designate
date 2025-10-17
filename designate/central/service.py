@@ -21,7 +21,6 @@ import random
 from random import SystemRandom
 import re
 import string
-import time
 
 from dns import exception as dnsexception
 from dns import zone as dnszone
@@ -832,9 +831,6 @@ class Service(service.RPCService):
 
         if zone.obj_attr_is_set('recordsets'):
             for rrset in zone.recordsets:
-                # This allows eventlet to yield, as this looping operation
-                # can be very long-lived.
-                time.sleep(0)
                 self._create_recordset_in_storage(
                     context, zone, rrset, increment_serial=False
                 )

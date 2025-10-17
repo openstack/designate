@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    Complete removal of eventlet from Designate. All services now use
+    native Python threading via oslo.service's threading backend.
+  - |
+    Updated oslo.service dependency to >=4.2.0 with the [threading] extra,
+    which is required for the threading backend support.
+  - |
+    Default thread counts have been adjusted to reduce potential memory
+    issues with Python native threads compared to eventlet greenthreads.

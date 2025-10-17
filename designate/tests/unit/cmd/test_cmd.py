@@ -14,19 +14,16 @@ from unittest import mock
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
+from designate.cmd import api
+from designate.cmd import central
+from designate.cmd import mdns
+from designate.cmd import producer
+from designate.cmd import sink
+from designate.cmd import worker
 import designate.conf
 
 
 CONF = designate.conf.CONF
-
-
-with mock.patch('oslo_service.backend.init_backend'):
-    from designate.cmd.threading import api
-    from designate.cmd.threading import central
-    from designate.cmd.threading import mdns
-    from designate.cmd.threading import producer
-    from designate.cmd.threading import sink
-    from designate.cmd.threading import worker
 
 
 @mock.patch('designate.service.wait')
@@ -122,3 +119,108 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_heartbeat.assert_called()
         mock_serve.assert_called_with(mock.ANY, workers=1)
         mock_wait.assert_called_with()
+
+    @mock.patch('designate.api.service.Service')
+    def test_api_rpc_already_initialized(self, mock_service, mock_read_config,
+                                         mock_log_setup, mock_heartbeat,
+                                         mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:api')
+
+        api.main()
+
+        mock_read_config.assert_called_with('designate', mock.ANY)
+        mock_log_setup.assert_called_with(mock.ANY, 'designate')
+        mock_service.assert_called_with()
+        mock_heartbeat.assert_called()
+        mock_serve.assert_called_with(mock.ANY, workers=1)
+        mock_wait.assert_called_with()
+
+    @mock.patch('designate.api.service.Service')
+    def test_api_heartbeat_stops_on_exception(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_heartbeat, mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:api')
+        mock_wait.side_effect = KeyboardInterrupt()
+        mock_emitter = mock.Mock()
+        mock_heartbeat.return_value = mock_emitter
+
+        # call api.main and make sure it gets an exception
+        self.assertRaises(KeyboardInterrupt, api.main)
+
+        mock_emitter.stop.assert_called_once()
+
+    @mock.patch('designate.worker.service.Service')
+    def test_worker_init_host_called(self, mock_service, mock_read_config,
+                                     mock_log_setup, mock_heartbeat,
+                                     mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:worker')
+        mock_server = mock.Mock()
+        mock_service.return_value = mock_server
+
+        worker.main()
+
+        mock_server.init_host.assert_called_once()
+        mock_heartbeat.assert_called_with(mock_server.service_name)
+
+    @mock.patch('designate.producer.service.Service')
+    def test_producer_init_host_called(self, mock_service, mock_read_config,
+                                       mock_log_setup, mock_heartbeat,
+                                       mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:producer')
+        mock_server = mock.Mock()
+        mock_service.return_value = mock_server
+
+        producer.main()
+
+        mock_server.init_host.assert_called_once()
+        mock_heartbeat.assert_called_with(mock_server.service_name)
+
+    @mock.patch('designate.central.service.Service')
+    def test_central_rpc_already_initialized(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_heartbeat, mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:central')
+
+        central.main()
+
+        mock_serve.assert_called_with(mock.ANY, workers=1)
+
+    @mock.patch('designate.mdns.service.Service')
+    def test_mdns_rpc_already_initialized(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_heartbeat, mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:mdns')
+
+        mdns.main()
+
+        mock_serve.assert_called_with(mock.ANY, workers=1)
+
+    @mock.patch('designate.producer.service.Service')
+    def test_producer_rpc_already_initialized(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_heartbeat, mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:producer')
+
+        producer.main()
+
+        mock_serve.assert_called_with(mock.ANY, workers=1)
+
+    @mock.patch('designate.sink.service.Service')
+    def test_sink_rpc_already_initialized(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_heartbeat, mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:sink')
+
+        sink.main()
+
+        mock_serve.assert_called_with(mock.ANY, workers=1)
+
+    @mock.patch('designate.worker.service.Service')
+    def test_worker_rpc_already_initialized(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_heartbeat, mock_serve, mock_wait):
+        CONF.set_override('workers', 1, 'service:worker')
+
+        worker.main()
+
+        mock_serve.assert_called_with(mock.ANY, workers=1)
