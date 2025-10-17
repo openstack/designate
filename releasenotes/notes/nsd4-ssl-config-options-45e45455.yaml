@@ -1,0 +1,38 @@
+---
+upgrade:
+  - |
+    The NSD4 backend has been migrated from eventlet to native Python
+    socket/ssl libraries. SSL certificate verification is now configurable
+    and enabled by default.
+
+    New configuration options:
+
+    - ``verify_ssl``: Enable/disable SSL certificate verification (default: ``true``)
+    - ``check_hostname``: Enable/disable hostname checking (default: ``true``)
+    - ``ca_certs``: Path to CA certificate bundle (default: system CA bundle)
+
+    **Breaking Change:** Deployments using self-signed certificates must
+    explicitly disable verification or add certificates to the system trust
+    store.
+
+    Configure these options in your pools.yaml file under the NSD4 target's
+    ``options`` section, then run ``designate-manage pool update``.
+    To maintain previous insecure behavior:
+
+    .. code-block:: yaml
+
+       targets:
+         - type: nsd4
+           options:
+             host: 192.0.2.2
+             port: 8952
+             verify_ssl: false
+             check_hostname: false
+
+    Deployments with properly signed certificates require no configuration
+    changes.
+security:
+  - |
+    The NSD4 backend now defaults to secure SSL certificate verification.
+    Previously, certificate verification and hostname checking were
+    unconditionally disabled.

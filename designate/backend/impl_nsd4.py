@@ -19,9 +19,9 @@
 # under the License.
 
 import random
+import socket
 import ssl
 
-import eventlet
 from oslo_log import log as logging
 
 from designate.backend import base
@@ -49,18 +49,42 @@ class NSD4Backend(base.Backend):
                                         '/etc/nsd/nsd_control.key')
         self.pattern = self.options.get('pattern', 'slave')
 
+    def _create_ssl_context(self):
+        """Create and configure SSL context with backend settings."""
+        context = ssl.create_default_context()
+        context.load_cert_chain(certfile=self.certfile, keyfile=self.keyfile)
+
+        verify_ssl = (
+            self.options.get('verify_ssl', 'true').lower() == 'true'
+        )
+        check_hostname = (
+            self.options.get('check_hostname', 'true').lower() == 'true'
+        )
+        ca_certs = self.options.get('ca_certs', None)
+
+        context.check_hostname = check_hostname
+        if verify_ssl:
+            context.verify_mode = ssl.CERT_REQUIRED
+            if ca_certs:
+                context.load_verify_locations(cafile=ca_certs)
+        else:
+            context.verify_mode = ssl.CERT_NONE
+
+        return context
+
     def _command(self, command):
-        sock = eventlet.wrap_ssl(
-            eventlet.connect((self.host, self.port)),
-            keyfile=self.keyfile,
-            certfile=self.certfile)
-        stream = sock.makefile()
-        stream.write(f'{self.NSDCT_VERSION} {command}\n')
-        stream.flush()
-        result = stream.read()
-        stream.close()
-        sock.close()
-        return result
+        """Execute a command on the NSD4 control channel."""
+        context = self._create_ssl_context()
+        sock_addr = (self.host, self.port)
+
+        with (
+            socket.create_connection(sock_addr) as raw_sock,
+            context.wrap_socket(raw_sock, server_hostname=self.host) as sock,
+            sock.makefile(mode='rw') as stream
+        ):
+            stream.write(f'{self.NSDCT_VERSION} {command}\n')
+            stream.flush()
+            return stream.read()
 
     def _execute_nsd4(self, command):
         try:
