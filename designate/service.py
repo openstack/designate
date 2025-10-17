@@ -22,7 +22,6 @@ import socket
 import struct
 import threading
 
-import eventlet.debug
 from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_service import service
@@ -167,10 +166,6 @@ class DNSService:
         self.tcp_keepidle = tcp_keepidle
         self.tcp_recv_timeout = tcp_recv_timeout
         self.listen = listen
-
-        # Eventlet will complain loudly about our use of multiple greenthreads
-        # reading/writing to the UDP socket at once. Disable this warning.
-        eventlet.debug.hub_prevent_multiple_readers(False)
 
         self._dns_socks_tcp = []
         self._dns_socks_udp = []
