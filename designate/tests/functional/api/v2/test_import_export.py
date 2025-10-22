@@ -264,3 +264,17 @@ class APIV2ZoneImportExportTest(v2.ApiV2TestCase):
             '/zones/tasks/exports/%s' % create_response.json_body['id'],
             headers={'X-Test-Role': 'member'}
         )
+
+    def test_export_over_quota(self):
+        # Set a very low export quota
+        self.config(quota_api_export_size=1)
+
+        zone = self.create_zone()
+        _ = self.create_recordset(zone, name='test.%s' % zone['name'])
+
+        # Try to export - should fail immediately with over quota
+        self._assert_exception(
+            'over_quota', 413, self.client.post,
+            '/zones/%s/tasks/export' % zone['id'],
+            headers={'X-Test-Role': 'member'}
+        )
