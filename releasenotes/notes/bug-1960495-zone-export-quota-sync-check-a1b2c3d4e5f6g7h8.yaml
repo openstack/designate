@@ -1,0 +1,18 @@
+---
+fixes:
+  - |
+    Zone export now validates the api_export_size quota synchronously before
+    accepting the async export job. Previously, users would receive a 202
+    Accepted response, then discover the quota violation only after polling
+    the export status, which showed an ERROR state. With this fix, users
+    receive an immediate 413 Request Entity Too Large error when attempting
+    to export a zone that exceeds the quota limit.
+
+    This provides better user experience by giving immediate feedback and
+    prevents wasted resources on doomed async jobs. The implementation uses
+    the same quota validation pattern already employed by zone and recordset
+    creation operations.
+
+    See `bug 1960495`_ for more information.
+
+    .. _bug 1960495: https://bugs.launchpad.net/designate/+bug/1960495
