@@ -49,6 +49,20 @@ Install and configure components
 
       # rndc-confgen -a -k designate -c /etc/designate/rndc.key -r /dev/urandom
 
+#. Configure AppArmor to allow BIND9 to read the rndc key:
+
+   .. code-block:: console
+
+      # echo "/etc/designate/rndc.key r," | sudo tee -a /etc/apparmor.d/local/usr.sbin.named
+      # sudo systemctl reload apparmor
+
+   .. note::
+
+      The default AppArmor profile for BIND9 on Ubuntu (``/etc/apparmor.d/usr.sbin.named``)
+      includes read access to ``/etc/bind/** r,`` but does not include ``/etc/designate/``.
+      The above configuration adds the necessary permission for BIND9 to read the rndc key
+      from ``/etc/designate/``.
+
 #. Add the following options in the ``/etc/bind/named.conf.options`` file::
 
       ...

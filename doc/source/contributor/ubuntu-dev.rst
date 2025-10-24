@@ -223,11 +223,16 @@ Change the corresponding lines in the config file:
       recursion no;
     };
 
-Disable AppArmor for BIND9
+Configure AppArmor for BIND9
+
+AppArmor on Ubuntu restricts which files BIND9 can access. The default AppArmor
+profile includes ``/etc/bind/** r,`` but not ``/etc/designate/``. If you use
+``/etc/designate/rndc.key`` (as shown in the standard configuration examples),
+add the following AppArmor rule:
 
 ::
 
-    $ sudo touch /etc/apparmor.d/disable/usr.sbin.named
+    $ echo "/etc/designate/rndc.key r," | sudo tee -a /etc/apparmor.d/local/usr.sbin.named
     $ sudo systemctl reload apparmor
 
 Restart BIND9:
