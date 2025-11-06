@@ -11,11 +11,12 @@ Create a Zone Import
 
 .. rest_method::  POST /v2/zones/tasks/imports
 
-Import a zone.
+Import a zone from a zone file in RFC 1035 format.
 
-The API supports two content types for zone import:
+The request body must contain the zone file data. The API supports two
+content types for zone import:
 
-- ``text/dns``: The body is the raw zone file content
+- ``text/dns``: The body is the raw zone file content in RFC 1035 format
 - ``application/json``: The body is a JSON object with a ``zonefile`` field
   and an optional ``attributes`` field
 
@@ -47,11 +48,18 @@ Request
    - attributes: zone_import_attributes
 
 
-Request Example
----------------
+Request Example (application/json)
+-----------------------------------
 
 .. literalinclude:: samples/zones/create-zone-import-request.json
    :language: javascript
+
+Request Example (text/dns)
+---------------------------
+
+The request body should contain a zone file in RFC 1035 zone file format:
+
+.. literalinclude:: samples/zones/create-zone-import-request.txt
 
 
 Response Parameters
