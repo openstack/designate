@@ -8,12 +8,5 @@ In this section, you will find documentation relevant for upgrading Designate.
           command can be used to verify a deployment before starting services
           with new code.
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   kilo
-   mitaka
-   newton
-   ocata
+.. note:: For historical upgrade guides from releases prior to 2018, please
+          refer to the git history of this repository.
