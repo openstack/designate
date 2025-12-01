@@ -1,0 +1,16 @@
+---
+fixes:
+  - |
+    [`bug 1934120 <https://bugs.launchpad.net/designate/+bug/1934120>`_]
+    Fixed an issue where TSIG keys could be created with mismatched
+    scope and resource_id values. Previously, it was possible to
+    create a TSIG key with ``scope='ZONE'`` but provide a pool UUID in
+    ``resource_id``, or vice versa. This could cause operational issues
+    where TSIG authentication would fail with confusing "Zone not found"
+    errors.
+
+    TSIG key creation and updates now validate that the ``resource_id``
+    matches the specified ``scope`` type. If ``scope='ZONE'``, the
+    ``resource_id`` must be a valid zone UUID. If ``scope='POOL'``, the
+    ``resource_id`` must be a valid pool UUID. Invalid combinations are
+    rejected with a clear error message at creation/update time.
