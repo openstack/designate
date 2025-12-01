@@ -67,15 +67,30 @@ class MdnsRequestHandlerTest(designate.tests.functional.TestCase):
             scope='POOL',
             resource_id=default_pool_id)
 
-        self.tsigkey_pool_unknown = self.create_tsigkey(
-            name='unknown-pool',
-            scope='POOL',
-            resource_id='628e55a0-c724-4767-8c59-0a61c15d3444')
+        # Create TSIG keys with intentionally invalid pool/zone IDs for testing
+        # TSIG validation. We use storage directly to bypass service layer
+        # validation since these are test fixtures with non-existent resources.
+        self.tsigkey_pool_unknown = self.storage.create_tsigkey(
+            self.context,
+            objects.TsigKey.from_dict({
+                'name': 'unknown-pool',
+                'algorithm': 'hmac-md5',
+                'secret': 'TestSecret',
+                'scope': 'POOL',
+                'resource_id': '628e55a0-c724-4767-8c59-0a61c15d3444'
+            })
+        )
 
-        self.tsigkey_zone_unknown = self.create_tsigkey(
-            name='unknown-zone',
-            scope='ZONE',
-            resource_id='82fd08be-9eb7-4d94-8267-a26f8348671d')
+        self.tsigkey_zone_unknown = self.storage.create_tsigkey(
+            self.context,
+            objects.TsigKey.from_dict({
+                'name': 'unknown-zone',
+                'algorithm': 'hmac-md5',
+                'secret': 'TestSecret',
+                'scope': 'ZONE',
+                'resource_id': '82fd08be-9eb7-4d94-8267-a26f8348671d'
+            })
+        )
 
     def test_dispatch_opcode_iquery(self):
         # DNS packet with IQUERY opcode
