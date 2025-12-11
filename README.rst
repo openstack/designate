@@ -2,6 +2,10 @@
 OpenStack Designate
 ===================
 
+.. image:: https://governance.openstack.org/tc/badges/designate.svg
+
+.. Change things from this point on
+
 Designate is an OpenStack project, providing DNSaaS.
 
 IRC: #openstack-dns @ oftc
@@ -77,12 +81,12 @@ Execute only a single test
 
 Contributing
 ------------
+
 Install the git-review package to make life easier
 
 .. code-block:: shell
 
     pip install git-review
-
 
 Branch, work, & submit:
 
@@ -107,7 +111,6 @@ Other Information
 * Source: https://opendev.org/openstack/designate
 * Bugs: https://bugs.launchpad.net/designate
 * Blueprints: https://blueprints.launchpad.net/designate
-
 
 .. _OpenStack Gerrit Workflow: https://docs.openstack.org/infra/manual/developers.html#development-workflow
 .. _docs.openstack.org: https://docs.openstack.org/designate/latest/
