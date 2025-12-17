@@ -774,16 +774,29 @@ class UpdateStatus(base.Task):
         self.context = context
 
     def __call__(self):
-        LOG.debug(
-            'Updating status for zone_name=%(zone_name)s '
-            'zone_id=%(zone_id)s to action=%(action)s serial=%(serial)d',
-            {
-                'zone_name': self.zone.name,
-                'zone_id': self.zone.id,
-                'action': self.zone.action,
-                'serial': self.zone.serial,
-            }
-        )
+        log_data = {
+            'zone_name': self.zone.name,
+            'zone_id': self.zone.id,
+            'status': self.zone.status,
+            'action': self.zone.action,
+            'serial': self.zone.serial,
+        }
+
+        # Log at WARNING level for error states to aid troubleshooting
+        if self.zone.status in ('ERROR', 'NO_ZONE'):
+            LOG.warning(
+                'Updating status for zone_name=%(zone_name)s '
+                'zone_id=%(zone_id)s to status=%(status)s '
+                'action=%(action)s serial=%(serial)d',
+                log_data
+            )
+        else:
+            LOG.debug(
+                'Updating status for zone_name=%(zone_name)s '
+                'zone_id=%(zone_id)s to status=%(status)s '
+                'action=%(action)s serial=%(serial)d',
+                log_data
+            )
 
         self.central_api.update_status(
             self.context,
