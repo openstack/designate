@@ -206,9 +206,8 @@ your own.
      - ``random``--if multiple pools have been specified, randomly assigns the
        zone to a pool.
 
-     - ``in_doubt_default_pool``--if none of the specified pools are
-       available, and the default pool has not been specified, assigns the
-       zone to the default pool.
+     - ``in_doubt_default_pool``--if multiple pools match the filters and
+       the default pool is among them, selects only the default pool.
 
 #. Add the filters that you want the scheduler to use in the
    ``service:central`` section of the ``designate.conf`` file. See
