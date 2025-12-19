@@ -344,6 +344,23 @@ class Service(service.RPCService):
                 "A project ID must be specified when not using a project "
                 "scoped token.")
 
+    def _validate_pool_tsig_key(self, context, pool_id):
+        if pool_id == CONF['service:central'].default_pool_id:
+            return
+        criterion = {'scope': 'POOL', 'resource_id': pool_id}
+        try:
+            self.storage.find_tsigkey(context, criterion)
+        except exceptions.TsigKeyNotFound:
+            pool = self.storage.get_pool(context, pool_id)
+            raise exceptions.BadRequest(
+                'Zones in non-default pools require a TSIG key with '
+                'scope=POOL for zone transfers. Pool "%s" (ID: %s) does '
+                'not have a TSIG key configured. Please create a TSIG '
+                'key for this pool and configure the same key in the '
+                'backend nameservers before creating zones.' %
+                (pool.name, pool_id)
+            )
+
     # SOA Recordset Methods
     @staticmethod
     def _build_soa_record(zone, ns_records):
@@ -756,6 +773,8 @@ class Service(service.RPCService):
 
         # Get a pool id
         zone.pool_id = self.scheduler.schedule_zone(context, zone)
+
+        self._validate_pool_tsig_key(context, zone.pool_id)
 
         # Handle sub-zones appropriately
         parent_zone = self._is_subzone(
@@ -1317,6 +1336,8 @@ class Service(service.RPCService):
             self.storage.get_pool(elevated_context, target_pool_id)
         except exceptions.PoolNotFound:
             raise exceptions.BadRequest('Target pool does not exist')
+
+        self._validate_pool_tsig_key(context, target_pool_id)
 
         target_pool_ns_records = self._get_pool_ns_records(context,
                                                            target_pool_id)
