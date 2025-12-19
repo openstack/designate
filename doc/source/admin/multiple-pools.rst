@@ -174,6 +174,91 @@ In Designate, you can show the current configured default pool by running the
 You can either see a different pool by adding --pool_id <POOL_ID>, or you can
 see all the configured pools by adding ``--all_pools`` or just ``--all``.
 
+Configuring TSIG Keys for Non-Default Pools
+============================================
+
+.. important::
+
+   Non-default pools require TSIG (Transaction Signature) keys for zone
+   transfers to function correctly. Without TSIG keys, zones in non-default
+   pools will fail to synchronize with backend nameservers.
+
+Why TSIG Keys Are Required
+---------------------------
+
+When backend nameservers request zone transfers via AXFR from Designate's
+MiniDNS service, MDNS needs to identify which pool the requested zone belongs
+to. MDNS uses TSIG authentication to make this determination:
+
+* **With TSIG**: MDNS uses the TSIG key's resource_id to identify the pool
+  and retrieve the correct zone.
+* **Without TSIG**: MDNS defaults to searching only in the default pool,
+  causing zones in other pools to fail with "ZoneNotFound" errors.
+
+Creating and Configuring TSIG Keys
+-----------------------------------
+
+The process involves generating the TSIG key, configuring it in backend
+nameservers, and registering it in Designate's database. MiniDNS reads
+TSIG keys directly from the Designate database, so no separate MDNS
+configuration is needed.
+
+#. Generate a TSIG key using ``tsig-keygen``:
+
+   .. code-block:: bash
+
+      sudo tsig-keygen -a hmac-sha256 <key-name> > <path-to-key-file>
+
+   This creates a file with content similar to:
+
+   .. code-block:: text
+
+      key "<key-name>" {
+              algorithm hmac-sha256;
+              secret "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+      };
+
+#. Configure the TSIG key in your backend nameservers. For BIND9, include
+   the key in ``named.conf`` and configure it for use with MDNS:
+
+   .. code-block:: text
+
+      include "<path-to-key-file>";
+
+      server <mdns-ip-address> {
+        keys { <key-name>; };
+      };
+
+#. Create the TSIG key in Designate's database using the API:
+
+   .. code-block:: bash
+
+      # Extract the secret from the key file
+      SECRET=$(grep secret <path-to-key-file> | awk '{print $2}' | tr -d '";')
+
+      # Create the TSIG key in Designate for your pool
+      openstack tsigkey create \
+        --name <key-name> \
+        --algorithm hmac-sha256 \
+        --secret "$SECRET" \
+        --scope POOL \
+        --resource-id <pool-uuid>
+
+#. Verify the TSIG key is properly configured:
+
+   .. code-block:: bash
+
+      # List TSIG keys
+      openstack tsigkey list
+
+      # Verify zones can now be created in the non-default pool
+      openstack zone create --email admin@example.com \
+        --attributes pool_id:<pool-uuid> \
+        example.com.
+
+Without completing all these steps, zones created in non-default pools will
+remain in ERROR status, unable to synchronize with backend nameservers.
+
 Configuring the Pool Scheduler
 ==============================
 
