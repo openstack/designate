@@ -495,10 +495,47 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         # Create a secondary pool
         second_pool = self.create_pool()
+        self.create_tsigkey(scope='POOL', resource_id=second_pool.id)
         fixture["attributes"] = {}
         fixture["attributes"]["pool_id"] = second_pool.id
 
         self.create_zone(**fixture)
+
+    def test_create_zone_non_default_pool_without_tsig(self):
+        """Test that zone creation in non-default pool without TSIG fails"""
+        fixture = self.get_zone_fixture()
+
+        # Create a secondary pool without a TSIG key
+        second_pool = self.create_pool()
+
+        # Attempt to create a zone in the pool without TSIG
+        fixture["attributes"] = {}
+        fixture["attributes"]["pool_id"] = second_pool.id
+
+        # Should raise BadRequest exception
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.create_zone,
+            self.admin_context,
+            objects.Zone.from_dict(fixture)
+        )
+        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
+        self.assertIn('TSIG key', str(exc.exc_info[1]))
+
+    def test_create_zone_non_default_pool_with_tsig(self):
+        """Test that zone creation in non-default pool with TSIG succeeds"""
+        fixture = self.get_zone_fixture()
+
+        # Create a secondary pool and TSIG key for it
+        second_pool = self.create_pool()
+        self.create_tsigkey(scope='POOL', resource_id=second_pool.id)
+
+        # Create a zone in the pool with TSIG
+        fixture["attributes"] = {}
+        fixture["attributes"]["pool_id"] = second_pool.id
+
+        zone = self.create_zone(**fixture)
+        self.assertEqual(second_pool.id, zone.pool_id)
 
     def test_create_zone_over_tld(self):
         values = dict(
@@ -590,6 +627,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         # Create a secondary pool
         second_pool = self.create_pool()
+        self.create_tsigkey(scope='POOL', resource_id=second_pool.id)
         fixture["attributes"] = {}
         fixture["attributes"]["pool_id"] = second_pool.id
         fixture["name"] = "sub.%s" % fixture["name"]
@@ -3044,6 +3082,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
     def test_update_pool_add_ns_record(self):
         # Create a server pool and 3 zones
         pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         zone = self.create_zone(
             attributes=[{'key': 'pool_id', 'value': pool.id}])
         self.create_zone(
@@ -3088,6 +3127,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_update_pool_add_ns_record_without_priority(self):
         pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         self.create_zone(pool_id=pool.id)
         new_ns_record = objects.PoolNsRecord(hostname='ns-new.example.org.')
         pool.ns_records.append(new_ns_record)
@@ -3098,6 +3138,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
     def test_update_pool_remove_ns_record(self):
         # Create a server pool and zone
         pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         zone = self.create_zone(
             attributes=[{'key': 'pool_id', 'value': pool.id}])
 
@@ -4293,6 +4334,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_pool_move_zone(self):
         pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
         self.storage.create_pool_ns_record(
             self.admin_context, pool['id'],
@@ -4301,6 +4343,8 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         # create second pool
         second_pool = self.create_pool(fixture=1)
+        self.create_tsigkey(name='test-key-second-pool', scope='POOL',
+                           resource_id=second_pool.id)
         self.storage.create_pool_ns_record(
             self.admin_context, second_pool['id'],
             objects.PoolNsRecord(priority=1, hostname='ns-new.example.org.')
@@ -4315,7 +4359,10 @@ class CentralServiceTest(designate.tests.functional.TestCase):
     def test_pool_move_zone_from_non_default_to_default_pool(self):
         # create 2 pools
         pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         second_pool = self.create_pool(fixture=1)
+        self.create_tsigkey(name='test-key-second-pool', scope='POOL',
+                           resource_id=second_pool.id)
 
         self.config(scheduler_filters=['pool_id_attribute'],
                     group='service:central')
@@ -4339,6 +4386,25 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         )
         self.assertEqual(moved_zone.pool_id, pool['id'])
 
+    def test_pool_move_zone_without_tsig(self):
+        """Test that moving a zone to a non-default pool without TSIG fails"""
+        zone = self.create_zone()
+
+        second_pool = self.create_pool(fixture=1)
+        self.storage.create_pool_ns_record(
+            self.admin_context, second_pool['id'],
+            objects.PoolNsRecord(priority=1, hostname='ns-new.example.org.')
+        )
+
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.pool_move_zone,
+            self.admin_context,
+            zone.id, second_pool['id']
+        )
+        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
+        self.assertIn('TSIG key', str(exc.exc_info[1]))
+
     def test_pool_move_zone_no_valid_pool_selected(self):
         pool_id = '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         zone = self.create_zone(fixture=0, pool_id=pool_id)
@@ -4353,10 +4419,13 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_pool_move_zone_without_target_pool(self):
         pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
 
         # create second pool
         second_pool = self.create_pool(fixture=1)
+        self.create_tsigkey(name='test-key-second-pool', scope='POOL',
+                           resource_id=second_pool.id)
         new_ns_record = objects.PoolNsRecord(hostname='ns-new.example.org.')
         second_pool.ns_records.append(new_ns_record)
 
@@ -4371,10 +4440,13 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_pool_move_zone_exception_no_ns_records(self):
         pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
 
         # create second pool
         second_pool = self.create_pool(fixture=1)
+        self.create_tsigkey(name='test-key-second-pool', scope='POOL',
+                           resource_id=second_pool.id)
 
         zone.pool_id = second_pool['id']
         with mock.patch.object(self.central_service, '_get_pool_ns_records',
@@ -4386,6 +4458,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_pool_move_zone_exception_invalid_pool_id(self):
         pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
 
         # Use fake pool ID
@@ -4654,6 +4727,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_create_catalog_member_zone(self):
         pool = self.create_pool(fixture=2)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
 
         self.storage._ensure_catalog_zone_config(self.admin_context, pool)
         catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
@@ -4671,6 +4745,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_update_catalog_member_zone(self):
         pool = self.create_pool(fixture=2)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
 
         self.storage._ensure_catalog_zone_config(self.admin_context, pool)
         catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
@@ -4698,6 +4773,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
     def test_delete_catalog_member_zone(self):
         pool = self.create_pool(fixture=2)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
 
         self.storage._ensure_catalog_zone_config(self.admin_context, pool)
         catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
