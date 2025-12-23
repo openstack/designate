@@ -56,6 +56,9 @@ class DummyTask(tasks.PeriodicTask):
     """Dummy task used to test helper functions"""
     __plugin_name__ = 'dummy'
 
+    def __call__(self):
+        pass
+
 
 class PeriodicTest(oslotest.base.BaseTestCase):
     def setUp(self):
