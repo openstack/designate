@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import abc
 import datetime
 
 from oslo_log import log as logging
@@ -30,7 +31,7 @@ CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
-class PeriodicTask(plugin.ExtensionPlugin):
+class PeriodicTask(plugin.ExtensionPlugin, metaclass=abc.ABCMeta):
     """Abstract Producer periodic task
     """
     __plugin_ns__ = 'designate.producer_tasks'
@@ -39,6 +40,15 @@ class PeriodicTask(plugin.ExtensionPlugin):
     def __init__(self):
         super().__init__()
         self.my_partitions = None
+
+    @abc.abstractmethod
+    def __call__(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def __plugin_name__(self):
+        pass
 
     @property
     def central_api(self):
@@ -88,9 +98,6 @@ class DeletedZonePurgeTask(PeriodicTask):
     Purging means removing them from the database entirely.
     """
     __plugin_name__ = 'zone_purge'
-
-    def __init__(self):
-        super().__init__()
 
     def __call__(self):
         """Call the Central API to perform a purge of deleted zones based on
@@ -223,9 +230,6 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
     """
     __plugin_name__ = 'delayed_notify'
 
-    def __init__(self):
-        super().__init__()
-
     def __call__(self):
         """Fetch a list of zones with the delayed_notify flag set up to
         "batch_size"
@@ -274,9 +278,6 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
 
 class PeriodicIncrementSerialTask(PeriodicTask):
     __plugin_name__ = 'increment_serial'
-
-    def __init__(self):
-        super().__init__()
 
     def __call__(self):
         ctxt = context.DesignateContext.get_admin_context()
