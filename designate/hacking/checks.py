@@ -20,8 +20,6 @@ from hacking import core
 # D703: Found use of _() without explicit import of _!
 # D705: timeutils.utcnow() must be used instead of datetime.%s()
 # D706: Don't translate debug level logs
-# D707: basestring is not Python3-compatible, use str instead.
-# D708: Do not use xrange. Use range for large loops.
 # D709: LOG.audit is deprecated, please use LOG.info!
 # D710: LOG.warn() is not allowed. Use LOG.warning()
 # D711: Don't use backslashes for line continuation.
@@ -99,21 +97,6 @@ def use_timeutils_utcnow(logical_line, filename):
         pos = logical_line.find('datetime.%s' % f)
         if pos != -1:
             yield (pos, msg % f)
-
-
-@core.flake8ext
-def check_no_basestring(logical_line):
-    if re.search(r"\bbasestring\b", logical_line):
-        msg = ("D707: basestring is not Python3-compatible, use "
-               "str instead.")
-        yield (0, msg)
-
-
-@core.flake8ext
-def check_python3_xrange(logical_line):
-    if re.search(r"\bxrange\s*\(", logical_line):
-        yield (0, "D708: Do not use xrange. Use range for "
-                  "large loops.")
 
 
 @core.flake8ext
