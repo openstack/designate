@@ -19,6 +19,24 @@ Install and configure components
    snippets indicates potential default configuration options that you
    should retain.
 
+.. note::
+
+   **Architecture Overview**
+
+   This guide uses separate IP addresses to illustrate Designate's distributed
+   architecture:
+
+   * **192.0.2.1** - Controller node running Designate services
+     (designate-api, designate-central, designate-worker, designate-mdns)
+   * **192.0.2.2** - BIND9 DNS server
+
+   This separation shows how the components communicate and allows for
+   deployment across multiple hosts. The configuration can be adapted for
+   all-in-one deployments or more complex multi-server setups. Replace these
+   documentation addresses with the addresses of your hosts. Run the BIND9
+   installation and configuration steps on the DNS server, and the Designate
+   steps on the controller.
+
 #. Install the packages:
 
    .. code-block:: console
@@ -47,6 +65,7 @@ Install and configure components
 
    .. code-block:: console
 
+      # mkdir -p /etc/designate
       # rndc-confgen -a -k designate -c /etc/designate/rndc.key -r /dev/urandom
 
 #. Configure AppArmor to allow BIND9 to read the rndc key:
@@ -63,7 +82,27 @@ Install and configure components
       The above configuration adds the necessary permission for BIND9 to read the rndc key
       from ``/etc/designate/``.
 
-#. Add the following options in the ``/etc/bind/named.conf.options`` file::
+#. Make RNDC available to the Designate worker on the controller:
+
+   .. code-block:: console
+
+      # apt-get install bind9utils
+
+   If BIND9 runs on a separate host, securely copy its
+   ``/etc/designate/rndc.key`` to the same path on the controller. The key
+   must contain the same secret on both hosts. Ensure that BIND9 can read
+   the key on the DNS server and the ``designate`` user can read it on the
+   controller, while other users cannot. The worker runs ``rndc`` locally
+   to control the remote BIND9 server.
+
+#. Add the following options in the ``/etc/bind/named.conf.options`` file:
+
+   .. note::
+
+      This example assumes the controller node (running Designate services) is
+      at ``192.0.2.1`` and the BIND9 DNS server is at ``192.0.2.2``.
+
+   ::
 
       ...
       include "/etc/designate/rndc.key";
@@ -72,15 +111,18 @@ Install and configure components
           ...
           allow-new-zones yes;
           request-ixfr no;
-          listen-on port 53 { 127.0.0.1; };
+          listen-on port 53 { 192.0.2.2; };
           recursion no;
-          allow-query { 127.0.0.1; };
+          allow-query { any; };
       };
 
       controls {
-        inet 127.0.0.1 port 953
-          allow { 127.0.0.1; } keys { "designate"; };
+        inet 192.0.2.2 port 953
+          allow { 192.0.2.1; } keys { "designate"; };
       };
+
+   ``allow-query`` permits clients to query this authoritative DNS server.
+   The RNDC ``controls`` block remains restricted to the controller.
 
 #. Restart the DNS service:
 
@@ -167,6 +209,17 @@ Install and configure components
 #. Create a pools.yaml file in ``/etc/designate/pools.yaml`` with the following
    contents:
 
+   .. note::
+
+      This configuration defines how Designate communicates with your DNS servers:
+
+      * **masters** (192.0.2.1:5354): designate-mdns service from which BIND
+        requests zone transfers
+      * **nameservers** (192.0.2.2:53): BIND server that Designate queries to
+        verify zone propagation
+      * **targets/options** (192.0.2.2): BIND server that receives rndc commands
+        from designate-worker
+
    .. code-block:: yaml
 
       - name: default
@@ -179,7 +232,7 @@ Install and configure components
 
         # List out the NS records for zones hosted within this pool
         # This should be a record that is created outside of designate, that
-        # points to the public IP of the controller node.
+        # points to the public IP of the BIND DNS server.
         ns_records:
           - hostname: ns1-1.example.org.
             priority: 1
@@ -187,7 +240,7 @@ Install and configure components
         # List out the nameservers for this pool. These are the actual BIND servers.
         # We use these to verify changes have propagated to all nameservers.
         nameservers:
-          - host: 127.0.0.1
+          - host: 192.0.2.2
             port: 53
 
         # List out the targets for this pool. For BIND there will be one
@@ -202,14 +255,14 @@ Install and configure components
             # If you have multiple controllers you can add multiple masters
             # by running designate-mdns on them, and adding them here.
             masters:
-              - host: 127.0.0.1
+              - host: 192.0.2.1
                 port: 5354
 
             # BIND Configuration options
             options:
-              host: 127.0.0.1
+              host: 192.0.2.2
               port: 53
-              rndc_host: 127.0.0.1
+              rndc_host: 192.0.2.2
               rndc_port: 953
               rndc_key_file: /etc/designate/rndc.key
 
