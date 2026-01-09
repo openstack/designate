@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    Fixed CAA record flags field validation to allow the full 8-bit octet
+    range (0-255) as specified in RFC 6844. Previously, the flags field was
+    incorrectly limited to values 0-1, preventing users from setting the
+    critical flag (128) or any other valid flag values.
+    [`LP#1966982 <https://bugs.launchpad.net/designate/+bug/1966982>`_]
