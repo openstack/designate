@@ -26,7 +26,7 @@ class CAA(Record):
     Defined in: RFC6844
     """
     fields = {
-        'flags': fields.IntegerFields(minimum=0, maximum=1),
+        'flags': fields.IntegerFields(minimum=0, maximum=255),
         'prpt': fields.CaaPropertyField()
     }
 
