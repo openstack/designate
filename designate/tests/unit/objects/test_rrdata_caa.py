@@ -134,3 +134,51 @@ class RRDataCAATest(oslotest.base.BaseTestCase):
             'https:// is not a valid URL',
             caa_record.from_string, '0 iodef https://'
         )
+
+    def test_caa_flags_critical(self):
+        """Test CAA record with flags=128 (critical flag)."""
+        caa_record = objects.CAA()
+        caa_record.from_string('128 issue ca.example.net')
+
+        self.assertEqual(128, caa_record.flags)
+        self.assertEqual('issue ca.example.net', caa_record.prpt)
+
+    def test_caa_flags_maximum(self):
+        """Test CAA record with flags=255 (maximum valid value)."""
+        caa_record = objects.CAA()
+        caa_record.from_string('255 issue ca.example.net')
+
+        self.assertEqual(255, caa_record.flags)
+        self.assertEqual('issue ca.example.net', caa_record.prpt)
+
+    def test_caa_flags_direct_assignment_valid_values(self):
+        """Test direct assignment of valid flags values."""
+        caa_record = objects.CAA()
+        caa_record.prpt = 'issue ca.example.net'
+
+        # Test minimum value
+        caa_record.flags = 0
+        self.assertEqual(0, caa_record.flags)
+
+        # Test critical flag
+        caa_record.flags = 128
+        self.assertEqual(128, caa_record.flags)
+
+        # Test maximum value
+        caa_record.flags = 255
+        self.assertEqual(255, caa_record.flags)
+
+    def test_caa_flags_negative_value(self):
+        """Test that negative flags value is rejected."""
+        caa_record = objects.CAA()
+        caa_record.prpt = 'issue ca.example.net'
+
+        self.assertRaises(ValueError, setattr, caa_record, 'flags', -1)
+
+    def test_caa_flags_above_maximum(self):
+        """Test that flags value above 255 is rejected."""
+        caa_record = objects.CAA()
+        caa_record.prpt = 'issue ca.example.net'
+
+        self.assertRaises(ValueError, setattr, caa_record, 'flags', 256)
+        self.assertRaises(ValueError, setattr, caa_record, 'flags', 1000)
