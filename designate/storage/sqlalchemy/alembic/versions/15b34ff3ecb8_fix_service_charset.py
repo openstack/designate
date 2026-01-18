@@ -42,7 +42,7 @@ def upgrade() -> None:
     if current_bind.dialect.name != 'mysql':
         return
 
-    op.execute('SET foreign_key_checks = 0;')
+    op.execute('SET foreign_key_checks = 0')
     op.execute('ALTER TABLE service_statuses CONVERT TO CHARACTER SET utf8;')
-    op.execute('SET foreign_key_checks = 1;')
+    op.execute('SET foreign_key_checks = 1')
     op.execute('ALTER DATABASE DEFAULT CHARACTER SET utf8;')
