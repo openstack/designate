@@ -302,8 +302,6 @@ function start_designate {
     run_process designate-producer "$DESIGNATE_BIN_DIR/designate-producer --config-file $DESIGNATE_CONF"
 
     run_process "designate-api" "$(which uwsgi) --procname-prefix designate-api --ini $DESIGNATE_UWSGI_CONF"
-    enable_apache_site designate-api-wsgi
-    restart_apache_server
 
     echo "Waiting for designate-api to start..."
     if ! wait_for_service $SERVICE_TIMEOUT $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST/dns; then
@@ -313,9 +311,7 @@ function start_designate {
 
 # stop_designate - Stop running processes
 function stop_designate {
-    stop_process "designate-api"
-    disable_apache_site designate-api-wsgi
-    restart_apache_server
+    stop_process designate-api
 
     stop_process designate-central
     stop_process designate-mdns

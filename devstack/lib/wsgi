@@ -12,4 +12,8 @@ function designate_configure_uwsgi {
     echo 'ProxyPass "/dns" "http://127.0.0.1:60053" retry=0' | sudo tee $wsgi_conf
 
     iniset $DESIGNATE_UWSGI_CONF uwsgi http-socket 127.0.0.1:60053
+
+    # Reload the HTTP proxy configuration written after write_uwsgi_config
+    # restarted Apache with its default uwsgi protocol configuration.
+    restart_apache_server
 }
