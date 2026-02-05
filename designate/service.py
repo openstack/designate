@@ -152,7 +152,7 @@ class DNSService:
         self.tcp_recv_timeout = tcp_recv_timeout
         self.listen = listen
 
-        # Eventet will complain loudly about our use of multiple greentheads
+        # Eventlet will complain loudly about our use of multiple greenthreads
         # reading/writing to the UDP socket at once. Disable this warning.
         eventlet.debug.hub_prevent_multiple_readers(False)
 

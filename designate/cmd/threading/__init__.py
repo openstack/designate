@@ -20,3 +20,8 @@ try:
     service.init_backend(service.BackendType.THREADING)
 except service.exceptions.BackendAlreadySelected:
     pass
+
+import oslo_messaging as messaging  # noqa
+
+# Set some Oslo RPC defaults
+messaging.set_transport_defaults('designate')

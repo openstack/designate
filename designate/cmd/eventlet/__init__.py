@@ -22,3 +22,8 @@ os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
 import eventlet  # noqa
 
 eventlet.monkey_patch(os=False)
+
+import oslo_messaging as messaging  # noqa
+
+# Set some Oslo RPC defaults
+messaging.set_transport_defaults('designate')
