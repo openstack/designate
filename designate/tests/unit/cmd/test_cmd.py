@@ -14,7 +14,6 @@ from unittest import mock
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
-from designate.cmd.eventlet import api
 from designate.cmd.eventlet import central
 from designate.cmd.eventlet import mdns
 from designate.cmd.eventlet import producer
@@ -24,6 +23,10 @@ import designate.conf
 
 
 CONF = designate.conf.CONF
+
+
+with mock.patch('oslo_service.backend.init_backend'):
+    from designate.cmd.threading import api
 
 
 @mock.patch('designate.service.wait')

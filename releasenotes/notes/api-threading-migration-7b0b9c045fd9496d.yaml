@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    The designate-api service has been migrated from eventlet to use
+    native Python threading.
+
+    The default number of API threads has been reduced from 1000 to 100
+    to reflect the change from eventlet greenthreads to native OS threads.

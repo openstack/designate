@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import eventlet.patcher
+from dns import reversename
 from oslo_log import log as logging
 
 import designate.conf
@@ -23,9 +23,6 @@ from designate.plugin import DriverPlugin
 
 CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-# NOTE(kiall): This is a workaround for bug #1424621, a broken reimplementation
-#              of eventlet's 0.17.0 monkey patching of dnspython.
-reversename = eventlet.patcher.original('dns.reversename')
 
 
 class NetworkAPI(DriverPlugin):
