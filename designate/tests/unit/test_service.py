@@ -14,7 +14,6 @@
 import errno
 import socket
 import struct
-import unittest
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
@@ -29,18 +28,6 @@ from designate import rpc
 from designate import service as designate_service
 from designate.tests import base_fixtures
 from designate import utils
-
-# Conditionally import deprecated API service module
-# This module will be removed in 2027.1, and its dependencies
-# (oslo_service.wsgi and oslo_service.sslutils) will be removed
-# in oslo.service 2026.2. Skip tests gracefully if unavailable.
-try:
-    from designate.api import service as api_service
-    from oslo_service import sslutils  # noqa
-    from oslo_service import wsgi  # noqa
-    HAS_DEPRECATED_API_SERVICE = True
-except ImportError:
-    HAS_DEPRECATED_API_SERVICE = False
 
 
 CONF = designate.conf.CONF
@@ -203,88 +190,6 @@ class TestRpcService(oslotest.base.BaseTestCase):
         # Assert still only called once (not called again)
         mock_rpc_get_server.assert_called_once()
         mock_rpc_get_notifier.assert_called_once()
-
-
-@mock.patch.object(policy, 'init', mock.Mock())
-@mock.patch.object(rpc, 'init', mock.Mock())
-@mock.patch.object(profiler, 'setup_profiler', mock.Mock())
-@unittest.skipUnless(
-    HAS_DEPRECATED_API_SERVICE,
-    "designate.api.service module unavailable"
-)
-class TestWSGIService(oslotest.base.BaseTestCase):
-    @mock.patch('oslo_service.wsgi.Server')
-    def test_service_start(self, mock_wsgi_server):
-        mock_server = mock.Mock(name='server')
-        mock_wsgi_server.return_value = mock_server
-        listen = [
-            ('192.0.2.1', '80'),
-            ('192.0.2.2', '443'),
-            ('192.0.2.2', '53')
-        ]
-
-        self.mock_app = mock.Mock()
-
-        self.service = api_service.WSGIService(
-            self.mock_app, 'test-wsgi-service', listen
-        )
-        mock_wsgi_server.assert_called()
-        self.assertEqual(3, mock_wsgi_server.call_count)
-
-        self.assertIsNone(self.service.start())
-        mock_server.start.assert_called()
-        self.assertEqual(3, mock_server.start.call_count)
-
-    @mock.patch('oslo_service.wsgi.Server')
-    def test_service_stop(self, mock_wsgi_server):
-        mock_server = mock.Mock(name='server')
-        mock_wsgi_server.return_value = mock_server
-        listen = [('192.0.2.1', '80')]
-
-        self.mock_app = mock.Mock()
-
-        self.service = api_service.WSGIService(
-            self.mock_app, 'test-wsgi-service', listen
-        )
-        mock_wsgi_server.assert_called_once()
-
-        self.assertIsNone(self.service.start())
-        mock_server.start.assert_called_once()
-
-        self.assertIsNone(self.service.stop())
-        mock_server.stop.assert_called_once()
-
-    @mock.patch('oslo_service.wsgi.Server')
-    def test_service_wait(self, mock_wsgi_server):
-        mock_server = mock.Mock(name='server')
-        mock_wsgi_server.return_value = mock_server
-        self.mock_app = mock.Mock()
-        listen = [('192.0.2.1', '80')]
-
-        self.service = api_service.WSGIService(
-            self.mock_app, 'test-wsgi-service', listen
-        )
-        mock_wsgi_server.assert_called_once()
-
-        self.assertIsNone(self.service.wait())
-        mock_server.wait.assert_called_once()
-
-    @mock.patch('oslo_service.wsgi.Server')
-    def test_service_wait_multiple_servers(self, mock_wsgi_server):
-        mock_server = mock.Mock(name='server')
-        mock_wsgi_server.return_value = mock_server
-        self.mock_app = mock.Mock()
-        listen = [('192.0.2.1', '80'), ('192.0.2.2', '80')]
-
-        self.service = api_service.WSGIService(
-            self.mock_app, 'test-wsgi-service', listen
-        )
-        mock_wsgi_server.assert_called()
-        self.assertEqual(2, mock_wsgi_server.call_count)
-
-        self.assertIsNone(self.service.wait())
-        mock_server.wait.assert_called()
-        self.assertEqual(2, mock_server.wait.call_count)
 
 
 class TestDNSService(oslotest.base.BaseTestCase):

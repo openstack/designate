@@ -40,7 +40,6 @@ infoblox = ["infoblox-client>=0.6.0"]
 
 [project.scripts]
 designate-rootwrap = "oslo_rootwrap.cmd:main"
-designate-api = "designate.cmd.api:main"
 designate-central = "designate.cmd.central:main"
 designate-manage = "designate.cmd.manage:main"
 designate-mdns = "designate.cmd.mdns:main"

@@ -135,14 +135,20 @@ Install and configure components
 
         # su -s /bin/sh -c "designate-manage database sync" designate
 
-#. Start the designate central and API services and configure them
-   to start when the system boots:
+#. Start the designate central service and configure it to start when the
+   system boots:
 
    .. code-block:: console
 
-      # systemctl start designate-central designate-api
+      # systemctl start designate-central
 
-      # systemctl enable designate-central designate-api
+      # systemctl enable designate-central
+
+   .. note::
+
+      The Designate API is served via WSGI using Apache or nginx.
+      Configure your web server to serve the Designate WSGI application.
+      See the DevStack configuration for reference examples.
 
 #. Create a pools.yaml file in ``/etc/designate/pools.yaml`` with the following
    contents:

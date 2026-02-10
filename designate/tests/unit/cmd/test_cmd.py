@@ -14,7 +14,6 @@ from unittest import mock
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
-from designate.cmd import api
 from designate.cmd import central
 from designate.cmd import mdns
 from designate.cmd import producer
@@ -34,19 +33,6 @@ class CmdTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.useFixture(cfg_fixture.Config(CONF))
-
-    @mock.patch('designate.api.service.Service')
-    def test_api(self, mock_service, mock_read_config, mock_log_setup,
-                 mock_serve, mock_wait):
-        CONF.set_override('workers', 1, 'service:api')
-
-        api.main()
-
-        mock_read_config.assert_called_with('designate', mock.ANY)
-        mock_log_setup.assert_called_with(mock.ANY, 'designate')
-        mock_service.assert_called_with()
-        mock_serve.assert_called_with(mock.ANY, workers=1)
-        mock_wait.assert_called_with()
 
     @mock.patch('designate.central.service.Service')
     def test_central(self, mock_service, mock_read_config, mock_log_setup,
@@ -106,20 +92,6 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         CONF.set_override('workers', 1, 'service:worker')
 
         worker.main()
-
-        mock_read_config.assert_called_with('designate', mock.ANY)
-        mock_log_setup.assert_called_with(mock.ANY, 'designate')
-        mock_service.assert_called_with()
-        mock_serve.assert_called_with(mock.ANY, workers=1)
-        mock_wait.assert_called_with()
-
-    @mock.patch('designate.api.service.Service')
-    def test_api_rpc_already_initialized(self, mock_service, mock_read_config,
-                                         mock_log_setup,
-                                         mock_serve, mock_wait):
-        CONF.set_override('workers', 1, 'service:api')
-
-        api.main()
 
         mock_read_config.assert_called_with('designate', mock.ANY)
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
