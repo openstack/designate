@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    Added ``--replace`` flag to ``designate-manage pool update`` command.
+    When enabled, optional pool fields (``also_notifies``, ``attributes``,
+    ``catalog_zone``) that are not present in the YAML file will be cleared
+    from the pool configuration. This provides an alternative to the default
+    merge behavior, which preserves fields omitted from the YAML file. This
+    gives administrators explicit control over whether pool updates should
+    merge with or replace the existing configuration.

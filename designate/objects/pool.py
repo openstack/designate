@@ -36,6 +36,12 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
                                             nullable=True),
     }
 
+    OPTIONAL_CLEARABLE_FIELDS = {
+        'also_notifies': 'PoolAlsoNotifyList',
+        'attributes': 'PoolAttributeList',
+        'catalog_zone': None,
+    }
+
     STRING_KEYS = [
         'id', 'name'
     ]
