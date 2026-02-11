@@ -1,0 +1,11 @@
+---
+fixes:
+  - |
+    Fixed `bug 1919495`_ where IPv6 addresses with compressed notation
+    (using ``::```) were incorrectly parsed in notification handlers. The
+    notification handler now uses Python's ``ipaddress`` module to properly
+    normalize and expand IPv6 addresses before processing, ensuring correct
+    handling of all valid IPv6 address formats including compressed notation,
+    fully-specified addresses, and mixed formats.
+
+    .. _Bug 1919495: https://bugs.launchpad.net/designate/+bug/1919495

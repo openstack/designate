@@ -146,7 +146,7 @@
             "label": "private",
             "version": 6,
             "meta": {},
-            "address": "172.16.0.14",
+            "address": "fd00::1",
             "type": "fixed"
         }],
         "memory_mb": 512,

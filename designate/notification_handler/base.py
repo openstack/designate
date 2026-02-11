@@ -15,10 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+import ipaddress
 
 from oslo_log import log as logging
-
-import re
 
 from designate.central import rpcapi as central_rpcapi
 import designate.conf
@@ -81,9 +80,14 @@ class BaseAddressHandler(NotificationHandler):
             ip_data = ip.split(".")
             for i in [0, 1, 2, 3]:
                 data["octet%s" % i] = ip_data[i]
-        if version == 6:
+        elif version == 6:
+            # Use ipaddress module to properly normalize and expand IPv6
+            addr = ipaddress.IPv6Address(ip)
+            # Get the exploded (fully expanded) form
+            exploded = addr.exploded
             data['ip_address'] = ip.replace(':', '-')
-            ip_data = re.split('::|:', ip)
+            # Split the expanded address into groups
+            ip_data = exploded.split(':')
             for i in range(len(ip_data)):
                 data["octet%s" % i] = ip_data[i]
         return data
@@ -126,7 +130,14 @@ class BaseAddressHandler(NotificationHandler):
 
         for addr in addresses:
             event_data = data.copy()
-            event_data.update(self._get_ip_data(addr))
+            try:
+                event_data.update(self._get_ip_data(addr))
+            except ipaddress.AddressValueError:
+                LOG.warning(
+                    'Skipping invalid IP address %(ip)s for resource '
+                    '%(resource_id)s',
+                    {'ip': addr.get('address'), 'resource_id': resource_id})
+                continue
 
             if addr['version'] == 4:
                 format = self._get_formatv4()
