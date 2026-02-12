@@ -204,6 +204,18 @@ Update a Zone Transfer Request
 
 .. rest_method::  PATCH /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
 
+This allows you to update a zone transfer request.
+
+.. note::
+
+   The ``zone_id`` field is immutable and cannot be updated.
+
+   The ``target_project_id`` field can be set once via PATCH if it was not
+   specified during creation (i.e., if it is currently ``null``). However, once
+   set, it cannot be modified or cleared. To change the target project after it
+   has been set, you must delete this transfer request and create a new one.
+   This ensures a new transfer key is generated.
+
 
 .. rest_status_code:: success status.yaml
 
