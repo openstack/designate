@@ -15,7 +15,7 @@ from unittest import mock
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
-from designate.cmd.eventlet import manage
+from designate.cmd.threading import manage
 import designate.conf
 from designate.manage import base
 
