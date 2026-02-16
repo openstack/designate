@@ -25,7 +25,7 @@ MDNS_OPTS = [
     cfg.IntOpt('workers',
                help='Number of mDNS worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
-               help='Number of mDNS greenthreads to spawn'),
+               help='Number of mDNS threads to spawn'),
     cfg.ListOpt('listen',
                 default=['0.0.0.0:%d' % DEFAULT_MDNS_PORT],
                 help='mDNS host:port pairs to listen on'),
