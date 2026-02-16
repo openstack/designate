@@ -23,7 +23,6 @@ import dns.name
 import dns.rcode
 import dns.rdatatype
 import dns.zone
-import eventlet
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
@@ -152,10 +151,8 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
 
     @mock.patch.object(dns.query, 'xfr')
     @mock.patch.object(dns.zone, 'from_xfr')
-    @mock.patch.object(eventlet.Timeout, 'cancel')
-    def test_do_afxr_fails_with_timeout(self, mock_cancel, mock_from_xfr,
-                                        mock_xfr):
-        mock_from_xfr.side_effect = eventlet.Timeout()
+    def test_do_afxr_fails_with_timeout(self, mock_from_xfr, mock_xfr):
+        mock_from_xfr.side_effect = dns.exception.Timeout()
 
         masters = [
             {'host': '192.0.2.1', 'port': 53},
@@ -171,7 +168,6 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
 
         self.assertTrue(mock_xfr.called)
         self.assertTrue(mock_from_xfr.called)
-        self.assertTrue(mock_cancel.called)
 
     @mock.patch.object(dns.query, 'xfr')
     @mock.patch.object(dns.zone, 'from_xfr')

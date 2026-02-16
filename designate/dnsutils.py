@@ -22,7 +22,6 @@ import dns.opcode
 import dns.query
 import dns.rdatatype
 import dns.zone
-import eventlet
 from oslo_log import log as logging
 from oslo_serialization import base64
 
@@ -157,7 +156,6 @@ def do_axfr(zone_name, servers, source=None):
     xfr = None
     for srv in servers:
         for address in get_ip_addresses(srv['host']):
-            to = eventlet.Timeout(xfr_timeout())
             log_info = {'name': zone_name, 'host': srv, 'address': address}
             try:
                 LOG.info(
@@ -165,17 +163,17 @@ def do_axfr(zone_name, servers, source=None):
                     log_info
                 )
                 xfr = dns.query.xfr(
-                    address, zone_name, relativize=False, timeout=1,
+                    address, zone_name, relativize=False,
+                    timeout=xfr_timeout(),
                     port=srv['port'], source=source
                 )
                 raw_zone = dns.zone.from_xfr(xfr, relativize=False)
                 LOG.debug('AXFR Successful for %s', raw_zone.origin.to_text())
                 return raw_zone
-            except eventlet.Timeout as t:
-                if t == to:
-                    LOG.error('AXFR timed out for %(name)s from %(host)s',
-                              log_info)
-                    continue
+            except dns.exception.Timeout:
+                LOG.error('AXFR timed out for %(name)s from %(host)s',
+                          log_info)
+                continue
             except dns.exception.FormError:
                 LOG.error('Zone %(name)s is not present on %(host)s.'
                           'Trying next server.', log_info)
@@ -185,8 +183,6 @@ def do_axfr(zone_name, servers, source=None):
             except Exception:
                 LOG.exception('Problem doing AXFR %(name)s from %(host)s. '
                               'Trying next server.', log_info)
-            finally:
-                to.cancel()
 
     raise exceptions.XFRFailure(
         'XFR failed for %(name)s. No servers in %(servers)s was reached.' %

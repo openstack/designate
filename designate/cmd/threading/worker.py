@@ -41,4 +41,7 @@ def main():
     heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name)
     service.serve(server, workers=CONF['service:worker'].workers)
     heartbeat.start()
-    service.wait()
+    try:
+        service.wait()
+    finally:
+        heartbeat.stop()

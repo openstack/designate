@@ -27,10 +27,7 @@ CONF = designate.conf.CONF
 
 
 def default_executor():
-    # TODO(mugsie): if (when) we move away from eventlet this may have to
-    # revert back to ThreadPoolExecutor - this is changing due to
-    # https://bugs.launchpad.net/bugs/1782647 (eventlet + py37 issues)
-    return futurist.GreenThreadPoolExecutor(CONF['service:worker'].threads)
+    return futurist.ThreadPoolExecutor(CONF['service:worker'].threads)
 
 
 class Executor:
