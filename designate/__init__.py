@@ -15,8 +15,10 @@
 # under the License.
 import os
 
-# Eventlet's GreenDNS Patching will prevent the resolution of names in
-# the /etc/hosts file, causing problems for installs.
+# Disable eventlet's greendns monkey patching to prevent dnspython
+# compatibility issues. Without this, dnspython's zone parsing fails with
+# errors like "TypeError: add(): expected an Rdata" due to conflicts between
+# eventlet's patched DNS resolver and dnspython's native implementation.
 os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
 
 from oslo_concurrency import lockutils  # noqa

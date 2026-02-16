@@ -273,7 +273,7 @@ class DNSService:
         through the same TCP connection but they will be processed
         sequentially.
         See https://tools.ietf.org/html/draft-ietf-dnsop-5966bis-03
-        Raises no exception: it's to be run in an eventlet green thread
+        Raises no exception: it's to be run in a thread
 
         :param addr: Tuple of the client's (IPv4 addr, Port) or
                      (IPv6 addr, Port, Flow info, Scope ID)

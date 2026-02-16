@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import time
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
@@ -69,11 +68,7 @@ class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
     def test_emit(self):
         noop_emitter = heartbeat_emitter.get_heartbeat_emitter('svc')
 
-        noop_emitter.start()
-
-        time.sleep(0.125)
-
-        noop_emitter.stop()
+        noop_emitter._emit_heartbeat()
 
         self.assertIn(
             "<ServiceStatus service_name:'svc' hostname:'203.0.113.1' "

@@ -29,6 +29,12 @@ class ApiServiceTest(designate.tests.functional.TestCase):
 
         self.config(listen=['0.0.0.0:0'], group='service:api')
 
+        # Mock oslo_service.wsgi.Server since it's incompatible with threading
+        # backend
+        self.wsgi_server_patcher = mock.patch('oslo_service.wsgi.Server')
+        self.mock_wsgi_server = self.wsgi_server_patcher.start()
+        self.addCleanup(self.wsgi_server_patcher.stop)
+
         self.service = service.Service()
 
     def test_start_and_stop(self):
