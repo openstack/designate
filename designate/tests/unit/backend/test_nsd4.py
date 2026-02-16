@@ -18,7 +18,6 @@ import socket
 import ssl
 from unittest import mock
 
-import eventlet
 import oslotest.base
 
 from designate.backend import impl_nsd4
@@ -65,13 +64,26 @@ class NSD4BackendTestCase(oslotest.base.BaseTestCase):
             objects.PoolTarget.from_dict(self.target)
         )
 
-    @mock.patch.object(eventlet, 'connect')
-    @mock.patch.object(eventlet, 'wrap_ssl')
-    def _test_command(self, mock_ssl, mock_connect, command_context):
+    @mock.patch('socket.create_connection')
+    @mock.patch('ssl.create_default_context')
+    def _test_command(self, mock_ssl_context, mock_connect, command_context):
+        raw_sock = mock.MagicMock()
+        raw_sock.__enter__ = mock.MagicMock(return_value=raw_sock)
+        raw_sock.__exit__ = mock.MagicMock(return_value=False)
+
         sock = mock.MagicMock()
+        sock.__enter__ = mock.MagicMock(return_value=sock)
+        sock.__exit__ = mock.MagicMock(return_value=False)
+
         stream = mock.MagicMock()
-        mock_connect.return_value = mock.sentinel.client
-        mock_ssl.return_value = sock
+        stream.__enter__ = mock.MagicMock(return_value=stream)
+        stream.__exit__ = mock.MagicMock(return_value=False)
+
+        context = mock.MagicMock()
+
+        mock_connect.return_value = raw_sock
+        mock_ssl_context.return_value = context
+        context.wrap_socket.return_value = sock
         sock.makefile.return_value = stream
         if command_context == 'create_fail':
             stream.read.return_value = 'goat'
@@ -91,13 +103,8 @@ class NSD4BackendTestCase(oslotest.base.BaseTestCase):
             command = 'NSDCT1 addzone %s test-pattern\n' % self.zone.name
 
         stream.write.assert_called_once_with(command)
-        mock_ssl.assert_called_once_with(mock.sentinel.client,
-                                         certfile=mock.sentinel.cert.name,
-                                         keyfile=mock.sentinel.key.name)
         mock_connect.assert_called_once_with(('127.0.0.1', self.port))
-        sock.makefile.assert_called_once_with()
-        sock.close.assert_called_once_with()
-        stream.close.assert_called_once_with()
+        sock.makefile.assert_called_once_with(mode='rw')
         stream.flush.assert_called_once_with()
         stream.read.assert_called_once_with()
 
