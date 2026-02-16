@@ -23,8 +23,8 @@ CENTRAL_GROUP = cfg.OptGroup(
 CENTRAL_OPTS = [
     cfg.IntOpt('workers',
                help='Number of central worker processes to spawn'),
-    cfg.IntOpt('threads', default=1000,
-               help='Number of central greenthreads to spawn'),
+    cfg.IntOpt('threads', default=100,
+               help='Number of central threads to spawn'),
     cfg.IntOpt('max_zone_name_len', default=255,
                help="Maximum zone name length"),
     cfg.IntOpt('max_recordset_name_len', default=255,

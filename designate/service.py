@@ -82,13 +82,29 @@ class RPCService(Service):
         self.notifier = None
         self.rpc_server = None
         self.rpc_topic = rpc_topic
+        self._rpc_initialized = False
 
-    def start(self):
-        super().start()
+    def init_host(self):
+        """Initialize RPC server after service launch.
+
+        This method is called after the service is created but before
+        it starts handling requests. This ensures RPC initialization
+        happens in the correct threading context.
+        """
+        if self._rpc_initialized:
+            return
+
+        LOG.info('Initializing RPC server for %s', self.name)
         target = messaging.Target(topic=self.rpc_topic, server=self.host)
         self.rpc_server = rpc.get_server(target, self.endpoints)
         self.rpc_server.start()
         self.notifier = rpc.get_notifier(self.name)
+        self._rpc_initialized = True
+
+    def start(self):
+        super().start()
+        if not self._rpc_initialized:
+            self.init_host()
 
     def stop(self, graceful=True):
         if self.rpc_server:

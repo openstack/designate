@@ -14,11 +14,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError
 import copy
 import random
 from random import SystemRandom
 import re
-import signal
 import string
 import time
 
@@ -65,6 +66,7 @@ class Service(service.RPCService):
         self._scheduler = None
         self._storage = None
         self._quota = None
+        self._blacklist_executor = ThreadPoolExecutor(max_workers=1)
 
         super().__init__(
             self.service_name, CONF['service:central'].topic,
@@ -262,34 +264,25 @@ class Service(service.RPCService):
         """
         blacklists = self.storage.find_blacklists(context)
 
-        class Timeout(Exception):
-            pass
+        def _check_pattern(pattern, name):
+            return bool(re.search(pattern, name))
 
-        def _handle_timeout(signum, frame):
-            raise Timeout()
-
-        signal.signal(signal.SIGALRM, _handle_timeout)
-
-        try:
-            for blacklist in blacklists:
-                signal.setitimer(signal.ITIMER_REAL, 0.02)
-
-                try:
-                    if bool(re.search(blacklist.pattern, zone_name)):
-                        return True
-                finally:
-                    signal.setitimer(signal.ITIMER_REAL, 0)
-
-        except Timeout:
-            LOG.critical(
-                'Blacklist regex (%(pattern)s) took too long to evaluate '
-                'against zone name (%(zone_name)s',
-                {
-                    'pattern': blacklist.pattern,
-                    'zone_name': zone_name
-                })
-
-            return True
+        for blacklist in blacklists:
+            future = self._blacklist_executor.submit(_check_pattern,
+                                                     blacklist.pattern,
+                                                     zone_name)
+            try:
+                if future.result(timeout=0.02):
+                    return True
+            except TimeoutError:
+                LOG.critical(
+                    'Blacklist regex (%(pattern)s) took too long to '
+                    'evaluate against zone name (%(zone_name)s)',
+                    {
+                        'pattern': blacklist.pattern,
+                        'zone_name': zone_name
+                    })
+                return True
 
         return False
 

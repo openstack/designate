@@ -1,0 +1,15 @@
+---
+upgrade:
+  - |
+    The ``designate-central`` service has been migrated from eventlet to native
+    Python threading.
+
+    **Configuration Changes:**
+
+    - The default value for ``[service:central] threads`` has been reduced
+      from 1000 to 100 to better align with native OS thread resource usage.
+
+    **Notable Changes:**
+
+    - Blacklist regex timeout mechanism updated to be compatible with native
+      threading.

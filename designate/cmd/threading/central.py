@@ -37,8 +37,12 @@ def main():
     gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
 
     server = central_service.Service()
+    server.init_host()
     heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name,
                                                         rpc_api=server)
     service.serve(server, workers=CONF['service:central'].workers)
     heartbeat.start()
-    service.wait()
+    try:
+        service.wait()
+    finally:
+        heartbeat.stop()
