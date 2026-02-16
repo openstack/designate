@@ -17,7 +17,7 @@ from oslo_upgradecheck import upgradecheck
 from sqlalchemy.schema import MetaData
 from sqlalchemy.schema import Table
 
-from designate.cmd.eventlet import status
+from designate.cmd.threading import status
 from designate.storage import sql
 import designate.tests.functional
 
