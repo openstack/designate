@@ -25,8 +25,6 @@ import threading
 from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_service import service
-from oslo_service import sslutils
-from oslo_service import wsgi
 from oslo_utils import netutils
 
 from designate.common.decorators import rpc as rpc_decorator
@@ -111,46 +109,6 @@ class RPCService(Service):
         super().stop(graceful)
 
     def wait(self):
-        super().wait()
-
-
-class WSGIService(Service):
-    def __init__(self, app, name, listen, max_url_len=None):
-        super().__init__(name)
-        self.app = app
-        self.name = name
-
-        self.listen = listen
-
-        self.servers = []
-
-        for address in self.listen:
-            host, port = netutils.parse_host_port(address)
-            server = wsgi.Server(
-                CONF, name, app,
-                host=host,
-                port=port,
-                pool_size=CONF['service:api'].threads,
-                backlog=CONF.backlog,
-                use_ssl=sslutils.is_enabled(CONF),
-                max_url_len=max_url_len
-            )
-
-            self.servers.append(server)
-
-    def start(self):
-        for server in self.servers:
-            server.start()
-        super().start()
-
-    def stop(self, graceful=True):
-        for server in self.servers:
-            server.stop()
-        super().stop(graceful)
-
-    def wait(self):
-        for server in self.servers:
-            server.wait()
         super().wait()
 
 

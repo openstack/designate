@@ -1,0 +1,19 @@
+---
+deprecations:
+  - |
+    The ``designate-api`` service and the ``designate.api.service`` module
+    are deprecated and will be removed in a future release. The WSGIService
+    class relies on ``oslo_service.wsgi`` and ``oslo_service.sslutils``,
+    which will be removed in oslo.service 2026.2 as part of the eventlet
+    removal effort.
+upgrade:
+  - |
+    Operators should migrate to deploying the Designate API using a WSGI
+    server such as uwsgi or mod_wsgi. This has been the recommended
+    deployment method and is the default in DevStack. The ``designate-api``
+    command will continue to work until the planned removal, but operators
+    are encouraged to migrate to uwsgi deployment as soon as possible.
+
+    See the DevStack configuration at
+    ``devstack/lib/designate`` and ``devstack/files/wsgi/designate-api-wsgi``
+    for an example of uwsgi deployment.

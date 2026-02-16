@@ -20,6 +20,7 @@ from oslo_config import fixture as cfg_fixture
 from oslo_service import service
 import oslotest.base
 
+from designate.api import service as api_service
 from designate.common import profiler
 import designate.conf
 from designate.mdns import handler
@@ -208,7 +209,7 @@ class TestWSGIService(oslotest.base.BaseTestCase):
 
         self.mock_app = mock.Mock()
 
-        self.service = designate_service.WSGIService(
+        self.service = api_service.WSGIService(
             self.mock_app, 'test-wsgi-service', listen
         )
         mock_wsgi_server.assert_called()
@@ -226,7 +227,7 @@ class TestWSGIService(oslotest.base.BaseTestCase):
 
         self.mock_app = mock.Mock()
 
-        self.service = designate_service.WSGIService(
+        self.service = api_service.WSGIService(
             self.mock_app, 'test-wsgi-service', listen
         )
         mock_wsgi_server.assert_called_once()
@@ -244,7 +245,7 @@ class TestWSGIService(oslotest.base.BaseTestCase):
         self.mock_app = mock.Mock()
         listen = [('192.0.2.1', '80')]
 
-        self.service = designate_service.WSGIService(
+        self.service = api_service.WSGIService(
             self.mock_app, 'test-wsgi-service', listen
         )
         mock_wsgi_server.assert_called_once()
@@ -259,7 +260,7 @@ class TestWSGIService(oslotest.base.BaseTestCase):
         self.mock_app = mock.Mock()
         listen = [('192.0.2.1', '80'), ('192.0.2.2', '80')]
 
-        self.service = designate_service.WSGIService(
+        self.service = api_service.WSGIService(
             self.mock_app, 'test-wsgi-service', listen
         )
         mock_wsgi_server.assert_called()
