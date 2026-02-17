@@ -35,8 +35,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - name: tld_name
    - description: tld_description
 
@@ -98,8 +96,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - tld_id: tld_id
 
 
@@ -155,8 +151,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - limit: limit
    - marker: marker
    - sort_dir: sort_dir
@@ -215,8 +209,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - tld_id: tld_id
    - name: tld_name
    - description: tld_description
@@ -279,8 +271,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - tld_id: tld_id
 
 

@@ -35,8 +35,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - name: tsigkey_name
    - algorithm: tsigkey_algorithm
    - secret: tsigkey_secret
@@ -104,8 +102,6 @@ Request Parameters
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - limit: limit
    - marker: marker
    - sort_dir: sort_dir
@@ -169,8 +165,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - tsigkey_id: tsigkey_id
 
 
@@ -228,8 +222,6 @@ Request Parameters
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - name: tsigkey_name
    - algorithm: tsigkey_algorithm
    - secret: tsigkey_secret
@@ -299,8 +291,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - tsigkey_id: tsigkey_id
 
 

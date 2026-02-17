@@ -34,8 +34,6 @@ Request Parameters
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
 
 
 Response Parameters

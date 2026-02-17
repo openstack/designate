@@ -41,8 +41,6 @@ Request Parameters
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - pattern: blacklist_pattern
    - description: blacklist_description
 
@@ -104,8 +102,6 @@ Request Parameters
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - pattern: blacklist_pattern_filter
 
 
@@ -162,8 +158,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - blacklist_id: blacklist_id
 
 
@@ -208,8 +202,6 @@ Request Parameters
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - pattern: blacklist_pattern
    - description: blacklist_description
    - blacklist_id: blacklist_id
@@ -274,8 +266,6 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - x-auth-token: x-auth-token
-   - x-auth-all-projects: x-auth-all-projects
-   - x-auth-sudo-project-id: x-auth-sudo-project-id
    - blacklist_id: blacklist_id
 
 
