@@ -52,7 +52,7 @@ def set_rules(data, default_rule=None, overwrite=True):
     if isinstance(data, dict):
         rules = policy.Rules.from_dict(data, default_rule)
     else:
-        rules = policy.Rules.load_json(data, default_rule)
+        rules = policy.Rules.load(data, default_rule)
 
     _ENFORCER.set_rules(rules, overwrite=overwrite)
 
