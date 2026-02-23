@@ -293,7 +293,7 @@ class BasicInfobloxBackendTestCase(InfobloxBackendTestCase):
 
     def test_create_zone_handle_error(self):
         self.backend.infoblox.create_dns_zone.side_effect = (
-            infoblox_exceptions.InfobloxTimeoutError('error')
+            infoblox_exceptions.InfobloxTimeoutError(response='', reason='')
         )
 
         self.assertRaisesRegex(
@@ -362,7 +362,7 @@ class BasicInfobloxBackendTestCase(InfobloxBackendTestCase):
 
     def test_delete_zone_handle_error(self):
         self.backend.infoblox.delete_dns_zone.side_effect = (
-            infoblox_exceptions.InfobloxTimeoutError('error')
+            infoblox_exceptions.InfobloxTimeoutError(response='', reason='')
         )
 
         self.assertRaisesRegex(
