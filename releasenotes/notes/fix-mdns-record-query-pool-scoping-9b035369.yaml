@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Fixed mDNS ``_handle_record_query`` to use TSIG-based pool scoping when
+    looking up SOA and other record queries. Previously, when the same zone
+    name existed in multiple pools (e.g. split-horizon DNS), the handler
+    would find multiple matching recordsets and return REFUSED. The handler
+    now resolves the zone first using the TSIG key's pool_id, then looks up
+    the recordset within that zone.
