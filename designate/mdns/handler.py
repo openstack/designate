@@ -314,14 +314,51 @@ class RequestHandler:
         try:
             q_rrset = request.question[0]
             name = q_rrset.name.to_text()
-            # TODO(vinod) once validation is separated from the api,
-            # validate the parameters
-            criterion = {
-                'name': name,
-                'type': dns.rdatatype.to_text(q_rrset.rdtype),
-                'zones_deleted': False
-            }
-            recordset = self.storage.find_recordset(context, criterion)
+            rdtype = dns.rdatatype.to_text(q_rrset.rdtype)
+
+            # Try to find the zone first using TSIG-based pool scoping.
+            # This handles split-horizon configurations where the same
+            # zone name exists in multiple pools. The TSIG key on the
+            # request determines which pool's zone to serve, matching
+            # the approach used by _handle_axfr.
+            zone = None
+            try:
+                zone_criterion = self._zone_criterion_from_request(
+                    request, {'name': name})
+                zone = self.storage.find_zone(context, zone_criterion)
+            except exceptions.ZoneNotFound:
+                # Query name may not be a zone name (e.g. a subdomain
+                # like www.example.com when the zone is example.com).
+                # Fall through to the recordset-first lookup below.
+                pass
+
+            if zone:
+                # Zone found - look up the recordset within this
+                # specific zone. The zone_id scoping ensures we find
+                # the correct recordset even when multiple pools have
+                # zones with the same name.
+                criterion = {
+                    'zone_id': zone.id,
+                    'name': name,
+                    'type': rdtype,
+                }
+                recordset = self.storage.find_recordset(
+                    context, criterion)
+            else:
+                # Could not match the query name to a zone directly.
+                # Fall back to finding the recordset by name and type,
+                # then verify the zone matches the TSIG key's pool.
+                criterion = {
+                    'name': name,
+                    'type': rdtype,
+                    'zones_deleted': False
+                }
+                recordset = self.storage.find_recordset(
+                    context, criterion)
+
+                zone_criterion = self._zone_criterion_from_request(
+                    request, {'id': recordset.zone_id})
+                zone = self.storage.find_zone(context, zone_criterion)
 
         except exceptions.NotFound:
             # If an FQDN exists, like www.rackspace.com, but the specific
@@ -348,23 +385,6 @@ class RequestHandler:
         except exceptions.Forbidden:
             LOG.info('Forbidden, refusing. Question was %(qr)s',
                      {'qr': q_rrset})
-            yield self._handle_query_error(request, dns.rcode.REFUSED)
-            return
-
-        try:
-            criterion = self._zone_criterion_from_request(
-                request, {'id': recordset.zone_id})
-            zone = self.storage.find_zone(context, criterion)
-
-        except exceptions.ZoneNotFound:
-            LOG.warning('ZoneNotFound while handling query request. '
-                        'Question was %(qr)s', {'qr': q_rrset})
-            yield self._handle_query_error(request, dns.rcode.REFUSED)
-            return
-
-        except exceptions.Forbidden:
-            LOG.warning('Forbidden while handling query request. '
-                        'Question was %(qr)s', {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             return
 
