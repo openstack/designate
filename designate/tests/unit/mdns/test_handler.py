@@ -442,3 +442,115 @@ class HandleRecordQueryTest(oslotest.base.BaseTestCase):
 
         self.assertEqual(1, len(response))
         self.assertEqual(dns.rcode.REFUSED, response[0].rcode())
+
+    def test_handle_record_query_zone_first_with_tsig(self):
+        """Test zone-first lookup with POOL-scoped TSIG key.
+
+        In split-horizon configurations the same zone name exists in
+        multiple pools.  The TSIG key determines which pool's zone to
+        serve.  When the query name matches a zone name the handler
+        should resolve the zone by name + pool_id first, then look up
+        the recordset within that zone.
+        """
+        pool_id = 'c4f6ea1c-a1af-4401-a849-000000000001'
+        zone_id = 'e2bed4dc-9d01-11e4-89d3-123b93f75cba'
+        zone = objects.Zone(
+            id=zone_id, name='example.org.', pool_id=pool_id, ttl=3600,
+        )
+        recordset = objects.RecordSet(
+            name='example.org.', type='SOA',
+            records=objects.RecordList(objects=[
+                objects.Record(
+                    data='ns1.example.org. admin.example.org. '
+                         '2024010100 3600 600 86400 3600'),
+            ])
+        )
+        self.storage.find_zone.return_value = zone
+        self.storage.find_recordset.return_value = recordset
+
+        tsigkey = mock.Mock(scope='POOL', resource_id=pool_id)
+
+        request = dns.message.make_query(
+            'example.org.', dns.rdatatype.SOA)
+        request.environ = dict(context=self.context, tsigkey=tsigkey)
+        response = tuple(self.handler._handle_record_query(request))
+
+        self.assertEqual(1, len(response))
+        self.assertEqual(dns.rcode.NOERROR, response[0].rcode())
+
+        # Zone looked up by name + pool_id (zone-first path)
+        self.storage.find_zone.assert_called_once_with(
+            self.context,
+            {'name': 'example.org.', 'pool_id': pool_id}
+        )
+        # Recordset scoped to zone_id
+        self.storage.find_recordset.assert_called_once_with(
+            self.context,
+            {'zone_id': zone_id, 'name': 'example.org.', 'type': 'SOA'}
+        )
+
+    def test_handle_record_query_subdomain_with_tsig(self):
+        """Test recordset-first fallback for subdomain queries with TSIG.
+
+        When the query is for a subdomain (www.example.org.) rather than
+        a zone apex, the zone-first lookup raises ZoneNotFound because
+        no zone is named 'www.example.org.'.  The handler falls back to
+        finding the recordset by name, then verifies the zone matches
+        the TSIG key's pool.  The overall query still succeeds.
+        """
+        pool_id = 'c4f6ea1c-a1af-4401-a849-000000000001'
+        zone_id = 'e2bed4dc-9d01-11e4-89d3-123b93f75cba'
+        zone = objects.Zone(
+            id=zone_id, name='example.org.', pool_id=pool_id, ttl=3600,
+        )
+        recordset = objects.RecordSet(
+            name='www.example.org.', type='A', zone_id=zone_id,
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1'),
+            ])
+        )
+
+        # First find_zone (name='www.example.org.') fails;
+        # second find_zone (id=zone_id) succeeds.
+        self.storage.find_zone.side_effect = [
+            exceptions.ZoneNotFound, zone
+        ]
+        self.storage.find_recordset.return_value = recordset
+
+        tsigkey = mock.Mock(scope='POOL', resource_id=pool_id)
+
+        request = dns.message.make_query(
+            'www.example.org.', dns.rdatatype.A)
+        request.environ = dict(context=self.context, tsigkey=tsigkey)
+        response = tuple(self.handler._handle_record_query(request))
+
+        self.assertEqual(1, len(response))
+        self.assertEqual(dns.rcode.NOERROR, response[0].rcode())
+
+        self.assertEqual(2, self.storage.find_zone.call_count)
+        # Recordset found via fallback path (no zone_id scoping)
+        self.storage.find_recordset.assert_called_once_with(
+            self.context,
+            {'name': 'www.example.org.', 'type': 'A',
+             'zones_deleted': False}
+        )
+
+    def test_handle_record_query_zone_found_recordset_not_found(self):
+        """Test REFUSED when zone exists but recordset type does not."""
+        pool_id = 'c4f6ea1c-a1af-4401-a849-000000000001'
+        zone = objects.Zone(
+            id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
+            name='example.org.', pool_id=pool_id, ttl=3600,
+        )
+        self.storage.find_zone.return_value = zone
+        self.storage.find_recordset.side_effect = exceptions.NotFound
+
+        tsigkey = mock.Mock(scope='POOL', resource_id=pool_id)
+
+        request = dns.message.make_query(
+            'example.org.', dns.rdatatype.MX)
+        request.environ = dict(context=self.context, tsigkey=tsigkey)
+        response = tuple(self.handler._handle_record_query(request))
+
+        self.assertEqual(1, len(response))
+        self.assertEqual(dns.rcode.REFUSED, response[0].rcode())
