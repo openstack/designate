@@ -12,9 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_log import log as logging
+from urllib.parse import urlparse
 
+import designate.conf
 from designate.tests.functional.api import v2
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -45,6 +48,48 @@ class ApiV2ServiceStatusTest(v2.ApiV2TestCase):
             hostname="foo%s" % i, service_name="bar") for i in range(0, 10)]
 
         self._assert_paging(data, '/service_statuses', key='service_statuses')
+
+    def test_get_service_statuses_pagination_default_limit(self):
+        self.policy({'find_service_statuses': '@'})
+
+        # Set default_limit_v2 to a small value and create exactly that
+        # many service statuses.
+        limit = 5
+        CONF.set_override('default_limit_v2', limit, 'service:api')
+
+        for i in range(limit):
+            self.update_service_status(
+                hostname='host%s' % i, service_name='svc%s' % i)
+
+        # Request without an explicit limit parameter so default_limit_v2
+        # is used.
+        response = self.client.get('/service_statuses/')
+
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertEqual(limit, len(response.json['service_statuses']))
+
+        first_ids = {s['id'] for s in response.json['service_statuses']}
+
+        # If a 'next' link is present, following it must return an empty
+        # list — not the same results again.
+        if 'next' in response.json['links']:
+            next_url = response.json['links']['next']
+            parsed = urlparse(next_url)
+            next_response = self.client.get(
+                '%s?%s' % (parsed.path.replace('/v2', ''), parsed.query))
+
+            self.assertEqual(200, next_response.status_int)
+
+            next_ids = {
+                s['id'] for s in next_response.json['service_statuses']
+            }
+            self.assertEqual(
+                0, len(next_ids & first_ids),
+                'Following the next link returned the same results — '
+                'pagination parameters are not being passed to '
+                'find_service_statuses()'
+            )
 
     def test_legacy_list_service_status(self):
         """Test the legacy list service status path.
