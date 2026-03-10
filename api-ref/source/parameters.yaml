@@ -828,14 +828,16 @@ zone_description:
 
 zone_email:
   description: |
-    e-mail for the zone. Used in SOA records for the zone
+    e-mail for the zone. Used in SOA records for the zone.
+    Mandatory for PRIMARY zones, forbidden for SECONDARY zones.
   in: body
-  required: true
+  required: false
   type: string
 
 zone_email_update:
   description: |
-    e-mail for the zone. Used in SOA records for the zone
+    e-mail for the zone. Used in SOA records for the zone.
+    Forbidden for SECONDARY zones.
   in: body
   required: false
   type: string
