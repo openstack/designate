@@ -1,3 +1,141 @@
 [build-system]
 requires = ["pbr>=6.1.1"]
 build-backend = "pbr.build"
+
+[project]
+name = "designate"
+description = "DNS as a Service"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+authors = [
+    {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
+]
+classifiers = [
+    "Environment :: OpenStack",
+    "Environment :: No Input/Output (Daemon)",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: Name Service (DNS)",
+]
+dynamic = ["version", "dependencies"]
+
+[project.urls]
+"Bug Tracker" = "https://bugs.launchpad.net/designate/"
+"Documentation" = "https://docs.openstack.org/designate/latest/"
+"Source Code" = "https://opendev.org/openstack/designate"
+
+[project.optional-dependencies]
+edgegrid = ["edgegrid-python>=1.1.1"]
+infoblox = ["infoblox-client>=0.6.0"]
+
+[project.scripts]
+designate-rootwrap = "oslo_rootwrap.cmd:main"
+designate-api = "designate.cmd.api:main"
+designate-central = "designate.cmd.central:main"
+designate-manage = "designate.cmd.manage:main"
+designate-mdns = "designate.cmd.mdns:main"
+designate-sink = "designate.cmd.sink:main"
+designate-worker = "designate.cmd.worker:main"
+designate-producer = "designate.cmd.producer:main"
+designate-status = "designate.cmd.status:main"
+
+[project.entry-points."oslo.config.opts"]
+"designate.conf" = "designate.conf.opts:list_opts"
+
+[project.entry-points."oslo.config.opts.defaults"]
+"designate.conf" = "designate.common.config:set_defaults"
+
+[project.entry-points."oslo.policy.policies"]
+designate = "designate.common.policies:list_rules"
+
+[project.entry-points."oslo.policy.enforcer"]
+designate = "designate.policy:get_enforcer"
+
+[project.entry-points."designate.api.admin.extensions"]
+reports = "designate.api.admin.controllers.extensions.reports:ReportsController"
+quotas = "designate.api.admin.controllers.extensions.quotas:QuotasController"
+zones = "designate.api.admin.controllers.extensions.zones:ZonesController"
+
+[project.entry-points."designate.notification.handler"]
+fake = "designate.notification_handler.fake:FakeHandler"
+nova_fixed = "designate.notification_handler.nova:NovaFixedHandler"
+neutron_floatingip = "designate.notification_handler.neutron:NeutronFloatingHandler"
+
+[project.entry-points."designate.backend"]
+bind9 = "designate.backend.impl_bind9:Bind9Backend"
+designate = "designate.backend.impl_designate:DesignateBackend"
+pdns4 = "designate.backend.impl_pdns4:PDNS4Backend"
+dynect = "designate.backend.impl_dynect:DynECTBackend"
+akamai_v2 = "designate.backend.impl_akamai_v2:AkamaiBackend"
+nsd4 = "designate.backend.impl_nsd4:NSD4Backend"
+infoblox = "designate.backend.impl_infoblox:InfobloxBackend"
+fake = "designate.backend.impl_fake:FakeBackend"
+ns1 = "designate.backend.impl_ns1:NS1Backend"
+
+[project.entry-points."designate.network_api"]
+fake = "designate.network_api.fake:FakeNetworkAPI"
+neutron = "designate.network_api.neutron:NeutronNetworkAPI"
+
+[project.entry-points."designate.quota"]
+noop = "designate.quota.impl_noop:NoopQuota"
+storage = "designate.quota.impl_storage:StorageQuota"
+
+[project.entry-points."designate.scheduler.filters"]
+fallback = "designate.scheduler.filters.fallback_filter:FallbackFilter"
+attribute = "designate.scheduler.filters.attribute_filter:AttributeFilter"
+random = "designate.scheduler.filters.random_filter:RandomFilter"
+pool_id_attribute = "designate.scheduler.filters.pool_id_attribute_filter:PoolIDAttributeFilter"
+default_pool = "designate.scheduler.filters.default_pool_filter:DefaultPoolFilter"
+in_doubt_default_pool = "designate.scheduler.filters.in_doubt_default_pool_filter:InDoubtDefaultPoolFilter"
+
+[project.entry-points."designate.manage"]
+database = "designate.manage.database:DatabaseCommands"
+pool = "designate.manage.pool:PoolCommands"
+service = "designate.manage.service:ServiceCommands"
+tlds = "designate.manage.tlds:TLDCommands"
+
+[project.entry-points."designate.producer_tasks"]
+zone_purge = "designate.producer.tasks:DeletedZonePurgeTask"
+periodic_exists = "designate.producer.tasks:PeriodicExistsTask"
+periodic_secondary_refresh = "designate.producer.tasks:PeriodicSecondaryRefreshTask"
+delayed_notify = "designate.producer.tasks:PeriodicGenerateDelayedNotifyTask"
+increment_serial = "designate.producer.tasks:PeriodicIncrementSerialTask"
+worker_periodic_recovery = "designate.producer.tasks:WorkerPeriodicRecovery"
+
+[project.entry-points."designate.heartbeat_emitter"]
+noop = "designate.heartbeat_emitter:NoopEmitter"
+rpc = "designate.heartbeat_emitter:RpcEmitter"
+
+[project.entry-points."designate.notification.plugin"]
+default = "designate.notifications:Default"
+audit = "designate.notifications:Audit"
+
+[tool.setuptools]
+packages = ["designate"]
+
+# NOTE: data-files is deprecated by setuptools in favour of package_data,
+# but package_data installs files inside the Python package tree and is not
+# a suitable replacement for operator-facing configuration files that must
+# be installed to system paths (e.g. /etc/designate/).  These files are
+# required at runtime by PasteDeploy (api-paste.ini) and oslo.rootwrap
+# (rootwrap.conf), so we keep data-files as the only available mechanism
+# for this use case.  Distribution packages (deb/rpm) typically override
+# this location via their own packaging rules.
+[tool.setuptools.data-files]
+"etc/designate" = ["etc/designate/api-paste.ini", "etc/designate/rootwrap.conf"]
+"etc/designate/rootwrap.d" = [
+    "etc/designate/rootwrap.d/bind9.filters",
+    "etc/designate/rootwrap.d/djbdns.filters",
+    "etc/designate/rootwrap.d/knot2.filters",
+]
