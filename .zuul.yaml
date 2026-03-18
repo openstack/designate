@@ -21,6 +21,11 @@
         c-api: false
         c-bak: false
         c-vol: false
+      devstack_local_conf:
+        post-config:
+          $DESIGNATE_CONF:
+            service:api:
+              allow_empty_secrets_for_tsig: False
       tox_envlist: all
       tempest_test_regex: |
         designate_tempest_plugin.*
@@ -158,6 +163,11 @@
         c-bak: false
       grenade_localrc:
         BASE_RUN_SMOKE: False
+      devstack_local_conf:
+        post-config:
+          $DESIGNATE_CONF:
+            service:api:
+              allow_empty_secrets_for_tsig: False
       tox_envlist: all
       tempest_plugins:
         - designate-tempest-plugin
