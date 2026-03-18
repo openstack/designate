@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Fixed a bug that didn't allow zones to be moved from non-default pools to
+    default pools.
