@@ -1,0 +1,6 @@
+{
+    "zonefile": "$ORIGIN example.com.\n$TTL 3600\n@ IN SOA ns1.example.com. admin.example.com. 2015050801 3600 1800 604800 86400\n@ IN NS ns1.example.com.\n@ IN A 192.0.2.1\nns1 IN A 192.0.2.2",
+    "attributes": {
+        "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"
+    }
+}

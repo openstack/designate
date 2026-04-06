@@ -13,7 +13,11 @@ Create a Zone Import
 
 Import a zone.
 
-.. note:: This POST should have no body, and the content-type should be text/dns
+The API supports two content types for zone import:
+
+- ``text/dns``: The body is the raw zone file content
+- ``application/json``: The body is a JSON object with a ``zonefile`` field
+  and an optional ``attributes`` field
 
 .. rest_status_code:: success status.yaml
 
@@ -39,6 +43,15 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - zonefile: zone_import_zonefile
+   - attributes: zone_import_attributes
+
+
+Request Example
+---------------
+
+.. literalinclude:: samples/zones/create-zone-import-request.json
+   :language: javascript
 
 
 Response Parameters

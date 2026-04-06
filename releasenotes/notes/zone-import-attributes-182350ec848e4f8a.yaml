@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    The zone import endpoint (``POST /v2/zones/tasks/imports``) now accepts
+    ``application/json`` as a content type in addition to ``text/dns``. When
+    using JSON, the request body can include a ``zonefile`` field containing
+    the zonefile content and an optional ``attributes`` field with zone
+    attributes (e.g. ``pool_id``). This allows imported zones to be scheduled
+    to a specific pool, which was previously not possible. The existing
+    ``text/dns`` behavior is unchanged.

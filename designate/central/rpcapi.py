@@ -73,8 +73,9 @@ class CentralAPI:
         6.8 - Add managed recordset methods
         6.9 - Removed unused methods
         6.10 - Add Zone Pool Move method
+        6.11 - Add zone attributes to zone import
     """
-    RPC_API_VERSION = '6.10'
+    RPC_API_VERSION = '6.11'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -87,7 +88,7 @@ class CentralAPI:
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.10')
+        self.client = rpc.get_client(target, version_cap='6.11')
 
     @classmethod
     def get_instance(cls):
@@ -377,9 +378,11 @@ class CentralAPI:
         return self.client.call(context, 'xfr_zone', zone_id=zone_id)
 
     # Zone Import Methods
-    def create_zone_import(self, context, request_body):
+    def create_zone_import(self, context, request_body,
+                           zone_attributes=None):
         return self.client.call(context, 'create_zone_import',
-                                request_body=request_body)
+                                request_body=request_body,
+                                zone_attributes=zone_attributes)
 
     def find_zone_imports(self, context, criterion=None, marker=None,
                           limit=None, sort_key=None, sort_dir=None):
