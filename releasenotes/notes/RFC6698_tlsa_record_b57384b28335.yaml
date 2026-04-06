@@ -1,0 +1,17 @@
+features:
+  - |
+    TLSA recordset type has been added. All users can now create and manage TLSA
+    records via the API and the OpenStack client. This enables DANE-based
+    certificate validation directly through Designate.
+
+issues:
+  - |
+    Only standard TLSA parameters are supported (usage, selector, matching type,
+    certificate data). Arbitrary extensions or non-standard formats are not
+    currently supported.
+
+other:
+  - |
+    TLSA records follow RFC 6698. Clients and resolvers must support DANE to
+    fully utilize these records. Ensure your DNS server software is updated to
+    support TLSA queries and responses correctly.

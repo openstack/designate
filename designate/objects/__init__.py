@@ -62,4 +62,5 @@ from designate.objects.rrdata_spf import SPF, SPFList  # noqa
 from designate.objects.rrdata_srv import SRV, SRVList  # noqa
 from designate.objects.rrdata_sshfp import SSHFP, SSHFPList  # noqa
 from designate.objects.rrdata_svcb import SVCB, SVCBList  # noqa
+from designate.objects.rrdata_tlsa import TLSA, TLSAList  # noqa
 from designate.objects.rrdata_txt import TXT, TXTList  # noqa
