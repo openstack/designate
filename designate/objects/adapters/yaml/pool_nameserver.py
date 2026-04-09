@@ -24,6 +24,9 @@ class PoolNameserverYAMLAdapter(base.YAMLAdapter):
             },
             'port': {
                 'read_only': False
+            },
+            'tsigkey_id': {
+                'read_only': False
             }
         }
     }

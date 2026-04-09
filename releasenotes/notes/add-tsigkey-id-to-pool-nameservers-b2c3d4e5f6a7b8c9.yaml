@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    A new ``tsigkey_id`` column has been added to the ``pool_nameservers``
+    table. Run ``designate-manage database upgrade`` to apply the migration.
+    The column is nullable and defaults to NULL, so no action is required
+    for existing deployments.
