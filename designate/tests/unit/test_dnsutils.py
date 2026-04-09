@@ -221,6 +221,31 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
         self.assertTrue(mock_from_xfr.called)
 
 
+class TestApplyTsigToMessage(oslotest.base.BaseTestCase):
+    def test_apply_tsig_to_message(self):
+        dns_message = dns.message.make_query('example.com.', 'SOA')
+        tsig_key = mock.Mock()
+        tsig_key.name = 'test-key'
+        tsig_key.algorithm = 'hmac-sha256'
+        tsig_key.secret = 'c2VjcmV0'
+
+        dnsutils._apply_tsig_to_message(dns_message, tsig_key)
+
+        self.assertIsNotNone(dns_message.keyring)
+        self.assertEqual(
+            dns.name.from_text('test-key'), dns_message.keyname
+        )
+        self.assertEqual(
+            dns.name.from_text('hmac-sha256'), dns_message.keyalgorithm
+        )
+
+    def test_apply_tsig_to_message_none(self):
+        dns_message = dns.message.make_query('example.com.', 'SOA')
+        dnsutils._apply_tsig_to_message(dns_message, None)
+
+        self.assertIsNone(dns_message.keyring)
+
+
 class TestDNSMessages(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
@@ -294,6 +319,59 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
             ';AUTHORITY',
             ';ADDITIONAL'
         ], txt)
+
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_notify_with_tsig_key(self, mock_send_dns_message):
+        tsig_key = mock.Mock()
+        tsig_key.name = 'notify-key'
+        tsig_key.algorithm = 'hmac-sha256'
+        tsig_key.secret = 'c2VjcmV0'
+
+        dnsutils.notify(
+            'notify.test.', '203.0.113.1', port=54, tsig_key=tsig_key
+        )
+
+        query = mock_send_dns_message.call_args[0][0]
+        self.assertIsNotNone(query.keyring)
+        self.assertEqual(
+            dns.name.from_text('notify-key'), query.keyname
+        )
+
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_soa_query_with_tsig_key(self, mock_send_dns_message):
+        tsig_key = mock.Mock()
+        tsig_key.name = 'soa-key'
+        tsig_key.algorithm = 'hmac-sha256'
+        tsig_key.secret = 'c2VjcmV0'
+
+        dnsutils.soa_query(
+            'soa.test.', '203.0.113.1', port=54, tsig_key=tsig_key
+        )
+
+        query = mock_send_dns_message.call_args[0][0]
+        self.assertIsNotNone(query.keyring)
+        self.assertEqual(
+            dns.name.from_text('soa-key'), query.keyname
+        )
+
+    @mock.patch.object(dnsutils, 'soa_query')
+    def test_get_serial_with_tsig_key(self, mock_soa_query):
+        mock_rdataset = mock.Mock(serial=5)
+        mock_answer = mock.Mock()
+        mock_answer.to_rdataset.return_value = [mock_rdataset]
+        mock_result = mock.Mock()
+        mock_result.answer = [mock_answer]
+        mock_soa_query.return_value = mock_result
+
+        tsig_key = mock.Mock()
+        result = dnsutils.get_serial(
+            'serial.test.', '203.0.113.1', port=54, tsig_key=tsig_key
+        )
+
+        self.assertEqual(5, result)
+        mock_soa_query.assert_called_with(
+            'serial.test.', '203.0.113.1', port=54, tsig_key=tsig_key
+        )
 
     @mock.patch.object(dnsutils, 'send_dns_message')
     def test_get_serial_no_answer(self, mock_send_dns_message):

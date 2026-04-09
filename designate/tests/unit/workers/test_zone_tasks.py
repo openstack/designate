@@ -212,7 +212,8 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
         mock_notify.assert_called_once_with(
             self.zone.name,
             '203.0.113.1',
-            port=53
+            port=53,
+            tsig_key=None
         )
 
     @mock.patch.object(dnsutils, 'notify')
@@ -234,7 +235,8 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
         call_catalog_zone = mock.call(
             'cat.example.org.',
             '203.0.113.1',
-            port=53
+            port=53,
+            tsig_key=None
         )
 
         mock_notify.assert_has_calls([call_catalog_zone])
@@ -258,7 +260,8 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
         mock_notify.assert_called_once_with(
             self.zone.name,
             '203.0.113.1',
-            port=53
+            port=53,
+            tsig_key=None
         )
 
     @mock.patch.object(dnsutils, 'notify')
@@ -278,6 +281,24 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
         self.assertTrue(self.actor())
 
         mock_notify.assert_not_called()
+
+    def test_call_create_returns_false_on_tsig_key_not_found(self):
+        self.zone = objects.Zone(name='example.org.', action='CREATE')
+        self.target.tsigkey_id = '00000000-0000-0000-0000-000000000000'
+        self.actor = zone.ZoneActionOnTarget(
+            self.executor,
+            self.context,
+            self.zone,
+            self.target,
+            self.zone_params
+        )
+        self.actor._storage = mock.Mock()
+        self.actor._storage.get_catalog_zone = mock.Mock(
+            side_effect=exceptions.ZoneNotFound)
+        self.actor._storage.get_tsigkey = mock.Mock(
+            side_effect=exceptions.TsigKeyNotFound)
+
+        self.assertFalse(self.actor())
 
     @mock.patch.object(dnsutils, 'notify')
     @mock.patch('time.sleep', mock.Mock())
@@ -330,7 +351,28 @@ class TestSendNotify(oslotest.base.BaseTestCase):
         mock_notify.assert_called_once_with(
             self.zone.name,
             '203.0.113.1',
-            port=53
+            port=53,
+            tsig_key=None
+        )
+
+    @mock.patch.object(dnsutils, 'notify')
+    def test_call_notify_with_tsig_key(self, mock_notify):
+        self.zone = objects.Zone(name='example.org.')
+        tsig_key = mock.Mock()
+        self.actor = zone.SendNotify(
+            self.executor,
+            self.zone,
+            self.target,
+            tsig_key=tsig_key,
+        )
+
+        self.assertTrue(self.actor())
+
+        mock_notify.assert_called_once_with(
+            self.zone.name,
+            '203.0.113.1',
+            port=53,
+            tsig_key=tsig_key
         )
 
     @mock.patch.object(dnsutils, 'notify')
@@ -615,7 +657,11 @@ class TestZonePollerPolling(oslotest.base.BaseTestCase):
         self.executor = processing.Executor()
         self.context = mock.Mock()
         self.zone = mock.Mock(name='example.com.', action='UPDATE', serial=10)
-        self.pool = mock.Mock(nameservers=['ns1', 'ns2'])
+        ns1 = mock.Mock(id='e2bed4dc-9d01-11e4-89d3-123b93f75cb1')
+        ns1.tsigkey_id = None
+        ns2 = mock.Mock(id='e2bed4dc-9d01-11e4-89d3-123b93f75cb2')
+        ns2.tsigkey_id = None
+        self.pool = mock.Mock(nameservers=[ns1, ns2])
         self.threshold_percentage = 80
 
         self.poller = zone.ZonePoller(
@@ -668,6 +714,70 @@ class TestZonePollerPolling(oslotest.base.BaseTestCase):
         self.poller._do_poll()
 
         self.assertEqual(self.max_retries, len(zone.time.sleep.mock_calls))
+
+    @mock.patch.object(zone, 'PollForZone')
+    def test_do_poll_with_tsig_keys(self, mock_poll_for_zone):
+        mock_poll_for_zone.return_value = mock.Mock(return_value=10)
+
+        ns1 = mock.Mock(id='e2bed4dc-9d01-11e4-89d3-123b93f75cb1')
+        ns1.tsigkey_id = 'f6a2cbd6-7f9a-4e0c-a00d-98a02aa73fc8'
+        ns2 = mock.Mock(id='e2bed4dc-9d01-11e4-89d3-123b93f75cb2')
+        ns2.tsigkey_id = None
+        self.pool.nameservers = [ns1, ns2]
+
+        mock_tsig_key = mock.Mock()
+        self.poller._storage = mock.Mock()
+        self.poller._storage.get_tsigkey = mock.Mock(
+            return_value=mock_tsig_key
+        )
+
+        result = self.poller._do_poll()
+
+        self.assertTrue(result)
+
+        # ns1 has a tsigkey_id, so PollForZone should receive the resolved key
+        # ns2 has no tsigkey_id, so PollForZone should receive None
+        call_ns1 = mock.call(
+            mock.ANY, self.zone, ns1, tsig_key=mock_tsig_key
+        )
+        call_ns2 = mock.call(
+            mock.ANY, self.zone, ns2, tsig_key=None
+        )
+        mock_poll_for_zone.assert_has_calls([call_ns1, call_ns2])
+
+    def test_do_poll_raises_on_tsig_key_not_found(self):
+        ns1 = mock.Mock(id='e2bed4dc-9d01-11e4-89d3-123b93f75cb1')
+        ns1.tsigkey_id = 'missing-key-id'
+        ns2 = mock.Mock(id='e2bed4dc-9d01-11e4-89d3-123b93f75cb2')
+        ns2.tsigkey_id = None
+        self.pool.nameservers = [ns1, ns2]
+
+        self.poller._storage = mock.Mock()
+        self.poller._storage.get_tsigkey = mock.Mock(
+            side_effect=exceptions.TsigKeyNotFound
+        )
+
+        self.assertRaises(
+            exceptions.TsigKeyNotFound, self.poller._do_poll
+        )
+
+    @mock.patch.object(central_api.CentralAPI, 'get_instance')
+    def test_call_sets_error_on_tsig_key_not_found(
+        self, mock_get_instance
+    ):
+        ns1 = mock.Mock(id='e2bed4dc-9d01-11e4-89d3-123b93f75cb1')
+        ns1.tsigkey_id = 'missing-key-id'
+        self.pool.nameservers = [ns1]
+
+        self.poller._storage = mock.Mock()
+        self.poller._storage.get_tsigkey = mock.Mock(
+            side_effect=exceptions.TsigKeyNotFound
+        )
+
+        result = self.poller()
+
+        self.assertFalse(result)
+        self.assertEqual('ERROR', self.zone.status)
 
 
 class TestUpdateStatus(oslotest.base.BaseTestCase):
@@ -765,7 +875,24 @@ class TestPollForZone(oslotest.base.BaseTestCase):
         dnsutils.get_serial.assert_called_with(
             'example.org.',
             'ns.example.org',
-            port=53
+            port=53,
+            tsig_key=None
+        )
+
+    @mock.patch.object(dnsutils, 'get_serial', mock.Mock(return_value=10))
+    def test_get_serial_with_tsig_key(self):
+        tsig_key = mock.Mock()
+        task = zone.PollForZone(
+            self.executor, self.zone, self.ns, tsig_key=tsig_key
+        )
+
+        self.assertEqual(10, task._get_serial())
+
+        dnsutils.get_serial.assert_called_with(
+            'example.org.',
+            'ns.example.org',
+            port=53,
+            tsig_key=tsig_key
         )
 
     def test_call(self):

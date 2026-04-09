@@ -1,0 +1,11 @@
+---
+features:
+  - |
+    The worker can now optionally sign NOTIFY and SOA poll messages with a
+    TSIG key. In split-horizon deployments where the DNS server routes queries
+    based on TSIG keys, this ensures that NOTIFY and serial polling reach the
+    correct view regardless of the worker's source IP.
+
+    To enable, set ``tsigkey_id`` on pool nameservers and/or pool targets in
+    ``pools.yaml``, referencing a TSIG key created via the Designate API.
+    When not set, the worker sends unsigned queries as before.

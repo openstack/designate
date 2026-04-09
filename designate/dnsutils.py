@@ -18,9 +18,11 @@ import socket
 
 import dns.exception
 import dns.message
+import dns.name
 import dns.opcode
 import dns.query
 import dns.rdatatype
+import dns.tsigkeyring
 import dns.zone
 from oslo_log import log as logging
 from oslo_serialization import base64
@@ -190,6 +192,23 @@ def do_axfr(zone_name, servers, source=None):
     )
 
 
+def _apply_tsig_to_message(dns_message, tsig_key):
+    """Apply TSIG signing to a DNS message if a key is provided.
+
+    :param dns_message: The dns.message.Message to sign
+    :param tsig_key: A Designate TsigKey object with name, algorithm, and
+                     secret attributes, or None for no signing
+    """
+    if tsig_key is None:
+        return
+    keyring = dns.tsigkeyring.from_text({
+        tsig_key.name: tsig_key.secret
+    })
+    keyname = dns.name.from_text(tsig_key.name)
+    algorithm = dns.name.from_text(tsig_key.algorithm)
+    dns_message.use_tsig(keyring, keyname=keyname, algorithm=algorithm)
+
+
 def prepare_dns_message(zone_name, rdatatype, opcode):
     """
     Create a dns message using dnspython
@@ -199,23 +218,25 @@ def prepare_dns_message(zone_name, rdatatype, opcode):
     return dns_message
 
 
-def notify(zone_name, host, port=53, timeout=10):
+def notify(zone_name, host, port=53, timeout=10, tsig_key=None):
     """
     Create a NOTIFY message and send it
     """
     dns_message = prepare_dns_message(
         zone_name, rdatatype=dns.rdatatype.SOA, opcode=dns.opcode.NOTIFY
     )
+    _apply_tsig_to_message(dns_message, tsig_key)
     return send_dns_message(dns_message, host, port=port, timeout=timeout)
 
 
-def soa_query(zone_name, host, port=53, timeout=10):
+def soa_query(zone_name, host, port=53, timeout=10, tsig_key=None):
     """
     Create a SOA Query message and send it
     """
     dns_message = prepare_dns_message(
         zone_name, rdatatype=dns.rdatatype.SOA, opcode=dns.opcode.QUERY
     )
+    _apply_tsig_to_message(dns_message, tsig_key)
     return send_dns_message(dns_message, host, port=port, timeout=timeout)
 
 
@@ -238,12 +259,12 @@ def send_dns_message(dns_message, host, port=53, timeout=10):
         dns_message, ip_address, port=port, timeout=timeout)
 
 
-def get_serial(zone_name, host, port=53):
+def get_serial(zone_name, host, port=53, tsig_key=None):
     """
     Possibly raises dns.exception.Timeout or dns.query.BadResponse.
     Possibly returns 0 if, e.g., the answer section is empty.
     """
-    resp = soa_query(zone_name, host, port=port)
+    resp = soa_query(zone_name, host, port=port, tsig_key=tsig_key)
     if not resp.answer:
         return 0
     rdataset = resp.answer[0].to_rdataset()
