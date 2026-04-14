@@ -43,6 +43,8 @@
           $DESIGNATE_CONF:
             service:api:
               allow_empty_secrets_for_tsig: False
+            service:central:
+              scheduler_filters: "pool_id_attribute, in_doubt_default_pool"
       tox_envlist: all
       tempest_plugins:
         - designate-tempest-plugin
