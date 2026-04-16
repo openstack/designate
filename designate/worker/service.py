@@ -42,7 +42,7 @@ class AlsoNotifyTask:
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '1.2'
+    RPC_API_VERSION = '1.3'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -140,6 +140,71 @@ class Service(service.RPCService):
     def stop(self, graceful=True):
         super().stop(graceful)
 
+    def _delete_zone_from_source_pool(self, context, zone, source_pool_id):
+        """Delete a zone from the source pool backends after a pool move.
+
+        This is best-effort: failures are logged but do not affect the
+        overall zone move operation.
+
+        When the source pool uses catalog zones, a NOTIFY is sent for the
+        catalog zone instead of calling backend.delete_zone() directly,
+        matching the behavior of ZoneActionOnTarget for DELETE actions.
+        """
+        # Broad exception handling throughout this method: the zone has
+        # already been moved to the target pool, so any failure during
+        # source cleanup is logged but must not affect the move operation.
+        try:
+            source_pool = self.get_pool(source_pool_id)
+        except Exception as e:
+            LOG.warning(
+                'Failed to load source pool %s for zone cleanup '
+                'after pool move of zone_name=%s zone_id=%s: %s',
+                source_pool_id, zone.name, zone.id, e
+            )
+            return
+
+        catalog_zone = None
+        try:
+            catalog_zone = self.storage.get_catalog_zone(
+                context, source_pool)
+        except exceptions.ZoneNotFound:
+            pass
+        except Exception as e:
+            LOG.warning(
+                'Failed to look up catalog zone for source pool %s, '
+                'falling back to direct backend delete: %s',
+                source_pool_id, e
+            )
+
+        for target in source_pool.targets:
+            try:
+                if catalog_zone is None:
+                    target.backend.delete_zone(context, zone, {})
+                else:
+                    zonetasks.SendNotify(
+                        self.executor, catalog_zone, target)()
+                LOG.info(
+                    'Deleted zone_name=%(zone_name)s zone_id=%(zone_id)s '
+                    'from source pool target=%(target)s',
+                    {
+                        'zone_name': zone.name,
+                        'zone_id': zone.id,
+                        'target': target,
+                    }
+                )
+            except Exception as e:
+                LOG.warning(
+                    'Failed to delete zone_name=%(zone_name)s '
+                    'zone_id=%(zone_id)s from source pool '
+                    'target=%(target)s: %(error)s',
+                    {
+                        'zone_name': zone.name,
+                        'zone_id': zone.id,
+                        'target': target,
+                        'error': e,
+                    }
+                )
+
     def _do_zone_action(self, context, zone, zone_params=None):
         pool = self.get_pool(zone.pool_id)
         zone_action = zonetasks.ZoneAction(
@@ -174,6 +239,17 @@ class Service(service.RPCService):
         :return: None
         """
         self._do_zone_action(context, zone)
+
+    @rpc.expected_exceptions()
+    def pool_move_zone(self, context, zone, source_pool_id):
+        """
+        :param context: Security context information.
+        :param zone: Zone to be moved (pool_id set to target pool)
+        :param source_pool_id: Pool to delete the zone from after update
+        :return: None
+        """
+        self._do_zone_action(context, zone)
+        self._delete_zone_from_source_pool(context, zone, source_pool_id)
 
     @rpc.expected_exceptions()
     def delete_zone(self, context, zone, hard_delete=False):

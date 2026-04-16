@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    Fixed a bug where the Move Zone API did not remove the zone from the
+    source pool's backend after moving it to the target pool. The zone data
+    remained on the old pool's nameservers, potentially serving stale DNS
+    responses. Designate now deletes the zone from the source pool's backend
+    targets after the zone has been successfully updated on the target pool.
