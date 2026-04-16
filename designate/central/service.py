@@ -1360,7 +1360,8 @@ class Service(service.RPCService):
         zone.refresh = self._generate_soa_refresh_interval()
         zone.action = constants.UPDATE
         zone.status = constants.PENDING
-        self.worker_api.update_zone(context, zone)
+        self.worker_api.pool_move_zone(context, zone,
+                                       source_pool_id=orig_pool_id)
 
         return zone
 
