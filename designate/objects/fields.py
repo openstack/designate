@@ -402,8 +402,7 @@ class CertAlgoField(StringFields):
 
 
 class Any(ovoo_fields.FieldType):
-    @staticmethod
-    def coerce(obj, attr, value):
+    def coerce(self, obj, attr, value):
         return value
 
 
@@ -412,8 +411,7 @@ class AnyField(ovoo_fields.AutoTypedField):
 
 
 class BaseObject(ovoo_fields.FieldType):
-    @staticmethod
-    def coerce(obj, attr, value):
+    def coerce(self, obj, attr, value):
         return value
 
 
