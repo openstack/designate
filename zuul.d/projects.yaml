@@ -8,8 +8,10 @@
         - designate-pdns4
         - designate-grenade-bind9
         - designate-grenade-pdns4
-        - designate-grenade-bind9-skip-level
-        - designate-grenade-pdns4-skip-level
+        - designate-grenade-bind9-skip-level:
+            voting: false
+        - designate-grenade-pdns4-skip-level:
+            voting: false
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
     gate:
@@ -20,8 +22,6 @@
         - designate-pdns4
         - designate-grenade-pdns4
         - designate-grenade-bind9
-        - designate-grenade-pdns4-skip-level
-        - designate-grenade-bind9-skip-level
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
 

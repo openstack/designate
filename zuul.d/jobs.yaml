@@ -38,6 +38,11 @@
           Q_AGENT: ovn
           Q_ML2_PLUGIN_MECHANISM_DRIVERS: ovn
           NEUTRON_DEPLOY_MOD_WSGI: True
+      devstack_local_conf:
+        post-config:
+          $DESIGNATE_CONF:
+            service:api:
+              allow_empty_secrets_for_tsig: False
       tox_envlist: all
       tempest_plugins:
         - designate-tempest-plugin
