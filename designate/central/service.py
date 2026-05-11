@@ -421,7 +421,7 @@ class Service(service.RPCService):
 
         return ns
 
-    def _add_ns(self, context, zone, ns_record):
+    def _add_ns(self, context, zone, ns_record, increment_serial=True):
         # Get NS recordset
         # If the zone doesn't have an NS recordset yet, create one
         try:
@@ -442,10 +442,14 @@ class Service(service.RPCService):
             objects.Record(data=ns_record, managed=True)
         )
 
-        self._update_recordset_in_storage(context, zone, recordset,
-                                          set_delayed_notify=True)
+        # Intentional: delayed notify is tied to increment_serial so
+        # callers that skip the serial bump also skip the notification.
+        self._update_recordset_in_storage(
+            context, zone, recordset,
+            increment_serial=increment_serial,
+            set_delayed_notify=increment_serial)
 
-    def _delete_ns(self, context, zone, ns_record):
+    def _delete_ns(self, context, zone, ns_record, increment_serial=True):
         recordset = self.find_recordset(
             context,
             criterion={
@@ -459,8 +463,12 @@ class Service(service.RPCService):
             if record.data == ns_record:
                 recordset.records.remove(record)
 
-        self._update_recordset_in_storage(context, zone, recordset,
-                                          set_delayed_notify=True)
+        # Intentional: delayed notify is tied to increment_serial so
+        # callers that skip the serial bump also skip the notification.
+        self._update_recordset_in_storage(
+            context, zone, recordset,
+            increment_serial=increment_serial,
+            set_delayed_notify=increment_serial)
 
     # Quota Enforcement Methods
     def _enforce_zone_quota(self, context, tenant_id):
@@ -1325,13 +1333,17 @@ class Service(service.RPCService):
         create_ns = target_ns.difference(orig_ns)
         delete_ns = orig_ns.difference(target_ns)
 
-        # Update target NS servers for the zone
+        # Update target NS servers for the zone without triggering serial
+        # increments or delayed notifications; the pool move handles the
+        # zone update itself at the end of this method.
         for ns_record in create_ns:
-            self._add_ns(elevated_context, zone, ns_record)
+            self._add_ns(elevated_context, zone, ns_record,
+                         increment_serial=False)
 
         # Then handle the ns_records to delete
         for ns_record in delete_ns:
-            self._delete_ns(elevated_context, zone, ns_record)
+            self._delete_ns(elevated_context, zone, ns_record,
+                            increment_serial=False)
 
         LOG.info("Moving zone '%(zone)s' to pool '%(pool)s'",
                  {'zone': zone.name, 'pool': target_pool_id})
