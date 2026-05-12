@@ -20,6 +20,7 @@ from oslo_log import log as logging
 import oslo_messaging as messaging
 
 import designate.conf
+from designate import heartbeat_emitter
 from designate import notification_handler
 from designate import rpc
 from designate import service
@@ -39,6 +40,9 @@ class Service(service.Service):
         self._notification_listener = None
         self.handlers = self.init_extensions()
         self.allowed_event_types = self.get_allowed_event_types(self.handlers)
+
+        self.heartbeat = heartbeat_emitter.get_heartbeat_emitter(
+            self.service_name)
 
     @property
     def service_name(self):
@@ -83,8 +87,10 @@ class Service(service.Service):
                 pool=CONF['service:sink'].listener_pool_name
             )
             self._notification_listener.start()
+        self.heartbeat.start()
 
     def stop(self, graceful=True):
+        self.heartbeat.stop()
         if self._notification_listener:
             self._notification_listener.stop()
         super().stop(graceful)

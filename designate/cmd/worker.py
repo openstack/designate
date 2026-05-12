@@ -20,7 +20,6 @@ from oslo_reports import guru_meditation_report as gmr
 from oslo_reports import opts as gmr_opts
 
 import designate.conf
-from designate import heartbeat_emitter
 from designate import service
 from designate import utils
 from designate import version
@@ -39,10 +38,5 @@ def main():
 
     server = worker_service.Service()
     server.init_host()
-    heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name)
     service.serve(server, workers=CONF['service:worker'].workers)
-    heartbeat.start()
-    try:
-        service.wait()
-    finally:
-        heartbeat.stop()
+    service.wait()

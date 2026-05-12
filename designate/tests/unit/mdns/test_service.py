@@ -21,6 +21,7 @@ import oslotest.base
 
 import designate.conf
 from designate import dnsmiddleware
+from designate import heartbeat_emitter
 from designate.mdns import service
 from designate import policy
 from designate import rpc
@@ -34,11 +35,13 @@ CONF = designate.conf.CONF
 
 
 class MdnsServiceTest(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(storage, 'get_storage', mock.Mock())
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
-    def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_policy_init):
+    def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_policy_init,
+              mock_heartbeat):
         super().setUp()
         self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)

@@ -111,6 +111,8 @@ periodic_secondary_refresh = "designate.producer.tasks:PeriodicSecondaryRefreshT
 delayed_notify = "designate.producer.tasks:PeriodicGenerateDelayedNotifyTask"
 increment_serial = "designate.producer.tasks:PeriodicIncrementSerialTask"
 worker_periodic_recovery = "designate.producer.tasks:WorkerPeriodicRecovery"
+periodic_check_service_status = "designate.producer.tasks:PeriodicCheckServiceStatusTask"
+periodic_cleanup_stopped_service_status = "designate.producer.tasks:PeriodicCleanupStoppedServiceStatusTask"
 
 [project.entry-points."designate.heartbeat_emitter"]
 noop = "designate.heartbeat_emitter:NoopEmitter"

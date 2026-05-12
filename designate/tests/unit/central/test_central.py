@@ -19,6 +19,7 @@ from designate.central import service
 from designate.common import profiler
 import designate.conf
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate.objects import record
 from designate.objects import zone
 from designate import policy
@@ -29,12 +30,13 @@ CONF = designate.conf.CONF
 
 
 class CentralTestCase(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
     @mock.patch.object(profiler, 'setup_profiler')
     def setUp(self, mock_setup_profiler, mock_rpc_initialized,
-              mock_rpc_init, mock_policy_init):
+              mock_rpc_init, mock_policy_init, mock_heartbeat):
         super().setUp()
 
         mock_rpc_initialized.return_value = False
@@ -111,12 +113,13 @@ class CentralTestCase(oslotest.base.BaseTestCase):
 
 
 class ZoneAndRecordStatusTestCase(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
     @mock.patch.object(profiler, 'setup_profiler')
     def setUp(self, mock_setup_profiler, mock_rpc_initialized,
-              mock_rpc_init, mock_policy_init):
+              mock_rpc_init, mock_policy_init, mock_heartbeat):
         super().setUp()
 
         mock_rpc_initialized.return_value = False

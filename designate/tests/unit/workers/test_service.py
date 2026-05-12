@@ -25,6 +25,7 @@ from designate import backend
 from designate.central import rpcapi as central_rpcapi
 import designate.conf
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate import objects
 from designate import policy
 from designate import rpc
@@ -40,12 +41,13 @@ CONF = designate.conf.CONF
 
 
 class WorkerServiceTest(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'get_client')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
     def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_rpc_get_client,
-              mock_policy_init):
+              mock_policy_init, mock_heartbeat):
         super().setUp()
 
         mock_rpc_initialized.return_value = False
@@ -77,6 +79,7 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
     def test_service_name(self):
         self.assertEqual('worker', self.service.service_name)
 
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter', mock.Mock())
     @mock.patch.object(policy, 'init', mock.Mock())
     @mock.patch.object(rpc, 'get_client', mock.Mock())
     @mock.patch.object(rpc, 'init', mock.Mock())
