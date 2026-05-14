@@ -484,7 +484,9 @@ class PeriodicCleanupStoppedServiceStatusTaskTest(oslotest.base.BaseTestCase):
             status=constants.SERVICE_STOPPED,
         )
         self.central_api.find_service_statuses.side_effect = [
-            [service_status], []]
+            [service_status], [],  # STOPPED iteration
+            [],                    # DOWN iteration
+        ]
 
         self.task()
 
@@ -504,9 +506,73 @@ class PeriodicCleanupStoppedServiceStatusTaskTest(oslotest.base.BaseTestCase):
             status=constants.SERVICE_STOPPED,
         )
         self.central_api.find_service_statuses.side_effect = [
-            [service_status], exceptions.MarkerNotFound()]
+            [service_status], exceptions.MarkerNotFound(),
+            [],  # DOWN iteration
+        ]
 
         self.task()
 
         self.central_api.delete_service_status.assert_called_once_with(
             self.context, service_status)
+
+    def test_delete_stale_down_service_status(self):
+        old_time = (timeutils.utcnow() -
+                    datetime.timedelta(days=10))
+        service_status = RoObject(
+            id=uuidutils.generate_uuid(),
+            status=constants.SERVICE_DOWN,
+            heartbeated_at=old_time,
+        )
+        self.central_api.find_service_statuses.side_effect = [
+            [],                        # STOPPED iteration
+            [service_status], [],      # DOWN iteration
+        ]
+
+        self.task()
+
+        self.central_api.delete_service_status.assert_called_once_with(
+            self.context, service_status)
+
+    def test_recent_down_service_not_deleted(self):
+        recent_time = (timeutils.utcnow() -
+                       datetime.timedelta(hours=1))
+        service_status = RoObject(
+            id=uuidutils.generate_uuid(),
+            status=constants.SERVICE_DOWN,
+            heartbeated_at=recent_time,
+        )
+        self.central_api.find_service_statuses.side_effect = [
+            [],                        # STOPPED iteration
+            [service_status], [],      # DOWN iteration
+        ]
+
+        self.task()
+
+        self.central_api.delete_service_status.assert_not_called()
+
+    def test_down_cleanup_skips_no_heartbeat(self):
+        service_status = RoObject(
+            id=uuidutils.generate_uuid(),
+            status=constants.SERVICE_DOWN,
+            heartbeated_at=None,
+        )
+        self.central_api.find_service_statuses.side_effect = [
+            [],                        # STOPPED iteration
+            [service_status], [],      # DOWN iteration
+        ]
+
+        self.task()
+
+        self.central_api.delete_service_status.assert_not_called()
+
+    def test_down_cleanup_disabled_when_threshold_zero(self):
+        CONF.set_override(
+            'time_threshold', 0,
+            'producer_task:periodic_cleanup_stopped_service_status')
+        self.central_api.find_service_statuses.side_effect = [
+            [],  # STOPPED iteration (no DOWN iteration expected)
+        ]
+
+        self.task()
+
+        self.central_api.delete_service_status.assert_not_called()

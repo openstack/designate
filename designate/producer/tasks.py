@@ -379,16 +379,40 @@ class PeriodicCleanupStoppedServiceStatusTask(PeriodicTask):
         return self._iter(self.central_api.find_service_statuses,
                           ctxt, criterion)
 
+    def _delete_stale_down_services(self, ctxt):
+        time_threshold = CONF[self.name].time_threshold
+        if time_threshold <= 0:
+            return
+
+        threshold = (timeutils.utcnow() -
+                     datetime.timedelta(seconds=time_threshold))
+        criterion = {"status": constants.SERVICE_DOWN}
+        try:
+            for service_status in self._iter_service_statuses(ctxt, criterion):
+                if not service_status.heartbeated_at:
+                    continue
+                if service_status.heartbeated_at < threshold:
+                    LOG.debug(
+                        "Service status %(id)s has been DOWN since "
+                        "%(heartbeated_at)s, deleting",
+                        {"id": service_status.id,
+                         "heartbeated_at": service_status.heartbeated_at})
+                    self.central_api.delete_service_status(
+                        ctxt, service_status)
+        except exceptions.MarkerNotFound:
+            pass
+
     def __call__(self):
         LOG.info("Cleaning up stopped service statuses")
 
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True
 
-        # Delete "STOPPED" services
         criterion = {"status": constants.SERVICE_STOPPED}
         try:
             for service_status in self._iter_service_statuses(ctxt, criterion):
                 self.central_api.delete_service_status(ctxt, service_status)
         except exceptions.MarkerNotFound:
             pass
+
+        self._delete_stale_down_services(ctxt)

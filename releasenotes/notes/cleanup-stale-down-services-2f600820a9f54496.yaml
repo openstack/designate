@@ -1,0 +1,11 @@
+---
+fixes:
+  - |
+    The periodic cleanup producer task now also deletes stale DOWN
+    service entries whose last heartbeat exceeds a configurable
+    ``time_threshold`` (default 7 days). This prevents indefinite
+    accumulation of DOWN entries, particularly in container
+    deployments with randomized hostnames. Set ``time_threshold``
+    to 0 in the
+    ``[producer_task:periodic_cleanup_stopped_service_status]``
+    section to disable cleanup of DOWN entries.
