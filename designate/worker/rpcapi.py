@@ -39,16 +39,15 @@ class WorkerAPI:
         1.0 - Initial version
         1.1 - Added perform_zone_xfr and get_serial_number
         1.2 - Added hard_delete to delete_zone
-        1.3 - Added pool_move_zone
     """
-    RPC_API_VERSION = '1.3'
+    RPC_API_VERSION = '1.2'
 
     def __init__(self, topic=None):
         self.topic = topic if topic else CONF['service:worker'].topic
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='1.3')
+        self.client = rpc.get_client(target, version_cap='1.2')
 
     @classmethod
     def get_instance(cls):
@@ -71,11 +70,6 @@ class WorkerAPI:
     def update_zone(self, context, zone):
         return self.client.cast(
             context, 'update_zone', zone=zone)
-
-    def pool_move_zone(self, context, zone, source_pool_id):
-        return self.client.cast(
-            context, 'pool_move_zone', zone=zone,
-            source_pool_id=source_pool_id)
 
     def delete_zone(self, context, zone, hard_delete=False):
         return self.client.cast(
