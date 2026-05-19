@@ -6,7 +6,7 @@ build-backend = "pbr.build"
 name = "designate"
 description = "DNS as a Service"
 readme = {file = "README.rst", content-type = "text/x-rst"}
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 requires-python = ">=3.11"
 authors = [
     {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
@@ -16,7 +16,6 @@ classifiers = [
     "Environment :: No Input/Output (Daemon)",
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -121,8 +120,8 @@ rpc = "designate.heartbeat_emitter:RpcEmitter"
 default = "designate.notifications:Default"
 audit = "designate.notifications:Audit"
 
-[tool.setuptools]
-packages = ["designate"]
+[tool.setuptools.packages.find]
+include = ["designate*"]
 
 # NOTE: data-files is deprecated by setuptools in favour of package_data,
 # but package_data installs files inside the Python package tree and is not
