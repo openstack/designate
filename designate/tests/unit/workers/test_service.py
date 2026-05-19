@@ -228,6 +228,21 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
             self.context, self.zone
         )
 
+    def test_pool_move_zone(self):
+        self.service._do_zone_action = mock.Mock()
+        self.service._delete_zone_from_source_pool = mock.Mock()
+
+        source_pool_id = 'cf2e8eab-76cd-4162-bf76-8aeee3556de0'
+        self.service.pool_move_zone(self.context, self.zone,
+                                    source_pool_id=source_pool_id)
+
+        self.service._do_zone_action.assert_called_with(
+            self.context, self.zone
+        )
+        self.service._delete_zone_from_source_pool.assert_called_with(
+            self.context, self.zone, source_pool_id
+        )
+
     @mock.patch.object(service.zonetasks, 'ZoneAction')
     def test_do_zone_action(self, mock_zone_action):
         self.service._executor = mock.Mock()
@@ -283,6 +298,85 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
         self.service._executor.run.assert_has_calls(
             mock_zone_action(), [mock_send_notify()]
         )
+
+    @mock.patch.object(storage, 'get_storage')
+    def test_delete_zone_from_source_pool(self, mock_get_storage):
+        target1 = mock.Mock()
+        target2 = mock.Mock()
+        pool = mock.Mock()
+        pool.targets = [target1, target2]
+        self.service.get_pool = mock.Mock(return_value=pool)
+        mock_storage = mock.Mock()
+        mock_storage.get_catalog_zone.side_effect = (
+            exceptions.ZoneNotFound())
+        mock_get_storage.return_value = mock_storage
+        self.service._storage = mock_storage
+
+        source_pool_id = 'cf2e8eab-76cd-4162-bf76-8aeee3556de0'
+        self.service._delete_zone_from_source_pool(
+            self.context, self.zone, source_pool_id)
+
+        self.service.get_pool.assert_called_with(source_pool_id)
+        target1.backend.delete_zone.assert_called_with(
+            self.context, self.zone, {})
+        target2.backend.delete_zone.assert_called_with(
+            self.context, self.zone, {})
+
+    @mock.patch.object(storage, 'get_storage')
+    @mock.patch.object(service.zonetasks, 'SendNotify')
+    def test_delete_zone_from_source_pool_with_catalog_zone(
+            self, mock_send_notify, mock_get_storage):
+        target1 = mock.Mock()
+        pool = mock.Mock()
+        pool.targets = [target1]
+        self.service.get_pool = mock.Mock(return_value=pool)
+        catalog_zone = mock.Mock()
+        mock_storage = mock.Mock()
+        mock_storage.get_catalog_zone.return_value = catalog_zone
+        mock_get_storage.return_value = mock_storage
+        self.service._storage = mock_storage
+
+        source_pool_id = 'cf2e8eab-76cd-4162-bf76-8aeee3556de0'
+        self.service._delete_zone_from_source_pool(
+            self.context, self.zone, source_pool_id)
+
+        # Should send NOTIFY via catalog zone, not call backend.delete_zone
+        target1.backend.delete_zone.assert_not_called()
+        mock_send_notify.assert_called_with(
+            self.service.executor, catalog_zone, target1)
+        mock_send_notify.return_value.assert_called_once()
+
+    @mock.patch.object(storage, 'get_storage')
+    def test_delete_zone_from_source_pool_target_failure(
+            self, mock_get_storage):
+        target1 = mock.Mock()
+        target1.backend.delete_zone.side_effect = Exception('fail')
+        target2 = mock.Mock()
+        pool = mock.Mock()
+        pool.targets = [target1, target2]
+        self.service.get_pool = mock.Mock(return_value=pool)
+        mock_storage = mock.Mock()
+        mock_storage.get_catalog_zone.side_effect = (
+            exceptions.ZoneNotFound())
+        mock_get_storage.return_value = mock_storage
+        self.service._storage = mock_storage
+
+        source_pool_id = 'cf2e8eab-76cd-4162-bf76-8aeee3556de0'
+        self.service._delete_zone_from_source_pool(
+            self.context, self.zone, source_pool_id)
+
+        # Should continue to next target despite failure
+        target2.backend.delete_zone.assert_called_with(
+            self.context, self.zone, {})
+
+    def test_delete_zone_from_source_pool_load_failure(self):
+        self.service.get_pool = mock.Mock(
+            side_effect=exceptions.PoolNotFound())
+
+        source_pool_id = 'cf2e8eab-76cd-4162-bf76-8aeee3556de0'
+        # Should not raise
+        self.service._delete_zone_from_source_pool(
+            self.context, self.zone, source_pool_id)
 
     def test_get_pool(self):
         pool = mock.Mock()
