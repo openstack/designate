@@ -23,6 +23,7 @@ class PoolNameserver(base.DictObjectMixin, base.PersistentObjectMixin,
         'pool_id': fields.UUIDFields(nullable=True),
         'host': fields.IPOrHost(),
         'port': fields.IntegerFields(minimum=1, maximum=65535),
+        'tsigkey_id': fields.UUIDFields(nullable=True),
     }
 
     STRING_KEYS = [

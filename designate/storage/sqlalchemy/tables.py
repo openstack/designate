@@ -354,6 +354,7 @@ pool_nameservers = Table('pool_nameservers', metadata,
     Column('pool_id', UUID(), nullable=False),
     Column('host', String(255), nullable=False),
     Column('port', Integer(), nullable=False),
+    Column('tsigkey_id', UUID(), nullable=True),
 
     ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
     UniqueConstraint('pool_id', 'host', 'port', name='unique_pool_host_port'),
