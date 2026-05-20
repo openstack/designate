@@ -13,11 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import json
+
 from oslo_log import log as logging
 import pecan
 
 from designate.api.v2.controllers import rest
 from designate import exceptions
+from designate import objects
 from designate.objects.adapters import DesignateAdapter
 from designate import utils
 
@@ -71,15 +74,32 @@ class ZoneImportController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
         body = request.body.decode('utf-8')
+        zone_attributes = None
 
-        if request.content_type != 'text/dns':
+        if request.content_type == 'application/json':
+            try:
+                body_json = json.loads(body)
+            except json.JSONDecodeError:
+                raise exceptions.BadRequest('Invalid JSON body')
+            if 'zonefile' not in body_json:
+                raise exceptions.BadRequest(
+                    'The "zonefile" field is required when using '
+                    'application/json content type'
+                )
+            body = body_json['zonefile']
+            if 'attributes' in body_json:
+                zone_attributes = DesignateAdapter.parse(
+                    'API_v2', body_json['attributes'],
+                    objects.ZoneAttributeList()
+                )
+        elif request.content_type != 'text/dns':
             raise exceptions.UnsupportedContentType(
-                'Content-type must be text/dns'
+                'Content-type must be text/dns or application/json'
             )
 
         # Create the zone_import
         zone_import = self.central_api.create_zone_import(
-            context, body)
+            context, body, zone_attributes=zone_attributes)
         response.status_int = 202
 
         LOG.info("Created %(zone_import)s", {'zone_import': zone_import})

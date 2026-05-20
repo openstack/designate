@@ -130,11 +130,80 @@ class APIV2ZoneImportExportTest(v2.ApiV2TestCase):
         exported.delete_rdataset(exported.origin, 'NS')
         self.assertEqual(imported, exported)
 
-    def test_import_method_not_allowed(self):
+    def test_import_unsupported_content_type(self):
         self._assert_exception(
             'unsupported_content_type', 415, self.client.post,
             '/zones/tasks/imports', {},
-            content_type='application/json'
+            content_type='text/plain'
+        )
+
+    def test_import_json(self):
+        zonefile = self.get_zonefile_fixture()
+        body = {'zonefile': zonefile}
+        response = self.client.post_json(
+            '/zones/tasks/imports', body,
+            headers={'Content-type': 'application/json',
+                     'X-Test-Role': 'member'})
+
+        import_id = response.json_body['id']
+        self.wait_for_import(import_id)
+
+        url = '/zones/tasks/imports/%s' % import_id
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
+        self.assertEqual('COMPLETE', response.json['status'])
+
+    def test_import_json_with_attributes(self):
+        # Create a second pool
+        pool = self.create_pool()
+
+        # Allow forcing a pool via attributes
+        self.policy({'zone_create_forced_pool': '@'})
+
+        zonefile = self.get_zonefile_fixture()
+        body = {
+            'zonefile': zonefile,
+            'attributes': {'pool_id': pool.id}
+        }
+        response = self.client.post_json(
+            '/zones/tasks/imports', body,
+            headers={'Content-type': 'application/json',
+                     'X-Test-Role': 'member'})
+
+        import_id = response.json_body['id']
+        self.wait_for_import(import_id)
+
+        url = '/zones/tasks/imports/%s' % import_id
+        response = self.client.get(url, headers={'X-Test-Role': 'member'})
+        self.assertEqual('COMPLETE', response.json['status'])
+
+        # Verify the zone was assigned to the correct pool
+        zone_id = response.json['zone_id']
+        zone = self.central_service.get_zone(
+            self.admin_context, zone_id)
+        self.assertEqual(pool.id, zone.pool_id)
+
+    def test_import_json_with_invalid_pool_id(self):
+        zonefile = self.get_zonefile_fixture()
+        body = {
+            'zonefile': zonefile,
+            'attributes': {
+                'pool_id': '00000000-0000-0000-0000-000000000000'
+            }
+        }
+
+        self._assert_exception(
+            'no_valid_pool_found', 404, self.client.post_json,
+            '/zones/tasks/imports', body,
+            headers={'Content-type': 'application/json',
+                     'X-Test-Role': 'member'}
+        )
+
+    def test_import_json_missing_zonefile(self):
+        body = {'attributes': {'pool_id': 'fake-id'}}
+        self._assert_exception(
+            'bad_request', 400, self.client.post_json,
+            '/zones/tasks/imports', body,
+            headers={'Content-type': 'application/json'}
         )
 
     def test_delete_import(self):

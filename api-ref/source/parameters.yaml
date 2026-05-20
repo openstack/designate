@@ -890,6 +890,16 @@ zone_export_zone_id:
   required: false
   type: uuid
 
+zone_import_attributes:
+  description: |
+    Key:Value pairs of attributes to associate with the imported zone.
+    This can be used to place the zone in a specific pool, e.g.
+    ``{"pool_id": "<pool-uuid>"}``.
+    Only used with ``application/json`` content type.
+  in: body
+  required: false
+  type: dict
+
 zone_import_id:
   description: |
     ID for this zone import
@@ -917,6 +927,14 @@ zone_import_zone_id:
   in: body
   required: false
   type: uuid
+
+zone_import_zonefile:
+  description: |
+    The zone file content in DNS zone file format.
+    Required when using ``application/json`` content type.
+  in: body
+  required: true
+  type: string
 
 zone_masters:
   description: |

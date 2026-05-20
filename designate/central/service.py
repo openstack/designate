@@ -54,7 +54,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.10'
+    RPC_API_VERSION = '6.11'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -2686,13 +2686,21 @@ class Service(service.RPCService):
     # Zone Import Methods
     @rpc.expected_exceptions()
     @notification.notify_type('dns.zone_import.create')
-    def create_zone_import(self, context, request_body):
+    def create_zone_import(self, context, request_body,
+                           zone_attributes=None):
         target = {constants.RBAC_PROJECT_ID: context.project_id,
                   'tenant_id': context.project_id}
 
         policy.check('create_zone_import', context, target)
 
         self._is_valid_project_id(context.project_id)
+
+        # Validate zone attributes against the scheduler synchronously,
+        # similar to the create_zone path, so the user gets an immediate
+        # error if no pool matches.
+        if zone_attributes is not None:
+            zone_for_validation = objects.Zone(attributes=zone_attributes)
+            self.scheduler.schedule_zone(context, zone_for_validation)
 
         values = {
             'status': 'PENDING',
@@ -2707,12 +2715,13 @@ class Service(service.RPCService):
                                                               zone_import)
 
         self.tg.add_thread(self._import_zone, context, created_zone_import,
-                           request_body)
+                           request_body, zone_attributes)
 
         return created_zone_import
 
     @rpc.expected_exceptions()
-    def _import_zone(self, context, zone_import, request_body):
+    def _import_zone(self, context, zone_import, request_body,
+                     zone_attributes=None):
         zone = None
         try:
             dnspython_zone = dnszone.from_text(
@@ -2724,6 +2733,8 @@ class Service(service.RPCService):
                 check_origin=False)
             zone = dnsutils.from_dnspython_zone(dnspython_zone)
             zone.type = 'PRIMARY'
+            if zone_attributes is not None:
+                zone.attributes = zone_attributes
             for rrset in list(zone.recordsets):
                 if rrset.type == 'SOA':
                     zone.recordsets.remove(rrset)
