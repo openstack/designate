@@ -53,6 +53,12 @@ class ZoneActionOnTarget(base.Task):
         self.task_name = 'ZoneActionOnTarget-%s' % self.action.title()
         self.zone_params = zone_params
 
+    def _resolve_tsig_key(self):
+        tsigkey_id = self.target.tsigkey_id
+        if not tsigkey_id:
+            return None
+        return self.storage.get_tsigkey(self.context, tsigkey_id)
+
     def __call__(self):
         LOG.debug(
             'Attempting to %(action)s zone_name=%(zone_name)s '
@@ -75,20 +81,42 @@ class ZoneActionOnTarget(base.Task):
         except exceptions.ZoneNotFound:
             pass
 
+        try:
+            tsig_key = self._resolve_tsig_key()
+        except exceptions.TsigKeyNotFound:
+            LOG.error(
+                'TSIG key not found for target=%(target)s, '
+                'skipping %(action)s for zone_name=%(zone_name)s '
+                'zone_id=%(zone_id)s',
+                {
+                    'target': self.target,
+                    'action': self.action,
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                }
+            )
+            return False
+
         for retry in range(0, self.max_retries):
             try:
                 if catalog_zone is None:
                     if self.action == 'CREATE':
                         self.target.backend.create_zone(
                             self.context, self.zone)
-                        SendNotify(self.executor, self.zone, self.target)()
+                        SendNotify(
+                            self.executor, self.zone, self.target,
+                            tsig_key=tsig_key
+                        )()
                     elif self.action == 'DELETE' and catalog_zone is None:
                         self.target.backend.delete_zone(
                             self.context, self.zone, self.zone_params)
                     else:
                         self.target.backend.update_zone(
                             self.context, self.zone)
-                        SendNotify(self.executor, self.zone, self.target)()
+                        SendNotify(
+                            self.executor, self.zone, self.target,
+                            tsig_key=tsig_key
+                        )()
                 else:
                     if (
                         self.action == 'CREATE' or self.action == 'DELETE' or
@@ -96,10 +124,16 @@ class ZoneActionOnTarget(base.Task):
                     ):
                         # Member zone created or deleted, or catalog zone
                         # itself modified, NOTIFY via catalog
-                        SendNotify(self.executor, catalog_zone, self.target)()
+                        SendNotify(
+                            self.executor, catalog_zone, self.target,
+                            tsig_key=tsig_key
+                        )()
                     else:
                         # Member zone updated
-                        SendNotify(self.executor, self.zone, self.target)()
+                        SendNotify(
+                            self.executor, self.zone, self.target,
+                            tsig_key=tsig_key
+                        )()
 
                 LOG.debug(
                     'Successfully performed %(action)s for '
@@ -141,17 +175,20 @@ class SendNotify(base.Task):
     :return: Success/Failure delivering the notify (bool)
     """
 
-    def __init__(self, executor, zone, target):
+    def __init__(self, executor, zone, target, tsig_key=None):
         super().__init__(executor)
         self.zone = zone
         self.target = target
+        self.tsig_key = tsig_key
 
     def __call__(self):
         host = self.target.options.get('host', '127.0.0.1')
         port = int(self.target.options.get('port', '53'))
 
         try:
-            dnsutils.notify(self.zone.name, host, port=port)
+            dnsutils.notify(
+                self.zone.name, host, port=port, tsig_key=self.tsig_key
+            )
             LOG.debug(
                 'Sent NOTIFY to host=%(host)s:%(port)s for '
                 'zone_name=%(zone_name)s zone_id=%(zone_id)s',
@@ -399,16 +436,18 @@ class PollForZone(base.Task):
     does not exist
     """
 
-    def __init__(self, executor, zone, ns):
+    def __init__(self, executor, zone, ns, tsig_key=None):
         super().__init__(executor)
         self.zone = zone
         self.ns = ns
+        self.tsig_key = tsig_key
 
     def _get_serial(self):
         return dnsutils.get_serial(
             self.zone.name,
             self.ns.host,
-            port=self.ns.port
+            port=self.ns.port,
+            tsig_key=self.tsig_key
         )
 
     def __call__(self):
@@ -487,6 +526,16 @@ class ZonePoller(base.Task):
         self.pool = pool
         self.zone = zone
 
+    def _resolve_nameserver_tsig_keys(self):
+        tsig_keys = {}
+        for ns in self.pool.nameservers:
+            tsigkey_id = ns.tsigkey_id
+            if tsigkey_id:
+                tsig_keys[ns.id] = self.storage.get_tsigkey(
+                    self.context, tsigkey_id
+                )
+        return tsig_keys
+
     def _update_status(self):
         task = UpdateStatus(self.executor, self.context, self.zone)
         task()
@@ -500,12 +549,16 @@ class ZonePoller(base.Task):
         :return: a DNSQueryResult object with the results of polling
         """
         nameservers = self.pool.nameservers
+        tsig_keys = self._resolve_nameserver_tsig_keys()
 
         retry_interval = self.retry_interval
         query_result = DNSQueryResult(0, 0, 0, 0)
         for retry in range(0, self.max_retries):
             results = self.executor.run([
-                PollForZone(self.executor, self.zone, ns)
+                PollForZone(
+                    self.executor, self.zone, ns,
+                    tsig_key=tsig_keys.get(ns.id)
+                )
                 for ns in nameservers
             ])
 
@@ -613,7 +666,22 @@ class ZonePoller(base.Task):
         return True, 'SUCCESS'
 
     def __call__(self):
-        query_result = self._do_poll()
+        try:
+            query_result = self._do_poll()
+        except exceptions.TsigKeyNotFound:
+            LOG.error(
+                'TSIG key not found for a nameserver in pool, '
+                'skipping poll for zone_name=%(zone_name)s '
+                'zone_id=%(zone_id)s',
+                {
+                    'zone_name': self.zone.name,
+                    'zone_id': self.zone.id,
+                }
+            )
+            result = self._on_failure('ERROR')
+            self._update_status()
+            return result
+
         result = None
         success, status = self._threshold_met(query_result)
         if success:
