@@ -1,0 +1,451 @@
+#!/usr/bin/env bash
+# Configure two BIND9 instances, each with split-horizon views, enabling
+# replication across pools and BINDs.
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=split-horizon-bind9
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_BIND9_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+BIND2_DNS_PORT=${DESIGNATE_SERVICE_PORT2_DNS:-1053}
+BIND_SERVICE_NAME=bind9
+BIND2_SERVICE_NAME=bind9-2
+BIND2_DEFAULT_FILE=/etc/default/named-2
+BIND2_SERVICE_FILE=/etc/systemd/system/$BIND2_SERVICE_NAME.service
+BIND_CFG_DIR=/etc/bind
+BIND2_CFG_DIR=/etc/bind-2
+BIND_VAR_DIR=/var/cache/bind
+BIND2_VAR_DIR=/var/cache/bind-2
+BIND_RUN_DIR=/run/named
+BIND2_RUN_DIR=/run/named-2
+BIND_CFG_FILE=$BIND_CFG_DIR/named.conf.options
+BIND2_CFG_FILE=$BIND2_CFG_DIR/named.conf.options
+BIND_TSIGKEY_FILE=$BIND_CFG_DIR/named.conf.tsigkeys
+BIND2_TSIGKEY_FILE=$BIND2_CFG_DIR/named.conf.tsigkeys
+BIND_USER=bind
+BIND_GROUP=bind
+DESIGNATE_SERVICE_PORT_RNDC=${DESIGNATE_SERVICE_PORT_RNDC:-953}
+DESIGNATE_SERVICE_PORT2_RNDC=${DESIGNATE_SERVICE_PORT2_RNDC:-1953}
+
+if is_fedora; then
+    BIND_SERVICE_NAME=named
+    BIND2_SERVICE_NAME=named-2
+    BIND2_SERVICE_FILE=/etc/systemd/system/$BIND2_SERVICE_NAME.service
+    BIND_CFG_DIR=/etc/$BIND_SERVICE_NAME
+    BIND2_CFG_DIR=/etc/$BIND2_SERVICE_NAME
+    BIND_CFG_FILE=/etc/$BIND_SERVICE_NAME.conf
+    BIND2_CFG_FILE=/etc/$BIND2_SERVICE_NAME.conf
+    BIND_VAR_DIR=/var/$BIND_SERVICE_NAME
+    BIND2_VAR_DIR=/var/$BIND2_SERVICE_NAME
+    BIND_USER=named
+    BIND_GROUP=named
+    BIND2_UNIT_CFG_FILE=/etc/sysconfig/$BIND2_SERVICE_NAME
+    BIND_TSIGKEY_FILE=$BIND_CFG_DIR/named.conf.tsigkeys
+    BIND2_TSIGKEY_FILE=$BIND2_CFG_DIR/named.conf.tsigkeys
+fi
+
+# Entry Points
+# ------------
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    sudo groupadd -f $BIND_GROUP
+    add_user_to_group $STACK_USER $BIND_GROUP
+    sudo mkdir -p $BIND2_CFG_DIR
+    sudo chown -R $STACK_USER:$BIND_GROUP $BIND2_CFG_DIR
+    sudo mkdir -p $BIND2_RUN_DIR
+
+    if is_ubuntu; then
+        install_package bind9
+
+        # Views require all zones inside a view block; disable top-level zones
+        sudo sed -i \
+            's|include "/etc/bind/named.conf.default-zones";|// include "/etc/bind/named.conf.default-zones"; // disabled by split-horizon-bind9 backend|' \
+            $BIND_CFG_DIR/named.conf
+
+        sudo tee $BIND2_DEFAULT_FILE >/dev/null <<EOF
+OPTIONS="-u bind -c $BIND2_CFG_DIR/named.conf -p $BIND2_DNS_PORT -D named-2"
+EOF
+        # Set up bind-2 base config (no default-zones for views)
+        sudo tee $BIND2_CFG_DIR/named.conf >/dev/null <<EOF
+include "$BIND2_CFG_FILE";
+EOF
+
+        sudo cp -a /lib/systemd/system/named.service $BIND2_SERVICE_FILE
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "EnvironmentFile" "$BIND2_DEFAULT_FILE"
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "PIDFile" "$BIND2_RUN_DIR/named.pid"
+        iniset -sudo $BIND2_SERVICE_FILE "Install" "Alias" "$BIND2_SERVICE_NAME.service"
+        sudo chmod g+s $BIND2_CFG_DIR
+
+    elif is_fedora; then
+        install_package bind
+
+        sudo cp -a /lib/systemd/system/named.service $BIND2_SERVICE_FILE
+        sudo cp /etc/sysconfig/named $BIND2_UNIT_CFG_FILE
+        sudo chown $STACK_USER:$BIND_GROUP $BIND2_UNIT_CFG_FILE
+        sudo chmod 644 $BIND2_UNIT_CFG_FILE
+        echo "OPTIONS=\"-p $BIND2_DNS_PORT -D $BIND2_SERVICE_NAME\"" | sudo tee -a $BIND2_UNIT_CFG_FILE >/dev/null
+        echo "NAMEDCONF='$BIND2_CFG_FILE'" | sudo tee -a $BIND2_UNIT_CFG_FILE >/dev/null
+
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "Environment=NAMEDCONF" "$BIND2_CFG_FILE"
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "EnvironmentFile" "$BIND2_UNIT_CFG_FILE"
+        iniset -sudo $BIND2_SERVICE_FILE "Service" "PIDFile" "$BIND2_RUN_DIR/named.pid"
+        sudo chmod 750 $BIND2_CFG_DIR
+    fi
+
+    sudo chown -R $BIND_USER:$BIND_GROUP $BIND_RUN_DIR
+    sudo chown -R $BIND_USER:$BIND_GROUP $BIND2_RUN_DIR
+    sudo cp -arf $BIND_VAR_DIR $BIND2_VAR_DIR
+
+    for cfg_dir in "$BIND_CFG_DIR" "$BIND2_CFG_DIR"; do
+        sudo chmod -R g+r $cfg_dir
+    done
+    for var_dir in "$BIND_VAR_DIR" "$BIND2_VAR_DIR"; do
+        sudo chmod -R g+rw $var_dir
+    done
+
+    if [[ -d /etc/apparmor.d ]]; then
+        sudo tee /etc/apparmor.d/local/usr.sbin.named >/dev/null <<EOF
+$DESIGNATE_STATE_PATH/bind9/** rw,
+/etc/bind-2/** r,
+/var/cache/bind-2/** lrw,
+/var/cache/bind-2/_default.nzd-lock rwk,
+/{,var/}run/named-2/named.pid w,
+/{,var/}run/named-2/session.key w,
+/var/log/named-2/** rw,
+/var/log/named-2/ rw,
+EOF
+
+        restart_service apparmor || :
+    fi
+}
+
+# _write_bind_config - generate named.conf.options for a BIND instance
+#   $1 = cfg_dir, $2 = cfg_file, $3 = tsigkey_file, $4 = var_dir,
+#   $5 = run_dir, $6 = dns_port, $7 = rndc_port
+function _write_bind_config {
+    local cfg_dir=$1 cfg_file=$2 tsigkey_file=$3 var_dir=$4
+    local run_dir=$5 dns_port=$6 rndc_port=$7
+
+    sudo tee $cfg_file >/dev/null <<EOF
+
+include "$cfg_dir/rndc.key";
+include "$tsigkey_file";
+
+options {
+    directory "$var_dir";
+    dnssec-validation auto;
+    auth-nxdomain no;    # conform to RFC1035
+    listen-on port $dns_port { $HOST_IP; };
+    listen-on-v6 port $dns_port { $HOST_IPV6; };
+    recursion no;
+    pid-file "$run_dir/named.pid";
+    session-keyfile "$run_dir/session.key";
+    minimal-responses yes;
+};
+
+controls {
+    inet $(ipv6_unquote $DESIGNATE_SERVICE_HOST) port $rndc_port allow { $(ipv6_unquote $DESIGNATE_SERVICE_HOST); } keys { "rndc-key"; };
+};
+
+view "split-horizon" {
+    match-clients { key "split-horizon-key"; };
+    server $(ipv6_unquote $DESIGNATE_SERVICE_HOST) {
+        keys { split-horizon-key; };
+    };
+    allow-new-zones yes;
+};
+
+view "default" {
+    match-clients { any; };
+    allow-new-zones yes;
+};
+EOF
+}
+
+# _write_pools_yaml - generate pools.yaml, optionally with tsigkey_id
+function _write_pools_yaml {
+    local TSIG_KEY_ID=${1:-}
+    local TSIG_NS_BLOCK=""
+    local TSIG_TARGET_BLOCK=""
+    if [ -n "$TSIG_KEY_ID" ]; then
+        TSIG_NS_BLOCK="      tsigkey_id: $TSIG_KEY_ID"
+        TSIG_TARGET_BLOCK="      tsigkey_id: $TSIG_KEY_ID"
+    fi
+
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml >/dev/null <<EOF
+---
+- name: default
+  description: DevStack BIND Pool (default view - unsigned traffic)
+  attributes: {
+    "pool_level": "default"
+  }
+
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS_RECORD
+      priority: 1
+
+  nameservers:
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+      port: $DESIGNATE_SERVICE_PORT_DNS
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+      port: $BIND2_DNS_PORT
+
+  targets:
+    - type: bind9
+      description: BIND1 - default view
+
+      masters:
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        port: $DESIGNATE_SERVICE_PORT_DNS
+        rndc_host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        rndc_port: $DESIGNATE_SERVICE_PORT_RNDC
+        rndc_config_file: $BIND_CFG_DIR/rndc.conf
+        view: default
+
+    - type: bind9
+      description: BIND2 - default view
+
+      masters:
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        port: $BIND2_DNS_PORT
+        rndc_host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        rndc_port: $DESIGNATE_SERVICE_PORT2_RNDC
+        rndc_config_file: $BIND2_CFG_DIR/rndc.conf
+        view: default
+
+- name: split-horizon
+  description: DevStack BIND Pool (split-horizon view - TSIG-signed traffic)
+  attributes: {
+    "pool_level": "secondary"
+  }
+
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS2_RECORD
+      priority: 1
+
+  nameservers:
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+      port: $DESIGNATE_SERVICE_PORT_DNS
+${TSIG_NS_BLOCK}
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+      port: $BIND2_DNS_PORT
+${TSIG_NS_BLOCK}
+
+  targets:
+    - type: bind9
+      description: BIND1 - split-horizon view
+${TSIG_TARGET_BLOCK}
+
+      masters:
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        port: $DESIGNATE_SERVICE_PORT_DNS
+        rndc_host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        rndc_port: $DESIGNATE_SERVICE_PORT_RNDC
+        rndc_config_file: $BIND_CFG_DIR/rndc.conf
+        view: split-horizon
+
+    - type: bind9
+      description: BIND2 - split-horizon view
+${TSIG_TARGET_BLOCK}
+
+      masters:
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        port: $BIND2_DNS_PORT
+        rndc_host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+        rndc_port: $DESIGNATE_SERVICE_PORT2_RNDC
+        rndc_config_file: $BIND2_CFG_DIR/rndc.conf
+        view: split-horizon
+
+EOF
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    sudo chown $STACK_USER $BIND_CFG_DIR
+
+    # Generate a single TSIG key shared by both BIND instances
+    sudo rm -f $BIND_TSIGKEY_FILE $BIND2_TSIGKEY_FILE
+    sudo tsig-keygen -a hmac-sha256 split-horizon-key >$BIND_TSIGKEY_FILE
+    sudo cp $BIND_TSIGKEY_FILE $BIND2_TSIGKEY_FILE
+
+    for f in $BIND_TSIGKEY_FILE $BIND2_TSIGKEY_FILE; do
+        sudo chown $BIND_USER:$BIND_GROUP $f
+        sudo chmod g+r $f
+    done
+
+    # Generate rndc keys for both instances
+    sudo rndc-confgen -a -c $BIND_CFG_DIR/rndc.key
+    sudo rndc-confgen -a -c $BIND2_CFG_DIR/rndc.key -p $DESIGNATE_SERVICE_PORT2_RNDC
+
+    for key_file in $BIND_CFG_DIR/rndc.key $BIND2_CFG_DIR/rndc.key; do
+        sudo chown $BIND_USER:$BIND_GROUP $key_file
+        sudo chmod g+r $key_file
+    done
+
+    # Write named.conf.options for both BIND instances
+    _write_bind_config $BIND_CFG_DIR $BIND_CFG_FILE $BIND_TSIGKEY_FILE \
+        $BIND_VAR_DIR $BIND_RUN_DIR $DESIGNATE_SERVICE_PORT_DNS $DESIGNATE_SERVICE_PORT_RNDC
+
+    _write_bind_config $BIND2_CFG_DIR $BIND2_CFG_FILE $BIND2_TSIGKEY_FILE \
+        $BIND2_VAR_DIR $BIND2_RUN_DIR $BIND2_DNS_PORT $DESIGNATE_SERVICE_PORT2_RNDC
+
+    # Write rndc.conf for both instances
+    sudo tee $BIND_CFG_DIR/rndc.conf >/dev/null <<EOF
+include "$BIND_CFG_DIR/rndc.key";
+
+options {
+    default-key "rndc-key";
+    default-server $(ipv6_unquote $DESIGNATE_SERVICE_HOST);
+    default-port $DESIGNATE_SERVICE_PORT_RNDC;
+};
+EOF
+
+    sudo tee $BIND2_CFG_DIR/rndc.conf >/dev/null <<EOF
+include "$BIND2_CFG_DIR/rndc.key";
+
+options {
+    default-key "rndc-key";
+    default-server $(ipv6_unquote $DESIGNATE_SERVICE_HOST);
+    default-port $DESIGNATE_SERVICE_PORT2_RNDC;
+};
+EOF
+
+    sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_FILE $BIND_CFG_DIR/rndc.conf
+    sudo chown $BIND_USER:$BIND_GROUP $BIND2_CFG_FILE $BIND2_CFG_DIR/rndc.conf
+    sudo chmod g+r $BIND_CFG_FILE $BIND_CFG_DIR/rndc.conf
+    sudo chmod g+r $BIND2_CFG_FILE $BIND2_CFG_DIR/rndc.conf
+
+    _write_pools_yaml
+
+    restart_service $BIND_SERVICE_NAME
+    start_service $BIND2_SERVICE_NAME
+    restart_service $BIND2_SERVICE_NAME
+}
+
+# create_designate_pool_configuration_backend - called by plugin.sh after pool update
+function create_designate_pool_configuration_backend {
+    if [ ! -f $BIND_TSIGKEY_FILE ]; then
+        echo "split-horizon-bind9: tsigkey file not found, skipping TSIG registration"
+        return
+    fi
+
+    local NAME ALGORITHM SECRET RESOURCE_ID
+    NAME=$(cat $BIND_TSIGKEY_FILE | grep 'key' |
+        awk '{split($0, a, " "); print a[2];}' |
+        sed -e 's/^"//' -e 's/"$//' |
+        awk '{split($0, a, "{"); print a[1];}')
+    ALGORITHM=$(grep 'algorithm' $BIND_TSIGKEY_FILE |
+        awk '{print $2}' |
+        sed 's/;$//')
+    SECRET=$(grep 'secret' $BIND_TSIGKEY_FILE |
+        awk '{print $2}' |
+        sed 's/;$//' |
+        sed -e 's/^"//' -e 's/"$//')
+    RESOURCE_ID=$(sudo mysql -u root -p$DATABASE_PASSWORD designate -N -e \
+        "select id from pools where name = 'split-horizon';")
+
+    if [ -z "$RESOURCE_ID" ]; then
+        echo "split-horizon-bind9: could not find split-horizon pool ID, skipping TSIG registration"
+        return
+    fi
+
+    local OLD_KEY_ID
+    OLD_KEY_ID=$(openstack tsigkey list -f value -c id --name "$NAME" 2>/dev/null)
+    if [ -n "$OLD_KEY_ID" ]; then
+        openstack tsigkey delete "$OLD_KEY_ID"
+    fi
+
+    openstack tsigkey create \
+        --name "$NAME" \
+        --algorithm "$ALGORITHM" \
+        --secret "$SECRET" \
+        --scope POOL \
+        --resource-id "$RESOURCE_ID"
+
+    local TSIG_KEY_ID
+    TSIG_KEY_ID=$(openstack tsigkey list -f value -c id --name "$NAME")
+    if [ -n "$TSIG_KEY_ID" ]; then
+        _write_pools_yaml "$TSIG_KEY_ID"
+        $DESIGNATE_BIN_DIR/designate-manage pool update --file $DESIGNATE_CONF_DIR/pools.yaml
+        restart_service devstack@designate-worker
+    fi
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    start_service $BIND_SERVICE_NAME
+    start_service $BIND2_SERVICE_NAME
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    stop_service $BIND_SERVICE_NAME
+    stop_service $BIND2_SERVICE_NAME
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    sudo sh -c "rm -rf $BIND_VAR_DIR/*.nzf"
+    sudo sh -c "rm -rf $BIND_VAR_DIR/slave.*"
+    sudo rm -f $BIND_CFG_DIR/rndc.key
+    sudo rm -f $BIND_TSIGKEY_FILE
+
+    if is_ubuntu; then
+        sudo sed -i \
+            's|// include "/etc/bind/named.conf.default-zones"; // disabled by split-horizon-bind9 backend|include "/etc/bind/named.conf.default-zones";|' \
+            $BIND_CFG_DIR/named.conf
+    fi
+
+    if [ -d $BIND2_CFG_DIR ]; then
+        sudo sh -c "rm -rf $BIND2_VAR_DIR/*.nzf"
+        sudo sh -c "rm -rf $BIND2_VAR_DIR/slave.*"
+        sudo rm -f $BIND2_CFG_DIR/rndc.key
+        sudo rm -f $BIND2_TSIGKEY_FILE
+        sudo rm -rf $BIND2_CFG_DIR $BIND2_VAR_DIR $BIND2_RUN_DIR $BIND2_SERVICE_FILE
+        if is_fedora; then
+            sudo rm -f /etc/sysconfig/$BIND2_SERVICE_NAME
+        fi
+    fi
+
+    sudo systemctl reset-failed
+}
+
+# Restore xtrace
+$DP_BIND9_XTRACE
