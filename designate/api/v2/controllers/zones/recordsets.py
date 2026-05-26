@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import re
+
 from oslo_log import log as logging
 import pecan
 
@@ -29,6 +31,24 @@ LOG = logging.getLogger(__name__)
 class RecordSetsController(rest.RestController):
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'zone_id', 'tenant_id',
                  'name', 'type', 'ttl', 'records']
+
+    _TLSA_NAME_RE = re.compile(r'^_(\d{1,5})\._[a-zA-Z]+\.')
+
+    @staticmethod
+    def _validate_tlsa_recordset_name(name):
+        match = RecordSetsController._TLSA_NAME_RE.match(name)
+        if not match:
+            raise exceptions.BadRequest(
+                'TLSA recordset name must follow the format '
+                '_port._protocol.domain (e.g. _443._tcp.example.com.) '
+                'as required by RFC 6698 Section 3'
+            )
+        port = int(match.group(1))
+        if port > 65535:
+            raise exceptions.BadRequest(
+                'TLSA recordset name contains invalid port %d: '
+                'port must be in range 0-65535' % port
+            )
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
@@ -72,6 +92,8 @@ class RecordSetsController(rest.RestController):
             raise exceptions.BadRequest(
                 'Creating a SOA recordset is not allowed'
             )
+        if recordset.type == 'TLSA':
+            self._validate_tlsa_recordset_name(recordset.name)
 
         # Create the recordset
         recordset = self.central_api.create_recordset(
@@ -120,6 +142,8 @@ class RecordSetsController(rest.RestController):
                 raise exceptions.BadRequest(
                     'Updating a root zone NS record is not allowed'
                 )
+        if recordset['type'] == 'TLSA':
+            self._validate_tlsa_recordset_name(recordset['name'])
 
         # Convert to APIv2 Format
 

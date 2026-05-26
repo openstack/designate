@@ -124,6 +124,9 @@ class DesignateMigrationsWalk(
     def _check_f828412479ee(self, connection):
         pass
 
+    def _check_b57384b28335(self, connection):
+        pass
+
     def _check_d2a4aea32428(self, connection):
         pass
 
