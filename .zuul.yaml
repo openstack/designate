@@ -75,6 +75,11 @@
     # be moved to Ubuntu Noble in the next cycle(2025.2)
     nodeset: openstack-single-node-jammy
     vars:
+      devstack_localrc:
+        TEMPEST_VENV_UPPER_CONSTRAINTS: "$DEST/requirements/upper-constraints.txt"
+      tempest_tox_environment:
+        UPPER_CONSTRAINTS_FILE: "{{ devstack_base_dir }}/requirements/upper-constraints.txt"
+        TOX_CONSTRAINTS_FILE: "{{ devstack_base_dir }}/requirements/upper-constraints.txt"
       devstack_local_conf:
         post-config:
           $DESIGNATE_CONF:
