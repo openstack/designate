@@ -27,8 +27,10 @@ from oslo_utils import uuidutils
 import oslotest.base
 
 from designate.central import rpcapi as central_api
+from designate.common import constants
 import designate.conf
 from designate import context
+from designate import exceptions
 from designate.producer import tasks
 from designate import rpc
 from designate.tests import base_fixtures
@@ -397,3 +399,114 @@ class PeriodicGenerateDelayedNotifyTaskTest(oslotest.base.BaseTestCase):
             'being DELETED',
             self.stdlog.logger.output
         )
+
+
+class PeriodicCheckServiceStatusTaskTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+        self.stdlog = base_fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
+
+        self.central_api = mock.Mock()
+        self.context = mock.Mock()
+        mock.patch.object(central_api.CentralAPI, 'get_instance',
+                          return_value=self.central_api).start()
+        mock.patch.object(context.DesignateContext, 'get_admin_context',
+                          return_value=self.context).start()
+        self.task = tasks.PeriodicCheckServiceStatusTask()
+        self.task.my_partitions = 0, 9
+
+    def test_mark_down_when_heartbeat_exceeds_threshold(self):
+        old_time = (timeutils.utcnow() -
+                    datetime.timedelta(seconds=700000))
+        service_status = RwObject(
+            id=uuidutils.generate_uuid(),
+            status=constants.SERVICE_UP,
+            heartbeated_at=old_time,
+        )
+        self.central_api.find_service_statuses.side_effect = [
+            [service_status], []]
+
+        self.task()
+
+        self.assertEqual(constants.SERVICE_DOWN, service_status.status)
+        self.central_api.update_service_status.assert_called_once_with(
+            self.context, service_status)
+
+    def test_no_change_when_heartbeat_within_threshold(self):
+        recent_time = (timeutils.utcnow() -
+                       datetime.timedelta(seconds=60))
+        service_status = RwObject(
+            id=uuidutils.generate_uuid(),
+            status=constants.SERVICE_UP,
+            heartbeated_at=recent_time,
+        )
+        self.central_api.find_service_statuses.side_effect = [
+            [service_status], []]
+
+        self.task()
+
+        self.assertEqual(constants.SERVICE_UP, service_status.status)
+        self.central_api.update_service_status.assert_not_called()
+
+    def test_skip_when_no_heartbeat(self):
+        service_status = RwObject(
+            id=uuidutils.generate_uuid(),
+            status=constants.SERVICE_UP,
+            heartbeated_at=None,
+        )
+        self.central_api.find_service_statuses.side_effect = [
+            [service_status], []]
+
+        self.task()
+
+        self.central_api.update_service_status.assert_not_called()
+
+
+class PeriodicCleanupStoppedServiceStatusTaskTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+
+        self.central_api = mock.Mock()
+        self.context = mock.Mock()
+        mock.patch.object(central_api.CentralAPI, 'get_instance',
+                          return_value=self.central_api).start()
+        mock.patch.object(context.DesignateContext, 'get_admin_context',
+                          return_value=self.context).start()
+        self.task = tasks.PeriodicCleanupStoppedServiceStatusTask()
+        self.task.my_partitions = 0, 9
+
+    def test_delete_stopped_service_status(self):
+        service_status = RoObject(
+            id=uuidutils.generate_uuid(),
+            status=constants.SERVICE_STOPPED,
+        )
+        self.central_api.find_service_statuses.side_effect = [
+            [service_status], []]
+
+        self.task()
+
+        self.central_api.delete_service_status.assert_called_once_with(
+            self.context, service_status)
+
+    def test_no_stopped_entries(self):
+        self.central_api.find_service_statuses.return_value = []
+
+        self.task()
+
+        self.central_api.delete_service_status.assert_not_called()
+
+    def test_marker_not_found_is_ignored(self):
+        service_status = RoObject(
+            id=uuidutils.generate_uuid(),
+            status=constants.SERVICE_STOPPED,
+        )
+        self.central_api.find_service_statuses.side_effect = [
+            [service_status], exceptions.MarkerNotFound()]
+
+        self.task()
+
+        self.central_api.delete_service_status.assert_called_once_with(
+            self.context, service_status)

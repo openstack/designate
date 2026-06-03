@@ -22,6 +22,7 @@ import oslotest.base
 
 import designate.conf
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate import policy
 from designate.producer import service
 from designate import rpc
@@ -34,12 +35,13 @@ CONF = designate.conf.CONF
 
 @mock.patch.object(service.rpcapi.CentralAPI, 'get_instance', mock.Mock())
 class ProducerServiceTest(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'get_client')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
     def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_rpc_get_client,
-              mock_policy_init):
+              mock_policy_init, mock_heartbeat):
         super().setUp()
 
         self.useFixture(cfg_fixture.Config(CONF))
@@ -74,7 +76,7 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
 
         # Make sure that tasks were added to the tg timer.
         self.tg.add_timer_args.assert_called()
-        self.assertEqual(6, self.tg.add_timer_args.call_count)
+        self.assertEqual(8, self.tg.add_timer_args.call_count)
 
     @mock.patch.object(service.coordination, 'Partitioner')
     @mock.patch.object(designate.service.RPCService, 'start')

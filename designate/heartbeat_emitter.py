@@ -18,6 +18,7 @@ from oslo_service import loopingcall
 from oslo_utils import timeutils
 
 from designate.central import rpcapi as central_rpcapi
+from designate.common import constants
 import designate.conf
 from designate import context
 from designate import objects
@@ -42,7 +43,7 @@ class HeartbeatEmitter(plugin.DriverPlugin):
     def __init__(self, service_name, **kwargs):
         super().__init__()
 
-        self._status = 'UP'
+        self._status = constants.SERVICE_UP
         self._stats = {}
         self._capabilities = {}
 
@@ -62,8 +63,26 @@ class HeartbeatEmitter(plugin.DriverPlugin):
     def stop(self):
         self._timer.stop()
 
-    def get_status(self):
-        return self._status, self._stats, self._capabilities
+        stats, capabilities = self.get_stats_and_capabilities()
+
+        service_status = objects.ServiceStatus(
+            service_name=self._service_name,
+            hostname=self._hostname,
+            status=constants.SERVICE_STOPPED,
+            stats=stats,
+            capabilities=capabilities,
+            heartbeated_at=timeutils.utcnow()
+        )
+
+        LOG.trace('Stopping %s', service_status)
+        try:
+            self.transmit(service_status)
+        except Exception:
+            LOG.warning("Failed to transmit STOPPED status for %s on %s",
+                        self._service_name, self._hostname)
+
+    def get_stats_and_capabilities(self):
+        return self._stats, self._capabilities
 
     @abc.abstractmethod
     def transmit(self, status):
@@ -72,15 +91,12 @@ class HeartbeatEmitter(plugin.DriverPlugin):
         """
 
     def _emit_heartbeat(self):
-        """
-        Returns Status, Stats, Capabilities
-        """
-        status, stats, capabilities = self.get_status()
+        stats, capabilities = self.get_stats_and_capabilities()
 
         service_status = objects.ServiceStatus(
             service_name=self._service_name,
             hostname=self._hostname,
-            status=status,
+            status=self._status,
             stats=stats,
             capabilities=capabilities,
             heartbeated_at=timeutils.utcnow()

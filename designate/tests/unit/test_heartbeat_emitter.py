@@ -60,10 +60,26 @@ class HeartbeatEmitterTest(oslotest.base.BaseTestCase):
 
         mock_timer.stop.assert_called_once()
 
+    @mock.patch.object(loopingcall, 'FixedIntervalLoopingCall')
+    def test_stop_handles_transmit_failure(self, mock_looping):
+        mock_timer = mock.Mock()
+        mock_looping.return_value = mock_timer
+
+        noop_emitter = heartbeat_emitter.get_heartbeat_emitter('svc')
+        noop_emitter.transmit = mock.Mock(side_effect=Exception('RPC error'))
+
+        noop_emitter.start()
+        noop_emitter.stop()
+
+        mock_timer.stop.assert_called_once()
+        noop_emitter.transmit.assert_called_once()
+        self.assertIn('Failed to transmit STOPPED status',
+                      self.stdlog.logger.output)
+
     def test_get_status(self):
         noop_emitter = heartbeat_emitter.get_heartbeat_emitter('svc')
 
-        self.assertEqual(('UP', {}, {},), noop_emitter.get_status())
+        self.assertEqual(({}, {},), noop_emitter.get_stats_and_capabilities())
 
     def test_emit(self):
         noop_emitter = heartbeat_emitter.get_heartbeat_emitter('svc')

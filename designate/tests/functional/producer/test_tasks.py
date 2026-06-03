@@ -21,6 +21,7 @@ from oslo_log import log as logging
 from oslo_utils import timeutils
 
 from designate.central.rpcapi import CentralAPI
+from designate import objects
 from designate.producer import tasks
 from designate.storage import sql
 from designate.storage.sqlalchemy import tables
@@ -230,3 +231,132 @@ class PeriodicSecondaryRefreshTaskTest(designate.tests.functional.TestCase):
         self._create_zones()
         self.periodic_secondary_refresh_task_fixture.task()
         mock_xfr_zone.assert_called_once()
+
+
+class PeriodicCheckServiceStatusTaskTest(designate.tests.functional.TestCase):
+    time_threshold = 1800
+
+    def setUp(self):
+        super().setUp()
+        self.config(
+            time_threshold=self.time_threshold,
+            group='producer_task:periodic_check_service_status'
+        )
+        self.task_fixture = self.useFixture(
+            base_fixtures.ZoneManagerTaskFixture(
+                tasks.PeriodicCheckServiceStatusTask
+            )
+        )
+
+    def _create_service_status(self, service_name, hostname,
+                               heartbeated_at=None, status='UP'):
+        service_status = objects.ServiceStatus(
+            service_name=service_name,
+            hostname=hostname,
+            status=status,
+            stats={},
+            capabilities={},
+        )
+        if heartbeated_at is not None:
+            service_status.heartbeated_at = heartbeated_at
+        return self.storage.create_service_status(
+            self.admin_context, service_status)
+
+    def _fetch_service_statuses(self):
+        return self.storage.find_service_statuses(
+            self.admin_context_all_tenants)
+
+    def test_stale_service_marked_down(self):
+        stale_time = timeutils.utcnow() - datetime.timedelta(
+            seconds=self.time_threshold * 2
+        )
+        self._create_service_status('central', 'host1',
+                                    heartbeated_at=stale_time)
+
+        self.task_fixture.task()
+
+        # update_service_status uses RPC cast (fire-and-forget),
+        # so poll until the async update lands.
+        def _check():
+            statuses = self._fetch_service_statuses()
+            return len(statuses) == 1 and statuses[0].status == 'DOWN'
+
+        self.wait_for_condition(_check)
+
+    def test_fresh_service_stays_up(self):
+        recent_time = timeutils.utcnow() - datetime.timedelta(
+            seconds=self.time_threshold // 2
+        )
+        self._create_service_status('central', 'host1',
+                                    heartbeated_at=recent_time)
+
+        self.task_fixture.task()
+
+        statuses = self._fetch_service_statuses()
+        self.assertEqual(1, len(statuses))
+        self.assertEqual('UP', statuses[0].status)
+
+    def test_no_heartbeat_skipped(self):
+        self._create_service_status('central', 'host1',
+                                    heartbeated_at=None)
+
+        self.task_fixture.task()
+
+        statuses = self._fetch_service_statuses()
+        self.assertEqual(1, len(statuses))
+        self.assertEqual('UP', statuses[0].status)
+
+
+class PeriodicCleanupStoppedServiceStatusTaskTest(
+        designate.tests.functional.TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.config(
+            group='producer_task:periodic_cleanup_stopped_service_status'
+        )
+        self.task_fixture = self.useFixture(
+            base_fixtures.ZoneManagerTaskFixture(
+                tasks.PeriodicCleanupStoppedServiceStatusTask
+            )
+        )
+
+    def _create_service_status(self, service_name, hostname, status='UP'):
+        values = {
+            'service_name': service_name,
+            'hostname': hostname,
+            'status': status,
+            'stats': {},
+            'capabilities': {},
+            'heartbeated_at': timeutils.utcnow(),
+        }
+        query = tables.service_status.insert().values(**values)
+        with sql.get_write_session() as session:
+            session.execute(query)
+
+    @mock.patch.object(CentralAPI, 'delete_service_status')
+    def test_stopped_service_deleted(self, mock_delete):
+        self._create_service_status('central', 'host1', status='STOPPED')
+        self._create_service_status('worker', 'host1', status='UP')
+
+        self.task_fixture.task()
+
+        mock_delete.assert_called_once()
+
+    @mock.patch.object(CentralAPI, 'delete_service_status')
+    def test_non_stopped_services_not_deleted(self, mock_delete):
+        self._create_service_status('central', 'host1', status='UP')
+        self._create_service_status('worker', 'host1', status='DOWN')
+
+        self.task_fixture.task()
+
+        mock_delete.assert_not_called()
+
+    @mock.patch.object(CentralAPI, 'delete_service_status')
+    def test_all_stopped_services_deleted(self, mock_delete):
+        self._create_service_status('central', 'host1', status='STOPPED')
+        self._create_service_status('worker', 'host1', status='STOPPED')
+
+        self.task_fixture.task()
+
+        self.assertEqual(2, mock_delete.call_count)

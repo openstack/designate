@@ -19,6 +19,7 @@ import designate.conf
 from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate import dnsmiddleware
 from designate import dnsutils
+from designate import heartbeat_emitter
 from designate.mdns import handler
 from designate import service
 from designate import storage
@@ -45,12 +46,16 @@ class Service(service.Service):
             CONF['service:mdns'].tcp_keepidle,
             CONF['service:mdns'].tcp_recv_timeout,
         )
+        self.heartbeat = heartbeat_emitter.get_heartbeat_emitter(
+            self.service_name)
 
     def start(self):
         super().start()
         self.dns_service.start()
+        self.heartbeat.start()
 
     def stop(self, graceful=True):
+        self.heartbeat.stop()
         self.dns_service.stop()
         super().stop(graceful)
 

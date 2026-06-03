@@ -74,8 +74,9 @@ class CentralAPI:
         6.9 - Removed unused methods
         6.10 - Add Zone Pool Move method
         6.11 - Add zone attributes to zone import
+        6.12 - Add delete service status method
     """
-    RPC_API_VERSION = '6.11'
+    RPC_API_VERSION = '6.12'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -88,7 +89,7 @@ class CentralAPI:
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.11')
+        self.client = rpc.get_client(target, version_cap='6.12')
 
     @classmethod
     def get_instance(cls):
@@ -436,4 +437,8 @@ class CentralAPI:
 
     def update_service_status(self, context, service_status):
         self.client.cast(context, 'update_service_status',
+                         service_status=service_status)
+
+    def delete_service_status(self, context, service_status):
+        self.client.cast(context, 'delete_service_status',
                          service_status=service_status)

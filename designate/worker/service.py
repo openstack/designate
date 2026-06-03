@@ -24,6 +24,7 @@ from designate.common.decorators import rpc
 import designate.conf
 from designate.context import DesignateContext
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate import service
 from designate import storage
 from designate.worker import processing
@@ -57,6 +58,8 @@ class Service(service.RPCService):
             self.service_name, CONF['service:worker'].topic,
             threads=CONF['service:worker'].threads,
         )
+        self.heartbeat = heartbeat_emitter.get_heartbeat_emitter(
+            self.service_name)
 
     @property
     def central_api(self):
@@ -135,9 +138,11 @@ class Service(service.RPCService):
 
     def start(self):
         super().start()
+        self.heartbeat.start()
         LOG.info('Started worker')
 
     def stop(self, graceful=True):
+        self.heartbeat.stop()
         super().stop(graceful)
 
     def _do_zone_action(self, context, zone, zone_params=None):

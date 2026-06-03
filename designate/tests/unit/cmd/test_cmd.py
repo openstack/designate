@@ -28,7 +28,6 @@ CONF = designate.conf.CONF
 
 @mock.patch('designate.service.wait')
 @mock.patch('designate.service.serve')
-@mock.patch('designate.heartbeat_emitter.get_heartbeat_emitter')
 @mock.patch('oslo_log.log.setup')
 @mock.patch('designate.utils.read_config')
 class CmdTestCase(oslotest.base.BaseTestCase):
@@ -38,7 +37,7 @@ class CmdTestCase(oslotest.base.BaseTestCase):
 
     @mock.patch('designate.api.service.Service')
     def test_api(self, mock_service, mock_read_config, mock_log_setup,
-                 mock_heartbeat, mock_serve, mock_wait):
+                 mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:api')
 
         api.main()
@@ -46,13 +45,12 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_read_config.assert_called_with('designate', mock.ANY)
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
         mock_service.assert_called_with()
-        mock_heartbeat.assert_called()
         mock_serve.assert_called_with(mock.ANY, workers=1)
         mock_wait.assert_called_with()
 
     @mock.patch('designate.central.service.Service')
     def test_central(self, mock_service, mock_read_config, mock_log_setup,
-                     mock_heartbeat, mock_serve, mock_wait):
+                     mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:central')
 
         central.main()
@@ -60,13 +58,12 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_read_config.assert_called_with('designate', mock.ANY)
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
         mock_service.assert_called_with()
-        mock_heartbeat.assert_called()
         mock_serve.assert_called_with(mock.ANY, workers=1)
         mock_wait.assert_called_with()
 
     @mock.patch('designate.mdns.service.Service')
     def test_mdns(self, mock_service, mock_read_config, mock_log_setup,
-                  mock_heartbeat, mock_serve, mock_wait):
+                  mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:mdns')
 
         mdns.main()
@@ -74,13 +71,12 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_read_config.assert_called_with('designate', mock.ANY)
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
         mock_service.assert_called_with()
-        mock_heartbeat.assert_called()
         mock_serve.assert_called_with(mock.ANY, workers=1)
         mock_wait.assert_called_with()
 
     @mock.patch('designate.producer.service.Service')
     def test_producer(self, mock_service, mock_read_config, mock_log_setup,
-                      mock_heartbeat, mock_serve, mock_wait):
+                      mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:producer')
 
         producer.main()
@@ -88,13 +84,12 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_read_config.assert_called_with('designate', mock.ANY)
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
         mock_service.assert_called_with()
-        mock_heartbeat.assert_called()
         mock_serve.assert_called_with(mock.ANY, workers=1)
         mock_wait.assert_called_with()
 
     @mock.patch('designate.sink.service.Service')
     def test_sink(self, mock_service, mock_read_config, mock_log_setup,
-                  mock_heartbeat, mock_serve, mock_wait):
+                  mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:sink')
 
         sink.main()
@@ -102,13 +97,12 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_read_config.assert_called_with('designate', mock.ANY)
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
         mock_service.assert_called_with()
-        mock_heartbeat.assert_called()
         mock_serve.assert_called_with(mock.ANY, workers=1)
         mock_wait.assert_called_with()
 
     @mock.patch('designate.worker.service.Service')
     def test_worker(self, mock_service, mock_read_config, mock_log_setup,
-                    mock_heartbeat, mock_serve, mock_wait):
+                    mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:worker')
 
         worker.main()
@@ -116,13 +110,12 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_read_config.assert_called_with('designate', mock.ANY)
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
         mock_service.assert_called_with()
-        mock_heartbeat.assert_called()
         mock_serve.assert_called_with(mock.ANY, workers=1)
         mock_wait.assert_called_with()
 
     @mock.patch('designate.api.service.Service')
     def test_api_rpc_already_initialized(self, mock_service, mock_read_config,
-                                         mock_log_setup, mock_heartbeat,
+                                         mock_log_setup,
                                          mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:api')
 
@@ -131,27 +124,12 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_read_config.assert_called_with('designate', mock.ANY)
         mock_log_setup.assert_called_with(mock.ANY, 'designate')
         mock_service.assert_called_with()
-        mock_heartbeat.assert_called()
         mock_serve.assert_called_with(mock.ANY, workers=1)
         mock_wait.assert_called_with()
 
-    @mock.patch('designate.api.service.Service')
-    def test_api_heartbeat_stops_on_exception(
-            self, mock_service, mock_read_config, mock_log_setup,
-            mock_heartbeat, mock_serve, mock_wait):
-        CONF.set_override('workers', 1, 'service:api')
-        mock_wait.side_effect = KeyboardInterrupt()
-        mock_emitter = mock.Mock()
-        mock_heartbeat.return_value = mock_emitter
-
-        # call api.main and make sure it gets an exception
-        self.assertRaises(KeyboardInterrupt, api.main)
-
-        mock_emitter.stop.assert_called_once()
-
     @mock.patch('designate.worker.service.Service')
     def test_worker_init_host_called(self, mock_service, mock_read_config,
-                                     mock_log_setup, mock_heartbeat,
+                                     mock_log_setup,
                                      mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:worker')
         mock_server = mock.Mock()
@@ -160,11 +138,10 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         worker.main()
 
         mock_server.init_host.assert_called_once()
-        mock_heartbeat.assert_called_with(mock_server.service_name)
 
     @mock.patch('designate.producer.service.Service')
     def test_producer_init_host_called(self, mock_service, mock_read_config,
-                                       mock_log_setup, mock_heartbeat,
+                                       mock_log_setup,
                                        mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:producer')
         mock_server = mock.Mock()
@@ -173,12 +150,11 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         producer.main()
 
         mock_server.init_host.assert_called_once()
-        mock_heartbeat.assert_called_with(mock_server.service_name)
 
     @mock.patch('designate.central.service.Service')
     def test_central_rpc_already_initialized(
             self, mock_service, mock_read_config, mock_log_setup,
-            mock_heartbeat, mock_serve, mock_wait):
+            mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:central')
 
         central.main()
@@ -188,7 +164,7 @@ class CmdTestCase(oslotest.base.BaseTestCase):
     @mock.patch('designate.mdns.service.Service')
     def test_mdns_rpc_already_initialized(
             self, mock_service, mock_read_config, mock_log_setup,
-            mock_heartbeat, mock_serve, mock_wait):
+            mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:mdns')
 
         mdns.main()
@@ -198,7 +174,7 @@ class CmdTestCase(oslotest.base.BaseTestCase):
     @mock.patch('designate.producer.service.Service')
     def test_producer_rpc_already_initialized(
             self, mock_service, mock_read_config, mock_log_setup,
-            mock_heartbeat, mock_serve, mock_wait):
+            mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:producer')
 
         producer.main()
@@ -208,7 +184,7 @@ class CmdTestCase(oslotest.base.BaseTestCase):
     @mock.patch('designate.sink.service.Service')
     def test_sink_rpc_already_initialized(
             self, mock_service, mock_read_config, mock_log_setup,
-            mock_heartbeat, mock_serve, mock_wait):
+            mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:sink')
 
         sink.main()
@@ -218,7 +194,7 @@ class CmdTestCase(oslotest.base.BaseTestCase):
     @mock.patch('designate.worker.service.Service')
     def test_worker_rpc_already_initialized(
             self, mock_service, mock_read_config, mock_log_setup,
-            mock_heartbeat, mock_serve, mock_wait):
+            mock_serve, mock_wait):
         CONF.set_override('workers', 1, 'service:worker')
 
         worker.main()

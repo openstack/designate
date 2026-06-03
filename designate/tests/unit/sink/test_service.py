@@ -18,6 +18,7 @@ import oslotest.base
 
 from designate.common import profiler
 import designate.conf
+from designate import heartbeat_emitter
 from designate import policy
 from designate import rpc
 from designate.sink import service
@@ -28,10 +29,12 @@ CONF = designate.conf.CONF
 
 
 class TestSinkService(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'get_client')
     @mock.patch.object(profiler, 'setup_profiler')
-    def setUp(self, mock_setup_profiler, mock_get_client, mock_policy_init):
+    def setUp(self, mock_setup_profiler, mock_get_client, mock_policy_init,
+              mock_heartbeat):
         super().setUp()
         self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
@@ -59,6 +62,7 @@ class TestSinkService(oslotest.base.BaseTestCase):
 
         mock_notification_listener.assert_called()
 
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter', mock.Mock())
     @mock.patch.object(policy, 'init', mock.Mock())
     @mock.patch.object(rpc, 'get_client', mock.Mock())
     @mock.patch.object(profiler, 'setup_profiler', mock.Mock())

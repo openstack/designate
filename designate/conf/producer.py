@@ -50,6 +50,16 @@ PRODUCER_TASK_ZONE_PURGE_GROUP = cfg.OptGroup(
     title='Configuration for Producer Task: Zone Purge'
 )
 
+PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_GROUP = cfg.OptGroup(
+    name='producer_task:periodic_check_service_status',
+    title='Configuration for Producer Task: Check Service Status'
+)
+
+PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_GROUP = cfg.OptGroup(
+    name='producer_task:periodic_cleanup_stopped_service_status',
+    title='Configuration for Producer Task: Cleanup Stopped Service Status'
+)
+
 PRODUCER_OPTS = [
     cfg.IntOpt('workers',
                help='Number of Producer worker processes to spawn'),
@@ -116,6 +126,23 @@ PRODUCER_TASK_ZONE_PURGE_OPTS = [
                help='How many zones to be purged on each run'),
 ]
 
+PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_OPTS = [
+    cfg.IntOpt('interval', default=3600,
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+    cfg.IntOpt('time_threshold', default=1800,
+               help='How old UP services should be (heartbeated_at) '
+                    'moved to DOWN, in seconds'),
+]
+
+PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_OPTS = [
+    cfg.IntOpt('interval', default=(24 * 2 * 3600),
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+]
+
 
 def register_opts(conf):
     conf.register_group(PRODUCER_GROUP)
@@ -138,6 +165,14 @@ def register_opts(conf):
     conf.register_group(PRODUCER_TASK_ZONE_PURGE_GROUP)
     conf.register_opts(PRODUCER_TASK_ZONE_PURGE_OPTS,
                        group=PRODUCER_TASK_ZONE_PURGE_GROUP)
+    conf.register_group(PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_GROUP)
+    conf.register_opts(PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_OPTS,
+                       group=PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_GROUP)
+    conf.register_group(
+        PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_GROUP)
+    conf.register_opts(
+        PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_OPTS,
+        group=PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_GROUP)
 
 
 def list_opts():
@@ -152,4 +187,8 @@ def list_opts():
         PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_GROUP:
             PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_OPTS,
         PRODUCER_TASK_ZONE_PURGE_GROUP: PRODUCER_TASK_ZONE_PURGE_OPTS,
+        PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_GROUP:
+            PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_OPTS,
+        PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_GROUP:
+            PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_OPTS,
     }

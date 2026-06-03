@@ -1,0 +1,16 @@
+---
+fixes:
+  - |
+    Services now report a STOPPED status on shutdown, fixing duplicate
+    service_status entries when a service restarts on a different host
+    (bug 1998906).
+  - |
+    Added two periodic producer tasks: one to mark services as DOWN
+    when their heartbeat exceeds a configurable threshold, and another
+    to clean up STOPPED service entries. These tasks are auto-enabled
+    by default when ``enabled_tasks`` is not explicitly configured.
+    To exclude them, set ``enabled_tasks`` in the ``[producer]``
+    section of your configuration.
+upgrade:
+  - |
+    A database migration adds STOPPED to the service_statuses enum.

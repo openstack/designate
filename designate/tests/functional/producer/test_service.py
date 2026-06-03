@@ -25,14 +25,21 @@ LOG = logging.getLogger(__name__)
 class ProducerServiceTest(designate.tests.functional.TestCase):
     def setUp(self):
         super().setUp()
+        self.config(
+            enabled_tasks=[
+                'delayed_notify',
+                'increment_serial',
+                'worker_periodic_recovery',
+                'zone_purge',
+            ],
+            group='service:producer'
+        )
         self.producer_service = self.start_service('producer')
 
     def test_stop(self):
         self.producer_service.stop()
 
     def test_validate_partition_range(self):
-        self.producer_service.start()
-
         min_partition = objects.Zone.fields['shard'].min
         max_partition = objects.Zone.fields['shard'].max
 
