@@ -1,0 +1,23 @@
+---
+security:
+  - |
+    Added Post-Quantum Cryptography (PQC) readiness configuration.
+    A new ``[pqc]`` configuration group provides ``check_mode``
+    (disabled/permissive/strict) to validate certificate algorithms
+    used in backend TLS connections, and ``tls_minimum_version``
+    to enforce a minimum TLS protocol version for backends using
+    direct TLS (NSD4). The NSD4 and PDNS4 backends now reject
+    disabled TLS certificate verification when check_mode is set
+    to ``strict``. ``check_mode`` defaults to ``permissive``, which
+    only logs warnings for quantum-vulnerable certificates or
+    disabled TLS verification and never blocks startup or rejects
+    existing configuration; operators who want no certificate-check
+    log output from ``[pqc]`` can set ``check_mode = disabled``.
+    This does not affect the unconditional HMAC-MD5 TSIG warning
+    described below, which is independent of ``check_mode``.
+    See `bug 2149793 <https://bugs.launchpad.net/designate/+bug/2149793>`_.
+other:
+  - |
+    TSIG keys using HMAC-MD5 now always emit a warning (independent
+    of the ``[pqc] check_mode`` setting) recommending migration to
+    HMAC-SHA256 or stronger algorithms.

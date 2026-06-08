@@ -25,7 +25,13 @@ import ssl
 from oslo_log import log as logging
 
 from designate.backend import base
+from designate.common import constants
+from designate.common import crypto_utils
+import designate.conf
 from designate import exceptions
+
+
+CONF = designate.conf.CONF
 
 
 LOG = logging.getLogger(__name__)
@@ -49,10 +55,27 @@ class NSD4Backend(base.Backend):
                                         '/etc/nsd/nsd_control.key')
         self.pattern = self.options.get('pattern', 'slave')
 
+        check_mode = CONF['pqc'].check_mode
+        if check_mode != constants.PQC_MODE_DISABLED:
+            cert_paths = [
+                p for p in [self.certfile, self.options.get('ca_certs')]
+                if p
+            ]
+            crypto_utils.check_pqc_compliance(
+                cert_paths=cert_paths,
+                check_mode=check_mode,
+                component_name=self.__plugin_name__
+            )
+
     def _create_ssl_context(self):
         """Create and configure SSL context with backend settings."""
         context = ssl.create_default_context()
         context.load_cert_chain(certfile=self.certfile, keyfile=self.keyfile)
+
+        tls_min = CONF['pqc'].tls_minimum_version
+        if tls_min:
+            crypto_utils.check_tls_version_support(tls_min)
+            context.minimum_version = crypto_utils.TLS_VERSION_MAP[tls_min]
 
         verify_ssl = (
             self.options.get('verify_ssl', 'true').lower() == 'true'
@@ -61,13 +84,39 @@ class NSD4Backend(base.Backend):
             self.options.get('check_hostname', 'true').lower() == 'true'
         )
         ca_certs = self.options.get('ca_certs', None)
+        check_mode = CONF['pqc'].check_mode
 
         context.check_hostname = check_hostname
+        if not check_hostname and check_mode != constants.PQC_MODE_DISABLED:
+            LOG.warning(
+                'NSD4 backend: TLS hostname verification is DISABLED '
+                '(check_hostname=false). This allows man-in-the-middle '
+                'attacks even when certificate verification is enabled.'
+            )
+            if check_mode == constants.PQC_MODE_STRICT:
+                raise exceptions.ConfigurationError(
+                    'NSD4 backend: Hostname verification cannot be '
+                    'disabled when pqc check_mode is "strict".'
+                )
+
         if verify_ssl:
             context.verify_mode = ssl.CERT_REQUIRED
             if ca_certs:
                 context.load_verify_locations(cafile=ca_certs)
         else:
+            if check_mode != constants.PQC_MODE_DISABLED:
+                LOG.warning(
+                    'NSD4 backend: TLS certificate verification is '
+                    'DISABLED (verify_ssl=false). This allows '
+                    'man-in-the-middle attacks and negates any PQC '
+                    'key exchange protection.'
+                )
+                if check_mode == constants.PQC_MODE_STRICT:
+                    raise exceptions.ConfigurationError(
+                        'NSD4 backend: Certificate verification '
+                        'cannot be disabled when pqc check_mode is '
+                        '"strict".'
+                    )
             context.verify_mode = ssl.CERT_NONE
 
         return context

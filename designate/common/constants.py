@@ -86,10 +86,20 @@ RE_FIP = re.compile(r'^(?P<region>[A-Za-z0-9\.\-_]{1,100}):(?P<id>[0-9a-fA-F]{8}
 # Error Validation regexes
 RE_REQUIRED = re.compile(r'\'([\w]*)\' is a required property')
 
+PQC_MODE_DISABLED = 'disabled'
+PQC_MODE_PERMISSIVE = 'permissive'
+PQC_MODE_STRICT = 'strict'
+
 TSIG_ALGORITHMS = [
                 'hmac-md5',
                 'hmac-sha1',
                 'hmac-sha224',
+                'hmac-sha256',
+                'hmac-sha384',
+                'hmac-sha512'
+            ]
+
+TSIG_RECOMMENDED_ALGORITHMS = [
                 'hmac-sha256',
                 'hmac-sha384',
                 'hmac-sha512'

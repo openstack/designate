@@ -10,15 +10,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_config import fixture as cfg_fixture
 import oslotest.base
 import requests_mock
 from unittest import mock
 
 from designate.backend import impl_pdns4
+import designate.conf
 from designate import context
 from designate import exceptions
 from designate import objects
 from designate.tests import base_fixtures
+
+CONF = designate.conf.CONF
 
 
 class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
@@ -26,6 +30,7 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
         super().setUp()
         self.stdlog = base_fixtures.StandardLogging()
         self.useFixture(self.stdlog)
+        self.useFixture(cfg_fixture.Config(CONF))
 
         self.context = mock.Mock()
         self.admin_context = mock.Mock()
@@ -395,3 +400,72 @@ class PDNS4BackendTestCase(oslotest.base.BaseTestCase):
 
         self.backend.api_ca_cert = None
         self.assertFalse(self.backend._verify_ssl())
+
+    @mock.patch('os.path.exists')
+    @mock.patch('designate.common.crypto_utils.check_pqc_compliance')
+    def test_init_pqc_permissive(self, mock_compliance, mock_path_exists):
+        mock_path_exists.return_value = True
+        CONF.set_override('check_mode', 'permissive', group='pqc')
+
+        target = dict(self.target)
+        target['options'] = [
+            {'key': 'api_endpoint', 'value': 'https://203.0.113.1:8081'},
+            {'key': 'api_token', 'value': 'api_key'},
+            {'key': 'api_ca_cert', 'value': '/etc/pdns/ca.pem'},
+        ]
+        impl_pdns4.PDNS4Backend(objects.PoolTarget.from_dict(target))
+
+        mock_compliance.assert_called_once()
+        call_kwargs = mock_compliance.call_args
+        self.assertEqual(
+            ['/etc/pdns/ca.pem'], call_kwargs[1]['cert_paths']
+        )
+        self.assertEqual('permissive', call_kwargs[1]['check_mode'])
+        self.assertEqual('pdns4', call_kwargs[1]['component_name'])
+
+    def test_init_pqc_permissive_http_endpoint_no_check(self):
+        CONF.set_override('check_mode', 'permissive', group='pqc')
+
+        target = dict(self.target)
+        target['options'] = [
+            {'key': 'api_endpoint', 'value': 'http://203.0.113.1:8081'},
+            {'key': 'api_token', 'value': 'api_key'},
+        ]
+        # Should not raise or warn: a plain-HTTP endpoint has no TLS
+        # verification to disable.
+        impl_pdns4.PDNS4Backend(objects.PoolTarget.from_dict(target))
+
+    def test_init_pqc_permissive_verify_disabled_warns(self):
+        CONF.set_override('check_mode', 'permissive', group='pqc')
+
+        target = dict(self.target)
+        target['options'] = [
+            {'key': 'api_endpoint', 'value': 'https://203.0.113.1:8081'},
+            {'key': 'api_token', 'value': 'api_key'},
+        ]
+        impl_pdns4.PDNS4Backend(objects.PoolTarget.from_dict(target))
+
+        self.assertIn(
+            'TLS certificate verification is DISABLED',
+            self.stdlog.logger.output
+        )
+
+    def test_init_pqc_strict_verify_disabled_raises(self):
+        CONF.set_override('check_mode', 'strict', group='pqc')
+
+        target = dict(self.target)
+        target['options'] = [
+            {'key': 'api_endpoint', 'value': 'https://203.0.113.1:8081'},
+            {'key': 'api_token', 'value': 'api_key'},
+        ]
+        self.assertRaises(
+            exceptions.ConfigurationError,
+            impl_pdns4.PDNS4Backend,
+            objects.PoolTarget.from_dict(target)
+        )
+
+    @mock.patch('designate.common.crypto_utils.check_pqc_compliance')
+    def test_init_pqc_disabled_no_check(self, mock_compliance):
+        CONF.set_override('check_mode', 'disabled', group='pqc')
+        impl_pdns4.PDNS4Backend(objects.PoolTarget.from_dict(self.target))
+        mock_compliance.assert_not_called()

@@ -201,6 +201,14 @@ def _apply_tsig_to_message(dns_message, tsig_key):
     """
     if tsig_key is None:
         return
+
+    if tsig_key.algorithm and tsig_key.algorithm.lower() == 'hmac-md5':
+        LOG.warning(
+            'TSIG key "%s" uses HMAC-MD5, which is cryptographically '
+            'weak. Consider migrating to HMAC-SHA256 or stronger.',
+            tsig_key.name
+        )
+
     keyring = dns.tsigkeyring.from_text({
         tsig_key.name: tsig_key.secret
     })

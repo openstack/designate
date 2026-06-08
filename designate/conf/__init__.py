@@ -22,6 +22,7 @@ from designate.conf import heartbeat_emitter
 from designate.conf import keystone
 from designate.conf import mdns
 from designate.conf import network_api
+from designate.conf import pqc
 from designate.conf import producer
 from designate.conf import proxy
 from designate.conf import sink
@@ -39,6 +40,7 @@ heartbeat_emitter.register_opts(CONF)
 keystone.register_opts(CONF)
 mdns.register_opts(CONF)
 network_api.register_opts(CONF)
+pqc.register_opts(CONF)
 producer.register_opts(CONF)
 proxy.register_opts(CONF)
 sink.register_opts(CONF)

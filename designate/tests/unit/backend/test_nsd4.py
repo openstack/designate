@@ -18,6 +18,7 @@ import socket
 import ssl
 from unittest import mock
 
+from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 from designate.backend import impl_nsd4
@@ -25,10 +26,16 @@ from designate import context
 from designate import exceptions
 from designate import objects
 
+import designate.conf
+
+CONF = designate.conf.CONF
+
 
 class NSD4BackendTestCase(oslotest.base.BaseTestCase):
     def setUp(self):
         super().setUp()
+
+        self.useFixture(cfg_fixture.Config(CONF))
 
         self.context = mock.Mock()
         self.admin_context = mock.Mock()
@@ -128,3 +135,137 @@ class NSD4BackendTestCase(oslotest.base.BaseTestCase):
         self.assertRaises(exceptions.Backend,
                           self.backend.create_zone,
                           self.context, self.zone)
+
+    @mock.patch('ssl.create_default_context')
+    def test_create_ssl_context_tls_minimum_version(self, mock_ssl_ctx):
+        CONF.set_override('tls_minimum_version', '1.2', group='pqc')
+        context = mock.MagicMock()
+        mock_ssl_ctx.return_value = context
+
+        self.backend._create_ssl_context()
+
+        self.assertEqual(ssl.TLSVersion.TLSv1_2, context.minimum_version)
+
+    @mock.patch('ssl.create_default_context')
+    def test_create_ssl_context_verify_ssl_false_strict_raises(
+            self, mock_ssl_ctx):
+        CONF.set_override('check_mode', 'strict', group='pqc')
+        context = mock.MagicMock()
+        mock_ssl_ctx.return_value = context
+
+        self.backend.options = mock.MagicMock()
+        self.backend.options.get = mock.MagicMock(
+            side_effect=lambda k, d=None: {
+                'verify_ssl': 'false',
+                'check_hostname': 'false',
+                'ca_certs': None,
+            }.get(k, d)
+        )
+
+        self.assertRaises(
+            exceptions.ConfigurationError,
+            self.backend._create_ssl_context
+        )
+
+    @mock.patch('ssl.create_default_context')
+    def test_create_ssl_context_check_hostname_false_permissive_warns(
+            self, mock_ssl_ctx):
+        CONF.set_override('check_mode', 'permissive', group='pqc')
+        context = mock.MagicMock()
+        mock_ssl_ctx.return_value = context
+
+        self.backend.options = mock.MagicMock()
+        self.backend.options.get = mock.MagicMock(
+            side_effect=lambda k, d=None: {
+                'verify_ssl': 'true',
+                'check_hostname': 'false',
+                'ca_certs': None,
+            }.get(k, d)
+        )
+
+        with mock.patch.object(impl_nsd4, 'LOG') as mock_log:
+            self.backend._create_ssl_context()
+            mock_log.warning.assert_called_once()
+            self.assertIn(
+                'hostname', str(mock_log.warning.call_args).lower()
+            )
+
+    @mock.patch('ssl.create_default_context')
+    def test_create_ssl_context_check_hostname_false_strict_raises(
+            self, mock_ssl_ctx):
+        CONF.set_override('check_mode', 'strict', group='pqc')
+        context = mock.MagicMock()
+        mock_ssl_ctx.return_value = context
+
+        self.backend.options = mock.MagicMock()
+        self.backend.options.get = mock.MagicMock(
+            side_effect=lambda k, d=None: {
+                'verify_ssl': 'true',
+                'check_hostname': 'false',
+                'ca_certs': None,
+            }.get(k, d)
+        )
+
+        self.assertRaises(
+            exceptions.ConfigurationError,
+            self.backend._create_ssl_context
+        )
+
+    @mock.patch('ssl.create_default_context')
+    def test_create_ssl_context_check_hostname_false_disabled_no_warn(
+            self, mock_ssl_ctx):
+        CONF.set_override('check_mode', 'disabled', group='pqc')
+        context = mock.MagicMock()
+        mock_ssl_ctx.return_value = context
+
+        self.backend.options = mock.MagicMock()
+        self.backend.options.get = mock.MagicMock(
+            side_effect=lambda k, d=None: {
+                'verify_ssl': 'true',
+                'check_hostname': 'false',
+                'ca_certs': None,
+            }.get(k, d)
+        )
+
+        with mock.patch.object(impl_nsd4, 'LOG') as mock_log:
+            self.backend._create_ssl_context()
+            mock_log.warning.assert_not_called()
+
+    @mock.patch('ssl.create_default_context')
+    def test_create_ssl_context_verify_ssl_false_disabled_no_warn(
+            self, mock_ssl_ctx):
+        CONF.set_override('check_mode', 'disabled', group='pqc')
+        context = mock.MagicMock()
+        mock_ssl_ctx.return_value = context
+
+        self.backend.options = mock.MagicMock()
+        self.backend.options.get = mock.MagicMock(
+            side_effect=lambda k, d=None: {
+                'verify_ssl': 'false',
+                'check_hostname': 'true',
+                'ca_certs': None,
+            }.get(k, d)
+        )
+
+        with mock.patch.object(impl_nsd4, 'LOG') as mock_log:
+            self.backend._create_ssl_context()
+            mock_log.warning.assert_not_called()
+
+    @mock.patch('designate.common.crypto_utils.check_pqc_compliance')
+    def test_init_pqc_permissive(self, mock_compliance):
+        CONF.set_override('check_mode', 'permissive', group='pqc')
+        impl_nsd4.NSD4Backend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+        mock_compliance.assert_called_once()
+        call_kwargs = mock_compliance.call_args
+        self.assertEqual('permissive', call_kwargs[1]['check_mode'])
+        self.assertEqual('nsd4', call_kwargs[1]['component_name'])
+
+    @mock.patch('designate.common.crypto_utils.check_pqc_compliance')
+    def test_init_pqc_disabled_no_check(self, mock_compliance):
+        CONF.set_override('check_mode', 'disabled', group='pqc')
+        impl_nsd4.NSD4Backend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+        mock_compliance.assert_not_called()
