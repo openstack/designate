@@ -132,6 +132,7 @@ class TestUtils(designate.tests.functional.TestCase):
         zone = dnsutils.from_dnspython_zone(dnspython_zone)
 
         self.assertIsInstance(zone, objects.zone.Zone)
+        self.assertEqual(7200, zone.refresh)
 
     def test_from_dnspython_zone_zero_soa(self):
         CONF.set_override('min_ttl', 1234, 'service:central')
