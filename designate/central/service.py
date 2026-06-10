@@ -699,8 +699,8 @@ class Service(service.RPCService):
     def _generate_soa_refresh_interval(self):
         """Generate a random refresh interval to stagger AXFRs across multiple
         zones and resolvers
-        maximum val: default_soa_refresh_min
-        minimum val: default_soa_refresh_max
+        minimum val: default_soa_refresh_min
+        maximum val: default_soa_refresh_max
         """
         assert CONF.default_soa_refresh_min is not None
         assert CONF.default_soa_refresh_max is not None

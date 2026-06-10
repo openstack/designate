@@ -100,6 +100,7 @@ def from_dnspython_zone(dnspython_zone):
         'email': email,
         'ttl': soa.ttl,
         'serial': soa[0].serial,
+        'refresh': soa[0].refresh,
         'retry': soa[0].retry,
         'expire': soa[0].expire
     }
