@@ -64,7 +64,7 @@ deprecated_delete_zone_export = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="zone_export",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Retrive a Zone Export from the Designate Datastore",
         operations=[
@@ -77,7 +77,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="create_zone_export",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Create Zone Export",
         operations=[
@@ -90,7 +90,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="find_zone_exports",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="List Zone Exports",
         operations=[
@@ -103,7 +103,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_export",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="Get Zone Exports",
         operations=[
@@ -116,7 +116,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_zone_export",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Update Zone Exports",
         operations=[
@@ -129,7 +129,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_zone_export",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Delete a zone export",
         operations=[

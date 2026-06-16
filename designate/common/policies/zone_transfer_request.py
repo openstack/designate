@@ -58,7 +58,7 @@ deprecated_delete_zone_transfer_request = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="create_zone_transfer_request",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Create Zone Transfer Accept",
         operations=[
@@ -84,7 +84,7 @@ rules = [
     ),
     policy.RuleDefault(
         name="get_zone_transfer_request_detailed",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_create_zone_transfer_request
     ),
@@ -101,7 +101,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_zone_transfer_request",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Update a Zone Transfer Request",
         operations=[
@@ -114,7 +114,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_zone_transfer_request",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Delete a Zone Transfer Request",
         operations=[

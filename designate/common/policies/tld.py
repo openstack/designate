@@ -58,7 +58,7 @@ deprecated_delete_tld = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="create_tld",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Create Tld",
         operations=[
@@ -71,7 +71,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="find_tlds",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="List Tlds",
         operations=[
@@ -84,7 +84,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="get_tld",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Show Tld",
         operations=[
@@ -97,7 +97,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_tld",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Update Tld",
         operations=[
@@ -110,7 +110,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_tld",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Delete Tld",
         operations=[

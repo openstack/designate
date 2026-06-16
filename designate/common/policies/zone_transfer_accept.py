@@ -59,7 +59,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_transfer_accept",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="Get Zone Transfer Accept",
         operations=[
@@ -72,7 +72,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="find_zone_transfer_accepts",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="List Zone Transfer Accepts",
         operations=[

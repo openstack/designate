@@ -64,7 +64,7 @@ deprecated_use_blacklisted_zone = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="create_blacklist",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description='Create blacklist.',
         operations=[
@@ -77,7 +77,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="find_blacklists",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description='Find blacklists.',
         operations=[
@@ -90,7 +90,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="get_blacklist",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description='Get blacklist.',
         operations=[
@@ -103,7 +103,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_blacklist",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description='Update blacklist.',
         operations=[
@@ -116,7 +116,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_blacklist",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description='Delete blacklist.',
         operations=[
@@ -129,7 +129,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="use_blacklisted_zone",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description='Allowed bypass the blacklist.',
         operations=[

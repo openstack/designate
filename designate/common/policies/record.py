@@ -40,7 +40,7 @@ deprecated_count_records = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="find_records",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description='Find records.',
         operations=[
@@ -56,7 +56,7 @@ rules = [
     ),
     policy.RuleDefault(
         name="count_records",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_count_records
     )

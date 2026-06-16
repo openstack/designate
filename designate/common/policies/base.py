@@ -17,23 +17,17 @@ from oslo_policy import policy
 
 
 DEPRECATED_REASON = """
-The designate API now supports system scope and default roles.
+The designate API now supports project scope and default roles.
 """
 
 RULE_ANY = "@"
 
-# Generic policy check string for system administrators. These are the people
+# Generic policy check string for administrators. These are the people
 # who need the highest level of authorization to operate the deployment.
 # They're allowed to create, read, update, or delete any system-specific
 # resource. They can also operate on project-specific resources where
 # applicable (e.g., cleaning up blacklists)
-SYSTEM_ADMIN = 'role:admin'
-
-# Generic policy check string for read-only access to system-level resources.
-# This persona is useful for someone who needs access for auditing or even
-# support. These uses are also able to view project-specific resources where
-# applicable (e.g., listing all pools)
-SYSTEM_READER = 'role:admin'
+ADMIN = 'role:admin'
 
 # This check string is reserved for actions that require the highest level of
 # authorization on a project or resources within the project
@@ -49,11 +43,11 @@ PROJECT_READER = 'role:reader and project_id:%(project_id)s'
 
 # The following are common composite check strings that are useful for
 # protecting APIs designed to operate with multiple scopes
-SYSTEM_ADMIN_OR_PROJECT_MEMBER = (
-    '(' + SYSTEM_ADMIN + ') or (' + PROJECT_MEMBER + ')'
+ADMIN_OR_PROJECT_MEMBER = (
+    '(' + ADMIN + ') or (' + PROJECT_MEMBER + ')'
 )
-SYSTEM_OR_PROJECT_READER = (
-    '(' + SYSTEM_READER + ') or (' + PROJECT_READER + ')'
+ADMIN_OR_PROJECT_READER = (
+    '(' + ADMIN + ') or (' + PROJECT_READER + ')'
 )
 
 # Designate specific "secure RBAC" rules
@@ -61,17 +55,17 @@ ALL_TENANTS = 'True:%(all_tenants)s'
 
 ALL_TENANTS_READER = ALL_TENANTS + ' and role:reader'
 
-SYSTEM_OR_PROJECT_READER_OR_ALL_TENANTS_READER = (
-    '(' + SYSTEM_READER + ') or (' + PROJECT_READER + ') or (' +
+ADMIN_OR_PROJECT_READER_OR_ALL_TENANTS_READER = (
+    '(' + ADMIN + ') or (' + PROJECT_READER + ') or (' +
     ALL_TENANTS_READER + ')'
 )
 
-SYSTEM_OR_PROJECT_READER_OR_SHARED = (
-        SYSTEM_OR_PROJECT_READER + ' or (\'True\':%(zone_shared)s)'
+ADMIN_OR_PROJECT_READER_OR_SHARED = (
+        ADMIN_OR_PROJECT_READER + ' or (\'True\':%(zone_shared)s)'
 )
 
 RULE_ZONE_TRANSFER = (
-    '(' + SYSTEM_ADMIN_OR_PROJECT_MEMBER + ') or '
+    '(' + ADMIN_OR_PROJECT_MEMBER + ') or '
     'project_id:%(target_project_id)s or '
     'None:%(target_project_id)s')
 
@@ -113,7 +107,7 @@ rules = [
     # Default policy
     policy.RuleDefault(
         name="default",
-        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=ADMIN_OR_PROJECT_MEMBER,
         deprecated_rule=deprecated_default),
 ]
 

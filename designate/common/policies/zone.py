@@ -112,7 +112,7 @@ deprecated_pool_move_zone = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="create_zone",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Create Zone",
         operations=[
@@ -125,13 +125,13 @@ rules = [
     ),
     policy.RuleDefault(
         name="get_zones",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_get_zones
     ),
     policy.DocumentedRuleDefault(
         name="get_zone",
-        check_str=base.SYSTEM_OR_PROJECT_READER_OR_SHARED,
+        check_str=base.ADMIN_OR_PROJECT_READER_OR_SHARED,
         scope_types=[constants.PROJECT],
         description="Get Zone",
         operations=[
@@ -144,13 +144,13 @@ rules = [
     ),
     policy.RuleDefault(
         name="get_zone_servers",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_get_zone_servers
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_ns_records",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="Get the Name Servers for a Zone",
         operations=[
@@ -163,7 +163,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="find_zones",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="List existing zones",
         operations=[
@@ -176,7 +176,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_zone",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Update Zone",
         operations=[
@@ -189,7 +189,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_zone",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Delete Zone",
         operations=[
@@ -202,7 +202,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="xfr_zone",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Manually Trigger an Update of a Secondary Zone",
         operations=[
@@ -215,7 +215,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="abandon_zone",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Abandon Zone",
         operations=[
@@ -228,25 +228,25 @@ rules = [
     ),
     policy.RuleDefault(
         name="count_zones",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_count_zones
     ),
     policy.RuleDefault(
         name="count_zones_pending_notify",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_count_zones_pending_notify
     ),
     policy.RuleDefault(
         name="purge_zones",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_purge_zones
     ),
     policy.DocumentedRuleDefault(
         name="pool_move_zone",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Pool Move Zone",
         operations=[

@@ -53,7 +53,7 @@ deprecated_unshare_zone = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="get_zone_share",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Get a Zone Share",
         operations=[
@@ -66,7 +66,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="share_zone",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Share a Zone",
         operations=[
@@ -92,14 +92,14 @@ rules = [
     ),
     policy.RuleDefault(
         name="find_project_zone_share",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Check the can query for a specific projects shares.",
         deprecated_rule=deprecated_find_project_zone_share
     ),
     policy.DocumentedRuleDefault(
         name="unshare_zone",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Unshare Zone",
         operations=[

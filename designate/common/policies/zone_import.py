@@ -58,7 +58,7 @@ deprecated_delete_zone_import = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="create_zone_import",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Create Zone Import",
         operations=[
@@ -71,7 +71,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="find_zone_imports",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="List all Zone Imports",
         operations=[
@@ -84,7 +84,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_import",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="Get Zone Imports",
         operations=[
@@ -97,7 +97,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_zone_import",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Update Zone Imports",
         operations=[
@@ -110,7 +110,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_zone_import",
-        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
         description="Delete a Zone Import",
         operations=[

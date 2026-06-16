@@ -46,21 +46,21 @@ deprecated_count_tenants = policy.DeprecatedRule(
 rules = [
     policy.RuleDefault(
         name="find_tenants",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Find all Tenants.",
         deprecated_rule=deprecated_find_tenants
     ),
     policy.RuleDefault(
         name="get_tenant",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Get all Tenants.",
         deprecated_rule=deprecated_get_tenant
     ),
     policy.RuleDefault(
         name="count_tenants",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Count tenants",
         deprecated_rule=deprecated_count_tenants

@@ -45,7 +45,7 @@ deprecated_reset_quotas = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="get_quotas",
-        check_str=base.SYSTEM_OR_PROJECT_READER_OR_ALL_TENANTS_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER_OR_ALL_TENANTS_READER,
         scope_types=[constants.PROJECT],
         description="View Current Project's Quotas.",
         operations=[
@@ -58,7 +58,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="set_quota",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description='Set Quotas.',
         operations=[
@@ -71,7 +71,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="reset_quotas",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description='Reset Quotas.',
         operations=[

@@ -58,7 +58,7 @@ deprecated_delete_tsigkey = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="create_tsigkey",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Create Tsigkey",
         operations=[
@@ -71,7 +71,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="find_tsigkeys",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="List Tsigkeys",
         operations=[
@@ -84,7 +84,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="get_tsigkey",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Show a Tsigkey",
         operations=[
@@ -97,7 +97,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_tsigkey",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Update Tsigkey",
         operations=[
@@ -110,7 +110,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_tsigkey",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Delete a Tsigkey",
         operations=[

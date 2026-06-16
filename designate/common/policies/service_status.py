@@ -52,7 +52,7 @@ deprecated_delete_service_status = policy.DeprecatedRule(
 rules = [
     policy.DocumentedRuleDefault(
         name="find_service_status",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="Find a single Service Status",
         operations=[
@@ -65,7 +65,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="find_service_statuses",
-        check_str=base.SYSTEM_READER,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         description="List service statuses.",
         operations=[
@@ -78,13 +78,13 @@ rules = [
     ),
     policy.RuleDefault(
         name="update_service_status",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_update_service_status
     ),
     policy.RuleDefault(
         name="delete_service_status",
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_delete_service_status
     )

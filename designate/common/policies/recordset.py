@@ -92,11 +92,11 @@ deprecated_count_recordset = policy.DeprecatedRule(
 PROJECT_MEMBER_AND_PRIMARY_ZONE = (
     '(' + base.PROJECT_MEMBER + ') and (\'PRIMARY\':%(zone_type)s)'
 )
-SYSTEM_ADMIN_AND_PRIMARY_ZONE = (
-    '(' + base.SYSTEM_ADMIN + ') and (\'PRIMARY\':%(zone_type)s)'
+ADMIN_AND_PRIMARY_ZONE = (
+    '(' + base.ADMIN + ') and (\'PRIMARY\':%(zone_type)s)'
 )
-SYSTEM_ADMIN_AND_SECONDARY_ZONE = (
-    '(' + base.SYSTEM_ADMIN + ') and (\'SECONDARY\':%(zone_type)s)'
+ADMIN_AND_SECONDARY_ZONE = (
+    '(' + base.ADMIN + ') and (\'SECONDARY\':%(zone_type)s)'
 )
 SHARED_AND_PRIMARY_ZONE = (
     '(\'True\':%(zone_shared)s) and (\'PRIMARY\':%(zone_type)s)'
@@ -107,17 +107,17 @@ RECORDSET_MEMBER_AND_PRIMARY_ZONE = (
 )
 
 
-SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE = ' or '.join(
+ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE = ' or '.join(
     [PROJECT_MEMBER_AND_PRIMARY_ZONE,
-     SYSTEM_ADMIN_AND_PRIMARY_ZONE,
-     SYSTEM_ADMIN_AND_SECONDARY_ZONE,
+     ADMIN_AND_PRIMARY_ZONE,
+     ADMIN_AND_SECONDARY_ZONE,
      SHARED_AND_PRIMARY_ZONE]
 )
 
-SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE = ' or '.join(
+ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE = ' or '.join(
     [PROJECT_MEMBER_AND_PRIMARY_ZONE,
-     SYSTEM_ADMIN_AND_PRIMARY_ZONE,
-     SYSTEM_ADMIN_AND_SECONDARY_ZONE,
+     ADMIN_AND_PRIMARY_ZONE,
+     ADMIN_AND_SECONDARY_ZONE,
      RECORDSET_MEMBER_AND_PRIMARY_ZONE]
 )
 
@@ -125,7 +125,7 @@ SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE = ' or '.join(
 rules = [
     policy.DocumentedRuleDefault(
         name="create_recordset",
-        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
+        check_str=ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
         scope_types=[constants.PROJECT],
         description="Create Recordset",
         operations=[
@@ -138,13 +138,13 @@ rules = [
     ),
     policy.RuleDefault(
         name="get_recordsets",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_get_recordsets
     ),
     policy.DocumentedRuleDefault(
         name="get_recordset",
-        check_str=base.SYSTEM_OR_PROJECT_READER_OR_SHARED,
+        check_str=base.ADMIN_OR_PROJECT_READER_OR_SHARED,
         scope_types=[constants.PROJECT],
         description="Get recordset",
         operations=[
@@ -157,14 +157,14 @@ rules = [
     ),
     policy.RuleDefault(
         name="find_recordset",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="List a Recordset in a Zone",
         deprecated_rule=deprecated_find_recordset
     ),
     policy.DocumentedRuleDefault(
         name="find_recordsets",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="List Recordsets in a Zone",
         operations=[
@@ -177,7 +177,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_recordset",
-        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
+        check_str=ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
         scope_types=[constants.PROJECT],
         description="Update recordset",
         operations=[
@@ -190,7 +190,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_recordset",
-        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
+        check_str=ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
         scope_types=[constants.PROJECT],
         description="Delete RecordSet",
         operations=[
@@ -203,7 +203,7 @@ rules = [
     ),
     policy.RuleDefault(
         name="count_recordset",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         description="Count recordsets",
         deprecated_rule=deprecated_count_recordset,
