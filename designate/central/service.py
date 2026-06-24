@@ -2860,6 +2860,15 @@ class Service(service.RPCService):
 
         self._is_valid_project_id(context.project_id)
 
+        # Check export size quota before accepting the async job
+        # This provides immediate feedback instead of requiring users to
+        # poll for async errors. Similar pattern to zone/recordset creation.
+        criterion = {'zone_id': zone_id}
+        recordset_count = self.storage.count_recordsets(context, criterion)
+
+        self.quota.limit_check(
+            context, zone.tenant_id, api_export_size=recordset_count)
+
         values = {
             'status': 'PENDING',
             'message': None,

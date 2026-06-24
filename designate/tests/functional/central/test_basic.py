@@ -1587,6 +1587,10 @@ class CentralZoneExportTests(CentralBasic):
             tenant_id='t',
         )
 
+        self.service.storage.count_recordsets = mock.Mock(
+            return_value=10
+        )
+
         self.service.storage.create_zone_export = mock.Mock(
             return_value=unit.RwObject(
                 id=CentralZoneTestCase.zone_export_id,
@@ -1610,6 +1614,11 @@ class CentralZoneExportTests(CentralBasic):
         self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
         self.assertEqual('t', out.tenant_id)
+
+        # Verify quota check was called
+        self.service.storage.count_recordsets.assert_called_once_with(
+            self.context, {'zone_id': CentralZoneTestCase.zone_export_id}
+        )
 
     def test_get_zone_export(self):
         self.context = mock.Mock()
