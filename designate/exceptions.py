@@ -294,6 +294,10 @@ class DuplicateTsigKey(Duplicate):
     error_type = 'duplicate_tsigkey'
 
 
+class InvalidTsigKey(BadRequest):
+    error_type = 'invalid_tsigkey'
+
+
 class DuplicateZone(Duplicate):
     error_type = 'duplicate_zone'
 

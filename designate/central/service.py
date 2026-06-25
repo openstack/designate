@@ -627,6 +627,26 @@ class Service(service.RPCService):
     def create_tsigkey(self, context, tsigkey):
         policy.check('create_tsigkey', context)
 
+        # Validate that resource_id matches the scope type
+        if tsigkey.scope == 'ZONE':
+            # Verify the resource_id is a valid zone
+            try:
+                self.storage.get_zone(
+                    context, tsigkey.resource_id,
+                    apply_tenant_criteria=False)
+            except exceptions.ZoneNotFound:
+                raise exceptions.InvalidTsigKey(
+                    'Resource ID %s is not a valid zone' %
+                    tsigkey.resource_id)
+        elif tsigkey.scope == 'POOL':
+            # Verify the resource_id is a valid pool
+            try:
+                self.storage.get_pool(context, tsigkey.resource_id)
+            except exceptions.PoolNotFound:
+                raise exceptions.InvalidTsigKey(
+                    'Resource ID %s is not a valid pool' %
+                    tsigkey.resource_id)
+
         created_tsigkey = self.storage.create_tsigkey(context, tsigkey)
 
         # TODO(Ron): this method needs to do more than update storage.
@@ -655,6 +675,28 @@ class Service(service.RPCService):
             'tsigkey_id': tsigkey.obj_get_original_value('id'),
         }
         policy.check('update_tsigkey', context, target)
+
+        # Validate that resource_id matches the scope type if either changed
+        if ('scope' in tsigkey.obj_what_changed() or
+                'resource_id' in tsigkey.obj_what_changed()):
+            if tsigkey.scope == 'ZONE':
+                # Verify the resource_id is a valid zone
+                try:
+                    self.storage.get_zone(
+                        context, tsigkey.resource_id,
+                        apply_tenant_criteria=False)
+                except exceptions.ZoneNotFound:
+                    raise exceptions.InvalidTsigKey(
+                        'Resource ID %s is not a valid zone' %
+                        tsigkey.resource_id)
+            elif tsigkey.scope == 'POOL':
+                # Verify the resource_id is a valid pool
+                try:
+                    self.storage.get_pool(context, tsigkey.resource_id)
+                except exceptions.PoolNotFound:
+                    raise exceptions.InvalidTsigKey(
+                        'Resource ID %s is not a valid pool' %
+                        tsigkey.resource_id)
 
         tsigkey = self.storage.update_tsigkey(context, tsigkey)
 

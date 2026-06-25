@@ -432,6 +432,82 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         self.assertEqual(exceptions.TsigKeyNotFound, exc.exc_info[0])
 
+    def test_create_tsigkey_with_invalid_scope_zone(self):
+        # Create a pool first
+        pool = self.create_pool()
+
+        # Try to create a TSIG key with ZONE scope but pool ID
+        tsigkey = objects.TsigKey(
+            name='test-invalid-scope',
+            algorithm='hmac-sha256',
+            secret='TestSecret',
+            scope='ZONE',
+            resource_id=pool.id
+        )
+
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_tsigkey,
+                                self.admin_context, tsigkey)
+
+        self.assertEqual(exceptions.InvalidTsigKey, exc.exc_info[0])
+
+    def test_create_tsigkey_with_invalid_scope_pool(self):
+        # Create a zone first
+        zone = self.create_zone()
+
+        # Try to create a TSIG key with POOL scope but zone ID
+        tsigkey = objects.TsigKey(
+            name='test-invalid-scope',
+            algorithm='hmac-sha256',
+            secret='TestSecret',
+            scope='POOL',
+            resource_id=zone.id
+        )
+
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_tsigkey,
+                                self.admin_context, tsigkey)
+
+        self.assertEqual(exceptions.InvalidTsigKey, exc.exc_info[0])
+
+    def test_create_tsigkey_with_valid_zone_scope(self):
+        # Create a zone first
+        zone = self.create_zone()
+
+        # Create a TSIG key with ZONE scope and valid zone ID
+        tsigkey = objects.TsigKey(
+            name='test-valid-zone-scope',
+            algorithm='hmac-sha256',
+            secret='TestSecret',
+            scope='ZONE',
+            resource_id=zone.id
+        )
+
+        created_tsigkey = self.central_service.create_tsigkey(
+            self.admin_context, tsigkey)
+
+        self.assertEqual('ZONE', created_tsigkey.scope)
+        self.assertEqual(zone.id, created_tsigkey.resource_id)
+
+    def test_create_tsigkey_with_valid_pool_scope(self):
+        # Create a pool first
+        pool = self.create_pool()
+
+        # Create a TSIG key with POOL scope and valid pool ID
+        tsigkey = objects.TsigKey(
+            name='test-valid-pool-scope',
+            algorithm='hmac-sha256',
+            secret='TestSecret',
+            scope='POOL',
+            resource_id=pool.id
+        )
+
+        created_tsigkey = self.central_service.create_tsigkey(
+            self.admin_context, tsigkey)
+
+        self.assertEqual('POOL', created_tsigkey.scope)
+        self.assertEqual(pool.id, created_tsigkey.resource_id)
+
     # Tenant Tests
     def test_count_tenants(self):
         admin_context = self.get_admin_context()
