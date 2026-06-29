@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    Fixed the ``backend-multipool-bind9`` devstack plugin to work with
+    bind9 ``1:9.20.5-1`` and later (Ubuntu 26.04+), where legacy
+    configuration files (``zones.rfc1918``, ``named.conf.default-zones``,
+    and ``db.*``) were removed in favor of BIND's native
+    ``empty-zones-enable`` directive. The plugin now guards these file
+    copies with existence checks and also copies the new
+    ``named.conf.root-hints`` file introduced as a replacement.
+    See `bug 2158627`_ for more information.
+
+    .. _bug 2158627: https://bugs.launchpad.net/designate/+bug/2158627

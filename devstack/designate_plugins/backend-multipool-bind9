@@ -83,15 +83,19 @@ EOF
         sudo sed -i 's/bind/bind-2/g' $BIND2_CFG_DIR/named.conf
 
         # Copy the necessary configuration file and set the bind-2 directories
-        sudo cp -a $BIND_CFG_DIR/zones.rfc1918 $BIND2_CFG_DIR
+        # NOTE: zones.rfc1918, named.conf.default-zones, and db.* files were
+        # removed from bind9 packaging in 1:9.20.5-1 (Ubuntu 26.04+) in favor
+        # of BIND's native empty-zones-enable directive.
+        [ -f $BIND_CFG_DIR/zones.rfc1918 ] && sudo cp -a $BIND_CFG_DIR/zones.rfc1918 $BIND2_CFG_DIR
         sudo cp -a $BIND_CFG_DIR/named.conf.local $BIND2_CFG_DIR
-        sudo cp -a $BIND_CFG_DIR/named.conf.default-zones $BIND2_CFG_DIR
+        [ -f $BIND_CFG_DIR/named.conf.default-zones ] && sudo cp -a $BIND_CFG_DIR/named.conf.default-zones $BIND2_CFG_DIR
+        [ -f $BIND_CFG_DIR/named.conf.root-hints ] && sudo cp -a $BIND_CFG_DIR/named.conf.root-hints $BIND2_CFG_DIR
         sudo sed -i 's/bind/bind-2/g' $BIND2_CFG_DIR/named.conf.local
-        sudo sed -i 's/bind/bind-2/g' $BIND2_CFG_DIR/named.conf.default-zones
+        [ -f $BIND2_CFG_DIR/named.conf.default-zones ] && sudo sed -i 's/bind/bind-2/g' $BIND2_CFG_DIR/named.conf.default-zones
 
         # copy db files
         for db_file in db.local db.127 db.0 db.255; do
-            cp -a $BIND_CFG_DIR/${db_file} $BIND2_CFG_DIR
+            [ -f $BIND_CFG_DIR/${db_file} ] && cp -a $BIND_CFG_DIR/${db_file} $BIND2_CFG_DIR
         done
 
         # create a second service file
