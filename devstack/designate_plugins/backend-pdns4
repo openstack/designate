@@ -99,8 +99,8 @@ disable-axfr=no
 # commented it out due to compatibility issues with pdns 4.3.
 # local-address=$HOST_IP $HOST_IPV6
 local-port=$DESIGNATE_SERVICE_PORT_DNS
-master=no
-slave=yes
+primary=no
+secondary=yes
 cache-ttl=0
 query-cache-ttl=0
 negquery-cache-ttl=0

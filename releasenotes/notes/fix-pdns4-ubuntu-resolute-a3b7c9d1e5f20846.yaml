@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Fixed the ``backend-pdns4`` devstack plugin to work with
+    PowerDNS Authoritative Server 5.0+ (Ubuntu 26.04+), where the
+    ``master`` and ``slave`` configuration settings were removed
+    (deprecated since 4.5.0, removed in 4.9.0). The generated
+    ``pdns.conf`` now uses the replacement ``primary`` and
+    ``secondary`` settings.
