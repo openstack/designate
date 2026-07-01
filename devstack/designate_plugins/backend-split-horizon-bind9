@@ -73,9 +73,14 @@ function install_designate_backend {
     if is_ubuntu; then
         install_package bind9
 
-        # Views require all zones inside a view block; disable top-level zones
+        # Views require all zones/hints inside a view block; disable
+        # top-level zone includes.  named.conf.default-zones was replaced
+        # by named.conf.root-hints in bind9 1:9.20.5+ (Ubuntu 26.04+).
         sudo sed -i \
             's|include "/etc/bind/named.conf.default-zones";|// include "/etc/bind/named.conf.default-zones"; // disabled by split-horizon-bind9 backend|' \
+            $BIND_CFG_DIR/named.conf
+        sudo sed -i \
+            's|include "/etc/bind/named.conf.root-hints";|// include "/etc/bind/named.conf.root-hints"; // disabled by split-horizon-bind9 backend|' \
             $BIND_CFG_DIR/named.conf
 
         sudo tee $BIND2_DEFAULT_FILE >/dev/null <<EOF
@@ -430,6 +435,9 @@ function cleanup_designate_backend {
     if is_ubuntu; then
         sudo sed -i \
             's|// include "/etc/bind/named.conf.default-zones"; // disabled by split-horizon-bind9 backend|include "/etc/bind/named.conf.default-zones";|' \
+            $BIND_CFG_DIR/named.conf
+        sudo sed -i \
+            's|// include "/etc/bind/named.conf.root-hints"; // disabled by split-horizon-bind9 backend|include "/etc/bind/named.conf.root-hints";|' \
             $BIND_CFG_DIR/named.conf
     fi
 
