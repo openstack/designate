@@ -82,11 +82,23 @@ class RPCService(Service):
         self._rpc_initialized = False
 
     def init_host(self):
-        """Initialize RPC server after service launch.
+        """Initialize the RPC server and its listener thread.
 
-        This method is called after the service is created but before
-        it starts handling requests. This ensures RPC initialization
-        happens in the correct threading context.
+        This is called automatically by start() and must only ever run
+        there. When a service runs with multiple workers, cotyledon
+        forks a separate child process per worker *after* the service
+        object is constructed. Native threads (including the RPC
+        listener started here) do not survive that fork, but a Python
+        attribute like ``_rpc_initialized`` does. So if this is called
+        eagerly in the parent process before service.serve() forks the
+        workers, every forked child inherits _rpc_initialized=True and
+        silently skips ever starting its own listener, leaving only the
+        parent with a working RPC server and every worker unable to
+        shut down cleanly (rpc_server.stop() hangs waiting on a listener
+        thread that was never started in that process).
+
+        Do not call this directly from a cmd/*.py main(). Let each
+        forked worker call it lazily via its own start().
         """
         if self._rpc_initialized:
             return

@@ -128,28 +128,47 @@ class CmdTestCase(oslotest.base.BaseTestCase):
         mock_wait.assert_called_with()
 
     @mock.patch('designate.worker.service.Service')
-    def test_worker_init_host_called(self, mock_service, mock_read_config,
-                                     mock_log_setup,
-                                     mock_serve, mock_wait):
+    def test_worker_init_host_not_called_from_main(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_serve, mock_wait):
+        # init_host() must not be called in the parent process before
+        # service.serve() forks the worker processes. Each forked worker
+        # lazily calls it from its own start(), so every worker gets its
+        # own RPC server instead of inheriting an unusable copy of one
+        # only the parent ever started.
         CONF.set_override('workers', 1, 'service:worker')
         mock_server = mock.Mock()
         mock_service.return_value = mock_server
 
         worker.main()
 
-        mock_server.init_host.assert_called_once()
+        mock_server.init_host.assert_not_called()
 
     @mock.patch('designate.producer.service.Service')
-    def test_producer_init_host_called(self, mock_service, mock_read_config,
-                                       mock_log_setup,
-                                       mock_serve, mock_wait):
+    def test_producer_init_host_not_called_from_main(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_serve, mock_wait):
+        # See test_worker_init_host_not_called_from_main.
         CONF.set_override('workers', 1, 'service:producer')
         mock_server = mock.Mock()
         mock_service.return_value = mock_server
 
         producer.main()
 
-        mock_server.init_host.assert_called_once()
+        mock_server.init_host.assert_not_called()
+
+    @mock.patch('designate.central.service.Service')
+    def test_central_init_host_not_called_from_main(
+            self, mock_service, mock_read_config, mock_log_setup,
+            mock_serve, mock_wait):
+        # See test_worker_init_host_not_called_from_main.
+        CONF.set_override('workers', 1, 'service:central')
+        mock_server = mock.Mock()
+        mock_service.return_value = mock_server
+
+        central.main()
+
+        mock_server.init_host.assert_not_called()
 
     @mock.patch('designate.central.service.Service')
     def test_central_rpc_already_initialized(

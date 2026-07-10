@@ -37,6 +37,5 @@ def main():
     gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
 
     server = worker_service.Service()
-    server.init_host()
     service.serve(server, workers=CONF['service:worker'].workers)
     service.wait()
