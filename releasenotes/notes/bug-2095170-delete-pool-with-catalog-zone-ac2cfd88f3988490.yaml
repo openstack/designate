@@ -1,0 +1,11 @@
+---
+fixes:
+  - |
+    Fixed `bug 2095170`_ where ``designate-manage pool update --delete``
+    (and the ``delete_pool`` RPC call) would fail with
+    ``InvalidOperation: pool must not contain zones`` when attempting to
+    delete a pool that only contained its own catalog zone. Catalog zones
+    are now excluded from that check, since they are deleted automatically
+    along with the pool.
+
+    .. _bug 2095170: https://bugs.launchpad.net/designate/+bug/2095170

@@ -2387,11 +2387,15 @@ class Service(service.RPCService):
 
         policy.check('delete_pool', context)
 
-        # Make sure that there are no existing zones in the pool
+        # Make sure that there are no existing zones in the pool, other
+        # than the pool's own catalog zone, which is deleted along with
+        # the pool itself.
         elevated_context = context.elevated(all_tenants=True)
         zones = self.find_zones(
             context=elevated_context,
-            criterion={'pool_id': pool_id, 'action': '!DELETE'})
+            criterion={
+                'pool_id': pool_id, 'action': '!DELETE', 'type': '!CATALOG'
+            })
 
         # If there are existing zones, do not delete the pool
         LOG.debug("Zones is None? %r", zones)
