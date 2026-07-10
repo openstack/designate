@@ -1,0 +1,19 @@
+---
+fixes:
+  - |
+    Fixed `bug 2166761`_ where removing a nameserver from a pool via
+    ``designate-manage pool update`` (or the ``update_pool`` RPC call)
+    would fail with ``RecordSetNotFound: Could not find RecordSet`` if the
+    pool had a catalog zone configured. Catalog zones have no NS
+    recordset, so they are now excluded from the nameserver
+    create/delete loops in ``update_pool``. SECONDARY zones have no NS
+    recordset either, and hit the same crash; ``update_pool`` now
+    tolerates that too.
+
+    .. _bug 2166761: https://bugs.launchpad.net/designate/+bug/2166761
+  - |
+    Also fixed as part of `bug 2166761`_: removing the last nameserver
+    from a pool with a catalog zone configured raised an unhandled
+    ``IndexError`` instead of the expected ``LastServerDeleteNotAllowed``
+    error. The check is now performed before the pool update is
+    persisted.

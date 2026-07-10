@@ -3343,6 +3343,124 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(1, len(zones))
         self.assertTrue(zones[0].delayed_notify)
 
+    def test_update_pool_add_ns_record_with_catalog_zone(self):
+        # Create a server pool with a catalog zone, and a regular zone
+        pool = self.create_pool(fixture=2)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
+        zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+
+        new_ns_record = objects.PoolNsRecord(
+            priority=10,
+            hostname='ns-new.example.org.')
+
+        # Update and save the pool
+        pool.ns_records.append(new_ns_record)
+        self.central_service.update_pool(self.admin_context, pool)
+
+        # Fetch the zone's NS recordset and verify it was updated
+        ns_recordset = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': "NS"})
+        self.assertIn(new_ns_record.hostname,
+                      [r.data for r in ns_recordset.records])
+
+        # The catalog zone must not have gained an NS recordset
+        self.assertRaises(
+            exceptions.RecordSetNotFound,
+            self.central_service.find_recordset,
+            self.admin_context,
+            criterion={'zone_id': catalog_zone.id, 'type': 'NS'})
+
+    def test_update_pool_remove_ns_record_with_catalog_zone(self):
+        # Create a server pool, with a catalog zone and 2 nameservers,
+        # and a regular zone
+        pool = self.create_pool(
+            fixture=2,
+            ns_records=[{'priority': 1, 'hostname': 'ns1.example.org.'},
+                        {'priority': 2, 'hostname': 'ns2.example.org.'}])
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
+        zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+        self.storage.get_catalog_zone(self.admin_context, pool)
+
+        # Update and save the pool, removing a nameserver. This used to
+        # raise RecordSetNotFound because the pool's catalog zone, which
+        # has no NS recordset, was included in the update.
+        removed_ns_record = pool.ns_records.pop(-1)
+        self.central_service.update_pool(self.admin_context, pool)
+
+        # Fetch the zone's NS recordset and verify it was updated
+        ns_recordset = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': "NS"})
+        self.assertNotIn(removed_ns_record.hostname,
+                         [r.data for r in ns_recordset.records])
+
+    def test_update_pool_remove_ns_record_with_secondary_zone(self):
+        # Create a server pool, with 2 nameservers and a secondary zone.
+        # Secondary zones, like catalog zones, have no NS recordset.
+        pool = self.create_pool(
+            fixture=2,
+            ns_records=[{'priority': 1, 'hostname': 'ns1.example.org.'},
+                        {'priority': 2, 'hostname': 'ns2.example.org.'}])
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
+
+        fixture = self.get_zone_fixture('SECONDARY', 0)
+        fixture['email'] = CONF['service:central'].managed_resource_email
+        fixture['masters'] = [{'host': '192.0.2.10', 'port': 53}]
+        fixture['attributes'] = [{'key': 'pool_id', 'value': pool.id}]
+        self.create_zone(**fixture)
+
+        # Update and save the pool, removing a nameserver. This used to
+        # raise RecordSetNotFound because the secondary zone, which has
+        # no NS recordset, was included in the update.
+        pool.ns_records.pop(-1)
+        self.central_service.update_pool(self.admin_context, pool)
+
+    def test_update_pool_remove_last_ns_record_with_catalog_zone(self):
+        # Create a server pool with a catalog zone and a single
+        # nameserver.
+        pool = self.create_pool(fixture=2)
+        self.storage.get_catalog_zone(self.admin_context, pool)
+
+        # Removing the last nameserver must raise a clean
+        # LastServerDeleteNotAllowed error rather than crashing while
+        # persisting the pool, which has a catalog zone that needs at
+        # least one nameserver to build its SOA record.
+        pool.ns_records.pop(-1)
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.update_pool,
+            self.admin_context, pool)
+
+        self.assertEqual(
+            exceptions.LastServerDeleteNotAllowed, exc.exc_info[0])
+
+    def test_delete_ns_record_not_found_reraises_for_primary_zone(self):
+        # Create a server pool and a regular (primary) zone
+        pool = self.create_pool(
+            fixture=2,
+            ns_records=[{'priority': 1, 'hostname': 'ns1.example.org.'},
+                        {'priority': 2, 'hostname': 'ns2.example.org.'}])
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
+        zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+
+        # Simulate the zone's NS recordset unexpectedly going missing
+        ns_recordset = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'zone_id': zone.id, 'type': 'NS'})
+        self.storage.delete_recordset(self.admin_context, ns_recordset.id)
+
+        # A PRIMARY zone is expected to have an NS recordset, so a
+        # missing one must not be silently swallowed.
+        self.assertRaises(
+            exceptions.RecordSetNotFound,
+            self.central_service._delete_ns,
+            self.admin_context, zone, 'ns2.example.org.')
+
     def test_delete_pool(self):
         # Create a server pool
         pool = self.create_pool()

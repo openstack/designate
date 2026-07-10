@@ -515,14 +515,22 @@ class Service(service.RPCService):
             set_delayed_notify=increment_serial)
 
     def _delete_ns(self, context, zone, ns_record, increment_serial=True):
-        recordset = self.find_recordset(
-            context,
-            criterion={
-                'zone_id': zone['id'],
-                'name': zone['name'],
-                'type': 'NS'
-            }
-        )
+        try:
+            recordset = self.find_recordset(
+                context,
+                criterion={
+                    'zone_id': zone['id'],
+                    'name': zone['name'],
+                    'type': 'NS'
+                }
+            )
+        except exceptions.RecordSetNotFound:
+            # SECONDARY zones have no NS recordset, so there is nothing
+            # to delete. Any other zone type is expected to have one, so
+            # let the exception propagate.
+            if zone['type'] == constants.ZONE_SECONDARY:
+                return
+            raise
 
         for record in list(recordset.records):
             if record.data == ns_record:
@@ -2404,44 +2412,50 @@ class Service(service.RPCService):
             context, pool.id
         )
 
+        if pool.obj_attr_is_set('ns_records'):
+            # Find the current NS hostnames
+            existing_ns = {n.hostname for n in original_pool_ns_records}
+
+            # Find the desired NS hostnames
+            request_ns = {n.hostname for n in pool.ns_records}
+
+            # Get the NS's to be created and deleted, ignoring the ones
+            # that are in both sets, as those haven't changed.
+            # TODO(kiall): Factor in priority
+            create_ns = request_ns.difference(existing_ns)
+            delete_ns = existing_ns.difference(request_ns)
+
+            # Cannot delete the last nameserver, so verify that before
+            # anything is persisted.
+            if delete_ns and not pool.ns_records:
+                raise exceptions.LastServerDeleteNotAllowed(
+                    "Not allowed to delete last of servers"
+                )
+
         updated_pool = self.storage.update_pool(context, pool)
 
         if not pool.obj_attr_is_set('ns_records'):
             return updated_pool
 
-        # Find the current NS hostnames
-        existing_ns = {n.hostname for n in original_pool_ns_records}
-
-        # Find the desired NS hostnames
-        request_ns = {n.hostname for n in pool.ns_records}
-
-        # Get the NS's to be created and deleted, ignoring the ones that
-        # are in both sets, as those haven't changed.
-        # TODO(kiall): Factor in priority
-        create_ns = request_ns.difference(existing_ns)
-        delete_ns = existing_ns.difference(request_ns)
-
         # After the update, handle new ns_records
         for ns_record in create_ns:
-            # Create new NS recordsets for every zone
+            # Create new NS recordsets for every zone, other than the
+            # pool's own catalog zone, which has no NS recordset.
             zones = self.find_zones(
                 context=elevated_context,
-                criterion={'pool_id': pool.id, 'action': '!DELETE'})
+                criterion={
+                    'pool_id': pool.id, 'action': '!DELETE', 'type': '!CATALOG'
+                })
             for zone in zones:
                 self._add_ns(elevated_context, zone, ns_record)
 
         # Then handle the ns_records to delete
         for ns_record in delete_ns:
-            # Cannot delete the last nameserver, so verify that first.
-            if not pool.ns_records:
-                raise exceptions.LastServerDeleteNotAllowed(
-                    "Not allowed to delete last of servers"
-                )
-
-            # Delete the NS record for every zone
+            # Delete the NS record for every zone, other than the pool's
+            # own catalog zone, which has no NS recordset.
             zones = self.find_zones(
                 context=elevated_context,
-                criterion={'pool_id': pool.id}
+                criterion={'pool_id': pool.id, 'type': '!CATALOG'}
             )
             for zone in zones:
                 self._delete_ns(elevated_context, zone, ns_record)
