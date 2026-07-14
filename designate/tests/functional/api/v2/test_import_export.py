@@ -155,6 +155,7 @@ class APIV2ZoneImportExportTest(v2.ApiV2TestCase):
     def test_import_json_with_attributes(self):
         # Create a second pool
         pool = self.create_pool()
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
 
         # Allow forcing a pool via attributes
         self.policy({'zone_create_forced_pool': '@'})

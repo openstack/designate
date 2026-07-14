@@ -283,6 +283,14 @@ class ManagePoolTestCase(designate.tests.functional.TestCase):
         self.command._setup()
         self.command._create_pool(get_pools()[0])
 
+        # Create TSIG key for the pool to support zone creation validation
+        created_pool = self.central_service.find_pool(
+            self.admin_context, {'name': 'default'})
+        self.create_tsigkey(
+            scope='POOL',
+            resource_id=created_pool.id
+        )
+
         self.create_zone(fixture=0)
         self.create_zone(fixture=1)
 

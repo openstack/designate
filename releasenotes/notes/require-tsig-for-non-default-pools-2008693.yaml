@@ -1,0 +1,12 @@
+---
+other:
+  - |
+    [`bug 2008693 <https://bugs.launchpad.net/designate/+bug/2008693>`_]
+    Added validation to require TSIG keys for zones in non-default pools.
+    When backend nameservers request zone transfers from MDNS without TSIG
+    authentication, MDNS defaults to searching only in the default pool,
+    causing zones in other pools to fail with "ZoneNotFound" errors. The new
+    validation prevents this by rejecting zone creation and pool moves to
+    non-default pools when no TSIG key with scope=POOL exists for that pool.
+    Documentation has been added explaining how to properly configure TSIG
+    keys for multi-pool deployments.

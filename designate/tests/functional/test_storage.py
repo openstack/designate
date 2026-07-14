@@ -4023,6 +4023,7 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
 
     def test_get_catalog_zone_records(self):
         pool = self.create_pool(fixture=2)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
         self.storage._ensure_catalog_zone_config(self.admin_context, pool)
         member_zone = self.create_zone(
             attributes=[{'key': 'pool_id', 'value': pool.id}])
