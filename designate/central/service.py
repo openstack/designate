@@ -1368,6 +1368,9 @@ class Service(service.RPCService):
 
         # Get the destination pool
         zone = self.storage.get_zone(context, zone_id)
+
+        self._enforce_catalog_zone_policy(context, zone)
+
         orig_pool_id = zone.pool_id
 
         if target_pool_id is None:
@@ -1423,6 +1426,20 @@ class Service(service.RPCService):
         zone.action = constants.UPDATE
         zone.status = constants.PENDING
         self.worker_api.update_zone(context, zone)
+
+        # The move is now committed and dispatched to the worker: bump the
+        # source pool's catalog zone serial (it has lost a zone) and the
+        # destination pool's (it has gained one). Doing this only now,
+        # rather than before the move is committed, avoids a race where
+        # the periodic increment-serial task could pick up the source
+        # pool's catalog zone and NOTIFY secondaries of a new serial
+        # before the zone has actually left that pool. And doing it after
+        # dispatching to the worker means a failure here (e.g. a pool
+        # concurrently deleted) cannot leave the zone's actual move
+        # undispatched.
+        self._ensure_catalog_zone_serial_increment(
+            context, zone, pool_id=orig_pool_id)
+        self._ensure_catalog_zone_serial_increment(context, zone)
 
         return zone
 
@@ -3051,18 +3068,20 @@ class Service(service.RPCService):
             return self.storage.create_service_status(
                 context, service_status)
 
-    def _ensure_catalog_zone_serial_increment(self, context, zone):
+    def _ensure_catalog_zone_serial_increment(self, context, zone,
+                                              pool_id=None):
         if zone.type == constants.ZONE_CATALOG:
             return
 
-        pool = self.storage.find_pool(context, criterion={'id': zone.pool_id})
+        pool_id = pool_id or zone.pool_id
 
         try:
+            pool = self.storage.find_pool(context, criterion={'id': pool_id})
             catalog_zone = self.storage.get_catalog_zone(context, pool)
 
             # Schedule batched serial increment
             self._update_zone_in_storage(context, catalog_zone)
-        except exceptions.ZoneNotFound:
+        except (exceptions.PoolNotFound, exceptions.ZoneNotFound):
             pass
 
     def _enforce_catalog_zone_policy(self, context, zone):

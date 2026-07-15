@@ -1,0 +1,17 @@
+---
+fixes:
+  - |
+    Fixed `bug 2166759`_ where moving a zone between pools
+    (``openstack zone move`` / the ``pool_move_zone`` API) did not bump
+    the SOA serial of either the source or destination pool's catalog
+    zone, even though the zone's membership in each pool's catalog zone
+    had changed. Secondary nameservers that had already transferred
+    either catalog zone had no signal to re-transfer it after the move.
+
+    Both catalog zone serial bumps are performed only after the zone's
+    pool move is fully committed, avoiding a race where the periodic
+    increment-serial task could pick up the source pool's catalog zone
+    and NOTIFY secondaries of a new serial before the zone had actually
+    left that pool.
+
+    .. _bug 2166759: https://bugs.launchpad.net/designate/+bug/2166759

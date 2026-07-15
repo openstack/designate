@@ -4442,6 +4442,46 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(zone.id, moved_zone.id)
         self.assertEqual(moved_zone.pool_id, second_pool['id'])
 
+    def test_pool_move_zone_updates_catalog_zone_serials(self):
+        # Source pool, with a catalog zone
+        pool = self.create_pool(fixture=2)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
+        zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool['id'],
+            objects.PoolNsRecord(priority=1, hostname='ns-old.example.org.')
+        )
+
+        # Reset the flag set by creating the member zone above, so we can
+        # attribute any new increment_serial flag purely to the move.
+        orig_catalog_zone = self.storage.get_catalog_zone(
+            self.admin_context, pool)
+        orig_catalog_zone.increment_serial = False
+        self.storage.update_zone(self.admin_context, orig_catalog_zone)
+
+        # Destination pool, also with a catalog zone
+        second_pool = self.create_pool(fixture=3)
+        self.create_tsigkey(name='test-key-second-pool', scope='POOL',
+                           resource_id=second_pool.id)
+        self.storage.create_pool_ns_record(
+            self.admin_context, second_pool['id'],
+            objects.PoolNsRecord(priority=1, hostname='ns-new.example.org.')
+        )
+        target_catalog_zone = self.storage.get_catalog_zone(
+            self.admin_context, second_pool)
+        self.assertFalse(target_catalog_zone.increment_serial)
+
+        self.central_service.pool_move_zone(
+            self.admin_context, zone.id, second_pool['id'])
+
+        updated_orig_catalog_zone = self.storage.get_catalog_zone(
+            self.admin_context, pool)
+        updated_target_catalog_zone = self.storage.get_catalog_zone(
+            self.admin_context, second_pool)
+
+        self.assertTrue(updated_orig_catalog_zone.increment_serial)
+        self.assertTrue(updated_target_catalog_zone.increment_serial)
+
     def test_pool_move_zone_from_non_default_to_default_pool(self):
         # create 2 pools
         pool = self.create_pool(fixture=0)
@@ -4554,6 +4594,59 @@ class CentralServiceTest(designate.tests.functional.TestCase):
                                 self.admin_context,
                                 zone.id, target_pool_id=pool_id)
         self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
+
+    def test_pool_move_zone_forbidden_for_catalog_zone(self):
+        pool = self.create_pool(fixture=2)
+        catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)
+
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.pool_move_zone,
+            self.admin_context, catalog_zone.id,
+            '521935cf-d5be-44a2-9f64-fb5a316a61d2')
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
+
+    def test_pool_move_zone_dispatches_worker_before_serial_increment(self):
+        pool = self.create_pool(fixture=0)
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
+        zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool['id'],
+            objects.PoolNsRecord(priority=1, hostname='ns-old.example.org.')
+        )
+
+        second_pool = self.create_pool(fixture=1)
+        self.create_tsigkey(name='test-key-second-pool', scope='POOL',
+                           resource_id=second_pool.id)
+        self.storage.create_pool_ns_record(
+            self.admin_context, second_pool['id'],
+            objects.PoolNsRecord(priority=1, hostname='ns-new.example.org.')
+        )
+
+        worker = mock.Mock()
+        with mock.patch.object(
+                worker_api.WorkerAPI, 'get_instance'
+        ) as get_worker, mock.patch.object(
+                self.central_service, '_ensure_catalog_zone_serial_increment',
+                side_effect=RuntimeError('boom')):
+            get_worker.return_value = worker
+            self.assertRaises(
+                RuntimeError,
+                self.central_service.pool_move_zone,
+                self.admin_context, zone.id, second_pool['id'])
+
+        # The zone's actual move must already be dispatched to the worker,
+        # even though the catalog zone serial-increment step afterwards
+        # failed.
+        worker.update_zone.assert_called_once()
+
+    def test_ensure_catalog_zone_serial_increment_pool_not_found(self):
+        zone = self.create_zone()
+
+        # Should not raise, even though the pool no longer exists.
+        self.central_service._ensure_catalog_zone_serial_increment(
+            self.admin_context, zone,
+            pool_id='521935cf-d5be-44a2-9f64-fb5a316a61d2')
 
     def test_create_managed_records(self):
         zone = self.create_zone()
