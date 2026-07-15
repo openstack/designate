@@ -189,8 +189,8 @@ class MdnsRequestHandlerTest(designate.tests.functional.TestCase):
             'context': self.context
         }
 
-        with mock.patch.object(self.handler.storage, 'find_zone',
-                               return_value=zone):
+        with mock.patch.object(self.handler.storage, 'find_zones',
+                               return_value=[zone]):
             response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -226,8 +226,8 @@ class MdnsRequestHandlerTest(designate.tests.functional.TestCase):
             'context': self.context
         }
 
-        with mock.patch.object(self.handler.storage, 'find_zone',
-                               return_value=zone):
+        with mock.patch.object(self.handler.storage, 'find_zones',
+                               return_value=[zone]):
             response = next(self.handler(request)).to_wire()
 
         assert not self.mock_tg.add_thread.called
@@ -262,8 +262,8 @@ class MdnsRequestHandlerTest(designate.tests.functional.TestCase):
             'context': self.context
         }
 
-        with mock.patch.object(self.handler.storage, 'find_zone',
-                               return_value=zone):
+        with mock.patch.object(self.handler.storage, 'find_zones',
+                               return_value=[zone]):
             response = next(self.handler(request)).to_wire()
 
         assert not self.mock_tg.add_thread.called
