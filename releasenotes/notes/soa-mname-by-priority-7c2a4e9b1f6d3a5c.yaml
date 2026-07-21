@@ -1,0 +1,19 @@
+---
+fixes:
+  - |
+    Fixed `bug 2166758`_ where a zone's (or a pool's catalog zone's) SOA
+    MNAME (primary nameserver) was always chosen as whichever
+    ``ns_records`` entry happened to be created first in the database,
+    ignoring the ``priority`` value pools.yaml requires operators to
+    assign to each nameserver. The entry with the lowest ``priority``
+    value is now used instead; ``ns_records`` sharing the same priority
+    still break ties by their existing (creation) order, matching the
+    previous behavior.
+
+    That creation-order-based selection was not even reliably stable:
+    ``designate-manage pool update`` deletes and recreates every
+    ``ns_records`` entry for a pool on every run, regardless of whether
+    anything actually changed, giving each entry a new ``created_at``
+    (and so a new position in that order) every time.
+
+    .. _bug 2166758: https://bugs.launchpad.net/designate/+bug/2166758
