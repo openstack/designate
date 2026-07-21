@@ -4106,6 +4106,32 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
         self.assertEqual(pool.catalog_zone.catalog_zone_tsig_algorithm,
                          tsigkey.algorithm)
 
+    def test_ensure_catalog_zone_consistent_mname_is_lowest_priority(self):
+        pool = self.create_pool(
+            fixture=3,
+            ns_records=[{'priority': 2, 'hostname': 'ns2.example.org.'}])
+        self.storage._ensure_catalog_zone_config(self.admin_context, pool)
+
+        # Add a lower-priority-number nameserver after the fact. Despite
+        # being added last, it should still become the catalog zone's
+        # SOA MNAME.
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool.id,
+            objects.PoolNsRecord(priority=1, hostname='ns1.example.org.'))
+        pool = self.storage.get_pool(self.admin_context, pool.id)
+        self.storage._ensure_catalog_zone_consistent(self.admin_context, pool)
+
+        catz_records = self.storage.get_catalog_zone_records(
+            self.admin_context, pool)
+        soa = catz_records[-1]
+        self.assertEqual('SOA', soa.type)
+        self.assertEqual('ns1.example.org.', soa.records[0].data.split()[0])
+
+    def test_ensure_catalog_zone_consistent_no_ns_records(self):
+        self.assertRaises(
+            exceptions.NoServersConfigured,
+            self.create_pool, fixture=3, ns_records=[])
+
     def test_ensure_catalog_zone_consistent_no_tsig(self):
         pool = self.create_pool(fixture=2)
         catalog_zone = self.storage.get_catalog_zone(self.admin_context, pool)

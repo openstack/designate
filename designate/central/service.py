@@ -374,8 +374,12 @@ class Service(service.RPCService):
         soa_address = (address[0:atsign].replace('.', '\\.') + '.' +
             address[atsign + 1:])
 
+        # The lowest priority ns_record is used as the SOA MNAME. Ties are
+        # broken by ns_records' existing order.
+        mname = min(ns_records, key=lambda ns_record: ns_record['priority'])
+
         return '%s %s. %d %d %d %d %d' % (
-            ns_records[0]['hostname'],
+            mname['hostname'],
             soa_address,
             zone['serial'],
             zone['refresh'],

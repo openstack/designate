@@ -2574,10 +2574,19 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         :param catalog_zone: The catalog zone to ensure consistency for.
         :param pool: The catalog_zone's pool.
         """
+        if not pool.ns_records:
+            LOG.critical('No nameservers configured. Please create at '
+                         'least one nameserver')
+            raise exceptions.NoServersConfigured()
+
+        # The lowest priority ns_record is used as the SOA MNAME. Ties are
+        # broken by pool.ns_records' existing order.
+        mname = min(pool.ns_records, key=lambda ns_record: ns_record.priority)
+
         soa_record = objects.RecordList()
         soa_record.append(
             objects.Record(
-                    data=f'{pool.ns_records[0]["hostname"]} '
+                    data=f'{mname["hostname"]} '
                     f'{catalog_zone.attributes.get("catalog_zone_fqdn")} '
                     f'{catalog_zone.serial} '
                     f'{catalog_zone.attributes.get("catalog_zone_refresh")} '
