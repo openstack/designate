@@ -696,6 +696,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service._enforce_zone_quota = mock.Mock()
         self.service._is_valid_zone_name = mock.Mock()
         self.service._is_valid_ttl = mock.Mock()
+        self.service._check_zone_ownership_conflicts = mock.Mock()
         self.service._is_subzone = mock.Mock(
             return_value=False
         )
@@ -736,6 +737,7 @@ class CentralZoneTestCase(CentralBasic):
         )
         self.service._is_valid_zone_name = mock.Mock()
         self.service._is_valid_ttl = mock.Mock()
+        self.service._check_zone_ownership_conflicts = mock.Mock()
         self.service._is_subzone = mock.Mock(
             return_value=False
         )

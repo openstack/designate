@@ -335,6 +335,49 @@ class Service(service.RPCService):
 
         return subzones
 
+    def _check_zone_ownership_conflicts(self, context, zone):
+        """
+        Ensures zone.name does not collide - as an exact duplicate, a
+        subzone, or a superzone - with a zone owned by a different
+        tenant, regardless of which pool that zone lives in. A single
+        tenant may still own the same or an overlapping zone name
+        across multiple pools (e.g. split-horizon deployments); only
+        cross-tenant collisions are rejected here.
+        """
+        context = context.elevated(all_tenants=True)
+        labels = zone.name.split('.')
+
+        # Exact-name duplicate owned by another tenant, in any pool.
+        for existing in self.storage.find_zones(context, {'name': zone.name}):
+            if existing.tenant_id != zone.tenant_id:
+                raise exceptions.DuplicateZone(
+                    'Zone already exists, owned by a different tenant')
+
+        # This zone would be a subzone of a zone owned by another
+        # tenant, in any pool. Stop at the first (nearest) ancestor
+        # match, same as _is_subzone.
+        for i in range(1, len(labels)):
+            name = '.'.join(labels[i:])
+            ancestors = self.storage.find_zones(context, {'name': name})
+            if not ancestors:
+                continue
+            for ancestor in ancestors:
+                if ancestor.tenant_id != zone.tenant_id:
+                    raise exceptions.IllegalChildZone(
+                        'Unable to create subzone in another tenants '
+                        'zone')
+            break
+
+        # This zone would be a superzone of a zone owned by another
+        # tenant, in any pool.
+        search_term = "%%.%(name)s" % {"name": zone.name}
+        for subzone in self.storage.find_zones(
+                context, {'name': search_term}):
+            if subzone.tenant_id != zone.tenant_id:
+                raise exceptions.IllegalParentZone(
+                    'Unable to create zone because another tenant owns '
+                    'a subzone of the zone')
+
     def _is_valid_ttl(self, context, ttl):
         if ttl is None:
             return
@@ -773,6 +816,10 @@ class Service(service.RPCService):
 
         # Ensure TTL is above the minimum
         self._is_valid_ttl(context, zone.ttl)
+
+        # Ensure this zone name does not collide with another tenant's
+        # zone, regardless of which pool either zone lives in
+        self._check_zone_ownership_conflicts(context, zone)
 
         # Get a pool id
         zone.pool_id = self.scheduler.schedule_zone(context, zone)
