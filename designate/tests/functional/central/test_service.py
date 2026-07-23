@@ -729,6 +729,94 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         self.assertEqual(exceptions.IllegalParentZone, exc.exc_info[0])
 
+    def test_create_zone_duplicate_different_pools_different_tenant_fails(
+            self):
+        context = self.get_admin_context()
+        context.project_id = '1'
+
+        fixture = self.get_zone_fixture()
+        fixture['context'] = context
+
+        # Create first zone that's placed in default pool, owned by
+        # tenant '1'
+        self.create_zone(**fixture)
+
+        # Create a secondary pool
+        second_pool = self.create_pool()
+
+        context = self.get_admin_context()
+        context.project_id = '2'
+
+        fixture['context'] = context
+        fixture['attributes'] = {}
+        fixture['attributes']['pool_id'] = second_pool.id
+
+        # Attempt to create the same zone name in the second pool,
+        # owned by a different tenant
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_zone, **fixture)
+
+        self.assertEqual(exceptions.DuplicateZone, exc.exc_info[0])
+
+    def test_create_subzone_different_pools_different_tenant_fails(self):
+        context = self.get_admin_context()
+        context.project_id = '1'
+
+        fixture = self.get_zone_fixture()
+        fixture['context'] = context
+
+        # Create the parent zone in the default pool, owned by
+        # tenant '1'
+        self.create_zone(**fixture)
+
+        # Create a secondary pool
+        second_pool = self.create_pool()
+
+        context = self.get_admin_context()
+        context.project_id = '2'
+
+        fixture['context'] = context
+        fixture['attributes'] = {}
+        fixture['attributes']['pool_id'] = second_pool.id
+        fixture['name'] = 'sub.%s' % fixture['name']
+
+        # Attempt to create the subzone in the second pool, owned by
+        # a different tenant
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_zone, **fixture)
+
+        self.assertEqual(exceptions.IllegalChildZone, exc.exc_info[0])
+
+    def test_create_superzone_different_pools_different_tenant_fails(self):
+        context = self.get_admin_context()
+        context.project_id = '1'
+
+        zone_values = self.get_zone_fixture(fixture=1)
+        zone_name = zone_values['name']
+
+        subzone_values = copy.deepcopy(zone_values)
+        subzone_values['name'] = 'www.%s' % zone_name
+        subzone_values['context'] = context
+
+        # Create the subzone in the default pool, owned by tenant '1'
+        self.create_zone(**subzone_values)
+
+        # Create a secondary pool
+        second_pool = self.create_pool()
+
+        context = self.get_admin_context()
+        context.project_id = '2'
+
+        zone_values['context'] = context
+        zone_values['attributes'] = {'pool_id': second_pool.id}
+
+        # Attempt to create the superzone in the second pool, owned by
+        # a different tenant
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_zone, **zone_values)
+
+        self.assertEqual(exceptions.IllegalParentZone, exc.exc_info[0])
+
     def test_create_blacklisted_zone_success(self):
         # Create blacklisted zone using default values
         self.create_blacklist()

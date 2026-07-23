@@ -61,13 +61,13 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
     @mock.patch.object(rpc, 'get_client', mock.Mock())
     @mock.patch.object(dns.resolver.Resolver, 'resolve')
     def test_notify(self, mock_query):
-        self.storage.find_zone.return_value = objects.Zone(
+        self.storage.find_zones.return_value = [objects.Zone(
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             serial=2,
             masters=objects.ZoneMasterList.from_list([
                 {'host': '192.0.2.1', 'port': 53},
             ])
-        )
+        )]
         mock_query.return_value = [
             mock.Mock(serial=1)
         ]
@@ -92,13 +92,13 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
                        mock.Mock())
     @mock.patch.object(dns.resolver.Resolver, 'resolve')
     def test_notify_same_serial(self, mock_query):
-        self.storage.find_zone.return_value = objects.Zone(
+        self.storage.find_zones.return_value = [objects.Zone(
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             serial=1,
             masters=objects.ZoneMasterList.from_list([
                 {'host': '192.0.2.1', 'port': 53},
             ])
-        )
+        )]
         mock_query.return_value = [
             mock.Mock(serial=1)
         ]
@@ -130,7 +130,7 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         self.assertEqual(dns.rcode.FORMERR, tuple(response)[0].rcode())
 
     def test_notify_zone_not_found(self):
-        self.storage.find_zone.side_effect = exceptions.ZoneNotFound
+        self.storage.find_zones.return_value = []
 
         request = dns.message.make_query(
             'www.example.org.', dns.rdatatype.SOA
@@ -142,11 +142,11 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         self.assertEqual(dns.rcode.NOTAUTH, tuple(response)[0].rcode())
 
     def test_notify_no_master_addr(self):
-        self.storage.find_zone.return_value = objects.Zone(
+        self.storage.find_zones.return_value = [objects.Zone(
             masters=objects.ZoneMasterList.from_list([
                 {'host': '192.0.2.1', 'port': 53},
             ])
-        )
+        )]
 
         request = dns.message.make_query(
             'www.example.org.', dns.rdatatype.SOA
@@ -158,7 +158,8 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
         self.assertEqual(dns.rcode.REFUSED, tuple(response)[0].rcode())
 
         self.assertIn(
-            'NOTIFY for None from non-master server 203.0.113.1, refusing.',
+            'NOTIFY for www.example.org. from non-master server '
+            '203.0.113.1, refusing.',
             self.stdlog.logger.output
         )
 
@@ -490,13 +491,15 @@ class HandleRecordQueryTest(oslotest.base.BaseTestCase):
         )
 
     def test_handle_record_query_subdomain_with_tsig(self):
-        """Test recordset-first fallback for subdomain queries with TSIG.
+        """Test the ancestor walk-up for subdomain queries with TSIG.
 
         When the query is for a subdomain (www.example.org.) rather than
-        a zone apex, the zone-first lookup raises ZoneNotFound because
-        no zone is named 'www.example.org.'.  The handler falls back to
-        finding the recordset by name, then verifies the zone matches
-        the TSIG key's pool.  The overall query still succeeds.
+        a zone apex, the first candidate lookup (name='www.example.org.')
+        raises ZoneNotFound because no zone is named that. The handler
+        walks up to the parent name (example.org.), scoped by the same
+        TSIG-derived pool_id, and finds the containing zone there. The
+        recordset lookup is then scoped to that zone's zone_id, never
+        falling back to an unscoped, cross-pool lookup.
         """
         pool_id = 'c4f6ea1c-a1af-4401-a849-000000000001'
         zone_id = 'e2bed4dc-9d01-11e4-89d3-123b93f75cba'
@@ -528,11 +531,11 @@ class HandleRecordQueryTest(oslotest.base.BaseTestCase):
         self.assertEqual(dns.rcode.NOERROR, response[0].rcode())
 
         self.assertEqual(2, self.storage.find_zone.call_count)
-        # Recordset found via fallback path (no zone_id scoping)
+        # Recordset found scoped to the zone found by walking up to the
+        # parent name (example.org.)
         self.storage.find_recordset.assert_called_once_with(
             self.context,
-            {'name': 'www.example.org.', 'type': 'A',
-             'zones_deleted': False}
+            {'zone_id': zone_id, 'name': 'www.example.org.', 'type': 'A'}
         )
 
     def test_handle_record_query_zone_found_recordset_not_found(self):
