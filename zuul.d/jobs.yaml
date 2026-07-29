@@ -60,11 +60,11 @@
     parent: designate-grenade-common
     vars:
         # Move this forward when master changes to a new skip-level-allowed
-        # target release. Right now, this is Epoxy (2025.1) because master is
-        # Gazpacho (2026.1).
-        # When master is H (2026.2), this should become Flamingo (2025.2),
-        # and so forth.
-        grenade_from_branch: stable/2025.1
+        # target release. Right now, this is Flamingo (2025.2) because master
+        # is Hibiscus (2026.2).
+        # When master is the 2027.1 release, this should become Gazpacho
+        # (2026.1), and so forth.
+        grenade_from_branch: stable/2025.2
         grenade_localrc:
           NOVA_ENABLE_UPGRADE_WORKAROUND: True
 
