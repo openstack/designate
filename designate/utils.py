@@ -62,9 +62,9 @@ def find_config(config_path):
     found_locations = []
 
     for path in possible_locations:
-        LOG.debug('Searching for configuration at path: %s' % path)
+        LOG.debug('Searching for configuration at path: %s', path)
         if os.path.exists(path):
-            LOG.debug('Found configuration at path: %s' % path)
+            LOG.debug('Found configuration at path: %s', path)
             found_locations.append(os.path.abspath(path))
 
     return found_locations

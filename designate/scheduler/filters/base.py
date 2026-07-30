@@ -31,7 +31,7 @@ class Filter(metaclass=abc.ABCMeta):
 
     def __init__(self, storage):
         self.storage = storage
-        LOG.debug('Loaded %s filter in chain' % self.name)
+        LOG.debug('Loaded %s filter in chain', self.name)
 
     @abc.abstractmethod
     def filter(self, context, pools, zone):

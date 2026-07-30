@@ -1534,9 +1534,9 @@ class IsSubzoneTestCase(CentralBasic):
         super().setUp()
 
         def find_zone(ctx, criterion):
-            LOG.debug('Calling find_zone on %r' % criterion)
+            LOG.debug('Calling find_zone on %r', criterion)
             if criterion['name'] == 'example.com.':
-                LOG.debug('Returning %r' % criterion['name'])
+                LOG.debug('Returning %r', criterion['name'])
                 return criterion['name']
 
             LOG.debug('Not found')
