@@ -44,6 +44,11 @@ class TXT(Record):
                 'split.'
             )
 
+        if '\n' in value:
+            raise ValueError(
+                'TXT record must not contain a literal newline character.'
+            )
+
         if self._is_missing_double_quote(value):
             raise ValueError(
                 'TXT record is missing a double quote either at beginning '

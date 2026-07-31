@@ -198,6 +198,118 @@ class MdnsHandleTest(oslotest.base.BaseTestCase):
             self.stdlog.logger.output
         )
 
+    def test_axfr_skips_unparsable_recordset(self):
+        zone = objects.Zone(
+            id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
+            name='example.test.',
+            type='PRIMARY',
+            ttl=3600,
+        )
+        self.storage.find_zone.return_value = zone
+
+        soa_records = [
+            ('soa-id', 'SOA', 3600, 'example.test.',
+             'ns1.example.test. hostmaster.example.test. '
+             '1 3600 600 86400 3600', 'NONE'),
+        ]
+        other_records = [
+            ('bad-id', 'TXT', 3600, 'bad.example.test.',
+             '"line1\nline2"', 'NONE'),
+            ('good-id', 'A', 3600, 'good.example.test.',
+             '192.0.2.1', 'NONE'),
+        ]
+
+        def _find_recordsets_axfr(context, criterion):
+            if criterion['type'] == 'SOA':
+                return list(soa_records)
+            return list(other_records)
+
+        self.storage.find_recordsets_axfr.side_effect = _find_recordsets_axfr
+
+        request = dns.message.make_query('example.test.', dns.rdatatype.AXFR)
+        request.environ = dict(context=self.context)
+
+        responses = list(self.handler._handle_axfr(request))
+
+        self.assertTrue(responses)
+        messages = [
+            dns.message.from_wire(renderer.get_wire())
+            for renderer in responses
+        ]
+        rrset_names = {
+            str(rrset.name) for message in messages
+            for rrset in message.answer
+        }
+
+        self.assertIn('good.example.test.', rrset_names)
+        self.assertNotIn('bad.example.test.', rrset_names)
+
+        self.assertIn(
+            'Skipping unparsable TXT recordset bad-id (bad.example.test.) '
+            'in zone e2bed4dc-9d01-11e4-89d3-123b93f75cba during AXFR',
+            self.stdlog.logger.output
+        )
+
+    def test_axfr_catalog_zone_skips_unparsable_record(self):
+        zone = objects.Zone(
+            id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
+            name='catalog.example.test.',
+            type='CATALOG',
+            pool_id='794ccc2c-d751-44fe-b57f-8894c9f5c842',
+            ttl=3600,
+        )
+        self.storage.find_zone.return_value = zone
+        self.storage.find_pool.return_value = objects.Pool(
+            id=zone.pool_id
+        )
+
+        # Catalog zone recordsets are generated in-memory and have no
+        # persisted recordset id, unlike regular zone recordsets.
+        bad_recordset = objects.RecordSet(
+            name='version.catalog.example.test.',
+            type='TXT',
+            records=objects.RecordList(objects=[
+                objects.Record(data='"line1\nline2"'),
+            ])
+        )
+        good_recordset = objects.RecordSet(
+            name='member.zones.catalog.example.test.',
+            type='PTR',
+            records=objects.RecordList(objects=[
+                objects.Record(data='member.example.test.'),
+            ])
+        )
+        self.storage.get_catalog_zone_records.return_value = [
+            bad_recordset, good_recordset,
+        ]
+
+        request = dns.message.make_query(
+            'catalog.example.test.', dns.rdatatype.AXFR)
+        request.environ = dict(context=self.context)
+
+        responses = list(self.handler._handle_axfr(request))
+
+        self.assertTrue(responses)
+        messages = [
+            dns.message.from_wire(renderer.get_wire())
+            for renderer in responses
+        ]
+        rrset_names = {
+            str(rrset.name) for message in messages
+            for rrset in message.answer
+        }
+
+        self.assertIn('member.zones.catalog.example.test.', rrset_names)
+        self.assertNotIn('version.catalog.example.test.', rrset_names)
+
+        self.assertIn(
+            'Skipping unparsable TXT recordset '
+            'version.catalog.example.test. '
+            '(version.catalog.example.test.) in zone '
+            'e2bed4dc-9d01-11e4-89d3-123b93f75cba during AXFR',
+            self.stdlog.logger.output
+        )
+
     def test_get_max_message_size(self):
         CONF.set_override('max_message_size', 32768, 'service:mdns')
 
@@ -388,6 +500,30 @@ class HandleRecordQueryTest(oslotest.base.BaseTestCase):
             out = response.to_wire(max_size=65535)
 
             self.assertEqual(33, len(out))
+
+    def test_handle_record_query_unparsable_recordset(self):
+        zone = objects.Zone(
+            id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
+            name='bad.example.org.',
+            ttl=3600,
+        )
+        self.storage.find_zone.return_value = zone
+        self.storage.find_recordset.return_value = objects.RecordSet(
+            id='71624188-8261-4f57-8ae4-2780fc31ff25',
+            name='bad.example.org.',
+            type='TXT',
+            records=objects.RecordList(objects=[
+                objects.Record(data='"line1\nline2"'),
+            ])
+        )
+
+        request = dns.message.make_query('bad.example.org.', dns.rdatatype.TXT)
+        request.environ = dict(context=self.context)
+        response = tuple(self.handler._handle_record_query(request))
+
+        self.assertEqual(1, len(response))
+        self.assertEqual(dns.rcode.NOERROR, response[0].rcode())
+        self.assertEqual([], response[0].answer)
 
     def test_handle_record_query_zone_not_found(self):
         self.storage.find_recordset.return_value = objects.RecordSet(

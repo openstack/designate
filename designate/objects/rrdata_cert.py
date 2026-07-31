@@ -81,6 +81,12 @@ class CERT(Record):
 
     @staticmethod
     def validate_cert_certificate(certificate):
+        if '\n' in certificate:
+            raise ValueError(
+                'CERT certificate must not contain a literal newline '
+                'character.'
+            )
+
         try:
             chunks = certificate.split(' ')
             encoded_chunks = []

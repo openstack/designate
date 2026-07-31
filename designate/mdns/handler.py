@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import dns.exception
 import dns.flags
 import dns.message
 import dns.opcode
@@ -253,15 +254,34 @@ class RequestHandler:
                 ttl = int(record[2]) if record[2] is not None else zone.ttl
                 rrtype = str(record[1])
                 rdata = [str(record[4])]
+                recordset_id = record[0]
             else:
                 rrname = record.name
                 ttl = zone.ttl
                 rrtype = record.type
                 rdata = [record.records[0].data]
+                # Catalog zone recordsets are generated in-memory and have
+                # no persisted recordset id, so use the name instead.
+                recordset_id = rrname
 
-            rrset = dns.rrset.from_text_list(
-                rrname, ttl, dns.rdataclass.IN, rrtype, rdata,
-            )
+            try:
+                rrset = dns.rrset.from_text_list(
+                    rrname, ttl, dns.rdataclass.IN, rrtype, rdata,
+                )
+            except dns.exception.DNSException as e:
+                LOG.error(
+                    'Skipping unparsable %(rrtype)s recordset '
+                    '%(recordset_id)s (%(rrname)s) in zone %(zone_id)s '
+                    'during AXFR: %(error)s',
+                    {
+                        'rrtype': rrtype,
+                        'recordset_id': recordset_id,
+                        'rrname': rrname,
+                        'zone_id': zone.id,
+                        'error': e,
+                    }
+                )
+                continue
 
             while True:
                 try:
@@ -429,8 +449,23 @@ class RequestHandler:
         # The rdata has one or more records
         if not rdata:
             return None
-        return dns.rrset.from_text_list(
-            recordset.name, ttl, dns.rdataclass.IN, recordset.type, rdata)
+        try:
+            return dns.rrset.from_text_list(
+                recordset.name, ttl, dns.rdataclass.IN, recordset.type, rdata)
+        except dns.exception.DNSException as e:
+            LOG.error(
+                'Skipping unparsable %(rrtype)s recordset %(recordset_id)s '
+                '(%(rrname)s) in zone %(zone_id)s while answering query: '
+                '%(error)s',
+                {
+                    'rrtype': recordset.type,
+                    'recordset_id': recordset.id,
+                    'rrname': recordset.name,
+                    'zone_id': zone.id,
+                    'error': e,
+                }
+            )
+            return None
 
     @staticmethod
     def _finalize_packet(renderer, request, multi_messages=False,
