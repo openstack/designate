@@ -49,6 +49,15 @@ class RRDataSPFTest(oslotest.base.BaseTestCase):
             recordset.validate
         )
 
+    def test_reject_literal_newline(self):
+        record = objects.SPF()
+        self.assertRaisesRegex(
+            ValueError,
+            'SPF record must not contain a literal newline character.',
+            record.from_string,
+            '"foo\nbar"'
+        )
+
     def test_reject_non_escaped_quotes(self):
         recordset = objects.RecordSet(
             name='www.example.test.', type='SPF',

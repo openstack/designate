@@ -102,3 +102,36 @@ class RRDataCERTTest(oslotest.base.BaseTestCase):
             cert_record.from_string,
             'DPKIX 1 RSASHA256 KR1L0GbocaIOOim1+qdHtOSrDcOsGiI2NCcxuX2/Tqc'
         )
+
+    def test_reject_trailing_newline_in_numeric_cert_type(self):
+        # int() strips surrounding whitespace, so a numeric cert_type
+        # with a trailing newline passes the Mnemonic-or-int check in
+        # validate_cert_type but must still be rejected by the
+        # CertTypeField regex, since the literal newline would otherwise
+        # break dnspython's tokenizer during AXFR.
+        cert_record = objects.CERT()
+        self.assertRaisesRegex(
+            ValueError,
+            'is not a valid Mnemonic or value',
+            cert_record.from_string,
+            '3\n 1 RSASHA256 KR1L0GbocaIOOim1+qdHtOSrDcOsGiI2NCcxuX2/Tqc='
+        )
+
+    def test_reject_trailing_newline_in_numeric_cert_algo(self):
+        cert_record = objects.CERT()
+        self.assertRaisesRegex(
+            ValueError,
+            'is not a valid Mnemonic or value',
+            cert_record.from_string,
+            'DPKIX 1 5\n KR1L0GbocaIOOim1+qdHtOSrDcOsGiI2NCcxuX2/Tqc='
+        )
+
+    def test_reject_literal_newline_in_certificate(self):
+        cert_record = objects.CERT()
+        self.assertRaisesRegex(
+            ValueError,
+            'CERT certificate must not contain a literal newline '
+            'character.',
+            cert_record.from_string,
+            'DPKIX 1 RSASHA256 KR1L0GbocaIOOim1+qdHtOSrDcOsGiI2\nNCcxuX2/Tqc='
+        )

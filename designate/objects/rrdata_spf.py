@@ -29,6 +29,11 @@ class SPF(Record):
     }
 
     def from_string(self, value):
+        if '\n' in value:
+            raise ValueError(
+                'SPF record must not contain a literal newline character.'
+            )
+
         if not value.startswith('"') and not value.endswith('"'):
             # value with spaces should be quoted as per RFC1035 5.1
             for element in value:
