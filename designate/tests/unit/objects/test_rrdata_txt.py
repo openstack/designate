@@ -60,6 +60,28 @@ class RRDataTXTTest(oslotest.base.BaseTestCase):
             recordset.validate
         )
 
+    def test_reject_literal_newline_quoted(self):
+        recordset = objects.RecordSet(
+            name='www.example.test.', type='TXT',
+            records=objects.RecordList(objects=[
+                objects.Record(data='"foo\nbar"'),
+            ])
+        )
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            recordset.validate
+        )
+
+    def test_reject_literal_newline(self):
+        record = objects.TXT()
+        self.assertRaisesRegex(
+            ValueError,
+            'TXT record must not contain a literal newline character.',
+            record.from_string,
+            '"foo\nbar"'
+        )
+
     def test_reject_non_matched_quotes(self):
         record = objects.TXT()
         self.assertRaisesRegex(

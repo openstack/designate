@@ -66,14 +66,14 @@ RE_ZONENAME = re.compile(r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\
 RE_SRV_HOST_NAME = re.compile(r'^(?:(?!\-)(?:\_[A-Za-z0-9_\-]{1,63}\.){2})(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z')  # noqa
 RE_SSHFP_FINGERPRINT = re.compile(r'^([0-9A-Fa-f]{10,40}|[0-9A-Fa-f]{64})\Z')
 RE_TLDNAME = re.compile(r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*\Z')  # noqa
-RE_NAPTR_FLAGS = re.compile(r'^[APSUapsu]*$')
-RE_NAPTR_SERVICE = re.compile(r'^([A-Za-z]([A-Za-z0-9]*)(\+[A-Za-z]([A-Za-z0-9]{0,31}))*)?$')  # noqa
-RE_NAPTR_REGEXP = re.compile(r'^(([^0-9i\\])(.*)\2((.+)|(\\[1-9]))?\2(i?))?$')
+RE_NAPTR_FLAGS = re.compile(r'^[APSUapsu]*\Z')
+RE_NAPTR_SERVICE = re.compile(r'^([A-Za-z]([A-Za-z0-9]*)(\+[A-Za-z]([A-Za-z0-9]{0,31}))*)?\Z')  # noqa
+RE_NAPTR_REGEXP = re.compile(r'^(([^0-9i\\])(.*)\2((.+)|(\\[1-9]))?\2(i?))?\Z')
 RE_KVP = re.compile(r'^\s[A-Za-z0-9]+=[A-Za-z0-9]+')
 RE_URL_MAIL = re.compile(r'^mailto:[A-Za-z0-9_\-]+(\+[A-Za-z0-9_\-]+)?@.*')
 RE_URL_HTTP = re.compile(r'^http(s)?://.*/')
-RE_CERT_TYPE = re.compile(r'(^[A-Z]+$)|(^[0-9]+$)')
-RE_CERT_ALGO = re.compile(r'(^[A-Z]+[A-Z0-9\-]+[A-Z0-9]$)|(^[0-9]+$)')
+RE_CERT_TYPE = re.compile(r'(^[A-Z]+\Z)|(^[0-9]+\Z)')
+RE_CERT_ALGO = re.compile(r'(^[A-Z]+[A-Z0-9\-]+[A-Z0-9]\Z)|(^[0-9]+\Z)')
 
 # Floating IP regexes
 RE_FIP = re.compile(r'^(?P<region>[A-Za-z0-9\.\-_]{1,100}):(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$')  # noqa
