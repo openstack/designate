@@ -1,0 +1,35 @@
+---
+security:
+  - |
+    Fixed a TXT and SPF recordset validation gap that allowed a value
+    containing an unescaped literal newline character to be accepted and
+    persisted, and NAPTR and CERT validation gaps that allowed a trailing
+    newline in the NAPTR ``flags``, ``service``, or ``regexp`` fields, or
+    in a numeric CERT ``cert_type`` or ``cert_algo`` field, through due to
+    regular expressions anchored with a trailing ``$``, which (without
+    ``re.MULTILINE``) matches immediately before a trailing newline rather
+    than strictly at the end of the string. A CERT ``certificate`` field
+    could separately carry a literal newline through unrejected, since
+    base64 decoding ignores embedded newlines. In all cases the persisted
+    value later failed to parse when ``designate-mdns`` rendered an AXFR
+    response for the zone, which aborted the entire zone transfer to the
+    backend nameserver. Because any project with recordset-create
+    permission on a zone (including a project a PRIMARY zone has been
+    shared with) could create such a value, this allowed one project's
+    malformed recordset to block publication of every other recordset in
+    the same zone, including recordsets belonging to other projects.
+
+    TXT and SPF record values, and CERT ``certificate`` values, are now
+    rejected at validation time if they contain a literal newline
+    character, and NAPTR's ``flags``, ``service``, and ``regexp`` fields
+    and CERT's ``cert_type`` and ``cert_algo`` fields are now anchored
+    with ``\Z`` so a trailing newline is correctly rejected. As defense
+    in depth, ``designate-mdns`` now logs and skips any individual
+    recordset that still fails to parse, both while rendering an AXFR
+    response and while answering a direct record query, instead of
+    aborting the whole zone transfer or leaving the query unanswered —
+    including recordsets in system-generated catalog zones.
+
+    See `bug 2162105`_ for more information.
+
+    .. _bug 2162105: https://bugs.launchpad.net/designate/+bug/2162105
