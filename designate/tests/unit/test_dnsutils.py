@@ -395,3 +395,39 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
         self.assertFalse(
             dnsutils.get_serial('serial.test.', '203.0.113.1', port=54)
         )
+
+
+class TestTsigPqcWarning(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+
+    @mock.patch.object(dnsutils, 'LOG')
+    def test_apply_tsig_hmac_md5_warning(self, mock_log):
+        tsig_key = mock.Mock()
+        tsig_key.name = 'test-key'
+        tsig_key.algorithm = 'hmac-md5'
+        tsig_key.secret = 'c2VjcmV0'
+
+        dns_message = mock.Mock()
+        dnsutils._apply_tsig_to_message(dns_message, tsig_key)
+
+        mock_log.warning.assert_called_once()
+        self.assertIn('HMAC-MD5', str(mock_log.warning.call_args))
+
+    @mock.patch.object(dnsutils, 'LOG')
+    def test_apply_tsig_hmac_sha256_no_warning(self, mock_log):
+        tsig_key = mock.Mock()
+        tsig_key.name = 'test-key'
+        tsig_key.algorithm = 'hmac-sha256'
+        tsig_key.secret = 'c2VjcmV0'
+
+        dns_message = mock.Mock()
+        dnsutils._apply_tsig_to_message(dns_message, tsig_key)
+
+        mock_log.warning.assert_not_called()
+
+    def test_apply_tsig_none_key_no_action(self):
+        dns_message = mock.Mock()
+        dnsutils._apply_tsig_to_message(dns_message, None)
+        dns_message.use_tsig.assert_not_called()

@@ -19,6 +19,8 @@ from oslo_log import log as logging
 import requests
 
 from designate.backend import base
+from designate.common import constants
+from designate.common import crypto_utils
 import designate.conf
 from designate import exceptions
 
@@ -39,6 +41,32 @@ class PDNS4Backend(base.Backend):
         self.api_token = self.options.get('api_token')
         self.tsigkey_name = self.options.get('tsigkey_name', None)
         self.api_ca_cert = self.options.get('api_ca_cert')
+
+        check_mode = CONF['pqc'].check_mode
+        is_https = (
+            urllib.parse.urlparse(self.api_endpoint).scheme == 'https'
+        )
+        if check_mode != constants.PQC_MODE_DISABLED and is_https:
+            ca = self._verify_ssl()
+            if ca:
+                crypto_utils.check_pqc_compliance(
+                    cert_paths=[ca],
+                    check_mode=check_mode,
+                    component_name=self.__plugin_name__
+                )
+            else:
+                LOG.warning(
+                    'PDNS4 backend: TLS certificate verification is '
+                    'DISABLED for %s. This allows man-in-the-middle '
+                    'attacks and negates any PQC key exchange '
+                    'protection.', self.api_endpoint
+                )
+                if check_mode == constants.PQC_MODE_STRICT:
+                    raise exceptions.ConfigurationError(
+                        'PDNS4 backend: Certificate verification '
+                        'cannot be disabled when pqc check_mode is '
+                        '"strict".'
+                    )
 
         self.headers = {
             "X-API-Key": self.api_token
