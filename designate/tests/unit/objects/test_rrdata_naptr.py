@@ -60,6 +60,34 @@ class RRDataNAPTRTest(oslotest.base.BaseTestCase):
                          naptr_record.regexp)
         self.assertEqual('test.', naptr_record.replacement)
 
+    def test_reject_trailing_newline_in_flags(self):
+        naptr_record = objects.NAPTR()
+        self.assertRaisesRegex(
+            ValueError,
+            'flags can be S, A, U and P',
+            naptr_record.from_string,
+            '0 0 "S\n" "SIP+D2U" "" _sip._udp.example.com.'
+        )
+
+    def test_reject_trailing_newline_in_service(self):
+        naptr_record = objects.NAPTR()
+        self.assertRaisesRegex(
+            ValueError,
+            'service is invalid',
+            naptr_record.from_string,
+            '0 0 "S" "SIP+D2U\n" "" _sip._udp.example.com.'
+        )
+
+    def test_reject_trailing_newline_in_regexp(self):
+        naptr_record = objects.NAPTR()
+        self.assertRaisesRegex(
+            ValueError,
+            'NAPTR record is invalid',
+            naptr_record.from_string,
+            '0 0 "S" "SIP+D2U" "!^.*$!sip:x@example.com!\n" '
+            '_sip._udp.example.com.'
+        )
+
     def test_parse_naptr_valid_exampe1(self):
         naptr_record = objects.NAPTR()
         naptr_record.from_string('65535 65535 "SAUP" "bloop" ":beep::" test.')  # noqa
