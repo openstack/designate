@@ -21,7 +21,6 @@ from oslo_reports import opts as gmr_opts
 
 from designate.central import service as central_service
 import designate.conf
-from designate import heartbeat_emitter
 from designate import service
 from designate import utils
 from designate import version
@@ -37,12 +36,5 @@ def main():
     gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
 
     server = central_service.Service()
-    server.init_host()
-    heartbeat = heartbeat_emitter.get_heartbeat_emitter(server.service_name,
-                                                        rpc_api=server)
     service.serve(server, workers=CONF['service:central'].workers)
-    heartbeat.start()
-    try:
-        service.wait()
-    finally:
-        heartbeat.stop()
+    service.wait()

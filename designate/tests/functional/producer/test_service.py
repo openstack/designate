@@ -31,8 +31,6 @@ class ProducerServiceTest(designate.tests.functional.TestCase):
         self.producer_service.stop()
 
     def test_validate_partition_range(self):
-        self.producer_service.start()
-
         min_partition = objects.Zone.fields['shard'].min
         max_partition = objects.Zone.fields['shard'].max
 

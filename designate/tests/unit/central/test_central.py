@@ -19,6 +19,7 @@ from designate.central import service
 from designate.common import profiler
 import designate.conf
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate.objects import record
 from designate.objects import zone
 from designate import policy
@@ -29,12 +30,13 @@ CONF = designate.conf.CONF
 
 
 class CentralTestCase(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
     @mock.patch.object(profiler, 'setup_profiler')
     def setUp(self, mock_setup_profiler, mock_rpc_initialized,
-              mock_rpc_init, mock_policy_init):
+              mock_rpc_init, mock_policy_init, mock_heartbeat):
         super().setUp()
 
         mock_rpc_initialized.return_value = False
@@ -42,6 +44,9 @@ class CentralTestCase(oslotest.base.BaseTestCase):
         self.storage = mock.Mock()
 
         self.service = service.Service()
+        self.heartbeat = mock_heartbeat.return_value
+        mock_heartbeat.assert_called_once_with(
+            self.service.service_name, rpc_api=self.service)
         self.service.coordination = mock.Mock()
         self.service._storage = self.storage
         self.context = mock.Mock()
@@ -58,6 +63,7 @@ class CentralTestCase(oslotest.base.BaseTestCase):
         mock_get_server.assert_called()
         mock_get_notifier.assert_called_with('central')
         self.service.coordination.start.assert_called()
+        self.heartbeat.start.assert_called_once_with()
 
     @mock.patch.object(rpc, 'get_server')
     @mock.patch.object(rpc, 'get_notifier')
@@ -74,6 +80,13 @@ class CentralTestCase(oslotest.base.BaseTestCase):
         mock_get_server.assert_called()
         mock_get_notifier.assert_called_with('central')
         self.service.coordination.start.assert_called()
+        self.heartbeat.start.assert_called_once_with()
+
+    def test_service_stop(self):
+        self.service.stop()
+
+        self.heartbeat.stop.assert_called_once_with()
+        self.service.coordination.stop.assert_called_once_with()
 
     def test_is_valid_project_id(self):
         self.assertIsNone(self.service._is_valid_project_id('1'))
@@ -111,12 +124,13 @@ class CentralTestCase(oslotest.base.BaseTestCase):
 
 
 class ZoneAndRecordStatusTestCase(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
     @mock.patch.object(profiler, 'setup_profiler')
     def setUp(self, mock_setup_profiler, mock_rpc_initialized,
-              mock_rpc_init, mock_policy_init):
+              mock_rpc_init, mock_policy_init, mock_heartbeat):
         super().setUp()
 
         mock_rpc_initialized.return_value = False

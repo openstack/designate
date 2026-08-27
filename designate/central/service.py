@@ -36,6 +36,7 @@ import designate.conf
 from designate import coordination
 from designate import dnsutils
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate import network_api
 from designate import objects
 from designate import policy
@@ -75,6 +76,8 @@ class Service(service.RPCService):
             self.service_name, self.tg, grouping_enabled=False
         )
         self.network_api = network_api.get_network_api(CONF.network_api)
+        self.heartbeat = heartbeat_emitter.get_heartbeat_emitter(
+            self.service_name, rpc_api=self)
 
     @property
     def scheduler(self):
@@ -108,8 +111,10 @@ class Service(service.RPCService):
 
         super().start()
         self.coordination.start()
+        self.heartbeat.start()
 
     def stop(self, graceful=True):
+        self.heartbeat.stop()
         self.coordination.stop()
         super().stop(graceful)
 

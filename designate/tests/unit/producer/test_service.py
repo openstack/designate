@@ -22,6 +22,7 @@ import oslotest.base
 
 import designate.conf
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate import policy
 from designate.producer import service
 from designate import rpc
@@ -34,12 +35,13 @@ CONF = designate.conf.CONF
 
 @mock.patch.object(service.rpcapi.CentralAPI, 'get_instance', mock.Mock())
 class ProducerServiceTest(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'get_client')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
     def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_rpc_get_client,
-              mock_policy_init):
+              mock_policy_init, mock_heartbeat):
         super().setUp()
 
         self.useFixture(cfg_fixture.Config(CONF))
@@ -50,6 +52,7 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
 
         self.tg = mock.Mock()
         self.service = service.Service()
+        self.heartbeat = mock_heartbeat.return_value
         self.service.coordination = mock.Mock()
         self.service.tg = self.tg
 
@@ -71,6 +74,7 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
         mock_rpc_start.assert_called_with()
         mock_partition.watch_partition_change.assert_called()
         mock_partition.start.assert_called()
+        self.heartbeat.start.assert_called_once_with()
 
         # Make sure that tasks were added to the tg timer.
         self.tg.add_timer_args.assert_called()
@@ -98,6 +102,7 @@ class ProducerServiceTest(oslotest.base.BaseTestCase):
         self.service.stop()
 
         self.service.coordination.stop.assert_called()
+        self.heartbeat.stop.assert_called_once_with()
 
         self.assertIn('Stopping producer service', self.stdlog.logger.output)
 

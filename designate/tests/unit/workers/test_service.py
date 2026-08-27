@@ -25,6 +25,7 @@ from designate import backend
 from designate.central import rpcapi as central_rpcapi
 import designate.conf
 from designate import exceptions
+from designate import heartbeat_emitter
 from designate import objects
 from designate import policy
 from designate import rpc
@@ -40,12 +41,13 @@ CONF = designate.conf.CONF
 
 
 class WorkerServiceTest(oslotest.base.BaseTestCase):
+    @mock.patch.object(heartbeat_emitter, 'get_heartbeat_emitter')
     @mock.patch.object(policy, 'init')
     @mock.patch.object(rpc, 'get_client')
     @mock.patch.object(rpc, 'init')
     @mock.patch.object(rpc, 'initialized')
     def setUp(self, mock_rpc_initialized, mock_rpc_init, mock_rpc_get_client,
-              mock_policy_init):
+              mock_policy_init, mock_heartbeat):
         super().setUp()
 
         mock_rpc_initialized.return_value = False
@@ -57,6 +59,7 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
         self.context = mock.Mock()
         self.zone = mock.Mock()
         self.service = service.Service()
+        self.heartbeat = mock_heartbeat.return_value
 
         mock_policy_init.assert_called_once()
         mock_rpc_initialized.assert_called_once()
@@ -67,11 +70,13 @@ class WorkerServiceTest(oslotest.base.BaseTestCase):
         self.service.start()
 
         self.assertTrue(mock_rpc_start.called)
+        self.heartbeat.start.assert_called_once_with()
 
     @mock.patch.object(designate.rpc, 'get_notification_listener')
     def test_service_stop(self, mock_notification_listener):
         self.service.stop()
 
+        self.heartbeat.stop.assert_called_once_with()
         self.assertIn('Stopping worker service', self.stdlog.logger.output)
 
     def test_service_name(self):

@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    Fixed ``designate-central``, ``designate-worker``, and
+    ``designate-producer`` starting their RPC server before forking their
+    worker processes. This left every worker without a working RPC listener,
+    so only the parent process handled RPC traffic regardless of the
+    configured ``workers`` count, and each worker hung for up to 60 seconds
+    (then required a forceful kill) on shutdown while waiting on a listener
+    that was never started.
+    Heartbeat emitters for these services now also start and stop inside
+    each worker process, so their timer and messaging state are not active
+    in the parent when workers are forked.
