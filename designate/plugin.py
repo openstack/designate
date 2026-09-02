@@ -85,7 +85,7 @@ class ExtensionPlugin(Plugin):
     def get_extensions(cls, enabled_extensions=None):
         """Load a series of extensions"""
 
-        LOG.debug('Looking for extensions in %s' % cls.__plugin_ns__)
+        LOG.debug('Looking for extensions in %s', cls.__plugin_ns__)
 
         def _check_func(ext):
             if enabled_extensions is None:

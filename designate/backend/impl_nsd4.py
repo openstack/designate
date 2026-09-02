@@ -141,7 +141,7 @@ class NSD4Backend(base.Backend):
                       command, self.host)
             result = self._command(command)
         except (ssl.SSLError, OSError) as e:
-            LOG.debug('NSD4 control call failure: %s' % e)
+            LOG.debug('NSD4 control call failure: %s', e)
             raise exceptions.Backend(e)
         if result.rstrip("\n") != 'ok':
             raise exceptions.Backend(result)

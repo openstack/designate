@@ -2484,7 +2484,7 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
 
         # Verify pool_attribute_two
         criterion = dict(key=pool_attribute_two['key'])
-        LOG.debug('Criterion is %r ' % criterion)
+        LOG.debug('Criterion is %r ', criterion)
 
         results = self.storage.find_pool_attributes(self.admin_context,
                                                     criterion)

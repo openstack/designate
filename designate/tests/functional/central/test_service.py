@@ -1423,13 +1423,13 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         """Log out a summary of zones
         """
         if msg:
-            LOG.debug("--- %s ---" % msg)
+            LOG.debug("--- %s ---", msg)
         cols = ('name', 'status', 'action', 'deleted', 'deleted_at',
                 'parent_zone_id')
         tpl = "%-35s | %-11s | %-11s | %-32s | %-20s | %s"
-        LOG.debug(tpl % cols)
+        LOG.debug(tpl, *cols)
         for z in zones:
-            LOG.debug(tpl % tuple(getattr(z, k) for k in cols))
+            LOG.debug(tpl, *tuple(getattr(z, k) for k in cols))
 
     def _assert_count_all_zones(self, n):
         """Assert count ALL zones including deleted ones
