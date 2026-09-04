@@ -1,0 +1,12 @@
+---
+other:
+  - |
+    Documentation has been added to clarify the behavior of
+    ``designate-manage pool update`` command. The command uses merge
+    semantics, updating only fields present in the YAML file while
+    preserving existing database values for omitted fields. To clear
+    optional fields such as ``also_notifies``, ``attributes``, or
+    ``catalog_zone``, administrators must explicitly set them to empty
+    values (e.g., ``also_notifies: []``, ``attributes: {}``, or
+    ``catalog_zone: null``). This behavior is now documented in the
+    pool management documentation and configuration file samples.

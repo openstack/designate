@@ -168,6 +168,21 @@ designate-manage pool update
 
 Update the running pool config from a YAML file
 
+**Update behavior:**
+
+The ``pool update`` command merges changes from the YAML file with the
+existing pool configuration in the database. Fields present in the YAML
+file are updated, while fields omitted from the YAML file retain their
+current database values.
+
+To clear optional fields from a pool configuration, explicitly set them
+to empty values in the YAML file:
+
+* ``also_notifies: []`` - removes all also_notifies entries
+* ``attributes: {}`` - removes all pool attributes
+* ``catalog_zone: null`` - removes catalog zone configuration
+* etc.
+
 **Optional arguments:**
 
 ``-h, --help``

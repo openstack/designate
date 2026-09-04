@@ -176,6 +176,26 @@ You manage can modify the current deployed pools with the
 
    designate-manage pool update [options]
 
+.. note::
+
+   **Pool Update Behavior**
+
+   The ``pool update`` command uses **merge semantics** - it updates only the
+   fields specified in the YAML file while preserving existing values for
+   fields not present in the file. This means that omitting optional fields
+   from the YAML file will **not** remove them from the pool configuration.
+
+   To clear optional fields, you must explicitly set them to empty values:
+
+   * ``also_notifies: []`` - clears the also_notifies list
+   * ``attributes: {}`` - clears all pool attributes
+   * ``catalog_zone: null`` - removes catalog zone configuration
+   * etc.
+
+   Fields that are always present in the YAML file (such as ``name``,
+   ``ns_records``, ``nameservers``, and ``targets``) will be updated to match
+   the YAML configuration.
+
 Pool update options
 ^^^^^^^^^^^^^^^^^^^
 ``--file <file>``
