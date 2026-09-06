@@ -2,7 +2,7 @@
 Zone Ownership Transfers - Accepts
 ==================================
 
-Designate allows users to transer ownership of a zone between projects.
+Designate allows users to transfer ownership of a zone between projects.
 
 For the final step, the receiving project has to accept the new zone, using
 the ``transfer_accepts`` API

@@ -2,7 +2,7 @@
 Zone Ownership Transfers - Requests
 ===================================
 
-Designate allows users to transer ownership of a zone between projects.
+Designate allows users to transfer ownership of a zone between projects.
 
 The traditional route is to create a ``zone_transfer_request``, communicate
 the key and ID out of band to the intended owner, and they create a
