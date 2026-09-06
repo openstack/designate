@@ -50,10 +50,17 @@
         - designate-tempest-plugin
       tempest_test_regex: designate_tempest_plugin(?!\.tests.api.v1).*
     irrelevant-files:
+      - ^\.gitignore$
+      - ^\.gitreview$
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
       - ^releasenotes/.*$
+      - ^tox\.ini$
+      - ^designate/hacking/.*$
+      - ^designate/locale/.*$
+      - ^designate/tests/.*$
+      - ^designate_tempest_plugin/hacking/.*$
 
 - job:
     name: designate-grenade-skip-level-common
@@ -104,6 +111,8 @@
     description: |
       Run the Designate unit tests with the latest release of dnspython.
     irrelevant-files: &base_irrelevant_files
+      - ^\.gitignore$
+      - ^\.gitreview$
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
