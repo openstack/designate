@@ -3100,6 +3100,50 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         # Ensure the email address has been converted correctly
         self.assertEqual(zone_email, soa_record_values[1])
 
+    def test_create_soa_mname_is_lowest_priority_ns_record(self):
+        # Create a pool with a single, higher-priority-number ns_record
+        pool = self.create_pool(
+            fixture=0,
+            ns_records=[{'priority': 2, 'hostname': 'ns2.example.org.'}])
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
+
+        # Add a second nameserver, with a lower priority number, after
+        # the fact. Despite being added last (and so having the latest
+        # created_at of the two), it should still become the MNAME.
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool.id,
+            objects.PoolNsRecord(priority=1, hostname='ns1.example.org.'))
+
+        zone = self.create_zone(pool_id=pool.id)
+
+        soa = self.central_service.find_recordset(
+            self.admin_context, {'zone_id': zone['id'], 'type': 'SOA'})
+        mname = soa.records[0].data.split()[0]
+
+        self.assertEqual('ns1.example.org.', mname)
+
+    def test_create_soa_mname_ties_broken_by_ns_record_order(self):
+        # Create a pool with a single ns_record
+        pool = self.create_pool(
+            fixture=0,
+            ns_records=[{'priority': 1, 'hostname': 'ns1.example.org.'}])
+        self.create_tsigkey(scope='POOL', resource_id=pool.id)
+
+        # Add a second nameserver with the SAME priority. Since neither
+        # is unambiguously lowest, the first one created (ns1) should
+        # still win, as a tiebreaker.
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool.id,
+            objects.PoolNsRecord(priority=1, hostname='ns2.example.org.'))
+
+        zone = self.create_zone(pool_id=pool.id)
+
+        soa = self.central_service.find_recordset(
+            self.admin_context, {'zone_id': zone['id'], 'type': 'SOA'})
+        mname = soa.records[0].data.split()[0]
+
+        self.assertEqual('ns1.example.org.', mname)
+
     def test_update_soa(self):
         # Anytime the zone's serial number is incremented
         # the SOA recordset should automatically be updated
