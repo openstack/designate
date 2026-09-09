@@ -416,6 +416,19 @@ class TestTsigPqcWarning(oslotest.base.BaseTestCase):
         self.assertIn('HMAC-MD5', str(mock_log.warning.call_args))
 
     @mock.patch.object(dnsutils, 'LOG')
+    def test_apply_tsig_hmac_sha1_warning(self, mock_log):
+        tsig_key = mock.Mock()
+        tsig_key.name = 'test-key'
+        tsig_key.algorithm = 'hmac-sha1'
+        tsig_key.secret = 'c2VjcmV0'
+
+        dns_message = mock.Mock()
+        dnsutils._apply_tsig_to_message(dns_message, tsig_key)
+
+        mock_log.warning.assert_called_once()
+        self.assertIn('HMAC-SHA1', str(mock_log.warning.call_args))
+
+    @mock.patch.object(dnsutils, 'LOG')
     def test_apply_tsig_hmac_sha256_no_warning(self, mock_log):
         tsig_key = mock.Mock()
         tsig_key.name = 'test-key'

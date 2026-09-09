@@ -20,6 +20,9 @@ from oslo_log import log as logging
 from oslo_utils import importutils
 
 from designate.backend import base
+from designate.common import constants
+from designate.common import crypto_utils
+import designate.conf
 from designate import exceptions
 
 
@@ -32,6 +35,7 @@ infoblox_objects = importutils.try_import('infoblox_client.objects')
 
 
 LOG = logging.getLogger(__name__)
+CONF = designate.conf.CONF
 
 
 class InfobloxBackend(base.Backend):
@@ -60,6 +64,16 @@ class InfobloxBackend(base.Backend):
         if not wapi_host and wapi_url:
             wapi_host, wapi_version = self.parse_wapi_url(wapi_url)
 
+        client_cert = self.options.get('cert')
+
+        check_mode = CONF['pqc'].check_mode
+        if check_mode != constants.PQC_MODE_DISABLED and client_cert:
+            crypto_utils.check_pqc_compliance(
+                cert_paths=[client_cert],
+                check_mode=check_mode,
+                component_name=self.__plugin_name__
+            )
+
         options = {
             'host': wapi_host,
             'username': self.options.get('username'),
@@ -68,7 +82,7 @@ class InfobloxBackend(base.Backend):
             'http_pool_maxsize': self.options.get('http_pool_maxsize'),
             'wapi_version': wapi_version,
             'ssl_verify': self.options.get('sslverify'),
-            'cert': self.options.get('cert'),
+            'cert': client_cert,
             'key': self.options.get('key'),
         }
         self.connection = infoblox_connector.Connector(options)
