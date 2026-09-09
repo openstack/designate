@@ -61,6 +61,11 @@ class HeartbeatEmitter(plugin.DriverPlugin):
 
     def stop(self):
         self._timer.stop()
+        try:
+            self._timer.wait()
+        except Exception:
+            LOG.warning('Error waiting for heartbeat timer to stop for '
+                        '%s on %s', self._service_name, self._hostname)
 
     def get_status(self):
         return self._status, self._stats, self._capabilities
