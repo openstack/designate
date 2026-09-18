@@ -27,6 +27,7 @@ import dns.zone
 from oslo_log import log as logging
 from oslo_serialization import base64
 
+from designate.common import constants
 import designate.conf
 from designate import context
 from designate import exceptions
@@ -203,11 +204,12 @@ def _apply_tsig_to_message(dns_message, tsig_key):
     if tsig_key is None:
         return
 
-    if tsig_key.algorithm and tsig_key.algorithm.lower() == 'hmac-md5':
+    if (tsig_key.algorithm and tsig_key.algorithm.lower() not in
+            constants.TSIG_RECOMMENDED_ALGORITHMS):
         LOG.warning(
-            'TSIG key "%s" uses HMAC-MD5, which is cryptographically '
+            'TSIG key "%s" uses %s, which is cryptographically '
             'weak. Consider migrating to HMAC-SHA256 or stronger.',
-            tsig_key.name
+            tsig_key.name, tsig_key.algorithm.upper()
         )
 
     keyring = dns.tsigkeyring.from_text({
