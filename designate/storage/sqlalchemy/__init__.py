@@ -676,7 +676,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         """
         Purge Zones, effectively removing the zones database records.
 
-        Reparent orphan childrens, if any.
+        Reparent orphan children, if any.
         Transactions/locks are not needed.
 
         :param context: RPC Context.
@@ -1786,7 +1786,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
         return self._find_pool_targets(context, criterion, one=True)
 
     def _update_pool_items(self, context, pool, attribute_name):
-        """Update attributes beloging to a pool
+        """Update attributes belonging to a pool
         """
         assert attribute_name in ('attributes', 'ns_records', 'nameservers',
                                   'targets', 'also_notifies')
@@ -1844,7 +1844,7 @@ class SQLAlchemyStorage(base.SQLAlchemy):
             fn(context, pool.id, item)
 
     def _update_pool_target_items(self, context, pool_target, attribute_name):
-        """Update attributes beloging to a pool target
+        """Update attributes belonging to a pool target
         """
         assert attribute_name in ('options', 'masters')
 

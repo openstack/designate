@@ -428,7 +428,7 @@ class ApiV2ZonesTest(v2.ApiV2TestCase):
                                   headers={'X-Test-Role': 'member'})
 
     def test_update_zone_validation(self):
-        # NOTE: The schemas should be tested separatly to the API. So we
+        # NOTE: The schemas should be tested separately to the API. So we
         #       don't need to test every variation via the API itself.
         # Create a zone
         zone = self.create_zone()

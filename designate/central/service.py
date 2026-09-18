@@ -1436,7 +1436,7 @@ class Service(service.RPCService):
             target_pool_id = self.scheduler.schedule_zone(context, zone)
             if target_pool_id == orig_pool_id:
                 raise exceptions.BadRequest('No valid pool selected')
-            # Update the orignal zone with new pool_id
+            # Update the original zone with new pool_id
             zone.pool_id = target_pool_id
 
         # Need elevated context to get the pool

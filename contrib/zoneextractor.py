@@ -100,7 +100,7 @@ class Extractor:
         "                 # Open quote
         (?P<file> [^"]+ ) # The zonefile (without quotes), as group 'file'
         "                 # Close quote
-        \s* ;             # Semicolor, possible preceded by whitespace
+        \s* ;             # Semicolon, possible preceded by whitespace
         """, re.MULTILINE | re.VERBOSE)
 
     def __init__(self, conf_file):

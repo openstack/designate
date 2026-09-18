@@ -149,7 +149,7 @@ class DesignateObject(base.VersionedObject):
     def __ne__(self, other):
         return not (self.__eq__(other))
 
-    # TODO(daidv): all of bellow functions should
+    # TODO(daidv): all of below functions should
     # be removed when we completed migration.
     def nested_sort(self, key, value):
         """
@@ -397,7 +397,7 @@ class AttributeListObjectMixin(ListObjectMixin):
     """
     Mixin class for "Attribute" objects.
 
-    Attribute objects are ListObjects, who's memebers have a "key" and "value"
+    Attribute objects are ListObjects, who's members have a "key" and "value"
     property, which should be exposed on the list itself as list.<key>.
     """
 
@@ -483,7 +483,7 @@ class DesignateRegistry(base.VersionedObjectRegistry):
                         return
 
                 self._changed_fields.add(name)
-                # TODO(daidv): _obj_original_values shoud be removed
+                # TODO(daidv): _obj_original_values should be removed
                 # after OVO migration completed.
                 if (self.obj_attr_is_set(name) and
                         value != getattr(self, name) and

@@ -67,7 +67,7 @@ class ApiV2PoolsTest(v2.ApiV2TestCase):
             fixture['ns_records'], response.json['ns_records'])
 
     def test_create_pool_validation(self):
-        # NOTE: The schemas should be tested separatly to the API. So we
+        # NOTE: The schemas should be tested separately to the API. So we
         #       don't need to test every variation via the API itself.
         # Fetch a fixture
         fixture = self.get_pool_fixture(fixture=0)

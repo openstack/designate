@@ -28,7 +28,7 @@ class ServiceCommands(base.Commands):
             statuses = self.storage.find_service_statuses(self.context)
             for status in statuses:
                 if status.heartbeated_at:
-                    # Clean stale servcie if it pass 2*(heartbeat_interval)
+                    # Clean stale service if it pass 2*(heartbeat_interval)
                     check_interval = (
                         timeutils.utcnow() - status.heartbeated_at
                     ).total_seconds()

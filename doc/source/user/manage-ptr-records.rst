@@ -599,7 +599,7 @@ Classless IN-Addr.ARPA Delegation
 =================================
 
 You may want to delegate blocks of IP addresses to projects that do not align
-to subnet boundries. For example, if you wanted to give project "A" three IP
+to subnet boundaries. For example, if you wanted to give project "A" three IP
 addresses. To allow project "A" to manage DNS records for those three
 addresses, without delegating a whole subnet zone to project "A", you can use
 classless IN-ADDR.ARPA delegation as described in `RFC 2317`_.

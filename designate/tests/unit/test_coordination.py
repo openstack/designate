@@ -187,7 +187,7 @@ class TestPartitioner(oslotest.base.BaseTestCase):
         p_one.watch_partition_change(cb1)
         p_one.watch_partition_change(cb2)
 
-        # Initial partitions are calucated upon service bootup
+        # Initial partitions are calculated upon service bootup
         cb1.assert_called_with(partitions, None, None)
         cb2.assert_called_with(partitions, None, None)
 

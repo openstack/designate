@@ -53,7 +53,7 @@ it will fail:
 TLDs are much like an allowlist: if there are many TLDs then the
 zone must exist within one of the TLDs. If no TLDs have been created in
 Designate, then users can create any zone. Unlike the blacklists feature, TLDs
-do not have a policy that allows priviliged users to create zones outside the
+do not have a policy that allows privileged users to create zones outside the
 allowed TLDs.
 
 You can modify the values for a TLD using the `set` command. You can use either

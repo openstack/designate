@@ -2,7 +2,7 @@
 upgrade:
   - |
     Update command ``designate-manage pool update``, change ``--dry_run`` to
-    ``--dry-run``, and change ``--delete`` and ``--dry-run`` as switchs not
+    ``--dry-run``, and change ``--delete`` and ``--dry-run`` as switches not
     key value pair.
     e.g.
 

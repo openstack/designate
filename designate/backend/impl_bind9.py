@@ -73,7 +73,7 @@ class Bind9Backend(base.Backend):
         return rndc_call
 
     def create_zone(self, context, zone):
-        """Create a new Zone by executin rndc, then notify mDNS
+        """Create a new Zone by executing rndc, then notify mDNS
         Do not raise exceptions if the zone already exists.
         """
         LOG.debug('Create Zone')
@@ -126,7 +126,7 @@ class Bind9Backend(base.Backend):
         return True
 
     def delete_zone(self, context, zone, zone_params=None):
-        """Delete a new Zone by executin rndc
+        """Delete a new Zone by executing rndc
         Do not raise exceptions if the zone does not exist.
         """
         LOG.debug('Delete Zone')

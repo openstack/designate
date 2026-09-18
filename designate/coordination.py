@@ -208,7 +208,7 @@ class Partitioner:
                 self._group_id, self._on_group_change)
 
             # We need to get our partitions now. Events doesn't help in this
-            # case since they require state change in the group that we wont
+            # case since they require state change in the group that we won't
             # get when starting initially
             self._my_partitions = self._update_partitions()[1]
         else:
