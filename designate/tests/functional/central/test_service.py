@@ -3519,6 +3519,28 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         self.assertEqual(exceptions.PoolNotFound, exc.exc_info[0])
 
+    def test_delete_pool_with_catalog_zone(self):
+        # Create a server pool with a catalog zone
+        pool = self.create_pool(fixture=2)
+
+        self.storage._ensure_catalog_zone_config(self.admin_context, pool)
+        self.storage.get_catalog_zone(self.admin_context, pool)
+
+        # Delete the pool
+        self.central_service.delete_pool(self.admin_context, pool['id'])
+
+        # Verify that the pool has been deleted
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_pool,
+                                self.admin_context, pool['id'])
+
+        self.assertEqual(exceptions.PoolNotFound, exc.exc_info[0])
+
+        # Verify that the catalog zone has been deleted too
+        self.assertRaises(exceptions.ZoneNotFound,
+                          self.storage.get_catalog_zone,
+                          self.admin_context, pool)
+
     def test_update_status_delete_zone(self):
         # Create a zone
         zone = self.create_zone()
