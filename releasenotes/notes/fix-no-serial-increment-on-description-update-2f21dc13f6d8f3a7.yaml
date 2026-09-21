@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Fixed an issue where updating only the zone description would
+    incorrectly increment the zone serial number. The serial number
+    is now only incremented when DNS-propagated fields (such as email
+    or TTL) are changed.

@@ -423,6 +423,67 @@ class ApiV2ZonesTest(v2.ApiV2TestCase):
         self.assertEqual('prefix-%s' % zone['email'],
                          response.json['email'])
 
+    def test_update_zone_description_only_no_serial_increment(self):
+        # Create a zone
+        zone = self.create_zone()
+
+        # Update only the description (metadata field)
+        body = {'description': 'new description'}
+        self.client.patch_json('/zones/%s' % zone['id'], body,
+                               status=202,
+                               headers={'X-Test-Role': 'member'})
+
+        # Verify increment_serial is not set for description-only updates
+        updated_zone = self.storage.get_zone(
+            self.admin_context, zone['id'])
+        self.assertFalse(updated_zone.increment_serial)
+
+    def test_update_zone_email_increments_serial(self):
+        # Create a zone
+        zone = self.create_zone()
+
+        # Update the email (DNS-propagated field)
+        body = {'email': 'prefix-%s' % zone['email']}
+        self.client.patch_json('/zones/%s' % zone['id'], body,
+                               status=202,
+                               headers={'X-Test-Role': 'member'})
+
+        # Verify increment_serial is set for email updates
+        updated_zone = self.storage.get_zone(
+            self.admin_context, zone['id'])
+        self.assertTrue(updated_zone.increment_serial)
+
+    def test_update_zone_ttl_increments_serial(self):
+        # Create a zone
+        zone = self.create_zone()
+
+        # Update the TTL (DNS-propagated field)
+        body = {'ttl': 1800}
+        self.client.patch_json('/zones/%s' % zone['id'], body,
+                               status=202,
+                               headers={'X-Test-Role': 'member'})
+
+        # Verify increment_serial is set for TTL updates
+        updated_zone = self.storage.get_zone(
+            self.admin_context, zone['id'])
+        self.assertTrue(updated_zone.increment_serial)
+
+    def test_update_zone_description_and_email_increments_serial(self):
+        # Create a zone
+        zone = self.create_zone()
+
+        # Update both description and email
+        body = {'description': 'new desc',
+                'email': 'prefix-%s' % zone['email']}
+        self.client.patch_json('/zones/%s' % zone['id'], body,
+                               status=202,
+                               headers={'X-Test-Role': 'member'})
+
+        # Verify increment_serial is set when DNS fields are included
+        updated_zone = self.storage.get_zone(
+            self.admin_context, zone['id'])
+        self.assertTrue(updated_zone.increment_serial)
+
     def test_update_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/zones/%s',
                                   headers={'X-Test-Role': 'member'})
