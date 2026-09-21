@@ -17,10 +17,10 @@
 Development Environment on Ubuntu
 *********************************
 
-Designate is comprised of four main components :ref:`designate-api`,
-:ref:`designate-central`, designate-mdns, and designate-pool-manager,
-supported by a few standard open source components.
-For more information see :ref:`architecture`.
+Designate is comprised of five main components :ref:`designate-api`,
+:ref:`designate-central`, :ref:`designate-mdns`, :ref:`designate-worker`,
+and :ref:`designate-producer`, supported by a few standard open source
+components. For more information see :ref:`architecture`.
 
 There are many different options for customizing Designate, and two of
 these options have a major impact on the installation process:
