@@ -14,13 +14,3 @@ API Middleware
     :undoc-members:
     :show-inheritance:
 
-.. _api-service:
-
-API Service
-===========
-
-.. automodule:: designate.api.service
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

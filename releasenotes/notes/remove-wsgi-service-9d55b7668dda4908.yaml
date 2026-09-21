@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    The ``designate-api`` service command, ``designate.api.service`` module,
+    and ``designate.cmd.api`` module have been removed. These relied on
+    ``oslo_service.wsgi`` and ``oslo_service.sslutils``, which were removed
+    from oslo.service as part of the eventlet removal initiative.
+
+    Operators must deploy the Designate API using a WSGI server such as uwsgi.
+    This has been the recommended deployment method and the default in DevStack
+    for several releases.

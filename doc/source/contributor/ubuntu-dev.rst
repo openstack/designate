@@ -311,10 +311,22 @@ Start the other services
 
 ::
 
-   $ designate-api
    $ designate-mdns
    $ designate-worker
    $ designate-producer
+
+.. note::
+
+   The Designate API is served via WSGI. For development, you can run it using
+   a WSGI server such as uwsgi or gunicorn:
+
+   ::
+
+      $ pip install uwsgi
+      $ uwsgi --http :9001 --module designate.wsgi.api:application
+
+   Or use the DevStack configuration as a reference for setting up Apache
+   or nginx to serve the API.
 
 You'll now be seeing the logs from the other services.
 
