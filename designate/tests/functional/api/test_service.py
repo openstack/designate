@@ -13,16 +13,32 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import unittest
 from unittest import mock
 
 
 from paste import urlmap
 
-from designate.api import service
 from designate import exceptions
 import designate.tests.functional
 
+# Conditionally import deprecated API service module
+# This module will be removed in 2027.1, and its dependencies
+# (oslo_service.wsgi and oslo_service.sslutils) will be removed
+# in oslo.service 2026.2. Skip tests gracefully if unavailable.
+try:
+    from designate.api import service
+    from oslo_service import sslutils  # noqa
+    from oslo_service import wsgi  # noqa
+    HAS_DEPRECATED_API_SERVICE = True
+except ImportError:
+    HAS_DEPRECATED_API_SERVICE = False
 
+
+@unittest.skipUnless(
+    HAS_DEPRECATED_API_SERVICE,
+    "designate.api.service module unavailable"
+)
 class ApiServiceTest(designate.tests.functional.TestCase):
     def setUp(self):
         super().setUp()

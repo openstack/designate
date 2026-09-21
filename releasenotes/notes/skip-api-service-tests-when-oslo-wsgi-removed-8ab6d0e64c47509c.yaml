@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Tests for the deprecated ``designate.api.service`` module will now skip
+    gracefully if the module becomes unavailable due to missing dependencies.
+    This prevents test failures when ``oslo_service.wsgi`` and
+    ``oslo_service.sslutils`` are removed in oslo.service 2026.2, bridging
+    the gap until the deprecated module and its tests are removed in
+    Designate 2027.1.

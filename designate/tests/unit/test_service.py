@@ -14,13 +14,13 @@
 import errno
 import socket
 import struct
+import unittest
 from unittest import mock
 
 from oslo_config import fixture as cfg_fixture
 from oslo_service import service
 import oslotest.base
 
-from designate.api import service as api_service
 from designate.common import profiler
 import designate.conf
 from designate.mdns import handler
@@ -29,6 +29,18 @@ from designate import rpc
 from designate import service as designate_service
 from designate.tests import base_fixtures
 from designate import utils
+
+# Conditionally import deprecated API service module
+# This module will be removed in 2027.1, and its dependencies
+# (oslo_service.wsgi and oslo_service.sslutils) will be removed
+# in oslo.service 2026.2. Skip tests gracefully if unavailable.
+try:
+    from designate.api import service as api_service
+    from oslo_service import sslutils  # noqa
+    from oslo_service import wsgi  # noqa
+    HAS_DEPRECATED_API_SERVICE = True
+except ImportError:
+    HAS_DEPRECATED_API_SERVICE = False
 
 
 CONF = designate.conf.CONF
@@ -196,6 +208,10 @@ class TestRpcService(oslotest.base.BaseTestCase):
 @mock.patch.object(policy, 'init', mock.Mock())
 @mock.patch.object(rpc, 'init', mock.Mock())
 @mock.patch.object(profiler, 'setup_profiler', mock.Mock())
+@unittest.skipUnless(
+    HAS_DEPRECATED_API_SERVICE,
+    "designate.api.service module unavailable"
+)
 class TestWSGIService(oslotest.base.BaseTestCase):
     @mock.patch('oslo_service.wsgi.Server')
     def test_service_start(self, mock_wsgi_server):
