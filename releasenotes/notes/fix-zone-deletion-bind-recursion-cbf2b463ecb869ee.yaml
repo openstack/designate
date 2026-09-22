@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Fixed zone deletion failure when BIND9 is configured with both
+    authoritative and recursive roles. Previously, zone deletion could
+    fail because ``get_serial()`` incorrectly interpreted non-authoritative
+    recursive responses as evidence that the zone still existed locally.
