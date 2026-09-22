@@ -208,6 +208,12 @@ Pool update options
 ``--delete``
   Removes all pools not listed in the config file.
 
+``--replace``
+  Replace pool configuration completely. Optional fields (``also_notifies``,
+  ``attributes``, ``catalog_zone``) not present in the YAML file will be
+  cleared. Without this flag, the default behavior is to merge, preserving
+  fields omitted from the YAML file.
+
 
 .. warning::
 

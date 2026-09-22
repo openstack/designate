@@ -40,6 +40,7 @@ class PoolCommands(base.Commands):
         self.central_api = None
         self.dry_run = False
         self.skip_verify_drivers = False
+        self.replace = False
 
     def _setup(self, dry_run=False, skip_verify_drivers=False):
         self.dry_run = dry_run
@@ -124,8 +125,17 @@ class PoolCommands(base.Commands):
         help='Don\'t verify the designate backend drivers',
         action='store_true',
         default=False)
-    def update(self, file, delete, dry_run=False, skip_verify_drivers=False):
+    @base.args(
+        '--replace',
+        help='Replace pool configuration completely. Optional fields not '
+             'present in the YAML file will be cleared. Default behavior is '
+             'to merge, preserving fields omitted from the YAML file',
+        action='store_true',
+        default=False)
+    def update(self, file, delete, dry_run=False, skip_verify_drivers=False,
+               replace=False):
         self._setup(dry_run, skip_verify_drivers)
+        self.replace = replace
 
         try:
             self.output_message.append('Updating Pools Configuration')
@@ -204,6 +214,19 @@ class PoolCommands(base.Commands):
         return pool
 
     def _update_pool(self, pool_data, pool):
+        # If replace mode is enabled, clear optional fields that are not
+        # present in the YAML file before parsing
+        if self.replace:
+            clearable = objects.Pool.OPTIONAL_CLEARABLE_FIELDS
+            for field, obj_type in clearable.items():
+                if field not in pool_data:
+                    if obj_type is not None:
+                        empty = objects.DesignateObject.obj_cls_from_name(
+                            obj_type)()
+                    else:
+                        empty = None
+                    setattr(pool, field, empty)
+
         pool = DesignateAdapter.parse('YAML', pool_data, pool)
         self._validate_pool(pool)
 

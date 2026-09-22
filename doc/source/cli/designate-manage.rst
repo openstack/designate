@@ -163,7 +163,7 @@ designate-manage pool update
 .. code-block:: console
 
     usage: designate-manage pool update [-h] [--file FILE] [--delete]
-                                        [--dry-run]
+                                        [--dry-run] [--replace]
 
 
 Update the running pool config from a YAML file
@@ -198,6 +198,11 @@ to empty values in the YAML file:
 
 ``--dry-run``
   This will simulate what will happen when you run this command
+
+``--replace``
+  Replace pool configuration completely. Optional fields (also_notifies,
+  attributes, catalog_zone) not present in the YAML file will be cleared.
+  Default behavior is to merge, preserving fields omitted from the YAML file
 
 .. _designate_manage_pool_show:
 
