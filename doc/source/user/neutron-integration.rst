@@ -30,7 +30,7 @@ Neutron DNS Extensions
 DNS integration in Neutron is optional and an extension must be enabled in the
 Neutron configuration file, by a cloud administrator,  for DNS names to be
 assigned automatically to Neutron and Nova resources. You can check if a DNS
-integration extension is enabled by querying the `Neutron extensions API`_:
+integration extension is available by querying the `Neutron extensions API`_:
 
 .. _Neutron extensions API: https://docs.openstack.org/api-ref/network/v2/index.html#list-extensions
 
@@ -38,6 +38,20 @@ integration extension is enabled by querying the `Neutron extensions API`_:
 
    $ openstack extension list --network -f value -c Alias | grep dns-integration
    dns-integration
+
+.. note::
+
+   The extensions API only shows which extensions are available in your
+   Neutron installation, not whether they are actually enabled. An extension
+   can be available (installed) but not enabled (configured). To verify an
+   extension is truly enabled, check with your cloud administrator or verify
+   the Neutron ml2_conf.ini file contains the extension in the
+   ``extension_drivers`` setting. For example:
+
+   .. code-block:: console
+
+      $ grep extension_drivers /etc/neutron/plugins/ml2/ml2_conf.ini
+      extension_drivers = port_security,qos,dns_domain_keywords
 
 One of these extensions must be enabled to allow Neutron and, via Neutron, Nova
 to automatically create DNS :term:`recordsets<Recordset>` in Designate:
@@ -76,7 +90,7 @@ dns-domain-ports
 In addition, if the `dns-domain-ports` extension is enabled in Neutron, ports
 can be created with a dns_domain specified. This dns_domain will take
 precedence over the dns_domain setting for the network. You can check if the
-`dns-domain-ports` extension is enabled by querying the
+`dns-domain-ports` extension is available by querying the
 `Neutron extensions API`_:
 
 .. code-block:: console
@@ -84,7 +98,12 @@ precedence over the dns_domain setting for the network. You can check if the
    $ openstack extension list --network -f value -c Alias | grep dns-domain-ports
    dns-domain-ports
 
-With the `dns-domain-ports` extension is enabled the following DNS settings
+.. note::
+
+   As noted above, the extensions API only shows if the extension is available,
+   not whether it is actually enabled in the Neutron configuration.
+
+When the `dns-domain-ports` extension is enabled the following DNS settings
 will be available via Neutron:
 
 .. list-table::
