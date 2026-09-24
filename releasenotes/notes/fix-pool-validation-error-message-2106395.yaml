@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    Fixed misleading error message when creating a zone with a non-existent
+    pool ID in zone attributes. Previously returned "Duplicate Zone" error,
+    now correctly returns "Pool not found" (404).
+
+    `LP#2106395 <https://bugs.launchpad.net/designate/+bug/2106395>`__

@@ -69,10 +69,8 @@ class PoolIDAttributeFilter(base.Filter):
         try:
             if zone.attributes.get('pool_id'):
                 pool_id = zone.attributes.get('pool_id')
-                try:
-                    pool = self.storage.get_pool(context, pool_id)
-                except Exception:
-                    return objects.PoolList()
+                # Validate that the pool exists - raises PoolNotFound if not
+                pool = self.storage.get_pool(context, pool_id)
                 policy.check('zone_create_forced_pool', context, pool)
                 if pool in pools:
                     pools = objects.PoolList()
