@@ -20,8 +20,8 @@ CONF = designate.conf.CONF
 
 
 class FallbackFilter(base.Filter):
-    """If there is no zones available to schedule to, this filter will insert
-    the default_pool_id.
+    """During the filtering process, if there are no matching pools available
+    to schedule to, this filter will insert the default_pool_id.
 
     .. note::
 
