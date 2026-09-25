@@ -198,7 +198,28 @@ class ApiV2TldsTest(v2.ApiV2TestCase):
             # Check that the correct number of tlds match
             self.assertEqual(correct_result, len(response.json['tlds']))
 
+    def test_get_tld_filter_by_description(self):
+        self.policy({'create_tld': '@'})
+
+        # Create TLDs with descriptions
+        self.create_tld(name='com', description='Commercial TLD')
+        self.create_tld(name='org', description='Organization TLD')
+        self.create_tld(name='net', description='Network TLD')
+
+        self.policy({'find_tlds': '@'})
+
+        # Test exact match
+        response = self.client.get('/tlds?description=Commercial TLD')
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertEqual(1, len(response.json['tlds']))
+
+        # Test wildcard match
+        response = self.client.get('/tlds?description=*TLD')
+        self.assertEqual(200, response.status_int)
+        self.assertEqual(3, len(response.json['tlds']))
+
     def test_invalid_tld_filter(self):
-        invalid_url = '/tlds?description=test'
+        invalid_url = '/tlds?invalid_filter=test'
         self._assert_exception(
             'bad_request', 400, self.client.get, invalid_url)
