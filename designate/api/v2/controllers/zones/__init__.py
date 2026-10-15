@@ -168,7 +168,13 @@ class ZonesController(rest.RestController):
 
             # Update and persist the resource
 
-            increment_serial = zone.type == 'PRIMARY'
+            # Only increment the serial if fields that are propagated
+            # to the nameservers have changed (e.g. email, ttl).
+            # Metadata-only fields like description should not trigger
+            # a serial increment.
+            changed = zone.obj_what_changed()
+            dns_fields = changed - {'description'}
+            increment_serial = zone.type == 'PRIMARY' and bool(dns_fields)
             zone = self.central_api.update_zone(
                 context, zone, increment_serial=increment_serial)
 
