@@ -1,0 +1,11 @@
+---
+fixes:
+  - |
+    Fixed `bug 2166858`_ where restarting a service's heartbeat
+    shortly after stopping it could raise ``RuntimeError: A fixed
+    interval looping call can only run one function at a time``.
+    ``HeartbeatEmitter.stop()`` now waits for the timer thread to
+    fully exit before returning, instead of just signalling it to
+    stop, matching the pattern oslo.service uses internally.
+
+    .. _bug 2166858: https://bugs.launchpad.net/designate/+bug/2166858
