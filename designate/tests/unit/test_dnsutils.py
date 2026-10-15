@@ -18,6 +18,7 @@ from unittest import mock
 
 import dns
 import dns.exception
+import dns.flags
 import dns.message
 import dns.name
 import dns.rcode
@@ -301,6 +302,7 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
 
         mock_result = mock.Mock()
         mock_result.answer = [mock_answer]
+        mock_result.flags = dns.flags.AA
         mock_send_dns_message.return_value = mock_result
 
         self.assertEqual(
@@ -361,6 +363,7 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
         mock_answer.to_rdataset.return_value = [mock_rdataset]
         mock_result = mock.Mock()
         mock_result.answer = [mock_answer]
+        mock_result.flags = dns.flags.AA
         mock_soa_query.return_value = mock_result
 
         tsig_key = mock.Mock()
@@ -377,6 +380,7 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
     def test_get_serial_no_answer(self, mock_send_dns_message):
         mock_result = mock.Mock()
         mock_result.answer = []
+        mock_result.flags = 0
         mock_send_dns_message.return_value = mock_result
 
         self.assertFalse(
@@ -390,10 +394,77 @@ class TestDNSMessages(oslotest.base.BaseTestCase):
 
         mock_result = mock.Mock()
         mock_result.answer = [mock_answer]
+        mock_result.flags = 0
         mock_send_dns_message.return_value = mock_result
 
         self.assertFalse(
             dnsutils.get_serial('serial.test.', '203.0.113.1', port=54)
+        )
+
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_get_serial_non_authoritative_with_recursion(
+            self, mock_send_dns_message):
+        """Test that non-authoritative responses with recursion available
+        return 0
+        """
+        mock_rdataset = mock.Mock(serial=5)
+        mock_answer = mock.Mock()
+        mock_answer.to_rdataset.return_value = [mock_rdataset]
+
+        mock_result = mock.Mock()
+        mock_result.answer = [mock_answer]
+        # Set flags to simulate non-authoritative response with recursion
+        # available AA flag not set, RA flag set
+        mock_result.flags = dns.flags.RA  # Only recursion available
+        mock_send_dns_message.return_value = mock_result
+
+        # Should return 0 because it's a non-authoritative recursive response
+        self.assertEqual(
+            0, dnsutils.get_serial('serial.test.', '203.0.113.1', port=54)
+        )
+
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_get_serial_authoritative_with_recursion(
+            self, mock_send_dns_message):
+        """Test that authoritative responses return serial even with recursion
+        available
+        """
+        mock_rdataset = mock.Mock(serial=5)
+        mock_answer = mock.Mock()
+        mock_answer.to_rdataset.return_value = [mock_rdataset]
+
+        mock_result = mock.Mock()
+        mock_result.answer = [mock_answer]
+        # Set flags to simulate authoritative response with recursion
+        # available both AA and RA flags set
+        mock_result.flags = dns.flags.AA | dns.flags.RA
+        mock_send_dns_message.return_value = mock_result
+
+        # Should return serial because it's authoritative
+        self.assertEqual(
+            5, dnsutils.get_serial('serial.test.', '203.0.113.1', port=54)
+        )
+
+    @mock.patch.object(dnsutils, 'send_dns_message')
+    def test_get_serial_authoritative_no_recursion(
+            self, mock_send_dns_message):
+        """Test that authoritative responses return serial without
+        recursion
+        """
+        mock_rdataset = mock.Mock(serial=5)
+        mock_answer = mock.Mock()
+        mock_answer.to_rdataset.return_value = [mock_rdataset]
+
+        mock_result = mock.Mock()
+        mock_result.answer = [mock_answer]
+        # Set flags to simulate authoritative response without recursion
+        # Only AA flag set
+        mock_result.flags = dns.flags.AA
+        mock_send_dns_message.return_value = mock_result
+
+        # Should return serial because it's authoritative
+        self.assertEqual(
+            5, dnsutils.get_serial('serial.test.', '203.0.113.1', port=54)
         )
 
 
