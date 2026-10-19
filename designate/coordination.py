@@ -88,9 +88,10 @@ class Coordination:
             return
 
         try:
-            if self._grouping_enabled:
-                self._disable_grouping()
-            self._coordinator.stop()
+            if self._coordinator.is_started:
+                if self._grouping_enabled:
+                    self._disable_grouping()
+                self._coordinator.stop()
             self._coordinator = None
         finally:
             self._started = False
