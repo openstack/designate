@@ -2807,6 +2807,45 @@ class CentralServiceTest(designate.tests.functional.TestCase):
 
         self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
+    def test_set_floatingip_does_not_hijack_other_tenants_zone(self):
+        attacker_context = self.get_context(
+            project_id='attacker', roles=['member', 'reader'])
+        victim_context = self.get_context(
+            project_id='victim', roles=['member', 'reader'])
+
+        # The attacker pre-creates an ordinary zone under their own
+        # tenant using the exact name Designate will later compute for
+        # the shared reverse-DNS zone of the fake network pool
+        # (192.0.2.0/24), before any floating IP in that range has ever
+        # had a PTR set.
+        attacker_zone = self.create_zone(
+            context=attacker_context, fixture=0,
+            name='2.0.192.in-addr.arpa.')
+
+        fixture = self.get_ptr_fixture()
+        fip = self.network_api.fake.allocate_floatingip(
+            victim_context.project_id)
+
+        # The victim performs a normal, fully-authorized PTR set on
+        # their own floating IP. It must fail loudly with a clear
+        # conflict error rather than silently writing into the
+        # attacker's zone.
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.update_floatingip,
+            victim_context, fip['region'], fip['id'], fixture)
+        self.assertEqual(exceptions.DuplicateZone, exc.exc_info[0])
+
+        elevated_context = victim_context.elevated()
+        elevated_context.all_tenants = True
+
+        # The victim's managed PTR record must never land inside the
+        # attacker-owned zone.
+        attacker_recordsets = self.central_service.find_recordsets(
+            elevated_context,
+            criterion={'zone_id': attacker_zone['id'], 'type': 'PTR'})
+        self.assertEqual(0, len(attacker_recordsets))
+
     def test_set_floatingip_removes_old_record(self):
         context_a = self.get_context(project_id='a', roles=['member'])
         elevated_a = context_a.elevated()

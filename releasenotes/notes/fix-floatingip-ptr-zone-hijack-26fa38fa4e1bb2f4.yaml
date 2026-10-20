@@ -1,0 +1,12 @@
+---
+security:
+  - |
+    Fixed a zone-ownership check missing from the internal lookup used
+    to find or create the shared reverse-DNS zone for a floating IP's
+    PTR record. The lookup did not verify that a matching zone was
+    actually owned by Designate's managed-resource tenant, so a
+    zone created by an unrelated project under a colliding name could be
+    silently reused, causing another tenant's PTR record to be written
+    into it. The lookup is now scoped to the managed-resource tenant, and
+    a name collision with another tenant's zone now fails with a clear
+    error instead of silently succeeding.
