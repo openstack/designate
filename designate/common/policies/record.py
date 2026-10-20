@@ -59,6 +59,18 @@ rules = [
         check_str=base.SYSTEM_OR_PROJECT_READER,
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_count_records
+    ),
+    policy.DocumentedRuleDefault(
+        name="set_floatingip_reverse",
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=[constants.PROJECT],
+        description='Set or unset a Floating IP PTR record.',
+        operations=[
+            {
+                'path': '/v2/reverse/floatingips/{region}:{floatingip_id}',
+                'method': 'PATCH'
+            }
+        ],
     )
 ]
 

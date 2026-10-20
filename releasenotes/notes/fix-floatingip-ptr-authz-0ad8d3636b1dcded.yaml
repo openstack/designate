@@ -1,0 +1,11 @@
+---
+security:
+  - |
+    Fixed a missing authorization check on the floating IP reverse DNS
+    (PTR) API. ``PATCH /v2/reverse/floatingips/{region}:{floatingip_id}``,
+    used to set or unset a floating IP's PTR record, previously performed
+    no policy check at all. Any authenticated user in a project -
+    including one holding only the read-only ``reader`` role - could
+    create, update, or clear DNS records for that project's floating
+    IPs. The endpoint now enforces the same project-member (or admin)
+    authorization required by other DNS record write operations.
