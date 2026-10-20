@@ -2006,7 +2006,12 @@ class Service(service.RPCService):
 
         try:
             zone = self.storage.find_zone(
-                elevated_context, {'name': zone_name}
+                elevated_context,
+                {
+                    'name': zone_name,
+                    'tenant_id':
+                        CONF['service:central'].managed_resource_tenant_id,
+                }
             )
         except exceptions.ZoneNotFound:
             LOG.info(
@@ -2061,9 +2066,23 @@ class Service(service.RPCService):
             # NOTE(eandersson): This code is prone to race conditions, and
             #                   it does not hurt to try to handle this if it
             #                   fails.
-            zone = self.storage.find_zone(
-                elevated_context, {'name': zone_name}
-            )
+            try:
+                zone = self.storage.find_zone(
+                    elevated_context,
+                    {
+                        'name': zone_name,
+                        'tenant_id':
+                            CONF['service:central'].managed_resource_tenant_id,
+                    }
+                )
+            except exceptions.ZoneNotFound:
+                # The name is already taken by a zone that isn't owned by
+                # the managed-resource tenant, so it can never be reused
+                # here. Surface that as a conflict instead of a confusing
+                # not-found error.
+                raise exceptions.DuplicateZone(
+                    'Zone already exists, owned by a different tenant'
+                )
 
         return zone
 
