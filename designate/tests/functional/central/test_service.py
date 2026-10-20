@@ -2638,7 +2638,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertIsNone(fip_ptr['ptrdname'])
 
     def test_get_floatingip_with_record(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['member'])
 
         fixture = self.get_ptr_fixture()
 
@@ -2668,7 +2668,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
     def test_get_floatingip_deallocated_and_invalidate(self):
-        context_a = self.get_context(project_id='a')
+        context_a = self.get_context(project_id='a', roles=['member'])
         elevated_a = context_a.elevated()
         elevated_a.all_tenants = True
 
@@ -2742,7 +2742,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertIsNone(fips[0]['description'])
 
     def test_list_floatingips_with_record(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['member'])
 
         fixture = self.get_ptr_fixture()
 
@@ -2761,7 +2761,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(fip_ptr['description'], fips[0]['description'])
 
     def test_list_floatingips_deallocated_and_invalidate(self):
-        context_a = self.get_context(project_id='a')
+        context_a = self.get_context(project_id='a', roles=['member'])
         elevated_a = context_a.elevated()
         elevated_a.all_tenants = True
 
@@ -2811,7 +2811,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual('DELETED', record.status)
 
     def test_set_floatingip(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['member'])
 
         fixture = self.get_ptr_fixture()
 
@@ -2826,7 +2826,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertIsNotNone(fip_ptr['ttl'])
 
     def test_set_floatingip_multiple_requests(self):
-        context = self.get_context()
+        context = self.get_context(roles=['member'])
 
         def update_floatingip(fixture):
             fip = self.network_api.fake.allocate_floatingip(context.project_id)
@@ -2848,7 +2848,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(5, len(fips))
 
     def test_set_floatingip_no_managed_resource_tenant_id(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['member'])
 
         fixture = self.get_ptr_fixture()
 
@@ -2868,12 +2868,27 @@ class CentralServiceTest(designate.tests.functional.TestCase):
             {"tenant_id": tenant_id})
         self.assertEqual(tenant_id, zones[0].tenant_id)
 
+    def test_set_floatingip_policy_check(self):
+        # Set the policy to reject the authz
+        self.policy({'set_floatingip_reverse': '!'})
+
+        context = self.get_context(project_id='a')
+        fixture = self.get_ptr_fixture()
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
+
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.update_floatingip,
+            context, fip['region'], fip['id'], fixture)
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
+
     def test_set_floatingip_removes_old_record(self):
-        context_a = self.get_context(project_id='a')
+        context_a = self.get_context(project_id='a', roles=['member'])
         elevated_a = context_a.elevated()
         elevated_a.all_tenants = True
 
-        context_b = self.get_context(project_id='b')
+        context_b = self.get_context(project_id='b', roles=['member'])
 
         fixture = self.get_ptr_fixture()
 
@@ -2927,7 +2942,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(1, count)
 
     def test_set_floatingip_not_allocated(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['member'])
         fixture = self.get_ptr_fixture()
 
         fip = self.network_api.fake.allocate_floatingip(context.project_id)
@@ -2942,7 +2957,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
     def test_unset_floatingip(self):
-        context = self.get_context(project_id='a')
+        context = self.get_context(project_id='a', roles=['member'])
 
         fixture = self.get_ptr_fixture()
 
