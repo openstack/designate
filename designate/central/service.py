@@ -2315,6 +2315,12 @@ class Service(service.RPCService):
         We strictly see if values['ptrdname'] is str or None and set / unset
         the requested FloatingIP's PTR record based on that.
         """
+        target = {
+            constants.RBAC_PROJECT_ID: context.project_id,
+            'tenant_id': context.project_id,
+        }
+        policy.check('set_floatingip_reverse', context, target)
+
         if ('ptrdname' in values.obj_what_changed() and
                 values['ptrdname'] is None):
             self._unset_floatingip_reverse(
