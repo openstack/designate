@@ -37,6 +37,12 @@ One section for each pool target
 The key and config files are relative to the host running Designate
 (and can be different from the hosts running Bind)
 
+The worker executes ``rndc`` as its own operating system user, without
+privilege escalation. Before upgrading, ensure this user can execute RNDC,
+read its selected configuration, included files and key, and traverse their
+parent directories. Keep credentials protected from unrelated users. The
+worker needs no access to BIND's zone data directory.
+
 Then update the pools in designate - see :ref:`designate_manage_pool`
 for further details on the ``designate-manage pool`` command
 

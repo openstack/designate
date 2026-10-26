@@ -13,7 +13,6 @@ import random
 from unittest import mock
 
 import jinja2
-from oslo_concurrency import processutils
 from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
@@ -76,44 +75,6 @@ class TestUtils(oslotest.base.BaseTestCase):
 
         self.assertEqual(['/tmp/designate/designate.conf'], config_files)
         mock_abspath.assert_called_once()
-
-    @mock.patch.object(processutils, 'execute')
-    def test_execute(self, mock_execute):
-        mock_execute.return_value = ('designate.conf\npools.yaml\n', '')
-
-        out, err = utils.execute(
-            '/bin/ls', '/etc/designate/',
-            run_as_root=False
-        )
-
-        mock_execute.assert_called_once_with(
-            '/bin/ls', '/etc/designate/',
-            root_helper='sudo designate-rootwrap /etc/designate/rootwrap.conf',
-            run_as_root=False
-        )
-
-        self.assertEqual('designate.conf\npools.yaml\n', out)
-        self.assertFalse(err)
-
-    @mock.patch.object(processutils, 'execute')
-    def test_execute_with_rootwrap(self, mock_execute):
-        CONF.set_override('root_helper', 'sudo designate-test')
-
-        mock_execute.return_value = ('designate.conf\npools.yaml\n', '')
-
-        out, err = utils.execute(
-            '/bin/ls', '/etc/designate/',
-            run_as_root=True
-        )
-
-        mock_execute.assert_called_once_with(
-            '/bin/ls', '/etc/designate/',
-            root_helper='sudo designate-test',
-            run_as_root=True
-        )
-
-        self.assertEqual('designate.conf\npools.yaml\n', out)
-        self.assertFalse(err)
 
     def test_deep_dict_merge(self):
         a = {

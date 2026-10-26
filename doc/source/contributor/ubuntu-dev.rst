@@ -102,18 +102,15 @@ Installing Designate
    $ cd etc/designate
 
 
-7. Create Designate's config files by copying the sample config files
-
-::
-
-   $ cp -a rootwrap.conf.sample rootwrap.conf
-
-
-8. Make the directory for Designate's state files
+7. Make the directory for Designate's state files
 
 ::
 
    $ mkdir -p ../../state
+
+For BIND9, provision readable RNDC client configuration and credentials
+for the worker user as described in :ref:`bind9_backend_docs`.
+Designate does not require rootwrap configuration or RNDC sudoers rules.
 
 
 Configuring Designate

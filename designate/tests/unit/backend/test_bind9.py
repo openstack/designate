@@ -14,14 +14,16 @@
 
 from unittest import mock
 
+from oslo_concurrency import processutils
+from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 from designate.backend import impl_bind9
+import designate.conf
 from designate import context
 from designate import exceptions
 from designate import objects
 from designate.tests import base_fixtures
-from designate import utils
 
 import subprocess
 
@@ -272,7 +274,7 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
             backend._generate_rndc_base_call()
         )
 
-    @mock.patch('designate.utils.execute')
+    @mock.patch.object(processutils, 'execute')
     def test_execute_rndc(self, mock_execute):
         rndc_op = ['delzone', 'example.com ']
 
@@ -281,10 +283,23 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         mock_execute.assert_called_with(
             '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
             '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
-            'delzone', 'example.com ', timeout=None
+            'delzone', 'example.com ', run_as_root=False, timeout=None
         )
 
-    @mock.patch('designate.utils.execute')
+    @mock.patch.object(processutils, 'execute')
+    def test_execute_rndc_ignores_legacy_root_helper(self, mock_execute):
+        conf = self.useFixture(cfg_fixture.Config(designate.conf.CONF))
+        conf.config(root_helper='sudo custom-root-helper')
+
+        self.backend._execute_rndc(['status'])
+
+        mock_execute.assert_called_once_with(
+            '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
+            '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
+            'status', run_as_root=False, timeout=None
+        )
+
+    @mock.patch.object(processutils, 'execute')
     def test_execute_rndc_timeout(self, mock_execute):
         rndc_op = ['delzone', 'example.com ']
 
@@ -294,10 +309,10 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
         mock_execute.assert_called_with(
             '/usr/sbin/rndc', '-s', '192.0.2.4', '-p', '953',
             '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
-            'delzone', 'example.com ', timeout=10
+            'delzone', 'example.com ', run_as_root=False, timeout=10
         )
 
-    @mock.patch('designate.utils.execute')
+    @mock.patch.object(processutils, 'execute')
     def test_execute_rndc_timeout_exception(self, mock_execute):
         rndc_op = ['delzone', 'example.com ']
 
@@ -313,9 +328,9 @@ class Bind9BackendTestCase(oslotest.base.BaseTestCase):
             self.backend._execute_rndc, rndc_op
         )
 
-    @mock.patch('designate.utils.execute')
+    @mock.patch.object(processutils, 'execute')
     def test_execute_rndc_raises_on_exception(self, mock_execute):
-        mock_execute.side_effect = utils.processutils.ProcessExecutionError()
+        mock_execute.side_effect = processutils.ProcessExecutionError()
         rndc_op = ['badop', 'example.com ']
 
         self.assertRaises(

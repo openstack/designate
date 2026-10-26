@@ -93,7 +93,9 @@ Install and configure components
    must contain the same secret on both hosts. Ensure that BIND9 can read
    the key on the DNS server and the ``designate`` user can read it on the
    controller, while other users cannot. The worker runs ``rndc`` locally
-   to control the remote BIND9 server.
+   to control the remote BIND9 server without privilege escalation. The
+   worker user must also be able to read the RNDC configuration and any
+   included files, and traverse their parent directories.
 
 #. Add the following options in the ``/etc/bind/named.conf.options`` file:
 
