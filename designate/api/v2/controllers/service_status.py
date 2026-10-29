@@ -36,7 +36,7 @@ class ServiceStatusController(rest.RestController):
             params, accepted_filters, {})
 
         service_statuses = self.central_api.find_service_statuses(
-            context, criterion, )
+            context, criterion, marker, limit, sort_key, sort_dir)
 
         return DesignateAdapter.render('API_v2', service_statuses,
                                        request=request)
