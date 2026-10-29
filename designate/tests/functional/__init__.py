@@ -107,13 +107,13 @@ class TestCase(base.BaseTestCase):
         'algorithm': 'hmac-md5',
         'secret': 'SomeOldSecretKey',
         'scope': 'POOL',
-        'resource_id': '6ca6baef-3305-4ad0-a52b-a82df5752b62',
+        'resource_id': default_pool_id,
     }, {
         'name': 'test-key-two',
         'algorithm': 'hmac-sha256',
         'secret': 'AnotherSecretKey',
-        'scope': 'ZONE',
-        'resource_id': '7fbb6304-5e74-4691-bd80-cef3cff5fe2f',
+        'scope': 'POOL',
+        'resource_id': default_pool_id,
     }]
 
     # The 4th zone is invalid, the last zone is a catalog zone
