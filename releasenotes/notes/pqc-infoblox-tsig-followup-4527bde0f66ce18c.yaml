@@ -1,0 +1,15 @@
+---
+security:
+  - |
+    The Infoblox backend's client certificate (``cert`` option, used for
+    mutual TLS authentication to the Infoblox WAPI) is now validated by
+    the ``[pqc] check_mode`` compliance check, matching the NSD4 and
+    PDNS4 backends. Previously it was not checked for quantum-vulnerable
+    algorithms at all. ``check_mode`` defaults to ``permissive``, so this
+    only adds a startup log warning unless ``check_mode`` is set to
+    ``strict``.
+  - |
+    The TSIG algorithm warning emitted when signing DNS messages now
+    flags any algorithm weaker than HMAC-SHA256 (e.g. ``hmac-sha1``,
+    ``hmac-sha224``), not just ``hmac-md5``.
+    See `bug 2166755 <https://bugs.launchpad.net/designate/+bug/2166755>`_.

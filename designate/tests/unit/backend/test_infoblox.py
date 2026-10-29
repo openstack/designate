@@ -19,14 +19,18 @@ from unittest import mock
 from infoblox_client import connector as infoblox_connector
 from infoblox_client import exceptions as infoblox_exceptions
 from infoblox_client import objects as infoblox_objects
+from oslo_config import fixture as cfg_fixture
 import oslotest.base
 import requests_mock
 
 from designate.backend import impl_infoblox
+import designate.conf
 from designate import context
 from designate import exceptions
 from designate import objects
 from designate.tests import base_fixtures
+
+CONF = designate.conf.CONF
 
 
 class InfobloxBackendTestCase(oslotest.base.BaseTestCase):
@@ -507,3 +511,56 @@ class AdvancedInfobloxBackendTestCase(InfobloxBackendTestCase):
         )
 
         self.assertIn('Delete Zone', self.stdlog.logger.output)
+
+
+class InfobloxBackendPQCTestCase(InfobloxBackendTestCase):
+    def setUp(self):
+        super().setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+
+        self.target['options'].extend([
+            {'key': 'cert', 'value': '/etc/infoblox/client.pem'},
+            {'key': 'key', 'value': '/etc/infoblox/client.key'},
+        ])
+
+    @mock.patch.object(infoblox_connector, 'Connector', mock.Mock())
+    @mock.patch('designate.common.crypto_utils.check_pqc_compliance')
+    def test_init_pqc_permissive_checks_client_cert(self, mock_compliance):
+        CONF.set_override('check_mode', 'permissive', group='pqc')
+
+        impl_infoblox.InfobloxBackend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+
+        mock_compliance.assert_called_once_with(
+            cert_paths=['/etc/infoblox/client.pem'],
+            check_mode='permissive',
+            component_name='infoblox',
+        )
+
+    @mock.patch.object(infoblox_connector, 'Connector', mock.Mock())
+    @mock.patch('designate.common.crypto_utils.check_pqc_compliance')
+    def test_init_pqc_disabled_no_check(self, mock_compliance):
+        CONF.set_override('check_mode', 'disabled', group='pqc')
+
+        impl_infoblox.InfobloxBackend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+
+        mock_compliance.assert_not_called()
+
+    @mock.patch.object(infoblox_connector, 'Connector', mock.Mock())
+    @mock.patch('designate.common.crypto_utils.check_pqc_compliance')
+    def test_init_pqc_no_client_cert_configured_no_check(
+            self, mock_compliance):
+        CONF.set_override('check_mode', 'permissive', group='pqc')
+        self.target['options'] = [
+            o for o in self.target['options']
+            if o['key'] not in ('cert', 'key')
+        ]
+
+        impl_infoblox.InfobloxBackend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+
+        mock_compliance.assert_not_called()
