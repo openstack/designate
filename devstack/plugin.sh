@@ -244,8 +244,6 @@ function init_designate {
 
 # install_designate - Collect source and prepare
 function install_designate {
-    install_apache_uwsgi
-
     if is_fedora; then
         # bind-utils package provides `dig`
         install_package bind-utils
