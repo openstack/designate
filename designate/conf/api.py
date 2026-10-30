@@ -80,7 +80,7 @@ API_MIDDLEWARE_OPTS = [
     cfg.BoolOpt('maintenance_mode', default=False,
                 help='Enable API Maintenance Mode'),
     cfg.StrOpt('maintenance_mode_role', default='admin',
-               help='Role allowed to bypass maintaince mode'),
+               help='Role allowed to bypass maintenance mode'),
 ]
 
 

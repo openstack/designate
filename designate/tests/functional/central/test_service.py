@@ -3386,7 +3386,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
             self.admin_context,
             criterion={'zone_id': zone.id, 'type': "NS"})
 
-        # Verify that the doamins NS records were updated correctly
+        # Verify that the domains NS records were updated correctly
         self.assertEqual({n.hostname for n in pool.ns_records},
                          {n.data for n in ns_recordset.records})
 
@@ -3433,7 +3433,7 @@ class CentralServiceTest(designate.tests.functional.TestCase):
             self.admin_context,
             criterion={'zone_id': zone.id, 'type': "NS"})
 
-        # Verify that the doamins NS records ware updated correctly
+        # Verify that the domains NS records were updated correctly
         self.assertEqual({n.hostname for n in pool.ns_records},
                          {n.data for n in ns_recordset.records})
 

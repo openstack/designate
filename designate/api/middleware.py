@@ -233,7 +233,7 @@ class MaintenanceMiddleware(base.Middleware):
         self.role = CONF['service:api'].maintenance_mode_role
 
     def process_request(self, request):
-        # If maintaince mode is not enabled, pass the request on as soon as
+        # If maintenance mode is not enabled, pass the request on as soon as
         # possible
         if not self.enabled:
             return None

@@ -1,7 +1,7 @@
 ---
 fixes:
   - |
-    It was previously not possible to override the topics for various serivces (e.g. mdns),
+    It was previously not possible to override the topics for various services (e.g. mdns),
     due to `bug 1832799`_. This has been fixed, and these services now use a common option name to
     override the topic.
 

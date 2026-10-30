@@ -10,5 +10,5 @@ upgrade:
     name - this will need to be changed before the upgrade is performed.
 deprecations:
   - Create / Update / Delete API methods on /v2/pools/
-    Using these messages **will** cause unforseen issues with pools. We highly recommend
+    Using these messages **will** cause unforeseen issues with pools. We highly recommend
     that the policy file be updated to restrict create / update / delete from all users

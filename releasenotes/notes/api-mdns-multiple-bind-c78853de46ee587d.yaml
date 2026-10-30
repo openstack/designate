@@ -1,7 +1,7 @@
 ---
 features:
   - designate-mdns, designate-agent and designate-api can now bind to multiple
-    host:port pairs via the new "listen" configuration arguments for eacg
+    host:port pairs via the new "listen" configuration arguments for each
     service.
 deprecations:
   - designate-api's api_host and api_port configuration options have been

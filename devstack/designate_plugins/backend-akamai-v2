@@ -2,7 +2,7 @@
 # Configure the Akamai v2 backend
 
 # Requirements:
-# An active Akamai account / contract will be requied to use this DevStack
+# An active Akamai account / contract will be required to use this DevStack
 # plugin.
 
 # Enable with:
@@ -78,7 +78,7 @@ function configure_designate_backend {
         akamai_contract_id: $DESIGNATE_AKAMAI_CONTRACT_ID
         akamai_gid: $DESIGNATE_AKAMAI_GID
 
-        # NOTE: TSIG key has to be set manully if it's necessary
+        # NOTE: TSIG key has to be set manually if it's necessary
         #tsig_key_name: key_test
         #tsig_key_algorithm: hmac-sha512
         #tsig_key_secret: test_ley_secret

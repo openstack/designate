@@ -66,7 +66,7 @@ rules = [
         name="zone_export",
         check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=[constants.PROJECT],
-        description="Retrive a Zone Export from the Designate Datastore",
+        description="Retrieve a Zone Export from the Designate Datastore",
         operations=[
             {
                 'path': '/v2/zones/tasks/exports/{zone_export_id}/export',

@@ -21,7 +21,7 @@ Managing Zones
 In the Domain Name System, `zones` are used to break up the namespace into more
 easily managed pieces. For example, within the root zone ``.`` there are zones
 for each of the top level domains such as ``.org.`` and ``.com.`` and
-responsiblity for each of those zones could lie with a different organisation.
+responsibility for each of those zones could lie with a different organisation.
 Within those zones, there are then delegations to other zones, such as
 ``example.org.`` or ``example.com.`` which might again be managed by a
 different organisation and/or set of nameservers. This forms a hierarchy of

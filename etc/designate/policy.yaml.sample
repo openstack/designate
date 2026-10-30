@@ -687,7 +687,7 @@
 # of "pool_move_zone":"role:admin".
 # The zone API now supports system scope and default roles.
 
-# Retrive a Zone Export from the Designate Datastore
+# Retrieve a Zone Export from the Designate Datastore
 # GET  /v2/zones/tasks/exports/{zone_export_id}/export
 # Intended scope(s): project
 #"zone_export": "(role:admin) or (role:member and project_id:%(project_id)s)"

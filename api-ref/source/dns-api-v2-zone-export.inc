@@ -181,8 +181,8 @@ Response Example
    :language: javascript
 
 
-Retrive a Zone Export from the Designate Datastore
-==================================================
+Retrieve a Zone Export from the Designate Datastore
+===================================================
 
 .. rest_method::  GET /v2/zones/tasks/exports/{zone_export_id}/export
 

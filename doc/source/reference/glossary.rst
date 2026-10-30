@@ -18,7 +18,7 @@
 Designate Glossary
 ==================
 
-The following is a glossary of terms that may be used througout the Designate
+The following is a glossary of terms that may be used throughout the Designate
 documentation and code.
 
 .. glossary:: :sorted:
@@ -26,7 +26,7 @@ documentation and code.
    Fully Qualified Domain Name
        A domain name that includes all levels of the domain hierarchy,
        including the root domain (represented by a period at the end). Fully
-       Qualified Domain Name is sometimes abreviated as FQDN.
+       Qualified Domain Name is sometimes abbreviated as FQDN.
        Example: ``www.example.com.``
 
    Record

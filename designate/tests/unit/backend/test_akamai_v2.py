@@ -464,13 +464,13 @@ class AkamaiBackendTestCase(oslotest.base.BaseTestCase):
             # emulate, when Force=True is forbidden
             self.gen_response(403, 'Forbidden'),
             # emulate request, when Force=False
-            self.gen_response(409, 'Conflict', {'detail': 'Intenal Error'})
+            self.gen_response(409, 'Conflict', {'detail': 'Internal Error'})
         ]
 
         with base_fixtures.random_seed(0):
             self.assertRaisesRegex(
                 exceptions.Backend,
-                'Zone deletion failed due to: Intenal Error',
+                'Zone deletion failed due to: Internal Error',
                 backend.delete_zone, self.admin_context, self.zone)
 
         mock_post.assert_has_calls([

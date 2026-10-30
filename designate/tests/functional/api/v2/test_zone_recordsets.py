@@ -253,7 +253,7 @@ class ApiV2RecordSetsTest(v2.ApiV2TestCase):
                                   headers={'X-Test-Role': 'member'})
 
     def test_create_recordset_validation(self):
-        # NOTE: The schemas should be tested separatly to the API. So we
+        # NOTE: The schemas should be tested separately to the API. So we
         #       don't need to test every variation via the API itself.
         # Fetch a fixture
         fixture = self.get_recordset_fixture(self.zone['name'], fixture=0)
@@ -720,7 +720,7 @@ class ApiV2RecordSetsTest(v2.ApiV2TestCase):
             headers={'X-Test-Role': 'member'})
 
     def test_update_recordset_validation(self):
-        # NOTE: The schemas should be tested separatly to the API. So we
+        # NOTE: The schemas should be tested separately to the API. So we
         #       don't need to test every variation via the API itself.
         # Create a zone
         recordset = self.create_recordset(self.zone)

@@ -124,7 +124,7 @@ function configure_designate {
     # Logging Configuration
     setup_systemd_logging $DESIGNATE_CONF
 
-    # Backend Plugin Configuation
+    # Backend Plugin Configuration
     configure_designate_backend
 
     designate_configure_uwsgi

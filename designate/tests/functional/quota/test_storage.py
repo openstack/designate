@@ -134,7 +134,7 @@ class StorageQuotaTest(designate.tests.functional.TestCase):
         self.quota.reset_quotas(context, 'tenant_id')
 
         # Drop into the storage layer directly to ensure the tenant has no
-        # specific quotas registed.
+        # specific quotas registered.
         criterion = {
             'tenant_id': 'tenant_id'
         }

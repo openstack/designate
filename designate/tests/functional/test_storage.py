@@ -941,7 +941,7 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
         # Perform the update
         zone = self.storage.update_zone(self.admin_context, zone)
 
-        # Ensure the new valie took
+        # Ensure the new value took
         self.assertEqual('example.net.', zone.name)
 
         # Ensure the version column was incremented
@@ -960,7 +960,7 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
         # Perform the update
         zone = self.storage.update_zone(self.admin_context, zone)
 
-        # Ensure the new valie took
+        # Ensure the new value took
         self.assertEqual('example.net.', zone.name)
 
         # Ensure the version column was incremented
@@ -3939,7 +3939,7 @@ class SqlalchemyStorageTest(designate.tests.functional.TestCase):
         actual_table_names = inspector.get_table_names()
 
         # We have transitioned database schema migration tools.
-        # They use different tracking tables. Accomidate that one or both
+        # They use different tracking tables. Accommodate that one or both
         # may exist in this test.
         migration_table_found = False
         if ('migrate_version' in actual_table_names or

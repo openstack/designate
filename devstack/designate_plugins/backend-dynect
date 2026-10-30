@@ -2,7 +2,7 @@
 # Configure the dynect backend
 
 # Requirements:
-# An active DynECT account / contract will be requied to use this DevStack
+# An active DynECT account / contract will be required to use this DevStack
 # plugin.
 
 # Enable with:
