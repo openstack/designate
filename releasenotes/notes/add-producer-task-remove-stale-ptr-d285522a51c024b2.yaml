@@ -1,0 +1,10 @@
+---
+other:
+  - |
+    Added a producer task that removes stale PTR records (PTR records
+    that point to non-existing Floating IPs). The task's run interval is
+    configurable. Cleanup only processes PTR records whose region matches
+    ``[neutron] region_name``, which must be configured consistently on
+    the producer and central services. If the region is unset or differs
+    between these services, cleanup is skipped. PTR records in other
+    regions are left untouched.

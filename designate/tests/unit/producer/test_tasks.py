@@ -576,3 +576,360 @@ class PeriodicCleanupStoppedServiceStatusTaskTest(oslotest.base.BaseTestCase):
         self.task()
 
         self.central_api.delete_service_status.assert_not_called()
+
+
+class PeriodicStalePtrRecordsRemovalTaskTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+        CONF.set_override('region_name', 'RegionOne', 'neutron')
+
+        # Mock a ctxt
+        self.ctxt = mock.Mock()
+        self.useFixture(fixtures.MockPatchObject(
+            context.DesignateContext, 'get_admin_context',
+            return_value=self.ctxt
+        ))
+
+        # Mock a central...
+        self.central = mock.Mock()
+        self.useFixture(fixtures.MockPatchObject(
+            central_api.CentralAPI, 'get_instance',
+            return_value=self.central
+        ))
+
+        self.task = tasks.PeriodicStalePtrRecordsRemovalTask()
+        self.task.my_partitions = range(0, 10)
+
+    @mock.patch.object(central_api.CentralAPI, 'get_instance')
+    def test_get_existing_floating_ip_ids_success(self, mock_get_instance):
+        """Test successful retrieval of floating IP IDs."""
+        fip1_id = uuidutils.generate_uuid()
+        fip2_id = uuidutils.generate_uuid()
+        floating_ips = [
+            {'id': fip1_id, 'floating_ip_address': '192.168.1.1'},
+            {'id': fip2_id, 'floating_ip_address': '192.168.1.2'}
+        ]
+
+        mock_central_api = mock.Mock()
+        mock_central_api.get_floating_ips.return_value = floating_ips
+        mock_get_instance.return_value = mock_central_api
+
+        result = self.task._get_existing_floating_ip_ids(self.ctxt)
+
+        self.assertEqual({fip1_id, fip2_id}, result)
+        mock_central_api.get_floating_ips.assert_called_once_with(
+            self.ctxt, region='RegionOne')
+
+    @mock.patch.object(central_api.CentralAPI, 'get_instance')
+    def test_get_existing_floating_ip_ids_failure(self, mock_get_instance):
+        """Test handling of exceptions when retrieving floating IPs."""
+        mock_central_api = mock.Mock()
+        mock_central_api.get_floating_ips.side_effect = Exception(
+            "Network error")
+        mock_get_instance.return_value = mock_central_api
+
+        result = self.task._get_existing_floating_ip_ids(self.ctxt)
+
+        self.assertIsNone(result)
+        mock_central_api.get_floating_ips.assert_called_once_with(
+            self.ctxt, region='RegionOne')
+
+    def test_identify_stale_ptr_records_no_stale(self):
+        """Test identifying PTR records when none are stale."""
+        fip1_id = uuidutils.generate_uuid()
+        fip2_id = uuidutils.generate_uuid()
+
+        ptr_records = [
+            mock.Mock(id=uuidutils.generate_uuid(),
+                     managed_resource_id=fip1_id,
+                     managed_resource_region='RegionOne'),
+            mock.Mock(id=uuidutils.generate_uuid(),
+                     managed_resource_id=fip2_id,
+                     managed_resource_region='RegionOne')
+        ]
+        existing_fip_ids = {fip1_id, fip2_id}
+
+        result = self.task._identify_stale_ptr_records(
+            ptr_records, existing_fip_ids)
+
+        self.assertEqual([], result)
+
+    def test_identify_stale_ptr_records_with_stale(self):
+        """Test identifying PTR records when some are stale."""
+        fip1_id = uuidutils.generate_uuid()
+        fip2_id = uuidutils.generate_uuid()  # This will be missing
+        fip3_id = uuidutils.generate_uuid()
+
+        ptr_records = [
+            mock.Mock(id=uuidutils.generate_uuid(),
+                     managed_resource_id=fip1_id,
+                     managed_resource_region='RegionOne'),
+            mock.Mock(id=uuidutils.generate_uuid(),
+                     managed_resource_id=fip2_id,
+                     managed_resource_region='RegionOne'),
+            mock.Mock(id=uuidutils.generate_uuid(),
+                     managed_resource_id=fip3_id,
+                     managed_resource_region='RegionOne')
+        ]
+        existing_fip_ids = {fip1_id, fip3_id}  # fip2_id missing
+
+        result = self.task._identify_stale_ptr_records(
+            ptr_records, existing_fip_ids)
+
+        self.assertEqual(1, len(result))
+        self.assertEqual(fip2_id, result[0].managed_resource_id)
+
+    def test_delete_ptr_record_success(self):
+        """Test successful deletion of a PTR record via the central
+        service's delete_managed_records(), which keeps the zone serial
+        and backend notification in sync.
+        """
+        mock_context = mock.Mock()
+        ptr_record = mock.Mock(
+            id=uuidutils.generate_uuid(),
+            zone_id=uuidutils.generate_uuid(),
+            managed_resource_id=uuidutils.generate_uuid()
+        )
+
+        result = self.task._delete_ptr_record(mock_context, ptr_record)
+
+        self.assertTrue(result)
+        self.central.delete_managed_records.assert_called_once_with(
+            mock_context, zone_id=ptr_record.zone_id,
+            criterion={'id': ptr_record.id})
+
+    def test_delete_ptr_record_already_deleted(self):
+        """delete_managed_records() is a no-op if another worker already
+        deleted the record, so this should still report success.
+        """
+        mock_context = mock.Mock()
+        ptr_record = mock.Mock(
+            id=uuidutils.generate_uuid(),
+            zone_id=uuidutils.generate_uuid(),
+            managed_resource_id=uuidutils.generate_uuid()
+        )
+        self.central.delete_managed_records.return_value = None
+
+        result = self.task._delete_ptr_record(mock_context, ptr_record)
+
+        self.assertTrue(result)
+
+    def test_delete_ptr_record_failure(self):
+        """Test handling of unexpected errors during PTR record deletion."""
+        mock_context = mock.Mock()
+        ptr_record = mock.Mock(
+            id=uuidutils.generate_uuid(),
+            zone_id=uuidutils.generate_uuid(),
+            managed_resource_id=uuidutils.generate_uuid()
+        )
+        self.central.delete_managed_records.side_effect = Exception(
+            "Unexpected error")
+
+        result = self.task._delete_ptr_record(mock_context, ptr_record)
+
+        self.assertFalse(result)
+
+    def test_process_stale_records(self):
+        """Test that stale records are deleted and the elevated context
+        used to delete them is built with the expected permissions.
+        """
+        mock_elevated_context = mock.Mock()
+        self.ctxt.elevated.return_value = mock_elevated_context
+
+        stale_ptr_records = [
+            mock.Mock(id=uuidutils.generate_uuid()),
+            mock.Mock(id=uuidutils.generate_uuid()),
+        ]
+
+        with mock.patch.object(
+                self.task, '_delete_ptr_record',
+                return_value=True) as mock_delete:
+            result = self.task._process_stale_records(
+                self.ctxt, stale_ptr_records)
+
+        self.assertEqual(2, result)
+        self.ctxt.elevated.assert_called_once_with(
+            all_tenants=True, edit_managed_records=True)
+        mock_delete.assert_has_calls([
+            mock.call(mock_elevated_context, stale_ptr_records[0]),
+            mock.call(mock_elevated_context, stale_ptr_records[1]),
+        ])
+
+    def test_process_stale_records_partial_failure(self):
+        """Test that the deleted count only reflects successful
+        deletions.
+        """
+        stale_ptr_records = [
+            mock.Mock(id=uuidutils.generate_uuid()),
+            mock.Mock(id=uuidutils.generate_uuid()),
+        ]
+
+        with mock.patch.object(
+                self.task, '_delete_ptr_record',
+                side_effect=[True, False]):
+            result = self.task._process_stale_records(
+                self.ctxt, stale_ptr_records)
+
+        self.assertEqual(1, result)
+
+    def test_call_no_ptr_records(self):
+        """Test that the task returns early when there are no PTR
+        records to process.
+        """
+        self.central.get_ptr_records.return_value = []
+
+        with mock.patch.object(
+                self.task, '_get_existing_floating_ip_ids') as mock_get_fips:
+            self.task()
+
+        self.central.get_ptr_records.assert_called_once_with(
+            self.ctxt, {'zone_shard': 'BETWEEN 0,9',
+                        'managed_resource_region': 'RegionOne'}, limit=100)
+        mock_get_fips.assert_not_called()
+
+    def test_call_no_region(self):
+        CONF.set_override('region_name', None, 'neutron')
+
+        self.task()
+
+        self.central.get_ptr_records.assert_not_called()
+        self.central.get_floating_ips.assert_not_called()
+        self.central.delete_managed_records.assert_not_called()
+
+    def test_call_preserves_other_regions(self):
+        records = [
+            mock.Mock(id='stale', zone_id='zone',
+                      managed_resource_id='stale-fip',
+                      managed_resource_region='RegionOne'),
+            mock.Mock(id='live', managed_resource_id='live-fip',
+                      managed_resource_region='RegionOne'),
+            mock.Mock(id='other', managed_resource_id='other-fip',
+                      managed_resource_region='RegionTwo'),
+            mock.Mock(id='unknown', managed_resource_id='unknown-fip',
+                      managed_resource_region=None),
+        ]
+        # Include other regions even though the query filters them out,
+        # to verify that deletion also checks the record's own region.
+        self.central.get_ptr_records.side_effect = [records, []]
+        self.central.get_floating_ips.return_value = [{'id': 'live-fip'}]
+
+        self.task()
+
+        self.central.get_floating_ips.assert_called_once_with(
+            self.ctxt, region='RegionOne')
+        self.central.get_ptr_records.assert_has_calls([
+            mock.call(self.ctxt, {'zone_shard': 'BETWEEN 0,9',
+                                 'managed_resource_region': 'RegionOne'},
+                      limit=100),
+            mock.call(self.ctxt, {'zone_shard': 'BETWEEN 0,9',
+                                 'managed_resource_region': 'RegionOne'},
+                      limit=100, marker='unknown'),
+        ])
+        self.central.delete_managed_records.assert_called_once_with(
+            self.ctxt.elevated.return_value,
+            zone_id='zone', criterion={'id': 'stale'})
+
+    def test_call_region_mismatch(self):
+        self.central.get_ptr_records.side_effect = [[mock.Mock()], []]
+        self.central.get_floating_ips.side_effect = (
+            exceptions.ConfigurationError('Neutron region mismatch'))
+
+        self.task()
+
+        self.central.delete_managed_records.assert_not_called()
+
+    def test_call_existing_fip_ids_none(self):
+        """Test that the task returns early when the existing floating
+        IP IDs could not be fetched.
+        """
+        self.central.get_ptr_records.side_effect = [[mock.Mock()], []]
+
+        with (
+            mock.patch.object(
+                self.task, '_get_existing_floating_ip_ids',
+                return_value=None),
+            mock.patch.object(
+                self.task, '_identify_stale_ptr_records') as mock_id,
+        ):
+            self.task()
+
+        mock_id.assert_not_called()
+
+    def test_call_existing_fip_ids_empty(self):
+        """Test that the task returns early, without deleting anything,
+        when neutron reports zero floating IPs. Treating an empty result
+        the same as a fetch failure guards against wiping out every PTR
+        record in the shard if the floating IP lookup is silently wrong.
+        """
+        self.central.get_ptr_records.side_effect = [[mock.Mock()], []]
+
+        with (
+            mock.patch.object(
+                self.task, '_get_existing_floating_ip_ids',
+                return_value=set()),
+            mock.patch.object(
+                self.task, '_identify_stale_ptr_records') as mock_id,
+        ):
+            self.task()
+
+        mock_id.assert_not_called()
+
+    def test_call_no_stale_records(self):
+        """Test that no deletion is attempted when there are no stale
+        PTR records.
+        """
+        self.central.get_ptr_records.side_effect = [[mock.Mock()], []]
+
+        with (
+            mock.patch.object(
+                self.task, '_get_existing_floating_ip_ids',
+                return_value={uuidutils.generate_uuid()}),
+            mock.patch.object(
+                self.task, '_identify_stale_ptr_records',
+                return_value=[]),
+            mock.patch.object(
+                self.task, '_process_stale_records') as mock_process,
+        ):
+            self.task()
+
+        mock_process.assert_not_called()
+
+    def test_call_deletes_stale_records(self):
+        """Test the happy path: stale PTR records are identified and
+        handed off for deletion.
+        """
+        ptr_records = [mock.Mock()]
+        stale_ptr_records = [mock.Mock()]
+        existing_fip_ids = {uuidutils.generate_uuid()}
+        self.central.get_ptr_records.side_effect = [ptr_records, []]
+
+        with (
+            mock.patch.object(
+                self.task, '_get_existing_floating_ip_ids',
+                return_value=existing_fip_ids),
+            mock.patch.object(
+                self.task, '_identify_stale_ptr_records',
+                return_value=stale_ptr_records) as mock_identify,
+            mock.patch.object(
+                self.task, '_process_stale_records') as mock_process,
+        ):
+            self.task()
+
+        mock_identify.assert_called_once_with(
+            ptr_records, existing_fip_ids)
+        mock_process.assert_called_once_with(self.ctxt, stale_ptr_records)
+
+    def test_call_handles_exceptions(self):
+        """Test that unexpected errors are caught and logged rather
+        than propagated.
+        """
+        self.central.get_ptr_records.side_effect = Exception(
+            "Unexpected error")
+
+        # Should not raise.
+        self.task()
+
+        self.central.get_ptr_records.assert_called_once_with(
+            self.ctxt, {'zone_shard': 'BETWEEN 0,9',
+                        'managed_resource_region': 'RegionOne'}, limit=100)

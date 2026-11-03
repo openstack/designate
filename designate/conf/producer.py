@@ -60,6 +60,11 @@ PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_GROUP = cfg.OptGroup(
     title='Configuration for Producer Task: Cleanup Stopped Service Status'
 )
 
+PRODUCER_TASK_STALE_PTR_REMOVAL_GROUP = cfg.OptGroup(
+    name='producer_task:stale_ptr_removal',
+    title='Configuration for Producer Task: Stale PTR Removal'
+)
+
 PRODUCER_OPTS = [
     cfg.IntOpt('workers',
                help='Number of Producer worker processes to spawn'),
@@ -147,6 +152,13 @@ PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_OPTS = [
                     'cleanup of DOWN services.'),
 ]
 
+PRODUCER_TASK_STALE_PTR_REMOVAL_OPTS = [
+    cfg.IntOpt('interval', default=3600,
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+]
+
 
 def register_opts(conf):
     conf.register_group(PRODUCER_GROUP)
@@ -177,6 +189,9 @@ def register_opts(conf):
     conf.register_opts(
         PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_OPTS,
         group=PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_GROUP)
+    conf.register_group(PRODUCER_TASK_STALE_PTR_REMOVAL_GROUP)
+    conf.register_opts(PRODUCER_TASK_STALE_PTR_REMOVAL_OPTS,
+                       group=PRODUCER_TASK_STALE_PTR_REMOVAL_GROUP)
 
 
 def list_opts():
@@ -195,4 +210,6 @@ def list_opts():
             PRODUCER_TASK_PERIODIC_CHECK_SERVICE_STATUS_OPTS,
         PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_GROUP:
             PRODUCER_TASK_PERIODIC_CLEANUP_STOPPED_SERVICE_STATUS_OPTS,
+        PRODUCER_TASK_STALE_PTR_REMOVAL_GROUP:
+            PRODUCER_TASK_STALE_PTR_REMOVAL_OPTS,
     }

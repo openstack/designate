@@ -56,7 +56,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.12'
+    RPC_API_VERSION = '6.13'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -2278,7 +2278,7 @@ class Service(service.RPCService):
         return recordset
 
     @rpc.expected_exceptions()
-    def get_floating_ips(self, context, filters=None):
+    def get_floating_ips(self, context, filters=None, region=None):
         """
         Get floating IPs from Neutron using the service credentials.
         """
@@ -2287,6 +2287,11 @@ class Service(service.RPCService):
         # genuinely cross-tenant reads (not find_records, which is
         # project-scoped).
         policy.check('all_tenants', context)
+
+        if region is not None and region != CONF.neutron.region_name:
+            raise exceptions.ConfigurationError(
+                'The requested floating IP region does not match the '
+                'configured Neutron region')
 
         return clients.NeutronClient.get_floating_ips(filters)
 
@@ -2311,6 +2316,32 @@ class Service(service.RPCService):
             return self._set_floatingip_reverse(
                 context, region, floatingip_id, values
             )
+
+    @rpc.expected_exceptions()
+    def get_ptr_records(self, context, filters=None, marker=None,
+                        limit=None, sort_key=None, sort_dir=None):
+        """
+        Get PTR records that are managed by Designate.
+        """
+        # This returns managed PTR records cloud-wide, not scoped to the
+        # caller's project, so it requires the same rule used elsewhere
+        # for genuinely cross-tenant reads (not find_records, which is
+        # project-scoped).
+        policy.check('all_tenants', context)
+
+        elevated_context = context.elevated(all_tenants=True)
+
+        # Apply the caller's filters first so the managed/PTR restriction
+        # below always wins and can't be overridden by a caller-supplied
+        # 'managed' or 'managed_resource_type' filter.
+        criterion = dict(filters) if filters else {}
+        criterion.update({
+            'managed': True,
+            'managed_resource_type': 'ptr:floatingip',
+        })
+
+        return self.find_records(
+            elevated_context, criterion, marker, limit, sort_key, sort_dir)
 
     # Blacklisted zones
     @rpc.expected_exceptions()
