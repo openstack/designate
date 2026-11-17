@@ -29,9 +29,6 @@ function cleanup_designate {
 
 # configure_designate - Set config files, create data dirs, etc
 function configure_designate {
-    local rootwrap_sudoer_cmd
-    local tempfile
-
     [ ! -d $DESIGNATE_CONF_DIR ] && sudo mkdir -m 755 -p $DESIGNATE_CONF_DIR
     sudo chown $STACK_USER $DESIGNATE_CONF_DIR
 
@@ -46,7 +43,6 @@ function configure_designate {
 
     iniset $DESIGNATE_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
-    iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_CONF storage:sqlalchemy connection `database_connection_url designate`
 
     # Quota Configuration
@@ -94,20 +90,8 @@ function configure_designate {
     iniset $DESIGNATE_CONF oslo_messaging_notifications driver "$DESIGNATE_NOTIFICATION_DRIVER"
     iniset $DESIGNATE_CONF oslo_messaging_notifications topics "$DESIGNATE_NOTIFICATION_TOPICS"
 
-    # Root Wrap
-    sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf $DESIGNATE_ROOTWRAP_CONF
-    iniset $DESIGNATE_ROOTWRAP_CONF DEFAULT filters_path $DESIGNATE_DIR/etc/designate/rootwrap.d root-helper
-
     # Oslo Concurrency
     iniset $DESIGNATE_CONF oslo_concurrency lock_path "$DESIGNATE_STATE_PATH"
-
-    # Set up the rootwrap sudoers for designate
-    rootwrap_sudoer_cmd="$DESIGNATE_BIN_DIR/designate-rootwrap $DESIGNATE_ROOTWRAP_CONF *"
-    tempfile=`mktemp`
-    echo "$STACK_USER ALL=(root) NOPASSWD: $rootwrap_sudoer_cmd" >$tempfile
-    chmod 0440 $tempfile
-    sudo chown root:root $tempfile
-    sudo mv $tempfile /etc/sudoers.d/designate-rootwrap
 
     if is_service_enabled tls-proxy; then
         iniset $DESIGNATE_CONF keystone cafile $SSL_BUNDLE_FILE

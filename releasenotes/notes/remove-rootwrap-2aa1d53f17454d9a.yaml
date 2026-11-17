@@ -1,0 +1,20 @@
+---
+upgrade:
+  - |
+    The BIND9 backend now runs RNDC as the Designate worker user without
+    privilege escalation. Before upgrading, ensure that user can execute
+    RNDC, read each target's selected configuration, included files and key,
+    and traverse their parent directories. Existing paths and RNDC
+    configuration selection are unchanged.
+  - |
+    Designate no longer depends on ``oslo.rootwrap`` or installs the
+    ``designate-rootwrap`` executable, rootwrap configuration or filters.
+    DevStack no longer installs Designate rootwrap sudoers rules. Stop old
+    workers before replacing packages that remove the executable. Retain
+    legacy files and rules wherever old workers still run, and remove
+    obsolete Designate sudoers rules after the transition. Custom backends
+    using the removed ``designate.utils.execute`` helper must be updated.
+deprecations:
+  - |
+    The ``[DEFAULT] root_helper`` option is deprecated and has no effect.
+    It remains accepted for compatibility with existing configuration files.

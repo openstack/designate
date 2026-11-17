@@ -22,7 +22,6 @@ import socket
 import sys
 
 from jinja2 import Template
-from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
@@ -110,15 +109,6 @@ def render_template(template, **template_context):
         template = load_template(template)
 
     return template.render(**template_context)
-
-
-def execute(*cmd, **kw):
-    """Execute a command in a subprocess, blocking.
-    """
-    root_helper = kw.pop('root_helper', CONF.root_helper)
-    run_as_root = kw.pop('run_as_root', True)
-    return processutils.execute(*cmd, run_as_root=run_as_root,
-                                root_helper=root_helper, **kw)
 
 
 def deep_dict_merge(a, b):

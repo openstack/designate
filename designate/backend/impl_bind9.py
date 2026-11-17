@@ -22,13 +22,13 @@ import random
 
 import subprocess
 
+from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_utils import strutils
 
 from designate.backend import base
 from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate import exceptions
-from designate import utils
 
 LOG = logging.getLogger(__name__)
 DEFAULT_MASTER_PORT = DEFAULT_MDNS_PORT
@@ -205,7 +205,8 @@ class Bind9Backend(base.Backend):
             rndc_call = self._rndc_call_base + rndc_op
             LOG.debug('Executing RNDC call: %r with timeout %s',
                       rndc_call, self._rndc_timeout)
-            utils.execute(*rndc_call, timeout=self._rndc_timeout)
-        except (utils.processutils.ProcessExecutionError,
+            processutils.execute(*rndc_call, run_as_root=False,
+                                 timeout=self._rndc_timeout)
+        except (processutils.ProcessExecutionError,
                 subprocess.TimeoutExpired) as e:
             raise exceptions.Backend(e)

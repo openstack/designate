@@ -62,10 +62,13 @@ DESIGNATE_OPTS = [
                default=4096,
                help="Number of backlog requests to configure the socket with"),
 
-    # Root Helper
+    # Retained so existing configuration files remain valid during upgrades.
     cfg.StrOpt('root_helper',
                default='sudo designate-rootwrap /etc/designate/rootwrap.conf',
-               help='designate-rootwrap configuration'),
+               deprecated_for_removal=True,
+               deprecated_reason='RNDC runs as the Designate worker user. '
+                                 'This option no longer has any effect.',
+               help='Unused legacy root helper configuration.'),
 
     cfg.StrOpt('network_api', default='neutron', help='Which API to use.'),
 
